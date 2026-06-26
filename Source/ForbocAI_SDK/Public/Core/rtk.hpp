@@ -626,6 +626,33 @@ template <typename T> struct EntityState {
   TMap<FString, T> entities;
 };
 
+template <typename T>
+bool operator==(const EntityState<T> &Left, const EntityState<T> &Right) {
+  if (Left.ids.Num() != Right.ids.Num() ||
+      Left.entities.Num() != Right.entities.Num()) {
+    return false;
+  }
+
+  for (int32 Index = 0; Index < Left.ids.Num(); ++Index) {
+    if (Left.ids[Index] != Right.ids[Index]) {
+      return false;
+    }
+
+    const T *LeftEntity = Left.entities.Find(Left.ids[Index]);
+    const T *RightEntity = Right.entities.Find(Left.ids[Index]);
+    if (!LeftEntity || !RightEntity || !(*LeftEntity == *RightEntity)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+template <typename T>
+bool operator!=(const EntityState<T> &Left, const EntityState<T> &Right) {
+  return !(Left == Right);
+}
+
 template <typename T> struct EntitySelectors {
   std::function<TArray<T>(const EntityState<T> &)> selectAll;
   std::function<func::Maybe<T>(const EntityState<T> &, const FString &)>
