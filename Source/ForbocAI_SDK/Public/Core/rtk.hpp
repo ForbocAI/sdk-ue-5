@@ -696,26 +696,33 @@ template <typename T> struct EntityState {
   TMap<FString, T> entities;
 };
 
+namespace detail {
+template <typename T>
+bool entityStateValueEquals(const TMap<FString, T> &LeftEntities,
+                            const TMap<FString, T> &RightEntities,
+                            const FString &Id) {
+  const T *LeftEntity = LeftEntities.Find(Id);
+  const T *RightEntity = RightEntities.Find(Id);
+  return LeftEntity && RightEntity && (*LeftEntity == *RightEntity);
+}
+
+template <typename T>
+bool entityStateEqualsRecursive(const EntityState<T> &Left,
+                                const EntityState<T> &Right, int32 Index) {
+  return Index >= Left.ids.Num()
+             ? true
+             : Left.ids[Index] == Right.ids[Index] &&
+                   entityStateValueEquals(Left.entities, Right.entities,
+                                          Left.ids[Index]) &&
+                   entityStateEqualsRecursive(Left, Right, Index + 1);
+}
+} // namespace detail
+
 template <typename T>
 bool operator==(const EntityState<T> &Left, const EntityState<T> &Right) {
-  if (Left.ids.Num() != Right.ids.Num() ||
-      Left.entities.Num() != Right.entities.Num()) {
-    return false;
-  }
-
-  for (int32 Index = 0; Index < Left.ids.Num(); ++Index) {
-    if (Left.ids[Index] != Right.ids[Index]) {
-      return false;
-    }
-
-    const T *LeftEntity = Left.entities.Find(Left.ids[Index]);
-    const T *RightEntity = Right.entities.Find(Left.ids[Index]);
-    if (!LeftEntity || !RightEntity || !(*LeftEntity == *RightEntity)) {
-      return false;
-    }
-  }
-
-  return true;
+  return Left.ids.Num() == Right.ids.Num() &&
+         Left.entities.Num() == Right.entities.Num() &&
+         detail::entityStateEqualsRecursive(Left, Right, 0);
 }
 
 template <typename T>
