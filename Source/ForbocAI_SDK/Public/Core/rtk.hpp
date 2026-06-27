@@ -16,14 +16,46 @@ struct FEmptyPayload;
 
 namespace payload_debug {
 
+/**
+ * @brief Converts an FEmptyPayload to a debug string.
+ * @signature FString DebugPayloadString(const FEmptyPayload &)
+ * @param Payload The empty payload (unused).
+ * @return FString A string representation indicating no payload.
+ *
+ * User Story: As a debugger, I need this function to visually identify when an action carries no payload.
+ */
 inline FString DebugPayloadString(const FEmptyPayload &) { return TEXT("<none>"); }
 
+/**
+ * @brief Returns the FString payload as a debug string.
+ * @signature FString DebugPayloadString(const FString &Value)
+ * @param Value The FString payload.
+ * @return FString The FString payload itself.
+ *
+ * User Story: As a debugger, I need this function to easily read FString payloads directly in the debug output.
+ */
 inline FString DebugPayloadString(const FString &Value) { return Value; }
 
+/**
+ * @brief Converts a boolean payload to a debug string.
+ * @signature FString DebugPayloadString(const bool &Value)
+ * @param Value The boolean payload.
+ * @return FString "true" if the value is true, "false" otherwise.
+ *
+ * User Story: As a debugger, I need this function to clearly see the true/false state of boolean payloads.
+ */
 inline FString DebugPayloadString(const bool &Value) {
   return Value ? TEXT("true") : TEXT("false");
 }
 
+/**
+ * @brief Converts an integral payload (non-boolean) to a debug string.
+ * @signature template <typename T> typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, bool>::value, FString>::type DebugPayloadString(const T &Value)
+ * @param Value The integral payload.
+ * @return FString The integral value formatted as a string.
+ *
+ * User Story: As a debugger, I need this function to reliably inspect integer payloads of various sizes in a uniform string format.
+ */
 template <typename T>
 typename std::enable_if<std::is_integral<T>::value &&
                             !std::is_same<T, bool>::value,
@@ -32,6 +64,14 @@ DebugPayloadString(const T &Value) {
   return FString::Printf(TEXT("%lld"), static_cast<long long>(Value));
 }
 
+/**
+ * @brief Converts a floating-point payload to a debug string.
+ * @signature template <typename T> typename std::enable_if<std::is_floating_point<T>::value, FString>::type DebugPayloadString(const T &Value)
+ * @param Value The floating-point payload.
+ * @return FString The floating-point value safely converted to a string.
+ *
+ * User Story: As a debugger, I need this function to verify decimal precision or floating-point states without truncation.
+ */
 template <typename T>
 typename std::enable_if<std::is_floating_point<T>::value, FString>::type
 DebugPayloadString(const T &Value) {
@@ -49,21 +89,53 @@ public:
   static const bool value = decltype(Test<T>(0))::value;
 };
 
+/**
+ * @brief Converts a payload with a ToString() method to a debug string.
+ * @signature template <typename T> typename std::enable_if<HasToString<T>::value, FString>::type DebugPayloadString(const T &Value)
+ * @param Value The payload object.
+ * @return FString The string representation obtained from the object's ToString() method.
+ *
+ * User Story: As a debugger, I need this function so that complex objects can define their own string representations automatically.
+ */
 template <typename T>
 typename std::enable_if<HasToString<T>::value, FString>::type
 DebugPayloadString(const T &Value) {
   return Value.ToString();
 }
 
+/**
+ * @brief Converts a TArray payload to a debug string indicating its length.
+ * @signature template <typename T> FString DebugPayloadString(const TArray<T> &Values)
+ * @param Values The TArray payload.
+ * @return FString A string showing the length of the array.
+ *
+ * User Story: As a debugger, I need this function to quickly gauge the size of array payloads without overwhelming the log output.
+ */
 template <typename T>
 FString DebugPayloadString(const TArray<T> &Values) {
   return FString::Printf(TEXT("TArray(len=%d)"), Values.Num());
 }
 
+/**
+ * @brief Converts a TMap payload to a debug string indicating its length.
+ * @signature template <typename K, typename V> FString DebugPayloadString(const TMap<K, V> &Map)
+ * @param Map The TMap payload.
+ * @return FString A string showing the number of entries in the map.
+ *
+ * User Story: As a debugger, I need this function to quickly assess the size of map payloads in store actions.
+ */
 template <typename K, typename V> FString DebugPayloadString(const TMap<K, V> &Map) {
   return FString::Printf(TEXT("TMap(len=%d)"), Map.Num());
 }
 
+/**
+ * @brief Fallback conversion for payloads that cannot be easily stringified.
+ * @signature template <typename T> typename std::enable_if<!HasToString<T>::value && !std::is_integral<T>::value && !std::is_floating_point<T>::value && !std::is_same<T, bool>::value, FString>::type DebugPayloadString(const T &)
+ * @param unused The opaque payload.
+ * @return FString A placeholder string "<opaque>".
+ *
+ * User Story: As a debugger, I need this function to gracefully handle unknown types without causing compilation errors when actions are dispatched.
+ */
 template <typename T>
 typename std::enable_if<!HasToString<T>::value &&
                             !std::is_integral<T>::value &&
@@ -90,12 +162,29 @@ template <typename Payload> using PayloadAction = Action<Payload>;
 struct FEmptyPayload {};
 
 namespace detail {
+/**
+ * @brief Helper to create a PayloadAction with a specific value.
+ * @signature template <typename Payload> PayloadAction<Payload> payloadAction(const FString &Type, const Payload &PayloadValue)
+ * @param Type The action type string.
+ * @param PayloadValue The actual payload data.
+ * @return PayloadAction<Payload> The created typed action.
+ *
+ * User Story: As a developer writing reducers, I need this function to easily construct strongly-typed actions with data.
+ */
 template <typename Payload>
 PayloadAction<Payload> payloadAction(const FString &Type,
                                      const Payload &PayloadValue) {
   return PayloadAction<Payload>{Type, PayloadValue};
 }
 
+/**
+ * @brief Helper to create a PayloadAction with an empty payload.
+ * @signature inline PayloadAction<FEmptyPayload> payloadAction(const FString &Type)
+ * @param Type The action type string.
+ * @return PayloadAction<FEmptyPayload> The created empty action.
+ *
+ * User Story: As a developer writing reducers, I need this function to easily construct strongly-typed actions representing pure events.
+ */
 inline PayloadAction<FEmptyPayload> payloadAction(const FString &Type) {
   return PayloadAction<FEmptyPayload>{Type, FEmptyPayload{}};
 }
@@ -217,6 +306,14 @@ template <typename State> struct Store {
 };
 
 namespace detail {
+/**
+ * @brief Recursively notifies all subscribers in the list.
+ * @signature template <typename State> void notifySubscribersRecursive(const std::vector<typename Store<State>::Subscriber> &Subscribers, size_t Index)
+ * @param Subscribers The list of active subscribers.
+ * @param Index The current recursion index.
+ *
+ * User Story: As a functional store implementer, I need this to notify all listeners immutably without loops.
+ */
 template <typename State>
 void notifySubscribersRecursive(
     const std::vector<typename Store<State>::Subscriber> &Subscribers,
@@ -227,12 +324,29 @@ void notifySubscribersRecursive(
          notifySubscribersRecursive<State>(Subscribers, Index + 1));
 }
 
+/**
+ * @brief Erases a subscriber at a specific index.
+ * @signature template <typename State> void eraseSubscriberAt(std::vector<typename Store<State>::Subscriber> &Subscribers, size_t Index)
+ * @param Subscribers The list of subscribers to modify.
+ * @param Index The index to remove.
+ *
+ * User Story: As a functional store implementer, I need this to safely remove an unsubscribed listener.
+ */
 template <typename State>
 void eraseSubscriberAt(std::vector<typename Store<State>::Subscriber> &Subscribers,
                        size_t Index) {
   Subscribers.erase(Subscribers.begin() + Index);
 }
 
+/**
+ * @brief Recursively finds and removes a subscriber by Id.
+ * @signature template <typename State> void eraseSubscriberRecursive(std::vector<typename Store<State>::Subscriber> &Subscribers, size_t Index, int64_t Id)
+ * @param Subscribers The list of subscribers.
+ * @param Index The current recursion index.
+ * @param Id The unique identifier of the subscriber to remove.
+ *
+ * User Story: As a functional store implementer, I need this to recursively scan and clean up subscriptions without loops.
+ */
 template <typename State>
 void eraseSubscriberRecursive(
     std::vector<typename Store<State>::Subscriber> &Subscribers, size_t Index,
@@ -246,6 +360,15 @@ void eraseSubscriberRecursive(
 }
 } // namespace detail
 
+/**
+ * @brief Creates a Redux-like store with an initial state and root reducer.
+ * @signature template <typename State> Store<State> createStore(State InitialState, CaseReducer<State> ReducerFunc)
+ * @param InitialState The initial state of the store.
+ * @param ReducerFunc The root reducer function.
+ * @return Store<State> The created store instance.
+ *
+ * User Story: As an app developer, I need this function to initialize my central state container.
+ */
 template <typename State>
 Store<State> createStore(State InitialState, CaseReducer<State> ReducerFunc) {
   Store<State> StoreValue;
@@ -254,10 +377,27 @@ Store<State> createStore(State InitialState, CaseReducer<State> ReducerFunc) {
   return StoreValue;
 }
 
+/**
+ * @brief Gets the current state from a given store.
+ * @signature template <typename State> const State &getState(const Store<State> &StoreValue)
+ * @param StoreValue The store to query.
+ * @return const State& A const reference to the current state.
+ *
+ * User Story: As a developer, I need this to read the current state synchronously from a store instance.
+ */
 template <typename State> const State &getState(const Store<State> &StoreValue) {
   return StoreValue.CurrentState;
 }
 
+/**
+ * @brief Dispatches an action to a store, updating its state and notifying subscribers.
+ * @signature template <typename State> AnyAction dispatch(Store<State> &StoreValue, const AnyAction &Action)
+ * @param StoreValue The store to dispatch to.
+ * @param Action The type-erased action to process.
+ * @return AnyAction The dispatched action.
+ *
+ * User Story: As a developer, I need this function to trigger state updates predictably.
+ */
 template <typename State>
 AnyAction dispatch(Store<State> &StoreValue, const AnyAction &Action) {
   StoreValue.CurrentState = StoreValue.RootReducer(StoreValue.CurrentState, Action);
@@ -267,6 +407,15 @@ AnyAction dispatch(Store<State> &StoreValue, const AnyAction &Action) {
   return Action;
 }
 
+/**
+ * @brief Subscribes a callback to state changes in the store.
+ * @signature template <typename State> std::function<void()> subscribe(Store<State> &StoreValue, std::function<void()> Callback)
+ * @param StoreValue The store to subscribe to.
+ * @param Callback The function to call on state changes.
+ * @return std::function<void()> An unsubscribe function to remove the callback.
+ *
+ * User Story: As a UI developer, I need to subscribe to the store so my views can re-render when state changes.
+ */
 template <typename State>
 std::function<void()> subscribe(Store<State> &StoreValue,
                                 std::function<void()> Callback) {
@@ -314,6 +463,19 @@ RootState combineReducerEntriesRecursive(
     size_t Index, const RootState &PrevState, RootState NextState,
     bool bChanged, const AnyAction &Action);
 
+/**
+ * @brief Combines a single reducer entry with the next state.
+ * @signature template <typename RootState> RootState combineReducerEntryStep(...)
+ * @param Reducers List of reducer functions.
+ * @param Index Current index in the list.
+ * @param PrevState Previous root state.
+ * @param NextState Accumulated root state.
+ * @param bChanged Flag indicating if state has changed.
+ * @param Action Action being processed.
+ * @return RootState The new accumulated root state.
+ *
+ * User Story: As a functional store implementer, I need this to evaluate a single combineReducers step purely.
+ */
 template <typename RootState>
 RootState combineReducerEntryStep(
     const std::vector<
@@ -328,6 +490,19 @@ RootState combineReducerEntryStep(
       Action);
 }
 
+/**
+ * @brief Recursively iterates over all slice reducers.
+ * @signature template <typename RootState> RootState combineReducerEntriesRecursive(...)
+ * @param Reducers List of reducer functions.
+ * @param Index Current index in the list.
+ * @param PrevState Previous root state.
+ * @param NextState Accumulated root state.
+ * @param bChanged Flag indicating if state has changed.
+ * @param Action Action being processed.
+ * @return RootState The final root state after all reducers have run.
+ *
+ * User Story: As a functional store implementer, I need this to recursively apply all combineReducers entries without loops.
+ */
 template <typename RootState>
 RootState combineReducerEntriesRecursive(
     const std::vector<
@@ -390,7 +565,11 @@ template <typename Payload> struct ActionCreator {
 };
 
 /**
- * Creates a typed action creator for a namespaced action type.
+ * @brief Creates a typed action creator for a namespaced action type.
+ * @signature template <typename Payload> ActionCreator<Payload> createAction(const FString &Type)
+ * @param Type The action type identifier string.
+ * @return ActionCreator<Payload> The action creator function object.
+ *
  * User Story: As slice code, I need typed action creators so reducers and
  * thunks can share stable action contracts.
  */
@@ -416,7 +595,11 @@ struct ActionCreatorWithoutPayload {
 };
 
 /**
- * Creates an empty-payload action creator for a namespaced action type.
+ * @brief Creates an empty-payload action creator for a namespaced action type.
+ * @signature inline ActionCreatorWithoutPayload createAction(const FString &Type)
+ * @param Type The action type identifier string.
+ * @return ActionCreatorWithoutPayload The empty payload action creator object.
+ *
  * User Story: As slice code, I need empty action creators so simple lifecycle
  * events can reuse the same RTK-style creation pattern.
  */
@@ -567,7 +750,12 @@ template <typename State> struct ActionReducerMapBuilder {
 
 namespace detail {
 /**
- * Constructs the reducer-map builder used by createSlice extraReducers.
+ * @brief Constructs the reducer-map builder used by createSlice extraReducers.
+ * @signature template <typename State> ActionReducerMapBuilder<State> createActionReducerMapBuilder(FString InName, State InInitialState)
+ * @param InName The slice name.
+ * @param InInitialState The initial state for the builder.
+ * @return ActionReducerMapBuilder<State> The uninitialized builder.
+ *
  * User Story: As slice authors, I need an ActionReducerMapBuilder entry point
  * so extraReducers can register addCase handlers with RTK terminology.
  */
@@ -592,6 +780,16 @@ template <typename State> struct ReducedState {
   bool bHandled;
 };
 
+/**
+ * @brief Evaluates an action against a specific case reducer if the type matches.
+ * @signature template <typename State> ReducedState<State> reduceCase(const TMap<FString, CaseReducer<State>> &ReducerMap, const State &PrevState, const AnyAction &Action)
+ * @param ReducerMap Map of action types to case reducers.
+ * @param PrevState Current state before reduction.
+ * @param Action Action being dispatched.
+ * @return ReducedState<State> Resulting state and a boolean indicating if it was handled.
+ *
+ * User Story: As a functional store implementer, I need this to efficiently resolve and apply exact action matches.
+ */
 template <typename State>
 ReducedState<State> reduceCase(const TMap<FString, CaseReducer<State>> &ReducerMap,
                                const State &PrevState,
@@ -601,6 +799,17 @@ ReducedState<State> reduceCase(const TMap<FString, CaseReducer<State>> &ReducerM
                : ReducedState<State>{PrevState, false};
 }
 
+/**
+ * @brief Recursively evaluates an action against registered matcher reducers.
+ * @signature template <typename State> ReducedState<State> reduceMatchersRecursive(const TArray<ActionMatcherDescription<State>> &ActionMatchers, const AnyAction &Action, int32 Index, ReducedState<State> Acc)
+ * @param ActionMatchers List of matcher configurations.
+ * @param Action Action being dispatched.
+ * @param Index Current recursion index.
+ * @param Acc Accumulated state and handled flag.
+ * @return ReducedState<State> Final resulting state and handled flag.
+ *
+ * User Story: As a functional store implementer, I need this to evaluate fallthrough and multiple matchers without loops.
+ */
 template <typename State>
 ReducedState<State>
 reduceMatchersRecursive(const TArray<ActionMatcherDescription<State>> &ActionMatchers,
@@ -617,6 +826,15 @@ reduceMatchersRecursive(const TArray<ActionMatcherDescription<State>> &ActionMat
                        : Acc);
 }
 
+/**
+ * @brief Finalizes the slice and its reducer lookup table from a createSlice builder.
+ * @signature template <typename State> Slice<State> finalizeSlice(ActionReducerMapBuilder<State> Builder)
+ * @param Builder The configured map builder.
+ * @return Slice<State> The completed slice containing the composite reducer.
+ *
+ * User Story: As createSlice, I need one internal finalization path so slices
+ * expose the generated reducer while callers only use RTK terms.
+ */
 template <typename State>
 Slice<State> finalizeSlice(ActionReducerMapBuilder<State> Builder) {
   Slice<State> Result;
@@ -644,7 +862,13 @@ Slice<State> finalizeSlice(ActionReducerMapBuilder<State> Builder) {
 } // namespace detail
 
 /**
- * Builds a slice from a name, initial state, and extraReducers callback.
+ * @brief Builds a slice from a name, initial state, and extraReducers callback.
+ * @signature template <typename State, typename ExtraReducersFn> Slice<State> createSlice(FString InName, State InInitialState, ExtraReducersFn ExtraReducers)
+ * @param InName The name of the slice.
+ * @param InInitialState The initial state object.
+ * @param ExtraReducers Function receiving a builder to attach reducers.
+ * @return Slice<State> The generated slice with composed reducer.
+ *
  * User Story: As slice authors, I need a createSlice entry point so C++ slice
  * files mirror Redux Toolkit's createSlice and builder.addCase patterns.
  */
@@ -659,7 +883,12 @@ Slice<State> createSlice(FString InName, State InInitialState,
 }
 
 /**
- * Builds a reducer from initial state and an ActionReducerMapBuilder callback.
+ * @brief Builds a reducer from initial state and an ActionReducerMapBuilder callback.
+ * @signature template <typename State, typename BuilderCallbackFn> CaseReducer<State> createReducer(State InitialState, BuilderCallbackFn BuilderCallback)
+ * @param InitialState Initial state for the reducer.
+ * @param BuilderCallback Function to configure case matchers.
+ * @return CaseReducer<State> The composed reducer function.
+ *
  * User Story: As reducer authors, I need createReducer terminology for focused
  * reducer cases that do not need to be exported as a named slice.
  */
@@ -672,7 +901,13 @@ CaseReducer<State> createReducer(State InitialState,
 }
 
 /**
- * Builds a slice around an already-composed reducer.
+ * @brief Builds a slice around an already-composed reducer.
+ * @signature template <typename State> Slice<State> createSlice(FString InName, State InInitialState, CaseReducer<State> ReducerFunc)
+ * @param InName Name of the slice.
+ * @param InInitialState The initial state object.
+ * @param ReducerFunc An already composed root reducer function.
+ * @return Slice<State> A new slice packaging the given reducer.
+ *
  * User Story: As root slice authors, I need createSlice to accept a composed
  * reducer so combineReducers output can still be exported through one slice.
  */
@@ -718,6 +953,15 @@ bool entityStateEqualsRecursive(const EntityState<T> &Left,
 }
 } // namespace detail
 
+/**
+ * @brief Checks if two EntityState objects are deeply equal.
+ * @signature template <typename T> bool operator==(const EntityState<T> &Left, const EntityState<T> &Right)
+ * @param Left The first state to compare.
+ * @param Right The second state to compare.
+ * @return true if both states have the same entities and ordering; false otherwise.
+ *
+ * User Story: As a functional reducer, I need deep equality checks to avoid unnecessary state updates when payload data matches existing state.
+ */
 template <typename T>
 bool operator==(const EntityState<T> &Left, const EntityState<T> &Right) {
   return Left.ids.Num() == Right.ids.Num() &&
@@ -725,6 +969,15 @@ bool operator==(const EntityState<T> &Left, const EntityState<T> &Right) {
          detail::entityStateEqualsRecursive(Left, Right, 0);
 }
 
+/**
+ * @brief Checks if two EntityState objects are not equal.
+ * @signature template <typename T> bool operator!=(const EntityState<T> &Left, const EntityState<T> &Right)
+ * @param Left The first state to compare.
+ * @param Right The second state to compare.
+ * @return true if the states differ; false otherwise.
+ *
+ * User Story: As a functional reducer, I need inequality checks to trigger state changes when updating collections.
+ */
 template <typename T>
 bool operator!=(const EntityState<T> &Left, const EntityState<T> &Right) {
   return !(Left == Right);
@@ -1009,7 +1262,11 @@ TArray<T> selectAllEntitiesRecursive(const EntityState<T> &State, int32 Index,
 } // namespace detail
 
 /**
- * Creates entity-adapter operations from an id selector.
+ * @brief Creates entity-adapter operations from an id selector.
+ * @signature template <typename T> EntityAdapter<T> createEntityAdapter(std::function<FString(const T &)> selectId)
+ * @param selectId A function to extract the string ID from an entity.
+ * @return EntityAdapter<T> The adapter with CRUD operation helpers.
+ *
  * User Story: As slice authors, I need adapter factories so entity state
  * management can be generated from one id-selection rule.
  */
@@ -1075,7 +1332,12 @@ ActionReducerMapBuilder<State> &addAsyncThunkSettledMatcherWhen(
 } // namespace detail
 
 /**
- * Creates a thunk config with pending, fulfilled, and rejected lifecycle actions.
+ * @brief Creates a thunk config with pending, fulfilled, and rejected lifecycle actions.
+ * @signature template <typename Result, typename Arg, typename State> AsyncThunkConfig<Result, Arg, State> createAsyncThunk(const FString &TypePrefix, std::function<func::AsyncResult<Result>(const Arg &, const ThunkApi<State> &)> PayloadCreator)
+ * @param TypePrefix The prefix string used for action types.
+ * @param PayloadCreator The async function returning an AsyncResult.
+ * @return AsyncThunkConfig<Result, Arg, State> The thunk configuration.
+ *
  * User Story: As async thunk authors, I need lifecycle action wiring generated
  * automatically so pending and result dispatch stay consistent.
  */
@@ -1193,7 +1455,13 @@ Dispatcher applyMiddlewareRecursive(
 } // namespace detail
 
 /**
- * Wraps a dispatcher with middleware while preserving RTK-style composition order.
+ * @brief Wraps a dispatcher with middleware while preserving RTK-style composition order.
+ * @signature template <typename State> Dispatcher applyMiddleware(Dispatcher baseDispatch, std::function<State()> getState, const std::vector<Middleware<State>> &middlewares)
+ * @param baseDispatch The core store dispatch function.
+ * @param getState The function returning current state.
+ * @param middlewares The list of middlewares to apply.
+ * @return Dispatcher The newly composed dispatch function.
+ *
  * User Story: As store configuration, I need middleware composition so dispatch
  * can be enhanced without changing reducer semantics.
  */
@@ -1264,11 +1532,28 @@ void runListenerEffects(
 }
 } // namespace detail
 
+/**
+ * @brief Creates a new empty ListenerMiddleware instance.
+ * @signature template <typename State> ListenerMiddleware<State> createListenerMiddleware()
+ * @return ListenerMiddleware<State> The created middleware instance.
+ *
+ * User Story: As a functional store implementer, I need to instantiate an empty listener registry before adding side effects.
+ */
 template <typename State>
 ListenerMiddleware<State> createListenerMiddleware() {
   return ListenerMiddleware<State>();
 }
 
+/**
+ * @brief Adds an effect callback to the listener middleware for a specific action type.
+ * @signature template <typename State> ListenerMiddleware<State> addListener(ListenerMiddleware<State> MiddlewareValue, const FString &ActionType, typename ListenerMiddleware<State>::EffectCallback Effect)
+ * @param MiddlewareValue The middleware instance (passed by value for functional updates).
+ * @param ActionType The action type string to listen for.
+ * @param Effect The side effect callback to execute.
+ * @return ListenerMiddleware<State> The updated middleware instance.
+ *
+ * User Story: As a functional store implementer, I need to immutably register side effects for dispatched actions.
+ */
 template <typename State>
 ListenerMiddleware<State>
 addListener(ListenerMiddleware<State> MiddlewareValue,
@@ -1278,6 +1563,14 @@ addListener(ListenerMiddleware<State> MiddlewareValue,
   return MiddlewareValue;
 }
 
+/**
+ * @brief Builds the final Middleware function from the ListenerMiddleware registry.
+ * @signature template <typename State> Middleware<State> buildListenerMiddleware(const ListenerMiddleware<State> &MiddlewareValue)
+ * @param MiddlewareValue The configured listener middleware.
+ * @return Middleware<State> A middleware function compatible with applyMiddleware.
+ *
+ * User Story: As a functional store implementer, I need to convert my listener registry into standard composed middleware.
+ */
 template <typename State>
 Middleware<State>
 buildListenerMiddleware(const ListenerMiddleware<State> &MiddlewareValue) {
@@ -1302,7 +1595,14 @@ buildListenerMiddleware(const ListenerMiddleware<State> &MiddlewareValue) {
 
 namespace detail {
 /**
- * Evaluates a selector combiner against each input selector in a tuple.
+ * @brief Evaluates a selector combiner against each input selector in a tuple.
+ * @signature template <typename Result, typename State, typename Combiner, typename InputTuple, size_t... Is> Result evaluateSelector(const State &state, Combiner &combiner, const InputTuple &inputs, func::seq<Is...>)
+ * @param state The current state to evaluate against.
+ * @param combiner The combinatorial function.
+ * @param inputs A tuple of input selectors.
+ * @param unused Sequence indices for unpacking.
+ * @return Result The evaluated derived state.
+ *
  * User Story: As memoized selectors, I need tuple-driven combiner evaluation
  * so composed selectors can reuse one generic implementation.
  */
@@ -1315,7 +1615,12 @@ Result evaluateSelector(const State &state, Combiner &combiner,
 } // namespace detail
 
 /**
- * Creates a memoized selector from input selectors and a combiner.
+ * @brief Creates a memoized selector from input selectors and a combiner.
+ * @signature template <typename State, typename Result, typename... InSelectors> std::function<Result(const State &)> createSelector(const std::tuple<InSelectors...> &inputSelectors, std::function<Result(decltype(std::declval<InSelectors>()(std::declval<const State &>()))...)> combiner)
+ * @param inputSelectors A tuple of input selector functions.
+ * @param combiner A function combining the outputs of the input selectors.
+ * @return std::function<Result(const State &)> The memoized selector.
+ *
  * User Story: As selector authors, I need memoized selector composition so
  * derived state only recomputes when its inputs change.
  */
@@ -1373,6 +1678,15 @@ template <typename State> struct Api {
   TArray<FString> TagTypes;
 };
 
+/**
+ * @brief Creates an API slice registry with a defined path and tag types.
+ * @signature template <typename State> Api<State> createApi(const FString &ReducerPath, const TArray<FString> &TagTypes)
+ * @param ReducerPath The state path where the API slice mounts.
+ * @param TagTypes The list of cache tag types supported by this API.
+ * @return Api<State> The initialized API definition.
+ *
+ * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
+ */
 template <typename State>
 Api<State> createApi(const FString &ReducerPath,
                                const TArray<FString> &TagTypes) {
@@ -1382,6 +1696,14 @@ Api<State> createApi(const FString &ReducerPath,
   return Slice;
 }
 
+/**
+ * @brief Unwraps an HTTP result into an AsyncResult.
+ * @signature template <typename Result> func::AsyncResult<Result> unwrapEndpointResult(func::HttpResult<Result> HttpResultValue)
+ * @param HttpResultValue The HTTP result containing data or error.
+ * @return func::AsyncResult<Result> The async result that resolves or rejects based on success.
+ *
+ * User Story: As a developer writing endpoint queries, I need standard HTTP results translated directly into chainable AsyncResults.
+ */
 template <typename Result>
 func::AsyncResult<Result>
 unwrapEndpointResult(func::HttpResult<Result> HttpResultValue) {
@@ -1398,6 +1720,15 @@ unwrapEndpointResult(func::HttpResult<Result> HttpResultValue) {
                    });
 }
 
+/**
+ * @brief Injects a specific endpoint into an existing API slice definition.
+ * @signature template <typename State, typename Arg, typename Result> AsyncThunkConfig<Result, Arg, State> injectEndpoints(const Api<State> &Slice, const ApiEndpoint<Arg, Result> &EndpointDesc)
+ * @param Slice The base API slice.
+ * @param EndpointDesc The endpoint descriptor.
+ * @return AsyncThunkConfig<Result, Arg, State> A configured thunk managing the endpoint request lifecycle.
+ *
+ * User Story: As an API developer, I need to dynamically inject endpoints into a base API slice without altering the slice core.
+ */
 template <typename State, typename Arg, typename Result>
 AsyncThunkConfig<Result, Arg, State>
 injectEndpoints(const Api<State> &Slice,
@@ -1459,7 +1790,13 @@ template <typename State> struct EnhancedStore {
 };
 
 /**
- * Configures an enhanced store with middleware and preloaded state.
+ * @brief Configures an enhanced store with middleware and preloaded state.
+ * @signature template <typename State> EnhancedStore<State> configureStore(CaseReducer<State> rootReducer, State preloadedState, const std::vector<Middleware<State>> &middlewares)
+ * @param rootReducer The root reducer function.
+ * @param preloadedState The initial state of the store.
+ * @param middlewares A vector of middlewares to apply.
+ * @return EnhancedStore<State> The fully configured enhanced store.
+ *
  * User Story: As runtime bootstrapping, I need a configured enhanced store so
  * reducers, middleware, and preload state come together in one helper.
  */
@@ -1485,7 +1822,12 @@ configureStore(CaseReducer<State> rootReducer, State preloadedState,
 }
 
 /**
- * Configures an enhanced store without middleware.
+ * @brief Configures an enhanced store without middleware.
+ * @signature template <typename State> EnhancedStore<State> configureStore(CaseReducer<State> rootReducer, State preloadedState)
+ * @param rootReducer The root reducer function.
+ * @param preloadedState The initial state of the store.
+ * @return EnhancedStore<State> The configured enhanced store.
+ *
  * User Story: As simple runtime bootstrapping, I need a no-middleware overload
  * so tests and small setups can create stores with less ceremony.
  */

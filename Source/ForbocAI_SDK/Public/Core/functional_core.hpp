@@ -3,49 +3,12 @@
 #define FUNCTIONAL_CORE_HPP
 
 /**
- * Functional Core Library — Strict C++11
- * Pure C++11 functional programming primitives.
- * No C++14, C++17, or later features are used.
- * This header is the canonical source of truth for the
- * functional substrate. If surrounding docs disagree, this file wins.
- * DESIGN PRINCIPLES:
- *   - Prefer structs and plain data for domain state.
- *   - Prefer factory functions for construction of public values.
- *   - Keep domain behavior in free functions under the `func` namespace.
- *   - Use compatibility member wrappers only when preserving an existing
- *     callable C++11 surface is materially cheaper than duplicating
- *     abstractions (`MemoizedLast::operator()`, `AsyncResult` chaining).
- *   - Value semantics throughout.
- * CONTENTS:
- *   1. seq / gen_seq        — Index sequence (C++14 backport)
- *   2. apply                — Tuple application (C++17 backport)
- *   3. Maybe<T>             — Optional monad (data only)
- *   4. Either<E, T>         — Result/Error monad (data only)
- *   5. Curried / curry      — Automatic function currying
- *   6. Lazy<T> / lazy       — Memoized deferred evaluation
- *   7. MemoizedLast         — Last-input memoization for derived values
- *   8. Pipeline<T> / pipe   — Value transformation chains (operator|)
- *   9. Composed / compose   — Binary function composition
- *  10. fmap                 — Functor map (Maybe, Either, vector)
- *  11. mbind / ebind        — Monadic bind for Maybe / Either
- *  12. or_else / match      — Extraction / pattern matching
- *  13. ValidationPipeline   — Functional validation chain
- *  14. ConfigBuilder        — Functional configuration builder
- *  15. TestResult           — Functional testing result
- *  16. AsyncResult          — Functional async result handling
- *  17. HttpResult           — Functional HTTP result wrapper
- *  18. AsyncChain           — AsyncResult chaining helpers
- *  19. Dispatcher            — Dictionary-based typed dispatch
- *  20. multi_match           — Multi-case value-based pattern matching
- *  21. from_nullable         — Lift nullable values into Maybe
- * REQUIREMENTS:
- *   Several helpers default-construct inactive payloads or
- *   error branches as a deliberate C++11 trade-off:
- *   `Maybe<T>`, `Either<E, T>`, `ValidationPipeline<T, E>`,
- *   `TestResult<T>`, and `HttpResult<T>`.
- *   All host types used with these primitives are expected
- *   to satisfy that requirement.
- * See also: C++11-FP-GUIDE.md for patterns and usage.
+ * @brief Functional Core Library — Strict C++11 Pure C++11 functional programming primitives. No C++14, C++17, or later features are used. This header is the canonical source of truth for the functional substrate. If surrounding docs disagree, this file wins. DESIGN PRINCIPLES: - Prefer structs and plain data for domain state. - Prefer factory functions for construction of public values. - Keep domain behavior in free functions under the `func` namespace. - Use compatibility member wrappers only when preserving an existing callable C++11 surface is materially cheaper than duplicating abstractions (`MemoizedLast::operator()`, `AsyncResult` chaining). - Value semantics throughout. CONTENTS: 1. seq / gen_seq        — Index sequence (C++14 backport) 2. apply                — Tuple application (C++17 backport) 3. Maybe<T>             — Optional monad (data only) 4. Either<E, T>         — Result/Error monad (data only) 5. Curried / curry      — Automatic function currying 6. Lazy<T> / lazy       — Memoized deferred evaluation 7. MemoizedLast         — Last-input memoization for derived values 8. Pipeline<T> / pipe   — Value transformation chains (operator|) 9. Composed / compose   — Binary function composition 10. fmap                 — Functor map (Maybe, Either, vector) 11. mbind / ebind        — Monadic bind for Maybe / Either 12. or_else / match      — Extraction / pattern matching 13. ValidationPipeline   — Functional validation chain 14. ConfigBuilder        — Functional configuration builder 15. TestResult           — Functional testing result 16. AsyncResult          — Functional async result handling 17. HttpResult           — Functional HTTP result wrapper 18. AsyncChain           — AsyncResult chaining helpers 19. Dispatcher            — Dictionary-based typed dispatch 20. multi_match           — Multi-case value-based pattern matching 21. from_nullable         — Lift nullable values into Maybe REQUIREMENTS: Several helpers default-construct inactive payloads or error branches as a deliberate C++11 trade-off: `Maybe<T>`, `Either<E, T>`, `ValidationPipeline<T, E>`, `TestResult<T>`, and `HttpResult<T>`. All host types used with these primitives are expected to satisfy that requirement. See also: C++11-FP-GUIDE.md for patterns and usage.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature #include <cstdint> #include <cstdlib> #include <functional> #include <memory> #include <stdexcept> #include <string> #include <tuple> #include <type_traits> #include <unordered_map> #include <utility> #include <vector> namespace func
+ * 
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
@@ -64,12 +27,12 @@
 namespace func {
 
 /**
- * 1. HELPER: Index Sequence (C++14 backport)
- * Generates a compile-time integer sequence for
- * unpacking tuples. Equivalent to C++14's
- * std::index_sequence / std::make_index_sequence.
- * Note: gen_seq uses recursive template inheritance
- * as the standard C++11 technique for this pattern.
+ * @brief 1. HELPER: Index Sequence (C++14 backport) Generates a compile-time integer sequence for unpacking tuples. Equivalent to C++14's std::index_sequence / std::make_index_sequence. Note: gen_seq uses recursive template inheritance as the standard C++11 technique for this pattern.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <size_t... Is> struct seq
+ * 
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 
@@ -81,7 +44,12 @@ struct gen_seq : gen_seq<N - 1, N - 1, Is...> {};
 template <size_t... Is> struct gen_seq<0, Is...> : seq<Is...> {};
 
 /**
- * Invokes a callable with tuple elements expanded by index sequence.
+ * @brief Invokes a callable with tuple elements expanded by index sequence.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename F, typename Tuple, size_t... Is> auto apply_impl(F &&f, Tuple &&t, seq<Is...>) -> decltype(std::forward<F>(f)(std::get<Is>(std::forward<Tuple>(t))...))
+ * 
  * User Story: As C++11 functional helpers, I need tuple expansion so stored
  * argument lists can be replayed through generic callables cleanly.
  */
@@ -92,7 +60,12 @@ auto apply_impl(F &&f, Tuple &&t, seq<Is...>)
 }
 
 /**
- * Applies a callable to the contents of a tuple.
+ * @brief Applies a callable to the contents of a tuple.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename F, typename Tuple> auto apply(F &&f, Tuple &&t) -> decltype(apply_impl( std::forward<F>(f), std::forward<Tuple>(t), gen_seq<std::tuple_size< typename std::remove_reference<Tuple>::type>::value>()))
+ * 
  * User Story: As higher-order helpers, I need tuple application so currying
  * and deferred calls can execute stored arguments consistently.
  */
@@ -107,12 +80,12 @@ auto apply(F &&f, Tuple &&t) -> decltype(apply_impl(
 }
 
 /**
- * 3. DATA: Maybe (Optional Monad)
- * A value that may or may not exist.
- * Pure data struct — no methods.
- * Construction: use factory functions just() / nothing()
- * Operations:   use free functions fmap() / mbind() / or_else()
- * Requires: T is default-constructible.
+ * @brief 3. DATA: Maybe (Optional Monad) A value that may or may not exist. Pure data struct — no methods. Construction: use factory functions just() / nothing() Operations:   use free functions fmap() / mbind() / or_else() Requires: T is default-constructible.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T> struct Maybe
+ * 
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
@@ -122,7 +95,12 @@ template <typename T> struct Maybe {
 };
 
 /**
- * Wraps a concrete value in a populated Maybe.
+ * @brief Wraps a concrete value in a populated Maybe.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T> Maybe<T> just(T v)
+ * 
  * User Story: As optional flows, I need a simple way to lift a value into
  * Maybe so absence and presence stay explicit in pipelines.
  */
@@ -131,20 +109,32 @@ template <typename T> Maybe<T> just(T v) {
 }
 
 /**
- * Builds an empty Maybe with a default-constructed payload.
+ * @brief Builds an empty Maybe with a default-constructed payload.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T> Maybe<T> nothing()
+ * 
  * User Story: As optional flows, I need a canonical empty Maybe so code can
  * represent missing values without custom sentinels.
  */
 template <typename T> Maybe<T> nothing() { return Maybe<T>{false, T{}}; }
 
+template <typename T> Maybe<T> maybe_from_option(Maybe<T> opt) {
+  return opt;
+}
+
+template <typename T> Maybe<T> maybe_to_option(Maybe<T> maybe) {
+  return maybe;
+}
+
 /**
- * 4. DATA: Either (Result/Error Monad)
- * A sum type for computations that can fail.
- * Convention: Left = error, Right = success.
- * Pure data struct — no methods.
- * Construction: use factory functions make_left() / make_right()
- * Operations:   use free functions fmap() / ebind()
- * Requires: E and T are default-constructible.
+ * @brief 4. DATA: Either (Result/Error Monad) A sum type for computations that can fail. Convention: Left = error, Right = success. Pure data struct — no methods. Construction: use factory functions make_left() / make_right() Operations:   use free functions fmap() / ebind() Requires: E and T are default-constructible.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename E, typename T> struct Either
+ * 
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
@@ -155,7 +145,12 @@ template <typename E, typename T> struct Either {
 };
 
 /**
- * Constructs the error branch of an Either value.
+ * @brief Constructs the error branch of an Either value.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename E, typename T> Either<E, T> make_left(E e)
+ * 
  * User Story: As result-returning code, I need a clear error constructor so
  * failure paths remain explicit in functional chains.
  */
@@ -164,7 +159,12 @@ template <typename E, typename T> Either<E, T> make_left(E e) {
 }
 
 /**
- * Constructs the error branch while preserving an explicit fallback payload.
+ * @brief Constructs the error branch while preserving an explicit fallback payload.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename E, typename T> Either<E, T> make_left(E e, T dummy)
+ * 
  * User Story: As result-returning code, I need an error constructor that also
  * satisfies payload shape requirements in C++11.
  */
@@ -173,7 +173,12 @@ template <typename E, typename T> Either<E, T> make_left(E e, T dummy) {
 }
 
 /**
- * Constructs the success branch of an Either value.
+ * @brief Constructs the success branch of an Either value.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename E, typename T> Either<E, T> make_right(T v)
+ * 
  * User Story: As result-returning code, I need a clear success constructor so
  * successful values move through pipelines predictably.
  */
@@ -182,7 +187,12 @@ template <typename E, typename T> Either<E, T> make_right(T v) {
 }
 
 /**
- * Constructs the success branch while preserving an explicit fallback error value.
+ * @brief Constructs the success branch while preserving an explicit fallback error value.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename E, typename T> Either<E, T> make_right(E dummy, T v)
+ * 
  * User Story: As result-returning code, I need a success constructor that also
  * preserves error shape requirements in C++11.
  */
@@ -190,18 +200,21 @@ template <typename E, typename T> Either<E, T> make_right(E dummy, T v) {
   return Either<E, T>{false, std::move(dummy), std::move(v)};
 }
 
+template <typename E, typename T> Either<E, T> left(E e) {
+  return make_left<E, T>(std::move(e));
+}
+
+template <typename E, typename T> Either<E, T> right(T v) {
+  return make_right<E, T>(std::move(v));
+}
+
 /**
- * 5. CALLABLE: Curried (Function Currying)
- * Converts an N-arity function into a chain of
- * single-argument applications.
- * Construction: use the curry<N>() factory function.
- * operator() is the C++ mechanism for callable types
- * (equivalent to lambda application in FP).
- * Usage:
- *   auto add = [](int a, int b) { return a + b; };
- *   auto curried = func::curry<2>(add);
- *   auto add5 = curried(5);    // partial application
- *   int result = add5(3);       // 8
+ * @brief 5. CALLABLE: Curried (Function Currying) Converts an N-arity function into a chain of single-argument applications. Construction: use the curry<N>() factory function. operator() is the C++ mechanism for callable types (equivalent to lambda application in FP). Usage: auto add = [](int a, int b) { return a + b; }; auto curried = func::curry<2>(add); auto add5 = curried(5);    // partial application int result = add5(3);       // 8
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <size_t Arity, typename Func, typename CapturedArgs = std::tuple<>> struct Curried
+ * 
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
@@ -210,10 +223,15 @@ struct Curried {
   Func func;
   CapturedArgs args;
 
-  /**
-   * Partial application: not enough args yet
-   * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-   */
+/**
+ * @brief Partial application: not enough args yet
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename... NewArgs> auto operator()(NewArgs &&...new_args) const -> typename std::enable_if< (std::tuple_size<CapturedArgs>::value + sizeof...(NewArgs) < Arity), Curried<Arity, Func, decltype(std::tuple_cat(args, std::make_tuple(std::forward<NewArgs>( new_args)...)))>>::type
+ * 
+ * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
+ */
   template <typename... NewArgs>
   auto operator()(NewArgs &&...new_args) const -> typename std::enable_if<
       (std::tuple_size<CapturedArgs>::value + sizeof...(NewArgs) < Arity),
@@ -226,10 +244,15 @@ struct Curried {
     return Curried<Arity, Func, decltype(merged)>{func, merged};
   }
 
-  /**
-   * Full application: enough args, invoke the function
-   * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-   */
+/**
+ * @brief Full application: enough args, invoke the function
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename... NewArgs> auto operator()(NewArgs &&...new_args) const -> typename std::enable_if< (std::tuple_size<CapturedArgs>::value + sizeof...(NewArgs) >= Arity), decltype(func::apply(func, std::tuple_cat(args, std::make_tuple(std::forward<NewArgs>( new_args)...))))>::type
+ * 
+ * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
+ */
   template <typename... NewArgs>
   auto operator()(NewArgs &&...new_args) const -> typename std::enable_if<
       (std::tuple_size<CapturedArgs>::value + sizeof...(NewArgs) >= Arity),
@@ -243,7 +266,12 @@ struct Curried {
 };
 
 /**
- * Converts a callable into a curried wrapper with the requested arity.
+ * @brief Converts a callable into a curried wrapper with the requested arity.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <size_t Arity, typename Func> Curried<Arity, Func> curry(Func f)
+ * 
  * User Story: As functional composition code, I need currying so larger
  * runtime helpers can be partially applied in readable C++11.
  */
@@ -251,14 +279,23 @@ template <size_t Arity, typename Func> Curried<Arity, Func> curry(Func f) {
   return Curried<Arity, Func>{f, std::tuple<>{}};
 }
 
+template <typename A, typename B, typename R>
+std::function<R(B)> partial_apply(std::function<R(A, B)> f, A a) {
+  return [f, a](B b) { return f(a, b); };
+}
+
+template <typename A, typename B, typename C, typename R>
+std::function<R(C)> partial_apply2(std::function<R(A, B, C)> f, A a, B b) {
+  return [f, a, b](C c) { return f(a, b, c); };
+}
+
 /**
- * 6. DATA: Lazy (Deferred Evaluation)
- * Memoized deferred computation. The thunk is
- * evaluated at most once on first access via eval().
- * Construction: use the lazy() factory function.
- * Access:       use the eval() free function.
- * Note: Not thread-safe. Intended for single-thread
- * use (e.g. game thread).
+ * @brief 6. DATA: Lazy (Deferred Evaluation) Memoized deferred computation. The thunk is evaluated at most once on first access via eval(). Construction: use the lazy() factory function. Access:       use the eval() free function. Note: Not thread-safe. Intended for single-thread use (e.g. game thread).
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T> struct Lazy
+ * 
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
@@ -268,7 +305,12 @@ template <typename T> struct Lazy {
 };
 
 /**
- * Wraps a thunk so it is evaluated once on first access.
+ * @brief Wraps a thunk so it is evaluated once on first access.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename F> auto lazy(F &&f) -> Lazy<decltype(f())>
+ * 
  * User Story: As deferred setup code, I need lazy values so expensive work only
  * runs when a caller actually needs the result.
  */
@@ -284,7 +326,12 @@ template <typename T> const T &cacheLazyValue(const Lazy<T> &lz) {
 } // namespace detail
 
 /**
- * Forces a lazy value and memoizes the computed result.
+ * @brief Forces a lazy value and memoizes the computed result.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T> const T &eval(const Lazy<T> &lz)
+ * 
  * User Story: As deferred setup code, I need an explicit force helper so lazy
  * values can be materialized through one consistent API.
  */
@@ -293,16 +340,12 @@ template <typename T> const T &eval(const Lazy<T> &lz) {
 }
 
 /**
- * 7. CALLABLE: MemoizedLast (Last-Input Memoization)
- * Memoizes the most recent invocation of a pure function.
- * This is the canonical primitive for selector-style
- * derived-data memoization.
- * Construction: use the memoizeLast<Signature>() factory
- * function, optionally with a custom comparator.
- * Access: call the wrapper like a normal function.
- * Note: the default comparator uses tuple equality, so
- * callers with non-comparable or overly-large inputs
- * should supply a custom comparator over a smaller key.
+ * @brief 7. CALLABLE: MemoizedLast (Last-Input Memoization) Memoizes the most recent invocation of a pure function. This is the canonical primitive for selector-style derived-data memoization. Construction: use the memoizeLast<Signature>() factory function, optionally with a custom comparator. Access: call the wrapper like a normal function. Note: the default comparator uses tuple equality, so callers with non-comparable or overly-large inputs should supply a custom comparator over a smaller key.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Signature> struct MemoizedLast
+ * 
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
@@ -382,7 +425,12 @@ const Result &callMemoizedLast(const MemoizedLast<Result(Args...)> &memoized,
 } // namespace detail
 
 /**
- * Memoizes the last invocation of a std::function with default comparison.
+ * @brief Memoizes the last invocation of a std::function with default comparison.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Signature> MemoizedLast<Signature> memoizeLast(std::function<Signature> function)
+ * 
  * User Story: As derived-data helpers, I need last-call memoization so cached
  * computations can be reused when inputs repeat.
  */
@@ -392,7 +440,12 @@ MemoizedLast<Signature> memoizeLast(std::function<Signature> function) {
 }
 
 /**
- * Memoizes the last invocation of a generic callable with default comparison.
+ * @brief Memoizes the last invocation of a generic callable with default comparison.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Signature, typename F> MemoizedLast<Signature> memoizeLast(F f)
+ * 
  * User Story: As derived-data helpers, I need memoization for generic
  * callables so caching is not limited to std::function inputs.
  */
@@ -403,7 +456,12 @@ MemoizedLast<Signature> memoizeLast(F f) {
 }
 
 /**
- * Memoizes the last invocation using a custom argument comparator.
+ * @brief Memoizes the last invocation using a custom argument comparator.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Signature> MemoizedLast<Signature> memoizeLast(std::function<Signature> function, typename MemoizedLast<Signature>::Comparator comparator)
+ * 
  * User Story: As derived-data helpers, I need custom comparison so caching can
  * respect caller-defined notions of argument equality.
  */
@@ -416,7 +474,12 @@ memoizeLast(std::function<Signature> function,
 }
 
 /**
- * Memoizes a generic callable using a custom argument comparator.
+ * @brief Memoizes a generic callable using a custom argument comparator.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Signature, typename F> MemoizedLast<Signature> memoizeLast(F f, typename MemoizedLast<Signature>::Comparator comparator)
+ * 
  * User Story: As derived-data helpers, I need generic custom-comparator
  * memoization so reusable callables can control cache invalidation.
  */
@@ -428,17 +491,12 @@ memoizeLast(F f, typename MemoizedLast<Signature>::Comparator comparator) {
 }
 
 /**
- * 8. DATA: Pipeline (Value Transformation)
- * Fluent chain for threading a value through a
- * series of pure transformations using operator|.
- * Construction: use the pipe() factory function.
- * Chaining:     use operator| with transform functions.
- * Extraction:   access the .val member directly.
- * Usage:
- *   auto add1 = [](int x) { return x + 1; };
- *   auto mul2 = [](int x) { return x * 2; };
- *   auto result = func::pipe(5) | add1 | mul2;
- *   int final = result.val;  // 12
+ * @brief 8. DATA: Pipeline (Value Transformation) Fluent chain for threading a value through a series of pure transformations using operator|. Construction: use the pipe() factory function. Chaining:     use operator| with transform functions. Extraction:   access the .val member directly. Usage: auto add1 = [](int x) { return x + 1; }; auto mul2 = [](int x) { return x * 2; }; auto result = func::pipe(5) | add1 | mul2; int final = result.val;  // 12
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T> struct Pipeline
+ * 
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
@@ -447,7 +505,12 @@ template <typename T> struct Pipeline {
 };
 
 /**
- * Starts a pipeline with an initial value.
+ * @brief Starts a pipeline with an initial value.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T> Pipeline<T> pipe(T v)
+ * 
  * User Story: As functional composition code, I need a pipeline entry point so
  * value-threading reads clearly in C++11 call sites.
  */
@@ -455,8 +518,37 @@ template <typename T> Pipeline<T> pipe(T v) {
   return Pipeline<T>{std::move(v)};
 }
 
+template <typename F> struct Tapped {
+  F f;
+
+  template <typename T> T operator()(T value) {
+    f(value);
+    return value;
+  }
+};
+
+template <typename F> Tapped<F> tap(F f) { return Tapped<F>{std::move(f)}; }
+
+template <typename F> struct TapMut {
+  F f;
+
+  template <typename T> T &operator()(T &value) {
+    f(value);
+    return value;
+  }
+};
+
+template <typename F> TapMut<F> tap_mut(F f) {
+  return TapMut<F>{std::move(f)};
+}
+
 /**
- * operator| for chaining lvalue-backed pipelines.
+ * @brief operator| for chaining lvalue-backed pipelines.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T, typename F> auto operator|(const Pipeline<T> &p, F f) -> Pipeline<decltype(f(p.val))>
+ * 
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 template <typename T, typename F>
@@ -465,7 +557,12 @@ auto operator|(const Pipeline<T> &p, F f) -> Pipeline<decltype(f(p.val))> {
 }
 
 /**
- * operator| for chaining move-only or ownership-transferring values.
+ * @brief operator| for chaining move-only or ownership-transferring values.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T, typename F> auto operator|(Pipeline<T> &&p, F f) -> Pipeline<decltype(f(std::move(p.val)))>
+ * 
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 template <typename T, typename F>
@@ -475,15 +572,12 @@ auto operator|(Pipeline<T> &&p, F f)
 }
 
 /**
- * 9. CALLABLE: Composed (Function Composition)
- * Combines two functions: compose(f, g)(x) == f(g(x))
- * Construction: use the compose() factory function.
- * operator() is the C++ mechanism for callable types.
- * Usage:
- *   auto double_it = [](int x) { return x * 2; };
- *   auto add_one   = [](int x) { return x + 1; };
- *   auto both      = func::compose(add_one, double_it);
- *   int result = both(5);  // add_one(double_it(5)) = 11
+ * @brief 9. CALLABLE: Composed (Function Composition) Combines two functions: compose(f, g)(x) == f(g(x)) Construction: use the compose() factory function. operator() is the C++ mechanism for callable types. Usage: auto double_it = [](int x) { return x * 2; }; auto add_one   = [](int x) { return x + 1; }; auto both      = func::compose(add_one, double_it); int result = both(5);  // add_one(double_it(5)) = 11
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename F, typename G> struct Composed
+ * 
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
@@ -499,7 +593,12 @@ template <typename F, typename G> struct Composed {
 };
 
 /**
- * Composes two functions so the result of `g` feeds into `f`.
+ * @brief Composes two functions so the result of `g` feeds into `f`.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename F, typename G> Composed<F, G> compose(F f, G g)
+ * 
  * User Story: As functional composition code, I need reusable composition so
  * runtime transforms can be assembled declaratively.
  */
@@ -508,7 +607,12 @@ template <typename F, typename G> Composed<F, G> compose(F f, G g) {
 }
 
 /**
- * Maps a function across the populated branch of a Maybe.
+ * @brief Maps a function across the populated branch of a Maybe.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T, typename Func> auto fmap(const Maybe<T> &m, Func f) -> Maybe<decltype(f(m.value))>
+ * 
  * User Story: As optional transformations, I need fmap on Maybe so values can
  * be transformed without unwrapping and rewrapping by hand.
  */
@@ -519,7 +623,12 @@ auto fmap(const Maybe<T> &m, Func f) -> Maybe<decltype(f(m.value))> {
 }
 
 /**
- * Maps a function across the success branch of an Either.
+ * @brief Maps a function across the success branch of an Either.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename E, typename T, typename Func> auto fmap(const Either<E, T> &e, Func f) -> Either<E, decltype(f(e.right))>
+ * 
  * User Story: As result transformations, I need fmap on Either so success
  * values can be transformed while preserving failures unchanged.
  */
@@ -531,7 +640,12 @@ auto fmap(const Either<E, T> &e, Func f) -> Either<E, decltype(f(e.right))> {
 }
 
 /**
- * Maps a function across every element in a vector.
+ * @brief Maps a function across every element in a vector.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature namespace detail
+ * 
  * User Story: As collection transformations, I need fmap on vectors so
  * element-wise mapping follows the same functional style as Maybe and Either.
  */
@@ -557,7 +671,12 @@ auto fmap(const std::vector<T> &vec, Func f)
 }
 
 /**
- * Chains a Maybe-producing function onto a Maybe value.
+ * @brief Chains a Maybe-producing function onto a Maybe value.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T, typename Func> auto mbind(const Maybe<T> &m, Func f) -> decltype(f(m.value))
+ * 
  * User Story: As optional workflows, I need bind semantics so dependent Maybe
  * operations can short-circuit naturally on missing values.
  */
@@ -566,8 +685,23 @@ auto mbind(const Maybe<T> &m, Func f) -> decltype(f(m.value)) {
   return m.hasValue ? f(m.value) : decltype(f(m.value)){false, {}};
 }
 
+template <typename T, typename Func>
+auto maybe_map(const Maybe<T> &m, Func f) -> Maybe<decltype(f(m.value))> {
+  return fmap(m, f);
+}
+
+template <typename T, typename Func>
+auto maybe_chain(const Maybe<T> &m, Func f) -> decltype(f(m.value)) {
+  return mbind(m, f);
+}
+
 /**
- * Chains an Either-producing function onto an Either success value.
+ * @brief Chains an Either-producing function onto an Either success value.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename E, typename T, typename Func> auto ebind(const Either<E, T> &e, Func f) -> decltype(f(e.right))
+ * 
  * User Story: As result workflows, I need bind semantics so failure branches
  * stop the pipeline while successes continue.
  */
@@ -576,8 +710,24 @@ auto ebind(const Either<E, T> &e, Func f) -> decltype(f(e.right)) {
   return e.isLeft ? decltype(f(e.right)){true, e.left, {}} : f(e.right);
 }
 
+template <typename E, typename T, typename Func>
+auto either_map(const Either<E, T> &e, Func f)
+    -> Either<E, decltype(f(e.right))> {
+  return fmap(e, f);
+}
+
+template <typename E, typename T, typename Func>
+auto either_chain(const Either<E, T> &e, Func f) -> decltype(f(e.right)) {
+  return ebind(e, f);
+}
+
 /**
- * Extracts a Maybe value or returns the provided default.
+ * @brief Extracts a Maybe value or returns the provided default.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T> T or_else(const Maybe<T> &m, const T &def)
+ * 
  * User Story: As boundary code, I need a defaulting helper so Maybe values can
  * be converted into concrete values at integration points.
  */
@@ -585,8 +735,18 @@ template <typename T> T or_else(const Maybe<T> &m, const T &def) {
   return m.hasValue ? m.value : def;
 }
 
+template <typename T, typename DefaultFactory>
+T maybe_or_else(const Maybe<T> &m, DefaultFactory defaultFactory) {
+  return m.hasValue ? m.value : defaultFactory();
+}
+
 /**
- * Pattern matches on a Maybe with Just and Nothing callbacks.
+ * @brief Pattern matches on a Maybe with Just and Nothing callbacks.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T, typename FJust, typename FNothing> auto match(const Maybe<T> &m, FJust onJust, FNothing onNothing) -> decltype(onJust(m.value))
+ * 
  * User Story: As boundary code, I need pattern matching on Maybe so success and
  * empty branches can be handled declaratively.
  */
@@ -596,8 +756,19 @@ auto match(const Maybe<T> &m, FJust onJust, FNothing onNothing)
   return m.hasValue ? onJust(m.value) : onNothing();
 }
 
+template <typename T, typename FJust, typename FNothing>
+auto maybe_match(const Maybe<T> &m, FJust onJust, FNothing onNothing)
+    -> decltype(onJust(m.value)) {
+  return match(m, onJust, onNothing);
+}
+
 /**
- * Pattern matches on an Either with error and success callbacks.
+ * @brief Pattern matches on an Either with error and success callbacks.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename E, typename T, typename FLeft, typename FRight> auto ematch(const Either<E, T> &e, FLeft onLeft, FRight onRight) -> decltype(onRight(e.right))
+ * 
  * User Story: As boundary code, I need pattern matching on Either so success
  * and failure handling stay explicit and type-safe.
  */
@@ -607,18 +778,19 @@ auto ematch(const Either<E, T> &e, FLeft onLeft, FRight onRight)
   return e.isLeft ? onLeft(e.left) : onRight(e.right);
 }
 
+template <typename E, typename T, typename FLeft, typename FRight>
+auto either_match(const Either<E, T> &e, FLeft onLeft, FRight onRight)
+    -> decltype(onRight(e.right)) {
+  return ematch(e, onLeft, onRight);
+}
+
 /**
- * 13. ValidationPipeline (Functional Validation Chain)
- * A pipeline for chaining validation functions.
- * Each validation function takes input and returns
- * Either<Error, Result>. The pipeline short-circuits
- * on first error.
- * Usage:
- *   auto pipeline = validationPipeline<int>()
- *       | validatePositive
- *       | validateRange
- *       | validateEven;
- *   auto result = runValidation(pipeline, 42);
+ * @brief 13. ValidationPipeline (Functional Validation Chain) A pipeline for chaining validation functions. Each validation function takes input and returns Either<Error, Result>. The pipeline short-circuits on first error. Usage: auto pipeline = validationPipeline<int>() | validatePositive | validateRange | validateEven; auto result = runValidation(pipeline, 42);
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T, typename E = std::string> struct ValidationPipeline
+ * 
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
@@ -627,7 +799,12 @@ template <typename T, typename E = std::string> struct ValidationPipeline {
 };
 
 /**
- * Creates an empty validation pipeline.
+ * @brief Creates an empty validation pipeline.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T, typename E = std::string> ValidationPipeline<T, E> validationPipeline()
+ * 
  * User Story: As validation flows, I need a pipeline entry point so validators
  * can be declared and composed incrementally.
  */
@@ -637,7 +814,12 @@ ValidationPipeline<T, E> validationPipeline() {
 }
 
 /**
- * Appends a validator to the pipeline.
+ * @brief Appends a validator to the pipeline.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T, typename E, typename Func> ValidationPipeline<T, E> addValidation(ValidationPipeline<T, E> Pipeline, Func Validator)
+ * 
  * User Story: As validation flows, I need validators chained fluently so input
  * rules can be assembled without stateful builder objects.
  */
@@ -650,7 +832,12 @@ ValidationPipeline<T, E> addValidation(ValidationPipeline<T, E> Pipeline,
 }
 
 /**
- * Supports pipe-style validation assembly with free functions.
+ * @brief Supports pipe-style validation assembly with free functions.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T, typename E, typename Func> ValidationPipeline<T, E> operator|(ValidationPipeline<T, E> Pipeline, Func Validator)
+ * 
  * User Story: As validation flows, I need ergonomic composition so validators
  * can still be chained declaratively after removing member builders.
  */
@@ -687,7 +874,12 @@ runValidationRecursive(const std::vector<std::function<Either<E, T>(T)>> &Steps,
 } // namespace detail
 
 /**
- * Runs validators in order and stops on the first error.
+ * @brief Runs validators in order and stops on the first error.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T, typename E> Either<E, T> runValidation(const ValidationPipeline<T, E> &Pipeline, T Value)
+ * 
  * User Story: As validation flows, I need short-circuit execution so failing
  * input stops at the first invalid step.
  */
@@ -698,14 +890,12 @@ Either<E, T> runValidation(const ValidationPipeline<T, E> &Pipeline, T Value) {
 }
 
 /**
- * 14. ConfigBuilder (Functional Configuration Builder)
- * A data-first builder for creating immutable
- * configuration objects using functional composition.
- * Usage:
- *   auto builder = configBuilder<MyConfig>();
- *   builder = setMember(builder, &MyConfig::name, std::string("MyApp"));
- *   builder = setMember(builder, &MyConfig::port, 8080);
- *   auto config = buildConfig(builder);
+ * @brief 14. ConfigBuilder (Functional Configuration Builder) A data-first builder for creating immutable configuration objects using functional composition. Usage: auto builder = configBuilder<MyConfig>(); builder = setMember(builder, &MyConfig::name, std::string("MyApp")); builder = setMember(builder, &MyConfig::port, 8080); auto config = buildConfig(builder);
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Config> struct ConfigBuilder
+ * 
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 
@@ -714,7 +904,12 @@ template <typename Config> struct ConfigBuilder {
 };
 
 /**
- * Creates an empty functional configuration builder.
+ * @brief Creates an empty functional configuration builder.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Config> ConfigBuilder<Config> configBuilder()
+ * 
  * User Story: As config assembly flows, I need a builder entry point so
  * immutable config values can be constructed declaratively.
  */
@@ -723,7 +918,12 @@ template <typename Config> ConfigBuilder<Config> configBuilder() {
 }
 
 /**
- * Adds an explicit mutating transform to the eventual config value.
+ * @brief Adds an explicit mutating transform to the eventual config value.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Config, typename Func> ConfigBuilder<Config> with(ConfigBuilder<Config> Builder, Func Setter)
+ * 
  * User Story: As config assembly flows, I need queued setters so immutable
  * config objects can be built through composable transforms.
  */
@@ -735,7 +935,12 @@ ConfigBuilder<Config> with(ConfigBuilder<Config> Builder, Func Setter) {
 }
 
 /**
- * Assigns a concrete member through a pointer-to-member.
+ * @brief Assigns a concrete member through a pointer-to-member.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Config, typename T> ConfigBuilder<Config> setMember(ConfigBuilder<Config> Builder, T Config::*Member, T Value)
+ * 
  * User Story: As config assembly flows, I need member assignment helpers so
  * config values can be declared without repetitive boilerplate.
  */
@@ -749,7 +954,12 @@ ConfigBuilder<Config> setMember(ConfigBuilder<Config> Builder,
 }
 
 /**
- * Delegates string-keyed assignment to config types that expose `set`.
+ * @brief Delegates string-keyed assignment to config types that expose `set`.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Config, typename T> ConfigBuilder<Config> set(ConfigBuilder<Config> Builder, const std::string &Key, T Value)
+ * 
  * User Story: As config assembly flows, I need key-based setters so dynamic
  * config types can participate in the same builder pattern.
  */
@@ -762,7 +972,12 @@ ConfigBuilder<Config> set(ConfigBuilder<Config> Builder, const std::string &Key,
 }
 
 /**
- * Materializes the configured value by replaying all queued setters.
+ * @brief Materializes the configured value by replaying all queued setters.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature namespace detail
+ * 
  * User Story: As config assembly flows, I need a final build step so queued
  * transforms can produce one immutable config value.
  */
@@ -788,13 +1003,12 @@ template <typename T> T failWithMessage(const std::string &Message);
 } // namespace detail
 
 /**
- * 15. TestResult (Functional Testing Result)
- * A result type for functional testing that
- * includes success/failure, messages, and
- * optional detailed information.
- * Usage:
- *   auto result = TestResult<bool>::Success(true);
- *   auto failure = TestResult<void>::Failure("Test failed");
+ * @brief 15. TestResult (Functional Testing Result) A result type for functional testing that includes success/failure, messages, and optional detailed information. Usage: auto result = TestResult<bool>::Success(true); auto failure = TestResult<void>::Failure("Test failed");
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T> struct TestResult
+ * 
  * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
  */
 
@@ -804,53 +1018,83 @@ template <typename T> struct TestResult {
   std::string message;
   std::unordered_map<std::string, std::string> details;
 
-  /**
-   * Builds a successful test result with an attached value.
-   * User Story: As functional tests, I need a success factory so assertions can
+/**
+ * @brief Builds a successful test result with an attached value.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature static TestResult<T> Success(T value, std::string message = "")
+ * 
+ * User Story: As functional tests, I need a success factory so assertions can
    * return values and metadata through one result type.
-   */
+ */
   static TestResult<T> Success(T value, std::string message = "") {
     return TestResult<T>{true, std::move(value), std::move(message), {}};
   }
 
-  /**
-   * Builds a failed test result with a message.
-   * User Story: As functional tests, I need a failure factory so assertion
+/**
+ * @brief Builds a failed test result with a message.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature static TestResult<T> Failure(std::string message)
+ * 
+ * User Story: As functional tests, I need a failure factory so assertion
    * failures can be reported without exceptions or ad hoc flags.
-   */
+ */
   static TestResult<T> Failure(std::string message) {
     return TestResult<T>{false, T{}, std::move(message), {}};
   }
 
-  /**
-   * Attaches a string detail pair to the result.
-   * User Story: As functional tests, I need structured detail fields so
+/**
+ * @brief Attaches a string detail pair to the result.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature TestResult &withDetail(const std::string &key, const std::string &val)
+ * 
+ * User Story: As functional tests, I need structured detail fields so
    * failures and successes can carry extra diagnostic context.
-   */
+ */
   TestResult &withDetail(const std::string &key, const std::string &val) {
     details[key] = val;
     return *this;
   }
 
-  /**
-   * Reports whether the result represents success.
-   * User Story: As functional tests, I need a direct success check so calling
+/**
+ * @brief Reports whether the result represents success.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature bool isSuccessful() const
+ * 
+ * User Story: As functional tests, I need a direct success check so calling
    * code can branch without inspecting raw fields.
-   */
+ */
   bool isSuccessful() const { return bSuccess; }
 
-  /**
-   * Returns the value as a Maybe when the test succeeded.
-   * User Story: As functional tests, I need a non-throwing accessor so
+/**
+ * @brief Returns the value as a Maybe when the test succeeded.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature Maybe<T> TryGetValue() const
+ * 
+ * User Story: As functional tests, I need a non-throwing accessor so
    * no-exception builds can read successful values safely.
-   */
+ */
   Maybe<T> TryGetValue() const { return bSuccess ? just(value) : nothing<T>(); }
 
-  /**
-   * Returns the value or fails fast when the result is unsuccessful.
-   * User Story: As functional tests, I need a strict accessor so code can
+/**
+ * @brief Returns the value or fails fast when the result is unsuccessful.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature T getValue() const
+ * 
+ * User Story: As functional tests, I need a strict accessor so code can
    * demand a successful value when failure is unrecoverable.
-   */
+ */
   T getValue() const {
     return bSuccess ? value
                     : detail::failWithMessage<T>(
@@ -859,7 +1103,12 @@ template <typename T> struct TestResult {
 };
 
 /**
- * Specialization for void
+ * @brief Specialization for void
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <> struct TestResult<void>
+ * 
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 
@@ -868,59 +1117,69 @@ template <> struct TestResult<void> {
   std::string message;
   std::unordered_map<std::string, std::string> details;
 
-  /**
-   * Builds a successful void test result.
-   * User Story: As functional tests, I need a void success factory so
+/**
+ * @brief Builds a successful void test result.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature static TestResult<void> Success(std::string message = "")
+ * 
+ * User Story: As functional tests, I need a void success factory so
    * side-effect-only assertions can still return structured outcomes.
-   */
+ */
   static TestResult<void> Success(std::string message = "") {
     return TestResult<void>{true, std::move(message), {}};
   }
 
-  /**
-   * Builds a failed void test result with a message.
-   * User Story: As functional tests, I need a void failure factory so
+/**
+ * @brief Builds a failed void test result with a message.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature static TestResult<void> Failure(std::string message)
+ * 
+ * User Story: As functional tests, I need a void failure factory so
    * assertion failures can be reported even when no value is returned.
-   */
+ */
   static TestResult<void> Failure(std::string message) {
     return TestResult<void>{false, std::move(message), {}};
   }
 
-  /**
-   * Attaches a string detail pair to the void result.
-   * User Story: As functional tests, I need structured detail fields so
+/**
+ * @brief Attaches a string detail pair to the void result.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature TestResult &withDetail(const std::string &key, const std::string &val)
+ * 
+ * User Story: As functional tests, I need structured detail fields so
    * void assertions can still surface diagnostic metadata.
-   */
+ */
   TestResult &withDetail(const std::string &key, const std::string &val) {
     details[key] = val;
     return *this;
   }
 
-  /**
-   * Reports whether the void result represents success.
-   * User Story: As functional tests, I need a direct success check so callers
+/**
+ * @brief Reports whether the void result represents success.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature bool isSuccessful() const
+ * 
+ * User Story: As functional tests, I need a direct success check so callers
    * can branch on pass or fail without inspecting raw fields.
-   */
+ */
   bool isSuccessful() const { return bSuccess; }
 };
 
 /**
- * 16. AsyncResult (Functional Async Result Handling)
- * A type for handling async operations that
- * can succeed or fail, with support for
- * chaining and error handling.
- * Safe for async callbacks via shared state.
- * Usage:
- *   auto result = AsyncResult<int>::create([](
- *       std::function<void(int)> resolve,
- *       std::function<void(std::string)> reject) {
- *       // async operation
- *   });
- *   result.then([](int value) {
- *       // success
- *   }).catch_([](std::string error) {
- *       // failure
- *   }).execute();
+ * @brief 16. AsyncResult (Functional Async Result Handling) A type for handling async operations that can succeed or fail, with support for chaining and error handling. Safe for async callbacks via shared state. Usage: auto result = AsyncResult<int>::create([]( std::function<void(int)> resolve, std::function<void(std::string)> reject) { // async operation }); result.then([](int value) { // success }).catch_([](std::string error) { // failure }).execute();
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature namespace detail
+ * 
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
@@ -977,11 +1236,16 @@ template <typename T> struct AsyncResult {
   };
   std::shared_ptr<State> state = std::make_shared<State>();
 
-  /**
-   * Builds an async result from an executor callback.
-   * User Story: As async composition code, I need a factory that captures an
+/**
+ * @brief Builds an async result from an executor callback.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature static AsyncResult<T> create(std::function<void(std::function<void(T)>, std::function<void(std::string)>)> executor)
+ * 
+ * User Story: As async composition code, I need a factory that captures an
    * executor so asynchronous work can be chained through one result type.
-   */
+ */
   static AsyncResult<T>
   create(std::function<void(std::function<void(T)>,
                             std::function<void(std::string)>)>
@@ -989,34 +1253,54 @@ template <typename T> struct AsyncResult {
     return createAsyncResult<T>(std::move(executor));
   }
 
-  /**
-   * Registers a success handler on the async result.
-   * User Story: As async composition code, I need success callbacks so resolved
+/**
+ * @brief Registers a success handler on the async result.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature const AsyncResult<T> &then(std::function<void(T)> handler) const
+ * 
+ * User Story: As async composition code, I need success callbacks so resolved
    * values can trigger follow-up behavior without blocking.
-   */
+ */
   const AsyncResult<T> &then(std::function<void(T)> handler) const {
     return thenAsync(*this, std::move(handler));
   }
 
-  /**
-   * Registers an error handler on the async result.
-   * User Story: As async composition code, I need error callbacks so rejected
+/**
+ * @brief Registers an error handler on the async result.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature const AsyncResult<T> &catch_(std::function<void(std::string)> handler) const
+ * 
+ * User Story: As async composition code, I need error callbacks so rejected
    * work can surface failures through the same fluent API.
-   */
+ */
   const AsyncResult<T> &catch_(std::function<void(std::string)> handler) const {
     return catchAsync(*this, std::move(handler));
   }
 
-  /**
-   * Executes the stored async operation.
-   * User Story: As async composition code, I need an explicit execute step so
+/**
+ * @brief Executes the stored async operation.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature void execute() const
+ * 
+ * User Story: As async composition code, I need an explicit execute step so
    * async pipelines run only when the caller is ready to trigger them.
-   */
+ */
   void execute() const { executeAsync(*this); }
 };
 
 /**
- * Specialization for void
+ * @brief Specialization for void
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <> struct AsyncResult<void>
+ * 
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 
@@ -1029,11 +1313,16 @@ template <> struct AsyncResult<void> {
   };
   std::shared_ptr<State> state = std::make_shared<State>();
 
-  /**
-   * Builds a void async result from an executor callback.
-   * User Story: As async composition code, I need a void factory so fire-and-
+/**
+ * @brief Builds a void async result from an executor callback.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature static AsyncResult<void> create(std::function<void(std::function<void()>, std::function<void(std::string)>)> executor)
+ * 
+ * User Story: As async composition code, I need a void factory so fire-and-
    * signal tasks can share the same chaining surface as valued tasks.
-   */
+ */
   static AsyncResult<void>
   create(std::function<void(std::function<void()>,
                             std::function<void(std::string)>)>
@@ -1041,30 +1330,45 @@ template <> struct AsyncResult<void> {
     return createAsyncResult(std::move(executor));
   }
 
-  /**
-   * Registers a success handler on the void async result.
-   * User Story: As async composition code, I need success callbacks so
+/**
+ * @brief Registers a success handler on the void async result.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature const AsyncResult<void> &then(std::function<void()> handler) const
+ * 
+ * User Story: As async composition code, I need success callbacks so
    * completion-only tasks can notify later stages without return values.
-   */
+ */
   const AsyncResult<void> &then(std::function<void()> handler) const {
     return thenAsync(*this, std::move(handler));
   }
 
-  /**
-   * Registers an error handler on the void async result.
-   * User Story: As async composition code, I need error callbacks so void
+/**
+ * @brief Registers an error handler on the void async result.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature const AsyncResult<void> & catch_(std::function<void(std::string)> handler) const
+ * 
+ * User Story: As async composition code, I need error callbacks so void
    * tasks can surface failures through the same fluent interface.
-   */
+ */
   const AsyncResult<void> &
   catch_(std::function<void(std::string)> handler) const {
     return catchAsync(*this, std::move(handler));
   }
 
-  /**
-   * Executes the stored void async operation.
-   * User Story: As async composition code, I need an explicit execute step so
+/**
+ * @brief Executes the stored void async operation.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature void execute() const
+ * 
+ * User Story: As async composition code, I need an explicit execute step so
    * completion-only async pipelines run on demand.
-   */
+ */
   void execute() const { executeAsync(*this); }
 };
 
@@ -1197,7 +1501,12 @@ inline void executeAsync(const AsyncResult<void> &result) {
 }
 
 /**
- * 17. HttpResult (Functional Http Request Wrapper)
+ * @brief 17. HttpResult (Functional Http Request Wrapper)
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature typedef std::int32_t HttpStatusCode
+ * 
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 
@@ -1209,33 +1518,53 @@ template <typename T> struct HttpResult {
   T data;
   std::string error;
 
-  /**
-   * Builds a successful HTTP result wrapper.
-   * User Story: As HTTP adapter code, I need a success factory so decoded
+/**
+ * @brief Builds a successful HTTP result wrapper.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature static HttpResult<T> Success(T d, HttpStatusCode code = 200)
+ * 
+ * User Story: As HTTP adapter code, I need a success factory so decoded
    * payloads carry both data and transport status through one value.
-   */
+ */
   static HttpResult<T> Success(T d, HttpStatusCode code = 200) {
     return HttpResult<T>{true, code, std::move(d), ""};
   }
 
-  /**
-   * Builds a failed HTTP result wrapper.
-   * User Story: As HTTP adapter code, I need a failure factory so transport or
+/**
+ * @brief Builds a failed HTTP result wrapper.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature static HttpResult<T> Failure(std::string e, HttpStatusCode code = 0)
+ * 
+ * User Story: As HTTP adapter code, I need a failure factory so transport or
    * decoding errors can move through the same result channel as successes.
-   */
+ */
   static HttpResult<T> Failure(std::string e, HttpStatusCode code = 0) {
     return HttpResult<T>{false, code, T{}, std::move(e)};
   }
 };
 
 /**
- * 18. AsyncChain (Helpers for chaining AsyncResults)
+ * @brief 18. AsyncChain (Helpers for chaining AsyncResults)
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature namespace AsyncChain
+ * 
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
 namespace AsyncChain {
 /**
- * Chains one AsyncResult into another async-producing transformation.
+ * @brief Chains one AsyncResult into another async-producing transformation.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T, typename U, typename F> auto then(const AsyncResult<T> &res, F f) -> AsyncResult<U>
+ * 
  * User Story: As async thunk composition, I need async chaining so one async
  * result can feed into the next without nested callback plumbing.
  */
@@ -1258,20 +1587,12 @@ auto then(const AsyncResult<T> &res, F f) -> AsyncResult<U> {
 } // namespace AsyncChain
 
 /**
- * 19. Dispatcher (Dictionary-Based Typed Dispatch)
- * A lookup table mapping keys to handler functions.
- * Returns Maybe<Result> from dispatch — just(handler())
- * if the key exists, nothing<Result>() if not.
- * Construction: use createDispatcher<Key, Result>() with
- *               a vector of {key, handler} pairs.
- * Dispatch:     use the dispatch() free function.
- * Usage:
- *   auto d = func::createDispatcher<FString, int>({
- *       {TEXT("a"), []() { return 1; }},
- *       {TEXT("b"), []() { return 2; }},
- *   });
- *   auto result = func::dispatch(d, TEXT("a")); // just(1)
- *   auto miss   = func::dispatch(d, TEXT("z")); // nothing
+ * @brief 19. Dispatcher (Dictionary-Based Typed Dispatch) A lookup table mapping keys to handler functions. Returns Maybe<Result> from dispatch — just(handler()) if the key exists, nothing<Result>() if not. Construction: use createDispatcher<Key, Result>() with a vector of {key, handler} pairs. Dispatch:     use the dispatch() free function. Usage: auto d = func::createDispatcher<FString, int>({ {TEXT("a"), []() { return 1; }}, {TEXT("b"), []() { return 2; }}, }); auto result = func::dispatch(d, TEXT("a")); // just(1) auto miss   = func::dispatch(d, TEXT("z")); // nothing
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Key, typename Result> struct Dispatcher
+ * 
  * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
  */
 
@@ -1306,7 +1627,12 @@ std::vector<Key> dispatcherKeysRecursive(
 } // namespace detail
 
 /**
- * Builds a dispatcher table from key-to-handler entries.
+ * @brief Builds a dispatcher table from key-to-handler entries.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Key, typename Result> Dispatcher<Key, Result> createDispatcher( std::vector<std::pair<Key, std::function<Result()>>> entries)
+ * 
  * User Story: As keyed dispatch flows, I need a typed dispatcher table so
  * string or enum keys can resolve handlers declaratively.
  */
@@ -1318,7 +1644,12 @@ Dispatcher<Key, Result> createDispatcher(
 }
 
 /**
- * Looks up and invokes a handler by key when one exists.
+ * @brief Looks up and invokes a handler by key when one exists.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Key, typename Result> Maybe<Result> dispatch(const Dispatcher<Key, Result> &d, const Key &key)
+ * 
  * User Story: As keyed dispatch flows, I need dispatch to return Maybe so
  * missing handlers do not require exceptions or sentinels.
  */
@@ -1330,7 +1661,12 @@ Maybe<Result> dispatch(const Dispatcher<Key, Result> &d, const Key &key) {
 }
 
 /**
- * Reports whether a dispatcher has a handler for the given key.
+ * @brief Reports whether a dispatcher has a handler for the given key.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Key, typename Result> bool has(const Dispatcher<Key, Result> &d, const Key &key)
+ * 
  * User Story: As keyed dispatch flows, I need a presence check so callers can
  * branch before invoking optional handlers.
  */
@@ -1340,7 +1676,12 @@ bool has(const Dispatcher<Key, Result> &d, const Key &key) {
 }
 
 /**
- * Returns every key currently registered in the dispatcher.
+ * @brief Returns every key currently registered in the dispatcher.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Key, typename Result> std::vector<Key> keys(const Dispatcher<Key, Result> &d)
+ * 
  * User Story: As keyed dispatch flows, I need access to registered keys so
  * tools and tests can inspect available handlers.
  */
@@ -1351,26 +1692,52 @@ std::vector<Key> keys(const Dispatcher<Key, Result> &d) {
                                                       std::vector<Key>());
 }
 
+template <typename Key, typename Arg, typename Result>
+struct FallbackDispatcher {
+  std::unordered_map<Key, std::function<Result(const Arg &)>> table;
+  std::function<Result(const Arg &)> fallback;
+};
+
+template <typename Key, typename Arg, typename Result>
+struct DispatcherDispatch {
+  const FallbackDispatcher<Key, Arg, Result> *dispatcher;
+  const Key *key;
+  const Arg *arg;
+};
+
+template <typename Key, typename Arg, typename Result>
+FallbackDispatcher<Key, Arg, Result>
+create_dispatcher(std::function<Result(const Arg &)> fallback) {
+  FallbackDispatcher<Key, Arg, Result> DispatcherValue;
+  DispatcherValue.fallback = std::move(fallback);
+  return DispatcherValue;
+}
+
+template <typename Key, typename Arg, typename Result>
+FallbackDispatcher<Key, Arg, Result> dispatcher_register(
+    FallbackDispatcher<Key, Arg, Result> dispatcher, Key key,
+    std::function<Result(const Arg &)> handler) {
+  dispatcher.table[std::move(key)] = std::move(handler);
+  return dispatcher;
+}
+
+template <typename Key, typename Arg, typename Result>
+Result dispatcher_dispatch(
+    const DispatcherDispatch<Key, Arg, Result> &request) {
+  typename std::unordered_map<Key, std::function<Result(const Arg &)>>::
+      const_iterator It = request.dispatcher->table.find(*request.key);
+  return It != request.dispatcher->table.end()
+             ? It->second(*request.arg)
+             : request.dispatcher->fallback(*request.arg);
+}
+
 /**
- * 20. multi_match (Multi-Case Value-Based Pattern Matching)
- * Tries each predicate/handler pair in order.
- * Returns just(handler(value)) from the first predicate
- * that returns true. Returns nothing<R>() if no match.
- * Helper factories:
- *   wildcard<T>()   — always-true predicate (default arm)
- *   equals<T>(val)  — value-equality predicate
- *   when<T,R>(pred, handler) — construct a MatchCase
- * Usage:
- *   auto result = func::multi_match<FString, int>(
- *       input,
- *       {
- *           func::when<FString, int>(
- *               func::equals<FString>(TEXT("a")),
- *               [](const FString&) { return 1; }),
- *           func::when<FString, int>(
- *               func::wildcard<FString>(),
- *               [](const FString&) { return 0; }),
- *       });
+ * @brief 20. multi_match (Multi-Case Value-Based Pattern Matching) Tries each predicate/handler pair in order. Returns just(handler(value)) from the first predicate that returns true. Returns nothing<R>() if no match. Helper factories: wildcard<T>()   — always-true predicate (default arm) equals<T>(val)  — value-equality predicate when<T,R>(pred, handler) — construct a MatchCase Usage: auto result = func::multi_match<FString, int>( input, { func::when<FString, int>( func::equals<FString>(TEXT("a")), [](const FString&) { return 1; }), func::when<FString, int>( func::wildcard<FString>(), [](const FString&) { return 0; }), });
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T, typename R> struct MatchCase
+ * 
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
@@ -1393,7 +1760,12 @@ Maybe<R> multiMatchRecursive(const T &Value,
 } // namespace detail
 
 /**
- * Builds a match case from a predicate and a handler.
+ * @brief Builds a match case from a predicate and a handler.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T, typename R> MatchCase<T, R> when(std::function<bool(const T &)> pred, std::function<R(const T &)> handler)
+ * 
  * User Story: As pattern-matching helpers, I need reusable cases so matching
  * logic can be declared independently from evaluation.
  */
@@ -1406,8 +1778,19 @@ MatchCase<T, R> when(std::function<bool(const T &)> pred,
   return c;
 }
 
+template <typename T, typename R>
+MatchCase<T, R> match_case(std::function<bool(const T &)> pred,
+                           std::function<R(const T &)> handler) {
+  return when<T, R>(std::move(pred), std::move(handler));
+}
+
 /**
- * Returns a predicate that matches every input.
+ * @brief Returns a predicate that matches every input.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T> std::function<bool(const T &)> wildcard()
+ * 
  * User Story: As pattern-matching helpers, I need a wildcard predicate so
  * match lists can declare explicit default branches.
  */
@@ -1416,7 +1799,12 @@ template <typename T> std::function<bool(const T &)> wildcard() {
 }
 
 /**
- * Returns a predicate that matches a specific expected value.
+ * @brief Returns a predicate that matches a specific expected value.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T> std::function<bool(const T &)> equals(T expected)
+ * 
  * User Story: As pattern-matching helpers, I need equality predicates so case
  * lists can express direct value matches declaratively.
  */
@@ -1425,7 +1813,12 @@ template <typename T> std::function<bool(const T &)> equals(T expected) {
 }
 
 /**
- * Evaluates match cases in order and returns the first successful result.
+ * @brief Evaluates match cases in order and returns the first successful result.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T, typename R> Maybe<R> multi_match(const T &value, const std::vector<MatchCase<T, R>> &cases)
+ * 
  * User Story: As pattern-matching helpers, I need ordered case evaluation so
  * callers can express prioritized matching without manual branching.
  */
@@ -1434,8 +1827,78 @@ Maybe<R> multi_match(const T &value, const std::vector<MatchCase<T, R>> &cases) 
   return detail::multiMatchRecursive<T, R>(value, cases, 0);
 }
 
+template <typename T, typename R, typename FWildcard>
+R multi_match(const T &value, const std::vector<MatchCase<T, R>> &cases,
+              FWildcard wildcard) {
+  return match(multi_match<T, R>(value, cases),
+               [](const R &matched) { return matched; },
+               [&value, &wildcard]() { return wildcard(value); });
+}
+
+template <typename T, typename R>
+Maybe<R> multi_match_maybe(const T &value,
+                           const std::vector<MatchCase<T, R>> &cases) {
+  return multi_match<T, R>(value, cases);
+}
+
+template <typename Arg, typename Result> struct Bounce {
+  bool bDone;
+  Arg next;
+  Result result;
+};
+
 /**
- * Lifts a nullable pointer into a Maybe.
+ * @brief Returns a Bounce object representing the next step in a trampoline.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Arg, typename Result> Bounce<Arg, Result> call(Arg next)
+ * 
+ * User Story: As a functional programmer, I need a way to return the next step in a recursive function to avoid stack overflows.
+ */
+template <typename Arg, typename Result>
+Bounce<Arg, Result> call(Arg next) {
+  return Bounce<Arg, Result>{false, std::move(next), Result{}};
+}
+
+/**
+ * @brief Returns a Bounce object representing the final result of a trampoline.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Arg, typename Result> Bounce<Arg, Result> done(Result result)
+ * 
+ * User Story: As a functional programmer, I need a way to return the final result of a recursive function to end the trampoline execution.
+ */
+template <typename Arg, typename Result>
+Bounce<Arg, Result> done(Result result) {
+  return Bounce<Arg, Result>{true, Arg{}, std::move(result)};
+}
+
+/**
+ * @brief Executes a trampoline to evaluate a recursive function without blowing the stack.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename Arg, typename Result, typename Step> Result trampoline(Arg arg, Step step)
+ * 
+ * User Story: As a functional programmer, I need a trampoline to safely execute deep recursive algorithms.
+ */
+template <typename Arg, typename Result, typename Step>
+Result trampoline(Arg arg, Step step) {
+  Bounce<Arg, Result> StepResult = step(std::move(arg));
+  return StepResult.bDone
+             ? StepResult.result
+             : trampoline<Arg, Result, Step>(std::move(StepResult.next), step);
+}
+
+/**
+ * @brief Lifts a nullable pointer into a Maybe.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T> Maybe<T> from_nullable(const T *ptr)
+ * 
  * User Story: As boundary helpers, I need nullable pointers lifted into Maybe
  * so pointer-based APIs can join functional pipelines safely.
  */
@@ -1444,7 +1907,12 @@ template <typename T> Maybe<T> from_nullable(const T *ptr) {
 }
 
 /**
- * Lifts a value into a Maybe when the caller marks it as valid.
+ * @brief Lifts a value into a Maybe when the caller marks it as valid.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T> Maybe<T> from_nullable_value(T value, bool valid)
+ * 
  * User Story: As boundary helpers, I need validity-flag lifting so non-pointer
  * APIs can still participate in Maybe-based flows.
  */
@@ -1453,7 +1921,12 @@ template <typename T> Maybe<T> from_nullable_value(T value, bool valid) {
 }
 
 /**
- * Extracts a Maybe value or aborts the current boundary with an error message.
+ * @brief Extracts a Maybe value or aborts the current boundary with an error message.
+ *
+ * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
+ * 
+ * @signature template <typename T> T require_just(const Maybe<T> &m, const std::string &errorMsg)
+ * 
  * User Story: As boundary code, I need a fail-fast extractor so required Maybe
  * values can be enforced at integration boundaries.
  */
