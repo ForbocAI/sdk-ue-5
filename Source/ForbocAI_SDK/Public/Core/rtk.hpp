@@ -607,6 +607,96 @@ inline ActionCreatorWithoutPayload createAction(const FString &Type) {
   return ActionCreatorWithoutPayload{Type};
 }
 
+
+/**
+ * @brief Matcher alias for RTK-style action predicates.
+ * @signature using Matcher = std::function<bool(const AnyAction &)>
+ *
+ * User Story: As reducer and listener authors, I need a reusable action
+ * predicate type so exact actions, lifecycle suffixes, and composed predicates
+ * share one vocabulary.
+ */
+using Matcher = std::function<bool(const AnyAction &)>;
+
+/**
+ * @brief Checks whether an action type ends with a lifecycle suffix.
+ * @signature inline bool actionTypeEndsWith(const AnyAction &Action, const FString &Suffix)
+ *
+ * User Story: As async reducers, I need `/pending`, `/fulfilled`, and
+ * `/rejected` suffix matching to follow Redux Toolkit lifecycle semantics.
+ */
+inline bool actionTypeEndsWith(const AnyAction &Action, const FString &Suffix) {
+  return Action.Type.EndsWith(Suffix);
+}
+
+inline bool matchesThunkLifecycle(const AnyAction &Action, const FString &Suffix,
+                                  const TArray<FString> &TypePrefixes) {
+  return TypePrefixes.Num() == 0
+             ? actionTypeEndsWith(Action, Suffix)
+             : TypePrefixes.ContainsByPredicate(
+                   [&Action, &Suffix](const FString &TypePrefix) {
+                     return Action.Type == TypePrefix + Suffix;
+                   });
+}
+
+/**
+ * @brief Composes matchers with logical OR, equivalent to RTK isAnyOf.
+ * @signature inline Matcher isAnyOf(const TArray<Matcher> &Matchers)
+ *
+ * User Story: As a reducer author, I need to group several event actions under
+ * one state transition without setter-style action names.
+ */
+inline Matcher isAnyOf(const TArray<Matcher> &Matchers) {
+  return [Matchers](const AnyAction &Action) {
+    return Matchers.ContainsByPredicate(
+        [&Action](const Matcher &Candidate) { return Candidate(Action); });
+  };
+}
+
+/**
+ * @brief Composes matchers with logical AND, equivalent to RTK isAllOf.
+ * @signature inline Matcher isAllOf(const TArray<Matcher> &Matchers)
+ *
+ * User Story: As listener middleware, I need multiple predicates to agree
+ * before a side effect runs.
+ */
+inline Matcher isAllOf(const TArray<Matcher> &Matchers) {
+  return [Matchers](const AnyAction &Action) {
+    return !Matchers.ContainsByPredicate(
+        [&Action](const Matcher &Candidate) { return !Candidate(Action); });
+  };
+}
+
+/** @brief Creates an RTK-style matcher for `/pending` async thunk actions. */
+inline Matcher isPending(const TArray<FString> &TypePrefixes = TArray<FString>()) {
+  return [TypePrefixes](const AnyAction &Action) {
+    return matchesThunkLifecycle(Action, TEXT("/pending"), TypePrefixes);
+  };
+}
+
+/** @brief Creates an RTK-style matcher for `/fulfilled` async thunk actions. */
+inline Matcher isFulfilled(const TArray<FString> &TypePrefixes = TArray<FString>()) {
+  return [TypePrefixes](const AnyAction &Action) {
+    return matchesThunkLifecycle(Action, TEXT("/fulfilled"), TypePrefixes);
+  };
+}
+
+/** @brief Creates an RTK-style matcher for `/rejected` async thunk actions. */
+inline Matcher isRejected(const TArray<FString> &TypePrefixes = TArray<FString>()) {
+  return [TypePrefixes](const AnyAction &Action) {
+    return matchesThunkLifecycle(Action, TEXT("/rejected"), TypePrefixes);
+  };
+}
+
+/** @brief Creates an RTK-style matcher for any async thunk lifecycle action. */
+inline Matcher isAsyncThunkAction(const TArray<FString> &TypePrefixes = TArray<FString>()) {
+  TArray<Matcher> Matchers;
+  Matchers.Add(isPending(TypePrefixes));
+  Matchers.Add(isFulfilled(TypePrefixes));
+  Matchers.Add(isRejected(TypePrefixes));
+  return isAnyOf(Matchers);
+}
+
 /**
  * 2.2 Slice<State>
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.

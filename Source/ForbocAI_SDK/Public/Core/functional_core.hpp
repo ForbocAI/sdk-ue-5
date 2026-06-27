@@ -12,6 +12,7 @@
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
+#include <algorithm>
 #include <cstdint>
 #include <cstdlib>
 #include <functional>
@@ -363,6 +364,7 @@ std::function<R(C)> partial_apply2(std::function<R(A, B, C)> f, A a, B b) {
   return [f, a, b](C c) { return f(a, b, c); };
 }
 
+
 /**
  * @brief 6. DATA: Lazy (Deferred Evaluation) Memoized deferred computation. The thunk is evaluated at most once on first access via eval(). Construction: use the lazy() factory function. Access:       use the eval() free function. Note: Not thread-safe. Intended for single-thread use (e.g. game thread).
  *
@@ -679,6 +681,168 @@ template <typename F, typename G> struct Composed {
 template <typename F, typename G> Composed<F, G> compose(F f, G g) {
   return Composed<F, G>{f, g};
 }
+
+
+/**
+ * @brief Unary-composition cookbook: neutral point-free helpers built on the
+ * existing FP core so feature code can follow the factory-returns-unary-Fn
+ * pattern used by Therapy 12 src/features.
+ *
+ * @signature template helpers: identity, constant, flip, complement, both,
+ * either_pred, all_pass, any_pass, converge2, juxt2, pipe3, pipe4
+ *
+ * User Story: As a cross-SDK maintainer, I need the same unary-composition
+ * recipes available in C++ as Rust, GDScript, and TypeScript so reducers,
+ * selectors, and ECS systems can share examples and semantics.
+ */
+
+template <typename T> T identity(T value) { return value; }
+
+template <typename T> struct Constant {
+  T Value;
+  template <typename A> T operator()(const A &) const { return Value; }
+};
+
+template <typename T> Constant<T> constant(T value) {
+  return Constant<T>{value};
+}
+
+template <typename F> struct Flipped {
+  F Fn;
+  template <typename B, typename A>
+  auto operator()(B b, A a) const -> decltype(Fn(a, b)) {
+    return Fn(a, b);
+  }
+};
+
+template <typename F> Flipped<F> flip(F fn) { return Flipped<F>{fn}; }
+
+template <typename Predicate> struct Complement {
+  Predicate Fn;
+  template <typename T> bool operator()(const T &value) const {
+    return !Fn(value);
+  }
+};
+
+template <typename Predicate> Complement<Predicate> complement(Predicate fn) {
+  return Complement<Predicate>{fn};
+}
+
+template <typename LeftPredicate, typename RightPredicate> struct Both {
+  LeftPredicate Left;
+  RightPredicate Right;
+  template <typename T> bool operator()(const T &value) const {
+    return Left(value) && Right(value);
+  }
+};
+
+template <typename LeftPredicate, typename RightPredicate>
+Both<LeftPredicate, RightPredicate> both(LeftPredicate left,
+                                         RightPredicate right) {
+  return Both<LeftPredicate, RightPredicate>{left, right};
+}
+
+template <typename LeftPredicate, typename RightPredicate> struct EitherPred {
+  LeftPredicate Left;
+  RightPredicate Right;
+  template <typename T> bool operator()(const T &value) const {
+    return Left(value) || Right(value);
+  }
+};
+
+template <typename LeftPredicate, typename RightPredicate>
+EitherPred<LeftPredicate, RightPredicate> either_pred(LeftPredicate left,
+                                                      RightPredicate right) {
+  return EitherPred<LeftPredicate, RightPredicate>{left, right};
+}
+
+template <typename T>
+std::function<bool(const T &)>
+all_pass(const std::vector<std::function<bool(const T &)>> &predicates) {
+  return [predicates](const T &value) {
+    return std::all_of(
+        predicates.begin(), predicates.end(),
+        [&value](const std::function<bool(const T &)> &predicate) {
+          return predicate(value);
+        });
+  };
+}
+
+template <typename T>
+std::function<bool(const T &)>
+any_pass(const std::vector<std::function<bool(const T &)>> &predicates) {
+  return [predicates](const T &value) {
+    return std::any_of(
+        predicates.begin(), predicates.end(),
+        [&value](const std::function<bool(const T &)> &predicate) {
+          return predicate(value);
+        });
+  };
+}
+
+template <typename Combine, typename First, typename Second> struct Converge2 {
+  Combine CombineFn;
+  First FirstFn;
+  Second SecondFn;
+  template <typename A>
+  auto operator()(const A &value) const
+      -> decltype(CombineFn(FirstFn(value), SecondFn(value))) {
+    return CombineFn(FirstFn(value), SecondFn(value));
+  }
+};
+
+template <typename Combine, typename First, typename Second>
+Converge2<Combine, First, Second> converge2(Combine combine, First first,
+                                            Second second) {
+  return Converge2<Combine, First, Second>{combine, first, second};
+}
+
+template <typename First, typename Second> struct Juxt2 {
+  First FirstFn;
+  Second SecondFn;
+  template <typename A>
+  auto operator()(const A &value) const
+      -> std::pair<decltype(FirstFn(value)), decltype(SecondFn(value))> {
+    return std::make_pair(FirstFn(value), SecondFn(value));
+  }
+};
+
+template <typename First, typename Second>
+Juxt2<First, Second> juxt2(First first, Second second) {
+  return Juxt2<First, Second>{first, second};
+}
+
+template <typename F, typename G, typename H>
+auto pipe3(F f, G g, H h) -> decltype(compose(h, compose(g, f))) {
+  return compose(h, compose(g, f));
+}
+
+template <typename F, typename G, typename H, typename I>
+auto pipe4(F f, G g, H h, I i) -> decltype(compose(i, pipe3(f, g, h))) {
+  return compose(i, pipe3(f, g, h));
+}
+
+inline std::function<int(int)> example_clamp_channel() {
+  return pipe3([](int value) { return std::max(0, value); },
+               [](int value) { return std::min(255, value); }, identity<int>);
+}
+
+inline std::function<float(const std::pair<float, float> &)>
+example_fill_ratio() {
+  return converge2(
+      [](float current, float maxValue) {
+        return current / std::max(maxValue, 1.192092896e-07F);
+      },
+      [](const std::pair<float, float> &reading) { return reading.first; },
+      [](const std::pair<float, float> &reading) { return reading.second; });
+}
+
+inline std::function<bool(const std::pair<bool, bool> &)>
+example_alive_and_visible() {
+  return both([](const std::pair<bool, bool> &flags) { return flags.first; },
+              [](const std::pair<bool, bool> &flags) { return flags.second; });
+}
+
 
 /**
  * @brief Maps a function across the populated branch of a Maybe.
