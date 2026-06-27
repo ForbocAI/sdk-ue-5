@@ -120,10 +120,68 @@ template <typename T> Maybe<T> just(T v) {
  */
 template <typename T> Maybe<T> nothing() { return Maybe<T>{false, T{}}; }
 
+/**
+ * @brief Returns true when a Maybe contains a value.
+ *
+ * @signature template <typename T> bool is_just(const Maybe<T> &m)
+ *
+ * User Story: As a cross-SDK caller, I need an explicit presence predicate so
+ * optional flows read the same way in C++, Rust, TypeScript, and GDScript.
+ */
+template <typename T> bool is_just(const Maybe<T> &m) { return m.hasValue; }
+
+/**
+ * @brief Returns true when a Maybe is empty.
+ *
+ * @signature template <typename T> bool is_nothing(const Maybe<T> &m)
+ *
+ * User Story: As a boundary author, I need an explicit absence predicate so
+ * fallback branches are visible instead of hidden behind raw struct fields.
+ */
+template <typename T> bool is_nothing(const Maybe<T> &m) {
+  return !m.hasValue;
+}
+
+/**
+ * @brief Keeps a Maybe value only when it satisfies a predicate.
+ *
+ * @signature template <typename T, typename Predicate> Maybe<T> maybe_filter(const Maybe<T> &m, Predicate predicate)
+ *
+ * User Story: As a validation author, I need to refine a present value into
+ * Nothing when it fails a rule so the rest of the pipeline short-circuits.
+ */
+template <typename T, typename Predicate>
+Maybe<T> maybe_filter(const Maybe<T> &m, Predicate predicate) {
+  std::function<Maybe<T>()> PresenceCases[2] = {
+      []() { return nothing<T>(); },
+      [&]() {
+        std::function<Maybe<T>()> PredicateCases[2] = {
+            []() { return nothing<T>(); }, [&]() { return m; }};
+        return PredicateCases[static_cast<size_t>(predicate(m.value))]();
+      }};
+  return PresenceCases[static_cast<size_t>(m.hasValue)]();
+}
+
+/**
+ * @brief Converts a host Maybe-shaped value into the functional Maybe type.
+ *
+ * @signature template <typename T> Maybe<T> maybe_from_option(Maybe<T> opt)
+ *
+ * User Story: As an interop author, I need a named bridge that mirrors Rust
+ * Option conversion even though C++11 uses the same Maybe data shape here.
+ */
 template <typename T> Maybe<T> maybe_from_option(Maybe<T> opt) {
   return opt;
 }
 
+/**
+ * @brief Converts a functional Maybe back to the host option shape.
+ *
+ * @signature template <typename T> Maybe<T> maybe_to_option(Maybe<T> maybe)
+ *
+ * User Story: As an SDK maintainer, I need a symmetrical lowering helper so
+ * examples and generated docs can use the same names across languages.
+ */
 template <typename T> Maybe<T> maybe_to_option(Maybe<T> maybe) {
   return maybe;
 }
@@ -200,10 +258,26 @@ template <typename E, typename T> Either<E, T> make_right(E dummy, T v) {
   return Either<E, T>{false, std::move(dummy), std::move(v)};
 }
 
+/**
+ * @brief Alias for constructing the error branch of an Either.
+ *
+ * @signature template <typename E, typename T> Either<E, T> left(E e)
+ *
+ * User Story: As a functional-programming caller, I need the common Left name
+ * so failure construction matches Rust, TypeScript, and GDScript examples.
+ */
 template <typename E, typename T> Either<E, T> left(E e) {
   return make_left<E, T>(std::move(e));
 }
 
+/**
+ * @brief Alias for constructing the success branch of an Either.
+ *
+ * @signature template <typename E, typename T> Either<E, T> right(T v)
+ *
+ * User Story: As a functional-programming caller, I need the common Right name
+ * so successful result construction is portable across SDK cores.
+ */
 template <typename E, typename T> Either<E, T> right(T v) {
   return make_right<E, T>(std::move(v));
 }
@@ -710,15 +784,49 @@ auto ebind(const Either<E, T> &e, Func f) -> decltype(f(e.right)) {
   return e.isLeft ? decltype(f(e.right)){true, e.left, {}} : f(e.right);
 }
 
+/**
+ * @brief Maps the success branch of an Either and preserves failures.
+ *
+ * @signature template <typename E, typename T, typename Func> auto either_map(const Either<E, T> &e, Func f) -> Either<E, decltype(f(e.right))>
+ *
+ * User Story: As a result pipeline author, I need to transform successful
+ * payloads without unpacking or disturbing the error branch.
+ */
 template <typename E, typename T, typename Func>
 auto either_map(const Either<E, T> &e, Func f)
     -> Either<E, decltype(f(e.right))> {
   return fmap(e, f);
 }
 
+/**
+ * @brief Chains an Either-producing function from a successful Either.
+ *
+ * @signature template <typename E, typename T, typename Func> auto either_chain(const Either<E, T> &e, Func f) -> decltype(f(e.right))
+ *
+ * User Story: As a result pipeline author, I need to sequence fallible steps
+ * so the first Left skips all downstream work.
+ */
 template <typename E, typename T, typename Func>
 auto either_chain(const Either<E, T> &e, Func f) -> decltype(f(e.right)) {
   return ebind(e, f);
+}
+
+/**
+ * @brief Maps the failure branch of an Either and preserves successes.
+ *
+ * @signature template <typename E, typename T, typename Func> auto either_map_left(const Either<E, T> &e, Func f) -> Either<decltype(f(e.left)), T>
+ *
+ * User Story: As a boundary author, I need to translate low-level errors into
+ * domain errors without touching the successful payload path.
+ */
+template <typename E, typename T, typename Func>
+auto either_map_left(const Either<E, T> &e, Func f)
+    -> Either<decltype(f(e.left)), T> {
+  typedef decltype(f(e.left)) NextError;
+  std::function<Either<NextError, T>()> Cases[2] = {
+      [&]() { return make_right<NextError, T>(e.right); },
+      [&]() { return make_left<NextError, T>(f(e.left)); }};
+  return Cases[static_cast<size_t>(e.isLeft)]();
 }
 
 /**
@@ -738,6 +846,21 @@ template <typename T> T or_else(const Maybe<T> &m, const T &def) {
 template <typename T, typename DefaultFactory>
 T maybe_or_else(const Maybe<T> &m, DefaultFactory defaultFactory) {
   return m.hasValue ? m.value : defaultFactory();
+}
+
+/**
+ * @brief Extracts an Either success value or returns a default for failures.
+ *
+ * @signature template <typename E, typename T> T either_or_else(const Either<E, T> &e, const T &def)
+ *
+ * User Story: As an integration author, I need to collapse recoverable
+ * failures into a concrete fallback at engine and UI boundaries.
+ */
+template <typename E, typename T>
+T either_or_else(const Either<E, T> &e, const T &def) {
+  std::function<T()> Cases[2] = {[&]() { return e.right; },
+                                 [&]() { return def; }};
+  return Cases[static_cast<size_t>(e.isLeft)]();
 }
 
 /**
