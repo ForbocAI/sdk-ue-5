@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Core/rtk.hpp"
+#include "Core/functional_core.hpp"
+
 #include "Bridge/BridgeModule.h"
 #include "Bridge/BridgeSlice.h"
 #include "Core/ThunkDetail.h"

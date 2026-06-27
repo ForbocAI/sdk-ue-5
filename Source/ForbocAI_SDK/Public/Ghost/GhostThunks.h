@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Core/rtk.hpp"
+#include "Core/functional_core.hpp"
+
 #include "Core/ThunkDetail.h"
 #include "Errors.h"
 #include "Ghost/GhostSlice.h"

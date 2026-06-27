@@ -2,6 +2,7 @@
 
 // clang-format off
 #include "Core/rtk.hpp"
+#include "Core/functional_core.hpp"
 #include "CoreMinimal.h"
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonReader.h"
@@ -9,6 +10,11 @@
 #include "Types.h"
 #include "NPCTypes.generated.h"
 // clang-format on
+
+namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
+typedef func::Maybe<FString> FForbocAISDKPublicNPCNPCTypesHOptionalDomainId;
+} } }
+
 
 USTRUCT(BlueprintType)
 struct FNPCHistoryEntry {
@@ -78,7 +84,7 @@ using ::FNPCStateLogEntry;
 
 inline FString NPCIdSelector(const FNPCInternalState &NPC) { return NPC.Id; }
 
-inline EntityAdapterOps<FNPCInternalState> GetNPCAdapter() {
+inline EntityAdapter<FNPCInternalState> GetNPCAdapter() {
   return createEntityAdapter<FNPCInternalState>(&NPCIdSelector);
 }
 

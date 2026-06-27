@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Core/rtk.hpp"
+#include "Core/functional_core.hpp"
+
 /**
  * DEPRECATED: Include "NPC/NPCBaseTypes.h" instead.
  * This forwarding header exists for backward compatibility. All struct
@@ -11,3 +14,7 @@
  */
 
 #include "NPCBaseTypes.h"
+
+namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
+typedef func::Maybe<FString> FForbocAISDKPublicNPCAgentTypesHOptionalDomainId;
+} } }

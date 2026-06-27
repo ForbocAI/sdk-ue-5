@@ -1,9 +1,17 @@
 #pragma once
 
+#include "Core/rtk.hpp"
+#include "Core/functional_core.hpp"
+
 // clang-format off
 #include "CoreMinimal.h"
 #include "SystemTypes.generated.h"
 // clang-format on
+
+namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
+typedef func::Maybe<FString> FForbocAISDKPublicCoreSystemTypesHOptionalDomainId;
+} } }
+
 
 /**
  * Api Status Response

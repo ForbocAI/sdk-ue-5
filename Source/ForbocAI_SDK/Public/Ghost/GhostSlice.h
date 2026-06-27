@@ -5,8 +5,13 @@
  */
 
 #include "Core/rtk.hpp"
+#include "Core/functional_core.hpp"
 #include "CoreMinimal.h"
 #include "Types.h"
+
+namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
+typedef func::Maybe<FString> FForbocAISDKPublicGhostGhostSliceHOptionalDomainId;
+} } }
 
 namespace GhostSlice {
 
@@ -112,8 +117,8 @@ GhostHistoryLoadedActionCreator() {
  * User Story: As ghost session reset flows, I need one clear action creator so
  * teardown can restore the slice predictably.
  */
-inline const EmptyActionCreator &ClearGhostSessionActionCreator() {
-  static const EmptyActionCreator ActionCreator =
+inline const ActionCreatorWithoutPayload &ClearGhostSessionActionCreator() {
+  static const ActionCreatorWithoutPayload ActionCreator =
       createAction(TEXT("ghost/clearGhostSession"));
   return ActionCreator;
 }
@@ -189,68 +194,69 @@ inline AnyAction ClearGhostSession() {
  * creation wires ghost actions and state transitions consistently.
  */
 inline Slice<FGhostSliceState> CreateGhostSlice() {
-  return buildSlice(sliceBuilder<FGhostSliceState>(TEXT("ghost"),
-                                                   FGhostSliceState()) |
-                    addExtraCase(Actions::GhostSessionStartedActionCreator(),
-                    [](const FGhostSliceState &State,
-                       const Action<FGhostSessionStartedPayload> &Action)
-                        -> FGhostSliceState {
-                      FGhostSliceState Next = State;
-                      Next.ActiveSessionId = Action.PayloadValue.SessionId;
-                      Next.Status = Action.PayloadValue.Status;
-                      Next.Progress = 0.0f;
-                      Next.bLoading = false;
-                      Next.Error.Empty();
-                      Next.bHasResults = false;
-                      return Next;
-                    }) |
-                    addExtraCase(Actions::GhostSessionProgressActionCreator(),
-                    [](const FGhostSliceState &State,
-                       const Action<FGhostSessionProgressPayload> &Action)
-                        -> FGhostSliceState {
-                      FGhostSliceState Next = State;
-                      Next.ActiveSessionId = Action.PayloadValue.SessionId;
-                      Next.Status = Action.PayloadValue.Status;
-                      Next.Progress = Action.PayloadValue.Progress;
-                      return Next;
-                    }) |
-                    addExtraCase(
-          Actions::GhostSessionCompletedActionCreator(),
-          [](const FGhostSliceState &State,
-             const Action<FGhostTestReport> &Action) -> FGhostSliceState {
-            FGhostSliceState Next = State;
-            Next.Results = Action.PayloadValue;
-            Next.bHasResults = true;
-            Next.Status = TEXT("completed");
-            Next.Progress = 1.0f;
-            Next.bLoading = false;
-            return Next;
-          }) |
-                    addExtraCase(Actions::GhostSessionFailedActionCreator(),
-                    [](const FGhostSliceState &State,
-                       const Action<FGhostSessionFailedPayload> &Action)
-                        -> FGhostSliceState {
-                      FGhostSliceState Next = State;
-                      Next.ActiveSessionId = Action.PayloadValue.SessionId;
-                      Next.Status = TEXT("failed");
-                      Next.bLoading = false;
-                      Next.Error = Action.PayloadValue.Error;
-                      return Next;
-                    }) |
-                    addExtraCase(Actions::GhostHistoryLoadedActionCreator(),
-                    [](const FGhostSliceState &State,
-                       const Action<TArray<FGhostHistoryEntry>> &Action)
-                        -> FGhostSliceState {
-                      FGhostSliceState Next = State;
-                      Next.History = Action.PayloadValue;
-                      return Next;
-                    }) |
-                    addExtraCase(
-          Actions::ClearGhostSessionActionCreator(),
-          [](const FGhostSliceState &State,
-             const Action<rtk::FEmptyPayload> &Action) -> FGhostSliceState {
-            return FGhostSliceState();
-          }));
+  return rtk::createSlice<FGhostSliceState>(
+  TEXT("ghost"),
+                                                   FGhostSliceState(),
+  [](rtk::ActionReducerMapBuilder<FGhostSliceState> &Builder) {
+    Builder.addCase(Actions::GhostSessionStartedActionCreator(),
+      [](const FGhostSliceState &State,
+                             const Action<FGhostSessionStartedPayload> &Action)
+                              -> FGhostSliceState {
+                            FGhostSliceState Next = State;
+                            Next.ActiveSessionId = Action.PayloadValue.SessionId;
+                            Next.Status = Action.PayloadValue.Status;
+                            Next.Progress = 0.0f;
+                            Next.bLoading = false;
+                            Next.Error.Empty();
+                            Next.bHasResults = false;
+                            return Next;
+                          });
+    Builder.addCase(Actions::GhostSessionProgressActionCreator(),
+      [](const FGhostSliceState &State,
+                             const Action<FGhostSessionProgressPayload> &Action)
+                              -> FGhostSliceState {
+                            FGhostSliceState Next = State;
+                            Next.ActiveSessionId = Action.PayloadValue.SessionId;
+                            Next.Status = Action.PayloadValue.Status;
+                            Next.Progress = Action.PayloadValue.Progress;
+                            return Next;
+                          });
+    Builder.addCase(Actions::GhostSessionCompletedActionCreator(),
+      [](const FGhostSliceState &State,
+                   const Action<FGhostTestReport> &Action) -> FGhostSliceState {
+                  FGhostSliceState Next = State;
+                  Next.Results = Action.PayloadValue;
+                  Next.bHasResults = true;
+                  Next.Status = TEXT("completed");
+                  Next.Progress = 1.0f;
+                  Next.bLoading = false;
+                  return Next;
+                });
+    Builder.addCase(Actions::GhostSessionFailedActionCreator(),
+      [](const FGhostSliceState &State,
+                             const Action<FGhostSessionFailedPayload> &Action)
+                              -> FGhostSliceState {
+                            FGhostSliceState Next = State;
+                            Next.ActiveSessionId = Action.PayloadValue.SessionId;
+                            Next.Status = TEXT("failed");
+                            Next.bLoading = false;
+                            Next.Error = Action.PayloadValue.Error;
+                            return Next;
+                          });
+    Builder.addCase(Actions::GhostHistoryLoadedActionCreator(),
+      [](const FGhostSliceState &State,
+                             const Action<TArray<FGhostHistoryEntry>> &Action)
+                              -> FGhostSliceState {
+                            FGhostSliceState Next = State;
+                            Next.History = Action.PayloadValue;
+                            return Next;
+                          });
+    Builder.addCase(Actions::ClearGhostSessionActionCreator(),
+      [](const FGhostSliceState &State,
+                   const Action<rtk::FEmptyPayload> &Action) -> FGhostSliceState {
+                  return FGhostSliceState();
+                });
+  });
 }
 
 } // namespace GhostSlice

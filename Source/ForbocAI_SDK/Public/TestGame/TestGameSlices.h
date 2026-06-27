@@ -7,7 +7,12 @@
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
+#include "Core/functional_core.hpp"
 #include "TestGame/TestGameTypes.h"
+
+namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
+typedef func::Maybe<FString> FForbocAISDKPublicTestGameTestGameSlicesHOptionalDomainId;
+} } }
 
 namespace TestGame {
 
@@ -16,8 +21,8 @@ namespace TestGame {
  * User Story: As test-game entity reducers, I need one shared adapter so NPC
  * CRUD actions update and query a consistent normalized state shape.
  */
-inline rtk::EntityAdapterOps<FGameNPC> &GetNPCAdapter() {
-  static rtk::EntityAdapterOps<FGameNPC> Adapter =
+inline rtk::EntityAdapter<FGameNPC> &GetNPCAdapter() {
+  static rtk::EntityAdapter<FGameNPC> Adapter =
       rtk::createEntityAdapter<FGameNPC>(
           [](const FGameNPC &N) { return N.Id; });
   return Adapter;
@@ -138,68 +143,66 @@ inline rtk::AnyAction ApplyNpcVerdict(const FApplyVerdictPayload &P) {
  * actions update normalized NPC state predictably.
  */
 inline rtk::Slice<FNPCsSliceState> CreateNPCsSlice() {
-  return rtk::buildSlice(
-      rtk::sliceBuilder<FNPCsSliceState>(TEXT("testgame/npcs"),
-                                         FNPCsSliceState())
-      | rtk::addExtraCase(
-          NPCsActions::UpsertNPCActionCreator(),
-          [](const FNPCsSliceState &S,
-             const rtk::Action<FGameNPC> &A) -> FNPCsSliceState {
-            FNPCsSliceState Next = S;
-            Next.Entities =
-                GetNPCAdapter().upsertOne(Next.Entities, A.PayloadValue);
-            return Next;
-          })
-      | rtk::addExtraCase(
-          NPCsActions::MoveNPCActionCreator(),
-          [](const FNPCsSliceState &S,
-             const rtk::Action<NPCsActions::FMoveNPCPayload> &A)
-              -> FNPCsSliceState {
-            FNPCsSliceState Next = S;
-            Next.Entities = GetNPCAdapter().updateOne(
-                Next.Entities, A.PayloadValue.Id,
-                [&A](const FGameNPC &Existing) {
-                  FGameNPC Updated = Existing;
-                  Updated.Position = A.PayloadValue.Position;
-                  return Updated;
+  return rtk::createSlice<FNPCsSliceState>(
+  TEXT("testgame/npcs"),
+                                         FNPCsSliceState(),
+  [](rtk::ActionReducerMapBuilder<FNPCsSliceState> &Builder) {
+    Builder.addCase(NPCsActions::UpsertNPCActionCreator(),
+      [](const FNPCsSliceState &S,
+                   const rtk::Action<FGameNPC> &A) -> FNPCsSliceState {
+                  FNPCsSliceState Next = S;
+                  Next.Entities =
+                      GetNPCAdapter().upsertOne(Next.Entities, A.PayloadValue);
+                  return Next;
                 });
-            return Next;
-          })
-      | rtk::addExtraCase(
-          NPCsActions::PatchNPCActionCreator(),
-          [](const FNPCsSliceState &S,
-             const rtk::Action<NPCsActions::FPatchNPCPayload> &A)
-              -> FNPCsSliceState {
-            FNPCsSliceState Next = S;
-            Next.Entities = GetNPCAdapter().updateOne(
-                Next.Entities, A.PayloadValue.Id,
-                [&A](const FGameNPC &Existing) {
-                  FGameNPC Updated = Existing;
-                  Updated.Suspicion = A.PayloadValue.bHasSuspicion
-                      ? A.PayloadValue.Suspicion
-                      : Updated.Suspicion;
-                  return Updated;
+    Builder.addCase(NPCsActions::MoveNPCActionCreator(),
+      [](const FNPCsSliceState &S,
+                   const rtk::Action<NPCsActions::FMoveNPCPayload> &A)
+                    -> FNPCsSliceState {
+                  FNPCsSliceState Next = S;
+                  Next.Entities = GetNPCAdapter().updateOne(
+                      Next.Entities, A.PayloadValue.Id,
+                      [&A](const FGameNPC &Existing) {
+                        FGameNPC Updated = Existing;
+                        Updated.Position = A.PayloadValue.Position;
+                        return Updated;
+                      });
+                  return Next;
                 });
-            return Next;
-          })
-      | rtk::addExtraCase(
-          NPCsActions::ApplyNpcVerdictActionCreator(),
-          [](const FNPCsSliceState &S,
-             const rtk::Action<NPCsActions::FApplyVerdictPayload> &A)
-              -> FNPCsSliceState {
-            FNPCsSliceState Next = S;
-            const auto &P = A.PayloadValue;
-            Next.Entities = GetNPCAdapter().updateOne(
-                Next.Entities, P.Id, [&P](const FGameNPC &Existing) {
-                  FGameNPC Updated = Existing;
-                  Updated.Suspicion += P.SuspicionDelta;
-                  Updated.Position = P.ActionType == TEXT("MOVE")
-                      ? P.TargetHex
-                      : Updated.Position;
-                  return Updated;
+    Builder.addCase(NPCsActions::PatchNPCActionCreator(),
+      [](const FNPCsSliceState &S,
+                   const rtk::Action<NPCsActions::FPatchNPCPayload> &A)
+                    -> FNPCsSliceState {
+                  FNPCsSliceState Next = S;
+                  Next.Entities = GetNPCAdapter().updateOne(
+                      Next.Entities, A.PayloadValue.Id,
+                      [&A](const FGameNPC &Existing) {
+                        FGameNPC Updated = Existing;
+                        Updated.Suspicion = A.PayloadValue.bHasSuspicion
+                            ? A.PayloadValue.Suspicion
+                            : Updated.Suspicion;
+                        return Updated;
+                      });
+                  return Next;
                 });
-            return Next;
-          }));
+    Builder.addCase(NPCsActions::ApplyNpcVerdictActionCreator(),
+      [](const FNPCsSliceState &S,
+                   const rtk::Action<NPCsActions::FApplyVerdictPayload> &A)
+                    -> FNPCsSliceState {
+                  FNPCsSliceState Next = S;
+                  const auto &P = A.PayloadValue;
+                  Next.Entities = GetNPCAdapter().updateOne(
+                      Next.Entities, P.Id, [&P](const FGameNPC &Existing) {
+                        FGameNPC Updated = Existing;
+                        Updated.Suspicion += P.SuspicionDelta;
+                        Updated.Position = P.ActionType == TEXT("MOVE")
+                            ? P.TargetHex
+                            : Updated.Position;
+                        return Updated;
+                      });
+                  return Next;
+                });
+  });
 }
 
 /**
@@ -248,23 +251,25 @@ inline rtk::AnyAction SetHidden(bool H) {
  * movement and hidden-state actions update one canonical player state.
  */
 inline rtk::Slice<FPlayerState> CreatePlayerSlice() {
-  return rtk::buildSlice(
-      rtk::sliceBuilder<FPlayerState>(TEXT("testgame/player"), FPlayerState())
-      | rtk::addExtraCase(SetPositionActionCreator(),
-                          [](const FPlayerState &S,
-                             const rtk::Action<FPosition> &A)
-                              -> FPlayerState {
-                            FPlayerState Next = S;
-                            Next.Position = A.PayloadValue;
-                            return Next;
-                          })
-      | rtk::addExtraCase(SetHiddenActionCreator(),
-                          [](const FPlayerState &S, const rtk::Action<bool> &A)
-                              -> FPlayerState {
-                            FPlayerState Next = S;
-                            Next.bHidden = A.PayloadValue;
-                            return Next;
-                          }));
+  return rtk::createSlice<FPlayerState>(
+  TEXT("testgame/player"), FPlayerState(),
+  [](rtk::ActionReducerMapBuilder<FPlayerState> &Builder) {
+    Builder.addCase(SetPositionActionCreator(),
+      [](const FPlayerState &S,
+                                   const rtk::Action<FPosition> &A)
+                                    -> FPlayerState {
+                                  FPlayerState Next = S;
+                                  Next.Position = A.PayloadValue;
+                                  return Next;
+                                });
+    Builder.addCase(SetHiddenActionCreator(),
+      [](const FPlayerState &S, const rtk::Action<bool> &A)
+                                    -> FPlayerState {
+                                  FPlayerState Next = S;
+                                  Next.bHidden = A.PayloadValue;
+                                  return Next;
+                                });
+  });
 }
 
 /**
@@ -326,25 +331,25 @@ inline rtk::AnyAction SetBlocked(const TArray<FPosition> &B) {
  * dimensions and blocked tiles are managed by one reducer.
  */
 inline rtk::Slice<FGridState> CreateGridSlice() {
-  return rtk::buildSlice(
-      rtk::sliceBuilder<FGridState>(TEXT("testgame/grid"), FGridState())
-      | rtk::addExtraCase(
-          GridActions::SetGridSizeActionCreator(),
-          [](const FGridState &S,
-             const rtk::Action<FSetGridSizePayload> &A) -> FGridState {
-            FGridState Next = S;
-            Next.Width = A.PayloadValue.Width;
-            Next.Height = A.PayloadValue.Height;
-            return Next;
-          })
-      | rtk::addExtraCase(
-          GridActions::SetBlockedActionCreator(),
-          [](const FGridState &S,
-             const rtk::Action<TArray<FPosition>> &A) -> FGridState {
-            FGridState Next = S;
-            Next.Blocked = A.PayloadValue;
-            return Next;
-          }));
+  return rtk::createSlice<FGridState>(
+  TEXT("testgame/grid"), FGridState(),
+  [](rtk::ActionReducerMapBuilder<FGridState> &Builder) {
+    Builder.addCase(GridActions::SetGridSizeActionCreator(),
+      [](const FGridState &S,
+                   const rtk::Action<FSetGridSizePayload> &A) -> FGridState {
+                  FGridState Next = S;
+                  Next.Width = A.PayloadValue.Width;
+                  Next.Height = A.PayloadValue.Height;
+                  return Next;
+                });
+    Builder.addCase(GridActions::SetBlockedActionCreator(),
+      [](const FGridState &S,
+                   const rtk::Action<TArray<FPosition>> &A) -> FGridState {
+                  FGridState Next = S;
+                  Next.Blocked = A.PayloadValue;
+                  return Next;
+                });
+  });
 }
 
 /**
@@ -401,27 +406,29 @@ inline rtk::AnyAction BumpAlert(int32 Delta) {
  * and alert changes flow through one state reducer.
  */
 inline rtk::Slice<FStealthState> CreateStealthSlice() {
-  return rtk::buildSlice(
-      rtk::sliceBuilder<FStealthState>(TEXT("testgame/stealth"),
-                                       FStealthState())
-      | rtk::addExtraCase(StealthActions::SetDoorOpenActionCreator(),
-                          [](const FStealthState &S,
-                             const rtk::Action<bool> &A)
-                              -> FStealthState {
-                            FStealthState Next = S;
-                            Next.bDoorOpen = A.PayloadValue;
-                            return Next;
-                          })
-      | rtk::addExtraCase(StealthActions::BumpAlertActionCreator(),
-                          [](const FStealthState &S,
-                             const rtk::Action<int32> &A)
-                              -> FStealthState {
-                            FStealthState Next = S;
-                            int32 Raw = Next.AlertLevel + A.PayloadValue;
-                            Next.AlertLevel =
-                                FMath::Clamp(Raw, 0, 100);
-                            return Next;
-                          }));
+  return rtk::createSlice<FStealthState>(
+  TEXT("testgame/stealth"),
+                                       FStealthState(),
+  [](rtk::ActionReducerMapBuilder<FStealthState> &Builder) {
+    Builder.addCase(StealthActions::SetDoorOpenActionCreator(),
+      [](const FStealthState &S,
+                                   const rtk::Action<bool> &A)
+                                    -> FStealthState {
+                                  FStealthState Next = S;
+                                  Next.bDoorOpen = A.PayloadValue;
+                                  return Next;
+                                });
+    Builder.addCase(StealthActions::BumpAlertActionCreator(),
+      [](const FStealthState &S,
+                                   const rtk::Action<int32> &A)
+                                    -> FStealthState {
+                                  FStealthState Next = S;
+                                  int32 Raw = Next.AlertLevel + A.PayloadValue;
+                                  Next.AlertLevel =
+                                      FMath::Clamp(Raw, 0, 100);
+                                  return Next;
+                                });
+  });
 }
 
 /**
@@ -458,7 +465,7 @@ inline rtk::ActionCreator<FTradeOffer> SetTradeOfferActionCreator() {
  * User Story: As social cleanup, I need a reusable clear action creator so
  * dialogue and trade state reset together.
  */
-inline rtk::EmptyActionCreator ClearSocialStateActionCreator() {
+inline rtk::ActionCreatorWithoutPayload ClearSocialStateActionCreator() {
   static auto C =
       rtk::createAction(TEXT("testgame/social/clearSocialState"));
   return C;
@@ -497,29 +504,31 @@ inline rtk::AnyAction ClearSocialState() {
  * dialogue and trade actions update one canonical social state.
  */
 inline rtk::Slice<FSocialState> CreateSocialSlice() {
-  return rtk::buildSlice(
-      rtk::sliceBuilder<FSocialState>(TEXT("testgame/social"), FSocialState())
-      | rtk::addExtraCase(SocialActions::SetDialogueActionCreator(),
-                          [](const FSocialState &S,
-                             const rtk::Action<FString> &A)
-                              -> FSocialState {
-                            FSocialState Next = S;
-                            Next.ActiveDialogue = A.PayloadValue;
-                            return Next;
-                          })
-      | rtk::addExtraCase(SocialActions::SetTradeOfferActionCreator(),
-                          [](const FSocialState &S,
-                             const rtk::Action<FTradeOffer> &A)
-                              -> FSocialState {
-                            FSocialState Next = S;
-                            Next.ActiveTrade = A.PayloadValue;
-                            Next.bHasActiveTrade = true;
-                            return Next;
-                          })
-      | rtk::addExtraCase(SocialActions::ClearSocialStateActionCreator(),
-                          [](const FSocialState &S,
-                             const rtk::Action<rtk::FEmptyPayload> &)
-                              -> FSocialState { return FSocialState(); }));
+  return rtk::createSlice<FSocialState>(
+  TEXT("testgame/social"), FSocialState(),
+  [](rtk::ActionReducerMapBuilder<FSocialState> &Builder) {
+    Builder.addCase(SocialActions::SetDialogueActionCreator(),
+      [](const FSocialState &S,
+                                   const rtk::Action<FString> &A)
+                                    -> FSocialState {
+                                  FSocialState Next = S;
+                                  Next.ActiveDialogue = A.PayloadValue;
+                                  return Next;
+                                });
+    Builder.addCase(SocialActions::SetTradeOfferActionCreator(),
+      [](const FSocialState &S,
+                                   const rtk::Action<FTradeOffer> &A)
+                                    -> FSocialState {
+                                  FSocialState Next = S;
+                                  Next.ActiveTrade = A.PayloadValue;
+                                  Next.bHasActiveTrade = true;
+                                  return Next;
+                                });
+    Builder.addCase(SocialActions::ClearSocialStateActionCreator(),
+      [](const FSocialState &S,
+                                   const rtk::Action<rtk::FEmptyPayload> &)
+                                    -> FSocialState { return FSocialState(); });
+  });
 }
 
 /**
@@ -576,27 +585,27 @@ inline rtk::AnyAction LoadBridgePreset(const FString &P) {
  * bridge presets and rules are reduced in one place.
  */
 inline rtk::Slice<FBridgeRulesState> CreateGameBridgeSlice() {
-  return rtk::buildSlice(
-      rtk::sliceBuilder<FBridgeRulesState>(TEXT("testgame/bridge"),
-                                           FBridgeRulesState())
-      | rtk::addExtraCase(
-          GameBridgeActions::SetBridgeRulesActionCreator(),
-          [](const FBridgeRulesState &S,
-             const rtk::Action<FBridgeRulesState> &A) -> FBridgeRulesState {
-            return A.PayloadValue;
-          })
-      | rtk::addExtraCase(
-          GameBridgeActions::LoadBridgePresetActionCreator(),
-          [](const FBridgeRulesState &S,
-             const rtk::Action<FString> &A) -> FBridgeRulesState {
-            FBridgeRulesState Next = S;
-            Next.ActivePreset = A.PayloadValue;
-            Next.MaxMoveDistance =
-                A.PayloadValue == TEXT("social") ? 1
-                : A.PayloadValue == TEXT("default") ? 2
-                : Next.MaxMoveDistance;
-            return Next;
-          }));
+  return rtk::createSlice<FBridgeRulesState>(
+  TEXT("testgame/bridge"),
+                                           FBridgeRulesState(),
+  [](rtk::ActionReducerMapBuilder<FBridgeRulesState> &Builder) {
+    Builder.addCase(GameBridgeActions::SetBridgeRulesActionCreator(),
+      [](const FBridgeRulesState &S,
+                   const rtk::Action<FBridgeRulesState> &A) -> FBridgeRulesState {
+                  return A.PayloadValue;
+                });
+    Builder.addCase(GameBridgeActions::LoadBridgePresetActionCreator(),
+      [](const FBridgeRulesState &S,
+                   const rtk::Action<FString> &A) -> FBridgeRulesState {
+                  FBridgeRulesState Next = S;
+                  Next.ActivePreset = A.PayloadValue;
+                  Next.MaxMoveDistance =
+                      A.PayloadValue == TEXT("social") ? 1
+                      : A.PayloadValue == TEXT("default") ? 2
+                      : Next.MaxMoveDistance;
+                  return Next;
+                });
+  });
 }
 
 /**
@@ -604,8 +613,8 @@ inline rtk::Slice<FBridgeRulesState> CreateGameBridgeSlice() {
  * User Story: As test-game memory reducers, I need one shared adapter so local
  * memory records use a consistent normalized state structure.
  */
-inline rtk::EntityAdapterOps<FMemoryRecord> &GetGameMemoryAdapter() {
-  static rtk::EntityAdapterOps<FMemoryRecord> Adapter =
+inline rtk::EntityAdapter<FMemoryRecord> &GetGameMemoryAdapter() {
+  static rtk::EntityAdapter<FMemoryRecord> Adapter =
       rtk::createEntityAdapter<FMemoryRecord>(
           [](const FMemoryRecord &R) { return R.Id; });
   return Adapter;
@@ -669,44 +678,44 @@ inline rtk::AnyAction ClearMemoryForNpc(const FString &NpcId) {
  * memory records can be stored and cleared through one reducer.
  */
 inline rtk::Slice<FGameMemorySliceState> CreateGameMemorySlice() {
-  return rtk::buildSlice(
-      rtk::sliceBuilder<FGameMemorySliceState>(TEXT("testgame/memory"),
-                                               FGameMemorySliceState())
-      | rtk::addExtraCase(
-          GameMemoryActions::StoreMemoryActionCreator(),
-          [](const FGameMemorySliceState &S,
-             const rtk::Action<FMemoryRecord> &A) -> FGameMemorySliceState {
-            FGameMemorySliceState Next = S;
-            Next.Entities =
-                GetGameMemoryAdapter().addOne(Next.Entities, A.PayloadValue);
-            return Next;
-          })
-      | rtk::addExtraCase(
-          GameMemoryActions::ClearMemoryForNpcActionCreator(),
-          [](const FGameMemorySliceState &S,
-             const rtk::Action<FString> &A) -> FGameMemorySliceState {
-            FGameMemorySliceState Next = S;
-            struct CollectIds {
-              static void apply(
-                  const rtk::EntityState<FMemoryRecord> &E,
-                  const FString &NpcId,
-                  TArray<FString> &Out,
-                  int32 Idx) {
-                Idx >= E.ids.Num()
-                    ? void()
-                    : ((E.entities.Find(E.ids[Idx]) != nullptr &&
-                        E.entities.Find(E.ids[Idx])->NpcId == NpcId)
-                           ? (Out.Add(E.ids[Idx]), void())
-                           : void(),
-                       apply(E, NpcId, Out, Idx + 1), void());
-              }
-            };
-            TArray<FString> ToRemove;
-            CollectIds::apply(Next.Entities, A.PayloadValue, ToRemove, 0);
-            Next.Entities =
-                GetGameMemoryAdapter().removeMany(Next.Entities, ToRemove);
-            return Next;
-          }));
+  return rtk::createSlice<FGameMemorySliceState>(
+  TEXT("testgame/memory"),
+                                               FGameMemorySliceState(),
+  [](rtk::ActionReducerMapBuilder<FGameMemorySliceState> &Builder) {
+    Builder.addCase(GameMemoryActions::StoreMemoryActionCreator(),
+      [](const FGameMemorySliceState &S,
+                   const rtk::Action<FMemoryRecord> &A) -> FGameMemorySliceState {
+                  FGameMemorySliceState Next = S;
+                  Next.Entities =
+                      GetGameMemoryAdapter().addOne(Next.Entities, A.PayloadValue);
+                  return Next;
+                });
+    Builder.addCase(GameMemoryActions::ClearMemoryForNpcActionCreator(),
+      [](const FGameMemorySliceState &S,
+                   const rtk::Action<FString> &A) -> FGameMemorySliceState {
+                  FGameMemorySliceState Next = S;
+                  struct CollectIds {
+                    static void apply(
+                        const rtk::EntityState<FMemoryRecord> &E,
+                        const FString &NpcId,
+                        TArray<FString> &Out,
+                        int32 Idx) {
+                      Idx >= E.ids.Num()
+                          ? void()
+                          : ((E.entities.Find(E.ids[Idx]) != nullptr &&
+                              E.entities.Find(E.ids[Idx])->NpcId == NpcId)
+                                 ? (Out.Add(E.ids[Idx]), void())
+                                 : void(),
+                             apply(E, NpcId, Out, Idx + 1), void());
+                    }
+                  };
+                  TArray<FString> ToRemove;
+                  CollectIds::apply(Next.Entities, A.PayloadValue, ToRemove, 0);
+                  Next.Entities =
+                      GetGameMemoryAdapter().removeMany(Next.Entities, ToRemove);
+                  return Next;
+                });
+  });
 }
 
 /**
@@ -750,18 +759,19 @@ inline rtk::AnyAction SetOwnerInventory(const FSetOwnerInventoryPayload &P) {
  * owner item lists are reduced in one place.
  */
 inline rtk::Slice<FInventoryState> CreateInventorySlice() {
-  return rtk::buildSlice(
-      rtk::sliceBuilder<FInventoryState>(TEXT("testgame/inventory"),
-                                         FInventoryState())
-      | rtk::addExtraCase(
-          InventoryActions::SetOwnerInventoryActionCreator(),
-          [](const FInventoryState &S,
-             const rtk::Action<FSetOwnerInventoryPayload> &A)
-              -> FInventoryState {
-            FInventoryState Next = S;
-            Next.ByOwner.Add(A.PayloadValue.OwnerId, A.PayloadValue.Items);
-            return Next;
-          }));
+  return rtk::createSlice<FInventoryState>(
+  TEXT("testgame/inventory"),
+                                         FInventoryState(),
+  [](rtk::ActionReducerMapBuilder<FInventoryState> &Builder) {
+    Builder.addCase(InventoryActions::SetOwnerInventoryActionCreator(),
+      [](const FInventoryState &S,
+                   const rtk::Action<FSetOwnerInventoryPayload> &A)
+                    -> FInventoryState {
+                  FInventoryState Next = S;
+                  Next.ByOwner.Add(A.PayloadValue.OwnerId, A.PayloadValue.Items);
+                  return Next;
+                });
+  });
 }
 
 /**
@@ -824,26 +834,27 @@ inline rtk::AnyAction MarkSoulImported(const FString &TxId) {
  * and import tracking live in one reducer.
  */
 inline rtk::Slice<FSoulTrackingState> CreateGameSoulSlice() {
-  return rtk::buildSlice(
-      rtk::sliceBuilder<FSoulTrackingState>(TEXT("testgame/soul"),
-                                            FSoulTrackingState())
-      | rtk::addExtraCase(
-          GameSoulActions::MarkSoulExportedActionCreator(),
-          [](const FSoulTrackingState &S,
-             const rtk::Action<FMarkSoulExportedPayload> &A)
-              -> FSoulTrackingState {
-            FSoulTrackingState Next = S;
-            Next.ExportsByNpc.Add(A.PayloadValue.NpcId, A.PayloadValue.TxId);
-            return Next;
-          })
-      | rtk::addExtraCase(GameSoulActions::MarkSoulImportedActionCreator(),
-                          [](const FSoulTrackingState &S,
-                             const rtk::Action<FString> &A)
-                              -> FSoulTrackingState {
-                            FSoulTrackingState Next = S;
-                            Next.ImportedSoulTxIds.Add(A.PayloadValue);
-                            return Next;
-                          }));
+  return rtk::createSlice<FSoulTrackingState>(
+  TEXT("testgame/soul"),
+                                            FSoulTrackingState(),
+  [](rtk::ActionReducerMapBuilder<FSoulTrackingState> &Builder) {
+    Builder.addCase(GameSoulActions::MarkSoulExportedActionCreator(),
+      [](const FSoulTrackingState &S,
+                   const rtk::Action<FMarkSoulExportedPayload> &A)
+                    -> FSoulTrackingState {
+                  FSoulTrackingState Next = S;
+                  Next.ExportsByNpc.Add(A.PayloadValue.NpcId, A.PayloadValue.TxId);
+                  return Next;
+                });
+    Builder.addCase(GameSoulActions::MarkSoulImportedActionCreator(),
+      [](const FSoulTrackingState &S,
+                                   const rtk::Action<FString> &A)
+                                    -> FSoulTrackingState {
+                                  FSoulTrackingState Next = S;
+                                  Next.ImportedSoulTxIds.Add(A.PayloadValue);
+                                  return Next;
+                                });
+  });
 }
 
 /**
@@ -900,23 +911,25 @@ inline rtk::AnyAction AddMessage(const FString &Msg) {
  * message updates flow through one reducer.
  */
 inline rtk::Slice<FUIState> CreateUISlice() {
-  return rtk::buildSlice(
-      rtk::sliceBuilder<FUIState>(TEXT("testgame/ui"), FUIState())
-      | rtk::addExtraCase(UIActions::SetModeActionCreator(),
-                          [](const FUIState &S,
-                             const rtk::Action<EPlayMode> &A)
-                              -> FUIState {
-                            FUIState Next = S;
-                            Next.Mode = A.PayloadValue;
-                            return Next;
-                          })
-      | rtk::addExtraCase(UIActions::AddMessageActionCreator(),
-                          [](const FUIState &S,
-                             const rtk::Action<FString> &A) -> FUIState {
-                            FUIState Next = S;
-                            Next.Messages.Add(A.PayloadValue);
-                            return Next;
-                          }));
+  return rtk::createSlice<FUIState>(
+  TEXT("testgame/ui"), FUIState(),
+  [](rtk::ActionReducerMapBuilder<FUIState> &Builder) {
+    Builder.addCase(UIActions::SetModeActionCreator(),
+      [](const FUIState &S,
+                                   const rtk::Action<EPlayMode> &A)
+                                    -> FUIState {
+                                  FUIState Next = S;
+                                  Next.Mode = A.PayloadValue;
+                                  return Next;
+                                });
+    Builder.addCase(UIActions::AddMessageActionCreator(),
+      [](const FUIState &S,
+                                   const rtk::Action<FString> &A) -> FUIState {
+                                  FUIState Next = S;
+                                  Next.Messages.Add(A.PayloadValue);
+                                  return Next;
+                                });
+  });
 }
 
 /**
@@ -952,7 +965,7 @@ RecordTranscriptActionCreator() {
  * User Story: As transcript cleanup, I need a reusable clear action creator so
  * a new run can start with an empty transcript.
  */
-inline rtk::EmptyActionCreator ResetTranscriptActionCreator() {
+inline rtk::ActionCreatorWithoutPayload ResetTranscriptActionCreator() {
   static auto C =
       rtk::createAction(TEXT("testgame/transcript/resetTranscript"));
   return C;
@@ -983,35 +996,35 @@ inline rtk::AnyAction ResetTranscript() {
  * command history is recorded through one reducer.
  */
 inline rtk::Slice<FTranscriptState> CreateTranscriptSlice() {
-  return rtk::buildSlice(
-      rtk::sliceBuilder<FTranscriptState>(TEXT("testgame/transcript"),
-                                          FTranscriptState())
-      | rtk::addExtraCase(
-          TranscriptActions::RecordTranscriptActionCreator(),
-          [](const FTranscriptState &S,
-             const rtk::Action<TranscriptActions::FRecordTranscriptPayload> &A)
-              -> FTranscriptState {
-            FTranscriptState Next = S;
-            FTranscriptEntry E;
-            E.Id = FString::Printf(TEXT("%lld-%d"),
-                                   FDateTime::Now().GetTicks(),
-                                   FMath::Rand());
-            E.ScenarioId = A.PayloadValue.ScenarioId;
-            E.CommandGroup = A.PayloadValue.CommandGroup;
-            E.Command = A.PayloadValue.Command;
-            E.ExpectedRoutes = A.PayloadValue.ExpectedRoutes;
-            E.Status = A.PayloadValue.Status;
-            E.Output = A.PayloadValue.Output;
-            E.Timestamp = FDateTime::Now().ToIso8601();
-            Next.Entries.Add(E);
-            return Next;
-          })
-      | rtk::addExtraCase(
-          TranscriptActions::ResetTranscriptActionCreator(),
-          [](const FTranscriptState &S,
-             const rtk::Action<rtk::FEmptyPayload> &) -> FTranscriptState {
-            return FTranscriptState();
-          }));
+  return rtk::createSlice<FTranscriptState>(
+  TEXT("testgame/transcript"),
+                                          FTranscriptState(),
+  [](rtk::ActionReducerMapBuilder<FTranscriptState> &Builder) {
+    Builder.addCase(TranscriptActions::RecordTranscriptActionCreator(),
+      [](const FTranscriptState &S,
+                   const rtk::Action<TranscriptActions::FRecordTranscriptPayload> &A)
+                    -> FTranscriptState {
+                  FTranscriptState Next = S;
+                  FTranscriptEntry E;
+                  E.Id = FString::Printf(TEXT("%lld-%d"),
+                                         FDateTime::Now().GetTicks(),
+                                         FMath::Rand());
+                  E.ScenarioId = A.PayloadValue.ScenarioId;
+                  E.CommandGroup = A.PayloadValue.CommandGroup;
+                  E.Command = A.PayloadValue.Command;
+                  E.ExpectedRoutes = A.PayloadValue.ExpectedRoutes;
+                  E.Status = A.PayloadValue.Status;
+                  E.Output = A.PayloadValue.Output;
+                  E.Timestamp = FDateTime::Now().ToIso8601();
+                  Next.Entries.Add(E);
+                  return Next;
+                });
+    Builder.addCase(TranscriptActions::ResetTranscriptActionCreator(),
+      [](const FTranscriptState &S,
+                   const rtk::Action<rtk::FEmptyPayload> &) -> FTranscriptState {
+                  return FTranscriptState();
+                });
+  });
 }
 
 /**
@@ -1037,7 +1050,7 @@ inline rtk::ActionCreator<ECommandGroup> MarkCoveredActionCreator() {
  * User Story: As coverage cleanup, I need a reusable reset action creator so
  * a new run starts with empty harness coverage.
  */
-inline rtk::EmptyActionCreator ResetCoverageActionCreator() {
+inline rtk::ActionCreatorWithoutPayload ResetCoverageActionCreator() {
   static auto C =
       rtk::createAction(TEXT("testgame/harness/resetCoverage"));
   return C;
@@ -1068,23 +1081,24 @@ inline rtk::AnyAction ResetCoverage() {
  * coverage updates are reduced in one place.
  */
 inline rtk::Slice<FHarnessState> CreateHarnessSlice() {
-  return rtk::buildSlice(
-      rtk::sliceBuilder<FHarnessState>(TEXT("testgame/harness"),
-                                       FHarnessState())
-      | rtk::addExtraCase(HarnessActions::MarkCoveredActionCreator(),
-                          [](const FHarnessState &S,
-                             const rtk::Action<ECommandGroup> &A)
-                              -> FHarnessState {
-                            FHarnessState Next = S;
-                            Next.Covered.Add(A.PayloadValue, true);
-                            return Next;
-                          })
-      | rtk::addExtraCase(
-          HarnessActions::ResetCoverageActionCreator(),
-          [](const FHarnessState &S,
-             const rtk::Action<rtk::FEmptyPayload> &) -> FHarnessState {
-            return FHarnessState();
-          }));
+  return rtk::createSlice<FHarnessState>(
+  TEXT("testgame/harness"),
+                                       FHarnessState(),
+  [](rtk::ActionReducerMapBuilder<FHarnessState> &Builder) {
+    Builder.addCase(HarnessActions::MarkCoveredActionCreator(),
+      [](const FHarnessState &S,
+                                   const rtk::Action<ECommandGroup> &A)
+                                    -> FHarnessState {
+                                  FHarnessState Next = S;
+                                  Next.Covered.Add(A.PayloadValue, true);
+                                  return Next;
+                                });
+    Builder.addCase(HarnessActions::ResetCoverageActionCreator(),
+      [](const FHarnessState &S,
+                   const rtk::Action<rtk::FEmptyPayload> &) -> FHarnessState {
+                  return FHarnessState();
+                });
+  });
 }
 
 /**
@@ -1113,9 +1127,11 @@ struct FScenarioSliceState {
 inline rtk::Slice<FScenarioSliceState> CreateScenarioSlice() {
   FScenarioSliceState Initial;
   Initial.Steps = {};
-  return rtk::buildSlice(
-      rtk::sliceBuilder<FScenarioSliceState>(TEXT("testgame/scenario"),
-                                             Initial));
+  return rtk::createSlice<FScenarioSliceState>(
+  TEXT("testgame/scenario"),
+                                             Initial,
+  [](rtk::ActionReducerMapBuilder<FScenarioSliceState> &Builder) {
+  });
 }
 
 /**

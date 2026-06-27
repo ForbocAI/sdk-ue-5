@@ -6,6 +6,11 @@
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
+#include "Core/functional_core.hpp"
+
+namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
+typedef func::Maybe<FString> FForbocAISDKPublicTestGameTestGameTypesHOptionalDomainId;
+} } }
 
 namespace TestGame {
 

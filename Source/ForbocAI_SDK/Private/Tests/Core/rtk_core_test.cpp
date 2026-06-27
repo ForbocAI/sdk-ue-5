@@ -13,44 +13,45 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRtkStoreAndSliceTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FRtkStoreAndSliceTest::RunTest(const FString &Parameters) {
-  /**
-   * Build Slice
-   * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-   */
-  SliceBuilder<FNpcMockState> Builder =
-      sliceBuilder<FNpcMockState>(TEXT("npc"), FNpcMockState{TEXT(""), 100});
+  auto SetInfoAction = createAction<FNpcMockState>(TEXT("npc/setInfo"));
+  auto ResetAction = createAction(TEXT("npc/reset"));
 
-  auto SetInfoAction = createCase<FNpcMockState, FNpcMockState>(
-      Builder,
-      TEXT("setInfo"),
-      [](const FNpcMockState &State, const Action<FNpcMockState> &Action) {
-        return Action.PayloadValue;
+  Slice<FNpcMockState> NpcSlice = createSlice<FNpcMockState>(
+      TEXT("npc"), FNpcMockState{TEXT(""), 100},
+      [SetInfoAction, ResetAction](
+          ActionReducerMapBuilder<FNpcMockState> &Builder) {
+        Builder.addCase(
+            SetInfoAction,
+            [](const FNpcMockState &State,
+               const Action<FNpcMockState> &Action) {
+              return Action.PayloadValue;
+            });
+        Builder.addCase(
+            ResetAction,
+            [](const FNpcMockState &State,
+               const Action<rtk::FEmptyPayload> &Action) {
+              return FNpcMockState{TEXT(""), 100};
+            });
       });
-
-  auto ResetAction = createCase(
-      Builder,
-      TEXT("reset"),
-      [](const FNpcMockState &State,
-         const Action<rtk::FEmptyPayload> &Action) {
-        return FNpcMockState{TEXT(""), 100};
-      });
-
-  Slice<FNpcMockState> NpcSlice = buildSlice(Builder);
+  TestEqual("Slice keeps initial state ID", NpcSlice.InitialState.Id,
+            FString(TEXT("")));
+  TestEqual("Slice keeps initial state Health", NpcSlice.InitialState.Health,
+            100);
 
   /**
    * Combine
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  auto RootReducer = buildReducer(addReducer(combineReducers<FAppMockState>(),
-                                             &FAppMockState::ActiveNpc,
-                                             NpcSlice.Reducer));
+  ReducersMapObject<FAppMockState> Reducers;
+  Reducers.reducer(&FAppMockState::ActiveNpc, NpcSlice.Reducer);
+  auto RootReducer = combineReducers(Reducers);
 
   /**
    * Create Store
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
   FAppMockState InitialState{FNpcMockState{TEXT(""), 100}};
-  Store<FAppMockState> AppStore = createCoreStore(InitialState, RootReducer);
+  Store<FAppMockState> AppStore = createStore(InitialState, RootReducer);
 
   int CallCount = 0;
   auto Unsub = AppStore.subscribe([&CallCount]() { CallCount++; });
@@ -71,6 +72,67 @@ bool FRtkStoreAndSliceTest::RunTest(const FString &Parameters) {
   Unsub();
   AppStore.dispatch(SetInfoAction(FNpcMockState{TEXT("npc_2"), 50}));
   TestEqual("Subscriber not triggered after Unsub", CallCount, 2);
+
+  return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRtkCreateSliceTest,
+                                 "ForbocAI.Core.RTK.CreateSlice",
+                                 EAutomationTestFlags_ApplicationContextMask |
+                                     EAutomationTestFlags::EngineFilter)
+/**
+ * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ */
+bool FRtkCreateSliceTest::RunTest(const FString &Parameters) {
+  rtk::ActionCreator<FNpcMockState> SetInfoAction;
+  rtk::ActionCreatorWithoutPayload ResetAction;
+
+  const Slice<FNpcMockState> NpcSlice = createSlice<FNpcMockState>(
+      TEXT("npc"), FNpcMockState{TEXT(""), 100},
+      [&SetInfoAction,
+       &ResetAction](ActionReducerMapBuilder<FNpcMockState> &Builder) {
+        SetInfoAction = createAction<FNpcMockState>(TEXT("npc/setInfo"));
+        ResetAction = createAction(TEXT("npc/reset"));
+        Builder.addCase(
+            SetInfoAction,
+            [](const FNpcMockState &State,
+               const Action<FNpcMockState> &Action) {
+              return Action.PayloadValue;
+            });
+        Builder.addCase(
+            ResetAction,
+            [](const FNpcMockState &State,
+               const Action<rtk::FEmptyPayload> &Action) {
+              return FNpcMockState{TEXT(""), 100};
+            });
+      });
+
+  FNpcMockState State{TEXT("old"), 40};
+  State = NpcSlice.Reducer(State, SetInfoAction(FNpcMockState{TEXT("new"), 75}));
+  TestEqual("createSlice typed action updates ID", State.Id,
+            FString(TEXT("new")));
+  TestEqual("createSlice typed action updates Health", State.Health, 75);
+
+  State = NpcSlice.Reducer(State, ResetAction());
+  TestEqual("createSlice empty action resets ID", State.Id, FString(TEXT("")));
+  TestEqual("createSlice empty action resets Health", State.Health, 100);
+
+  const Slice<FNpcMockState> WrappedSlice = createSlice<FNpcMockState>(
+      TEXT("npcWrapped"), FNpcMockState{TEXT("initial"), 10},
+      CaseReducer<FNpcMockState>(
+          [](const FNpcMockState &PrevState, const AnyAction &Action) {
+            return Action.Type == TEXT("npcWrapped/clear")
+                       ? FNpcMockState{TEXT(""), 0}
+                       : PrevState;
+          }));
+  TestEqual("createSlice reducer overload keeps initial ID",
+            WrappedSlice.InitialState.Id, FString(TEXT("initial")));
+  TestEqual("createSlice reducer overload updates state",
+            WrappedSlice.Reducer(FNpcMockState{TEXT("value"), 5},
+                                 AnyAction{TEXT("npcWrapped/clear"),
+                                           std::make_shared<FEmptyPayload>()})
+                .Health,
+            0);
 
   return true;
 }

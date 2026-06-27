@@ -1,11 +1,19 @@
 #pragma once
 
+#include "Core/rtk.hpp"
+#include "Core/functional_core.hpp"
+
 // clang-format off
 #include "CoreMinimal.h"
 #include "Memory/MemoryTypes.h"
 #include "NPC/NPCBaseTypes.h"
 #include "SoulTypes.generated.h"
 // clang-format on
+
+namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
+typedef func::Maybe<FString> FForbocAISDKPublicSoulSoulTypesHOptionalDomainId;
+} } }
+
 
 USTRUCT(BlueprintType)
 struct FArweaveUploadInstruction {

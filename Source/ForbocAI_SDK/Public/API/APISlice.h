@@ -5,6 +5,7 @@
  */
 
 #include "../Core/AsyncHttp.h"
+#include "../Core/functional_core.hpp"
 #include "../Core/JsonInterop.h"
 #include "../Core/rtk.hpp"
 #include "../RuntimeConfig.h"
@@ -18,6 +19,10 @@
 
 struct FStoreState;
 
+namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
+typedef func::Maybe<FString> FForbocAISDKPublicAPIAPISliceHOptionalDomainId;
+} } }
+
 namespace APISlice {
 
 using namespace rtk;
@@ -30,7 +35,7 @@ struct FAPIState {
   FAPIState() : Status(TEXT("idle")) {}
 };
 
-extern rtk::ApiSlice<FStoreState> ForbocAiApi;
+extern rtk::Api<FStoreState> ForbocAiApi;
 
 } // namespace APISlice
 
@@ -40,7 +45,9 @@ extern rtk::ApiSlice<FStoreState> ForbocAiApi;
 namespace APISlice {
 
 inline Slice<FAPIState> CreateAPISlice() {
-  return buildSlice(sliceBuilder<FAPIState>(TEXT("forbocApi"), FAPIState()));
+  return createSlice<FAPIState>(
+      TEXT("forbocApi"), FAPIState(),
+      [](ActionReducerMapBuilder<FAPIState> &Builder) {});
 }
 
 } // namespace APISlice

@@ -1,8 +1,16 @@
 #pragma once
 
+#include "Core/rtk.hpp"
+#include "Core/functional_core.hpp"
+
 #include "CoreMinimal.h"
 #include "Memory/MemoryTypes.h"
 #include "NPCBaseTypes.generated.h"
+
+namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
+typedef func::Maybe<FString> FForbocAISDKPublicNPCNPCBaseTypesHOptionalDomainId;
+} } }
+
 
 /**
  * NPC State — Immutable JSON data snapshot.

@@ -5,8 +5,13 @@
  */
 
 #include "Core/rtk.hpp"
+#include "Core/functional_core.hpp"
 #include "CoreMinimal.h"
 #include "Types.h"
+
+namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
+typedef func::Maybe<FString> FForbocAISDKPublicMemoryMemorySliceHOptionalDomainId;
+} } }
 
 namespace MemorySlice {
 
@@ -60,7 +65,7 @@ inline FString MemoryItemIdSelector(const FMemoryItem &Item) { return Item.Id; }
  * User Story: As memory reducers and selectors, I need one shared adapter so
  * entity operations stay consistent across the slice.
  */
-inline EntityAdapterOps<FMemoryItem> GetMemoryAdapter() {
+inline EntityAdapter<FMemoryItem> GetMemoryAdapter() {
   return createEntityAdapter<FMemoryItem>(&MemoryItemIdSelector);
 }
 
@@ -83,8 +88,8 @@ namespace Actions {
  * User Story: As memory storage flows, I need a cached action creator so every
  * caller dispatches the same pending action contract.
  */
-inline const EmptyActionCreator &MemoryStoreStartActionCreator() {
-  static const EmptyActionCreator ActionCreator =
+inline const ActionCreatorWithoutPayload &MemoryStoreStartActionCreator() {
+  static const ActionCreatorWithoutPayload ActionCreator =
       createAction(TEXT("memory/storeStart"));
   return ActionCreator;
 }
@@ -116,8 +121,8 @@ inline const ActionCreator<FString> &MemoryStoreFailedActionCreator() {
  * User Story: As recall flows, I need a cached pending action creator so
  * recall state transitions stay uniform across callers.
  */
-inline const EmptyActionCreator &MemoryRecallStartActionCreator() {
-  static const EmptyActionCreator ActionCreator =
+inline const ActionCreatorWithoutPayload &MemoryRecallStartActionCreator() {
+  static const ActionCreatorWithoutPayload ActionCreator =
       createAction(TEXT("memory/recallStart"));
   return ActionCreator;
 }
@@ -150,8 +155,8 @@ inline const ActionCreator<FString> &MemoryRecallFailedActionCreator() {
  * User Story: As cleanup flows, I need a cached clear action creator so memory
  * state can be reset through a single action contract.
  */
-inline const EmptyActionCreator &MemoryClearActionCreator() {
-  static const EmptyActionCreator ActionCreator =
+inline const ActionCreatorWithoutPayload &MemoryClearActionCreator() {
+  static const ActionCreatorWithoutPayload ActionCreator =
       createAction(TEXT("memory/clear"));
   return ActionCreator;
 }
@@ -225,70 +230,68 @@ inline AnyAction MemoryClear() { return MemoryClearActionCreator()(); }
  * recall actions share a single reducer definition.
  */
 inline Slice<FMemorySliceState> CreateMemorySlice() {
-  return buildSlice(
-      sliceBuilder<FMemorySliceState>(TEXT("memory"), FMemorySliceState()) |
-      addExtraCase(
-          Actions::MemoryStoreStartActionCreator(),
-          [](const FMemorySliceState &State,
-             const Action<rtk::FEmptyPayload> &Action) -> FMemorySliceState {
-            FMemorySliceState Next = State;
-            Next.StorageStatus = TEXT("storing");
-            Next.Error.Empty();
-            return Next;
-          })
-      | addExtraCase(Actions::MemoryStoreSuccessActionCreator(),
-                    [](const FMemorySliceState &State,
-                       const Action<FMemoryItem> &Action) -> FMemorySliceState {
-                      FMemorySliceState Next = State;
-                      Next.StorageStatus = TEXT("idle");
-                      Next.Entities = GetMemoryAdapter().upsertOne(
-                          Next.Entities, Action.PayloadValue);
-                      return Next;
-                    }) |
-      addExtraCase(Actions::MemoryStoreFailedActionCreator(),
-                    [](const FMemorySliceState &State,
-                       const Action<FString> &Action) -> FMemorySliceState {
-                      FMemorySliceState Next = State;
-                      Next.StorageStatus = TEXT("error");
-                      Next.Error = Action.PayloadValue;
-                      return Next;
-                    }) |
-      addExtraCase(
-          Actions::MemoryRecallStartActionCreator(),
-          [](const FMemorySliceState &State,
-             const Action<rtk::FEmptyPayload> &Action) -> FMemorySliceState {
-            FMemorySliceState Next = State;
-            Next.RecallStatus = TEXT("recalling");
-            Next.Error.Empty();
-            return Next;
-          })
-      | addExtraCase(
-          Actions::MemoryRecallSuccessActionCreator(),
-          [](const FMemorySliceState &State,
-             const Action<TArray<FMemoryItem>> &Action) -> FMemorySliceState {
-            FMemorySliceState Next = State;
-            Next.RecallStatus = TEXT("idle");
-            Next.Entities = GetMemoryAdapter().upsertMany(Next.Entities,
-                                                          Action.PayloadValue);
-            Next.LastRecalledIds.Empty(Action.PayloadValue.Num());
-            detail::CollectIdsRecursive(Action.PayloadValue,
-                                        Next.LastRecalledIds, 0);
-            return Next;
-          }) |
-      addExtraCase(Actions::MemoryRecallFailedActionCreator(),
-                    [](const FMemorySliceState &State,
-                       const Action<FString> &Action) -> FMemorySliceState {
-                      FMemorySliceState Next = State;
-                      Next.RecallStatus = TEXT("error");
-                      Next.Error = Action.PayloadValue;
-                      return Next;
-                    }) |
-      addExtraCase(
-          Actions::MemoryClearActionCreator(),
-          [](const FMemorySliceState &State,
-             const Action<rtk::FEmptyPayload> &Action) -> FMemorySliceState {
-            return FMemorySliceState();
-          }));
+  return rtk::createSlice<FMemorySliceState>(
+  TEXT("memory"), FMemorySliceState(),
+  [](rtk::ActionReducerMapBuilder<FMemorySliceState> &Builder) {
+    Builder.addCase(Actions::MemoryStoreStartActionCreator(),
+      [](const FMemorySliceState &State,
+                   const Action<rtk::FEmptyPayload> &Action) -> FMemorySliceState {
+                  FMemorySliceState Next = State;
+                  Next.StorageStatus = TEXT("storing");
+                  Next.Error.Empty();
+                  return Next;
+                });
+    Builder.addCase(Actions::MemoryStoreSuccessActionCreator(),
+      [](const FMemorySliceState &State,
+                             const Action<FMemoryItem> &Action) -> FMemorySliceState {
+                            FMemorySliceState Next = State;
+                            Next.StorageStatus = TEXT("idle");
+                            Next.Entities = GetMemoryAdapter().upsertOne(
+                                Next.Entities, Action.PayloadValue);
+                            return Next;
+                          });
+    Builder.addCase(Actions::MemoryStoreFailedActionCreator(),
+      [](const FMemorySliceState &State,
+                             const Action<FString> &Action) -> FMemorySliceState {
+                            FMemorySliceState Next = State;
+                            Next.StorageStatus = TEXT("error");
+                            Next.Error = Action.PayloadValue;
+                            return Next;
+                          });
+    Builder.addCase(Actions::MemoryRecallStartActionCreator(),
+      [](const FMemorySliceState &State,
+                   const Action<rtk::FEmptyPayload> &Action) -> FMemorySliceState {
+                  FMemorySliceState Next = State;
+                  Next.RecallStatus = TEXT("recalling");
+                  Next.Error.Empty();
+                  return Next;
+                });
+    Builder.addCase(Actions::MemoryRecallSuccessActionCreator(),
+      [](const FMemorySliceState &State,
+                   const Action<TArray<FMemoryItem>> &Action) -> FMemorySliceState {
+                  FMemorySliceState Next = State;
+                  Next.RecallStatus = TEXT("idle");
+                  Next.Entities = GetMemoryAdapter().upsertMany(Next.Entities,
+                                                                Action.PayloadValue);
+                  Next.LastRecalledIds.Empty(Action.PayloadValue.Num());
+                  detail::CollectIdsRecursive(Action.PayloadValue,
+                                              Next.LastRecalledIds, 0);
+                  return Next;
+                });
+    Builder.addCase(Actions::MemoryRecallFailedActionCreator(),
+      [](const FMemorySliceState &State,
+                             const Action<FString> &Action) -> FMemorySliceState {
+                            FMemorySliceState Next = State;
+                            Next.RecallStatus = TEXT("error");
+                            Next.Error = Action.PayloadValue;
+                            return Next;
+                          });
+    Builder.addCase(Actions::MemoryClearActionCreator(),
+      [](const FMemorySliceState &State,
+                   const Action<rtk::FEmptyPayload> &Action) -> FMemorySliceState {
+                  return FMemorySliceState();
+                });
+  });
 }
 
 /**

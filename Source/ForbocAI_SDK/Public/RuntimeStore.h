@@ -39,9 +39,9 @@ namespace StoreInternal {
  * store uses the same reducer wiring.
  */
 inline const rtk::Slice<NPCSlice::FNPCSliceState> &GetNPCSlice() {
-  static const rtk::Slice<NPCSlice::FNPCSliceState> Slice =
-      NPCSlice::CreateNPCSlice();
-  return Slice;
+  static const func::Lazy<rtk::Slice<NPCSlice::FNPCSliceState>> Slice =
+      func::lazy([]() -> rtk::Slice<NPCSlice::FNPCSliceState> { return NPCSlice::CreateNPCSlice(); });
+  return func::eval(Slice);
 }
 
 /**
@@ -50,9 +50,9 @@ inline const rtk::Slice<NPCSlice::FNPCSliceState> &GetNPCSlice() {
  * memory reducers stay consistent across stores.
  */
 inline const rtk::Slice<MemorySlice::FMemorySliceState> &GetMemorySlice() {
-  static const rtk::Slice<MemorySlice::FMemorySliceState> Slice =
-      MemorySlice::CreateMemorySlice();
-  return Slice;
+  static const func::Lazy<rtk::Slice<MemorySlice::FMemorySliceState>> Slice =
+      func::lazy([]() -> rtk::Slice<MemorySlice::FMemorySliceState> { return MemorySlice::CreateMemorySlice(); });
+  return func::eval(Slice);
 }
 
 /**
@@ -62,9 +62,9 @@ inline const rtk::Slice<MemorySlice::FMemorySliceState> &GetMemorySlice() {
  */
 inline const rtk::Slice<DirectiveSlice::FDirectiveSliceState> &
 GetDirectiveSlice() {
-  static const rtk::Slice<DirectiveSlice::FDirectiveSliceState> Slice =
-      DirectiveSlice::CreateDirectiveSlice();
-  return Slice;
+  static const func::Lazy<rtk::Slice<DirectiveSlice::FDirectiveSliceState>> Slice =
+      func::lazy([]() -> rtk::Slice<DirectiveSlice::FDirectiveSliceState> { return DirectiveSlice::CreateDirectiveSlice(); });
+  return func::eval(Slice);
 }
 
 /**
@@ -73,9 +73,9 @@ GetDirectiveSlice() {
  * validation state uses a single reducer definition.
  */
 inline const rtk::Slice<BridgeSlice::FBridgeSliceState> &GetBridgeSlice() {
-  static const rtk::Slice<BridgeSlice::FBridgeSliceState> Slice =
-      BridgeSlice::CreateBridgeSlice();
-  return Slice;
+  static const func::Lazy<rtk::Slice<BridgeSlice::FBridgeSliceState>> Slice =
+      func::lazy([]() -> rtk::Slice<BridgeSlice::FBridgeSliceState> { return BridgeSlice::CreateBridgeSlice(); });
+  return func::eval(Slice);
 }
 
 /**
@@ -84,9 +84,9 @@ inline const rtk::Slice<BridgeSlice::FBridgeSliceState> &GetBridgeSlice() {
  * export and import state uses the same reducer wiring.
  */
 inline const rtk::Slice<SoulSlice::FSoulSliceState> &GetSoulSlice() {
-  static const rtk::Slice<SoulSlice::FSoulSliceState> Slice =
-      SoulSlice::CreateSoulSlice();
-  return Slice;
+  static const func::Lazy<rtk::Slice<SoulSlice::FSoulSliceState>> Slice =
+      func::lazy([]() -> rtk::Slice<SoulSlice::FSoulSliceState> { return SoulSlice::CreateSoulSlice(); });
+  return func::eval(Slice);
 }
 
 /**
@@ -95,9 +95,9 @@ inline const rtk::Slice<SoulSlice::FSoulSliceState> &GetSoulSlice() {
  * state transitions are defined once for the runtime.
  */
 inline const rtk::Slice<GhostSlice::FGhostSliceState> &GetGhostSlice() {
-  static const rtk::Slice<GhostSlice::FGhostSliceState> Slice =
-      GhostSlice::CreateGhostSlice();
-  return Slice;
+  static const func::Lazy<rtk::Slice<GhostSlice::FGhostSliceState>> Slice =
+      func::lazy([]() -> rtk::Slice<GhostSlice::FGhostSliceState> { return GhostSlice::CreateGhostSlice(); });
+  return func::eval(Slice);
 }
 
 /**
@@ -106,9 +106,9 @@ inline const rtk::Slice<GhostSlice::FGhostSliceState> &GetGhostSlice() {
  * endpoint cache state is wired consistently.
  */
 inline const rtk::Slice<APISlice::FAPIState> &GetAPISlice() {
-  static const rtk::Slice<APISlice::FAPIState> Slice =
-      APISlice::CreateAPISlice();
-  return Slice;
+  static const func::Lazy<rtk::Slice<APISlice::FAPIState>> Slice =
+      func::lazy([]() -> rtk::Slice<APISlice::FAPIState> { return APISlice::CreateAPISlice(); });
+  return func::eval(Slice);
 }
 
 } // namespace StoreInternal

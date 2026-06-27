@@ -5,6 +5,7 @@
  */
 
 #include "Core/rtk.hpp"
+#include "Core/functional_core.hpp"
 #include "CoreMinimal.h"
 #include "Types.h"
 
@@ -52,7 +53,7 @@ inline FString DirectiveIdSelector(const FDirectiveRun &Run) { return Run.Id; }
  * User Story: As directive reducers and selectors, I need a shared adapter so
  * entity operations stay consistent across the slice.
  */
-inline EntityAdapterOps<FDirectiveRun> GetDirectiveAdapter() {
+inline EntityAdapter<FDirectiveRun> GetDirectiveAdapter() {
   return createEntityAdapter<FDirectiveRun>(&DirectiveIdSelector);
 }
 
@@ -215,133 +216,134 @@ inline AnyAction ClearDirectivesForNpc(const FString &NpcId) {
  * directive lifecycle actions share a consistent reducer.
  */
 inline Slice<FDirectiveSliceState> CreateDirectiveSlice() {
-  return buildSlice(sliceBuilder<FDirectiveSliceState>(TEXT("directive"),
-                                                       FDirectiveSliceState()) |
-                    addExtraCase(Actions::DirectiveRunStartedActionCreator(),
-                    [](const FDirectiveSliceState &State,
-                       const Action<FDirectiveRunStartedPayload> &Action)
-                        -> FDirectiveSliceState {
-                      FDirectiveSliceState Next = State;
-                      FDirectiveRun Run;
-                      Run.Id = Action.PayloadValue.Id;
-                      Run.NpcId = Action.PayloadValue.NpcId;
-                      Run.Observation = Action.PayloadValue.Observation;
-                      Run.Status = EDirectiveStatus::Running;
-                      Run.StartedAt = FDateTime::UtcNow().ToUnixTimestamp();
-                      Next.Entities =
-                          GetDirectiveAdapter().upsertOne(Next.Entities, Run);
-                      Next.ActiveDirectiveId = Run.Id;
-                      return Next;
-                    }) |
-                    addExtraCase(Actions::DirectiveReceivedActionCreator(),
-                    [](const FDirectiveSliceState &State,
-                       const Action<FDirectiveReceivedPayload> &Action)
-                        -> FDirectiveSliceState {
-                      FDirectiveSliceState Next = State;
-                      const FDirectiveReceivedPayload &Payload =
-                          Action.PayloadValue;
-                      Next.Entities = GetDirectiveAdapter().updateOne(
-                          Next.Entities, Payload.Id,
-                          [Payload](const FDirectiveRun &Existing) {
-                            FDirectiveRun Updated = Existing;
-                            Updated.MemoryRecallQuery =
-                                Payload.Response.MemoryRecall.Query;
-                            Updated.MemoryRecallLimit =
-                                Payload.Response.MemoryRecall.Limit;
-                            Updated.MemoryRecallThreshold =
-                                Payload.Response.MemoryRecall.Threshold;
-                            return Updated;
+  return rtk::createSlice<FDirectiveSliceState>(
+  TEXT("directive"),
+                                                       FDirectiveSliceState(),
+  [](rtk::ActionReducerMapBuilder<FDirectiveSliceState> &Builder) {
+    Builder.addCase(Actions::DirectiveRunStartedActionCreator(),
+      [](const FDirectiveSliceState &State,
+                             const Action<FDirectiveRunStartedPayload> &Action)
+                              -> FDirectiveSliceState {
+                            FDirectiveSliceState Next = State;
+                            FDirectiveRun Run;
+                            Run.Id = Action.PayloadValue.Id;
+                            Run.NpcId = Action.PayloadValue.NpcId;
+                            Run.Observation = Action.PayloadValue.Observation;
+                            Run.Status = EDirectiveStatus::Running;
+                            Run.StartedAt = FDateTime::UtcNow().ToUnixTimestamp();
+                            Next.Entities =
+                                GetDirectiveAdapter().upsertOne(Next.Entities, Run);
+                            Next.ActiveDirectiveId = Run.Id;
+                            return Next;
                           });
-                      return Next;
-                    }) |
-                    addExtraCase(Actions::ContextComposedActionCreator(),
-                    [](const FDirectiveSliceState &State,
-                       const Action<FContextComposedPayload> &Action)
-                        -> FDirectiveSliceState {
-                      FDirectiveSliceState Next = State;
-                      const FContextComposedPayload &Payload =
-                          Action.PayloadValue;
-                      Next.Entities = GetDirectiveAdapter().updateOne(
-                          Next.Entities, Payload.Id,
-                          [Payload](const FDirectiveRun &Existing) {
-                            FDirectiveRun Updated = Existing;
-                            Updated.ContextPrompt = Payload.Prompt;
-                            Updated.ContextConstraints = Payload.Constraints;
-                            return Updated;
+    Builder.addCase(Actions::DirectiveReceivedActionCreator(),
+      [](const FDirectiveSliceState &State,
+                             const Action<FDirectiveReceivedPayload> &Action)
+                              -> FDirectiveSliceState {
+                            FDirectiveSliceState Next = State;
+                            const FDirectiveReceivedPayload &Payload =
+                                Action.PayloadValue;
+                            Next.Entities = GetDirectiveAdapter().updateOne(
+                                Next.Entities, Payload.Id,
+                                [Payload](const FDirectiveRun &Existing) {
+                                  FDirectiveRun Updated = Existing;
+                                  Updated.MemoryRecallQuery =
+                                      Payload.Response.MemoryRecall.Query;
+                                  Updated.MemoryRecallLimit =
+                                      Payload.Response.MemoryRecall.Limit;
+                                  Updated.MemoryRecallThreshold =
+                                      Payload.Response.MemoryRecall.Threshold;
+                                  return Updated;
+                                });
+                            return Next;
                           });
-                      return Next;
-                    }) |
-                    addExtraCase(
-          Actions::VerdictValidatedActionCreator(),
-          [](const FDirectiveSliceState &State,
-             const Action<FVerdictValidatedPayload> &Action)
-              -> FDirectiveSliceState {
-            FDirectiveSliceState Next = State;
-            const FVerdictValidatedPayload &Payload = Action.PayloadValue;
-            Next.Entities = GetDirectiveAdapter().updateOne(
-                Next.Entities, Payload.Id,
-                [Payload](const FDirectiveRun &Existing) {
-                  FDirectiveRun Updated = Existing;
-                  Updated.Status = EDirectiveStatus::Completed;
-                  Updated.CompletedAt = FDateTime::UtcNow().ToUnixTimestamp();
-                  Updated.bVerdictValid = Payload.Verdict.bValid;
-                  Updated.VerdictDialogue = Payload.Verdict.Dialogue;
-                  Updated.VerdictActionType = Payload.Verdict.bHasAction
-                                                  ? Payload.Verdict.Action.Type
-                                                  : TEXT("");
-                  return Updated;
+    Builder.addCase(Actions::ContextComposedActionCreator(),
+      [](const FDirectiveSliceState &State,
+                             const Action<FContextComposedPayload> &Action)
+                              -> FDirectiveSliceState {
+                            FDirectiveSliceState Next = State;
+                            const FContextComposedPayload &Payload =
+                                Action.PayloadValue;
+                            Next.Entities = GetDirectiveAdapter().updateOne(
+                                Next.Entities, Payload.Id,
+                                [Payload](const FDirectiveRun &Existing) {
+                                  FDirectiveRun Updated = Existing;
+                                  Updated.ContextPrompt = Payload.Prompt;
+                                  Updated.ContextConstraints = Payload.Constraints;
+                                  return Updated;
+                                });
+                            return Next;
+                          });
+    Builder.addCase(Actions::VerdictValidatedActionCreator(),
+      [](const FDirectiveSliceState &State,
+                   const Action<FVerdictValidatedPayload> &Action)
+                    -> FDirectiveSliceState {
+                  FDirectiveSliceState Next = State;
+                  const FVerdictValidatedPayload &Payload = Action.PayloadValue;
+                  Next.Entities = GetDirectiveAdapter().updateOne(
+                      Next.Entities, Payload.Id,
+                      [Payload](const FDirectiveRun &Existing) {
+                        FDirectiveRun Updated = Existing;
+                        Updated.Status = EDirectiveStatus::Completed;
+                        Updated.CompletedAt = FDateTime::UtcNow().ToUnixTimestamp();
+                        Updated.bVerdictValid = Payload.Verdict.bValid;
+                        Updated.VerdictDialogue = Payload.Verdict.Dialogue;
+                        Updated.VerdictActionType = Payload.Verdict.bHasAction
+                                                        ? Payload.Verdict.Action.Type
+                                                        : TEXT("");
+                        return Updated;
+                      });
+                  return Next;
                 });
-            return Next;
-          }) |
-                    addExtraCase(Actions::DirectiveRunFailedActionCreator(),
-                    [](const FDirectiveSliceState &State,
-                       const Action<FDirectiveRunFailedPayload> &Action)
-                        -> FDirectiveSliceState {
-                      FDirectiveSliceState Next = State;
-                      const FDirectiveRunFailedPayload &Payload =
-                          Action.PayloadValue;
-                      Next.Entities = GetDirectiveAdapter().updateOne(
-                          Next.Entities, Payload.Id,
-                          [Payload](const FDirectiveRun &Existing) {
-                            FDirectiveRun Updated = Existing;
-                            Updated.Status = EDirectiveStatus::Failed;
-                            Updated.CompletedAt =
-                                FDateTime::UtcNow().ToUnixTimestamp();
-                            Updated.Error = Payload.Error;
-                            return Updated;
+    Builder.addCase(Actions::DirectiveRunFailedActionCreator(),
+      [](const FDirectiveSliceState &State,
+                             const Action<FDirectiveRunFailedPayload> &Action)
+                              -> FDirectiveSliceState {
+                            FDirectiveSliceState Next = State;
+                            const FDirectiveRunFailedPayload &Payload =
+                                Action.PayloadValue;
+                            Next.Entities = GetDirectiveAdapter().updateOne(
+                                Next.Entities, Payload.Id,
+                                [Payload](const FDirectiveRun &Existing) {
+                                  FDirectiveRun Updated = Existing;
+                                  Updated.Status = EDirectiveStatus::Failed;
+                                  Updated.CompletedAt =
+                                      FDateTime::UtcNow().ToUnixTimestamp();
+                                  Updated.Error = Payload.Error;
+                                  return Updated;
+                                });
+                            return Next;
                           });
-                      return Next;
-                    }) |
-                    addExtraCase(
-          Actions::ClearDirectivesForNpcActionCreator(),
-          [](const FDirectiveSliceState &State,
-             const Action<FString> &Action) -> FDirectiveSliceState {
-            FDirectiveSliceState Next = State;
-            const TArray<FDirectiveRun> Runs =
-                GetDirectiveAdapter().getSelectors().selectAll(Next.Entities);
-            struct CollectIds {
-              static void apply(
-                  const TArray<FDirectiveRun> &R,
-                  const FString &NpcId,
-                  TArray<FString> &Out,
-                  int32 Idx) {
-                Idx >= R.Num()
-                    ? void()
-                    : (R[Idx].NpcId == NpcId
-                           ? (Out.Add(R[Idx].Id), void())
-                           : void(),
-                       apply(R, NpcId, Out, Idx + 1), void());
-              }
-            };
-            TArray<FString> IdsToRemove;
-            CollectIds::apply(Runs, Action.PayloadValue, IdsToRemove, 0);
-            Next.Entities =
-                GetDirectiveAdapter().removeMany(Next.Entities, IdsToRemove);
-            IdsToRemove.Contains(Next.ActiveDirectiveId)
-                ? (Next.ActiveDirectiveId.Empty(), void())
-                : void();
-            return Next;
-          }));
+    Builder.addCase(Actions::ClearDirectivesForNpcActionCreator(),
+      [](const FDirectiveSliceState &State,
+                   const Action<FString> &Action) -> FDirectiveSliceState {
+                  FDirectiveSliceState Next = State;
+                  const TArray<FDirectiveRun> Runs =
+                      GetDirectiveAdapter().getSelectors().selectAll(Next.Entities);
+                  struct CollectIds {
+                    static void apply(
+                        const TArray<FDirectiveRun> &R,
+                        const FString &NpcId,
+                        TArray<FString> &Out,
+                        int32 Idx) {
+                      Idx >= R.Num()
+                          ? void()
+                          : (R[Idx].NpcId == NpcId
+                                 ? (Out.Add(R[Idx].Id), void())
+                                 : void(),
+                             apply(R, NpcId, Out, Idx + 1), void());
+                    }
+                  };
+                  TArray<FString> IdsToRemove;
+                  CollectIds::apply(Runs, Action.PayloadValue, IdsToRemove, 0);
+                  Next.Entities =
+                      GetDirectiveAdapter().removeMany(Next.Entities, IdsToRemove);
+                  IdsToRemove.Contains(Next.ActiveDirectiveId)
+                      ? (Next.ActiveDirectiveId.Empty(), void())
+                      : void();
+                  return Next;
+                });
+  });
 }
 
 /**

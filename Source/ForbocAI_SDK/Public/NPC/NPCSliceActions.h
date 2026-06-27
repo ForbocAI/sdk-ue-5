@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Core/rtk.hpp"
+#include "Core/functional_core.hpp"
+
 #include "NPC/NPCTypes.h"
 
 namespace NPCSlice {
@@ -44,9 +47,11 @@ namespace Actions {
  * updated NPC records dispatch through one contract.
  */
 inline const rtk::ActionCreator<FNPCInternalState> &SetNPCInfoActionCreator() {
-  static const rtk::ActionCreator<FNPCInternalState> ActionCreator =
-      rtk::createAction<FNPCInternalState>(TEXT("npc/setNPCInfo"));
-  return ActionCreator;
+  static const func::Lazy<rtk::ActionCreator<FNPCInternalState>> ActionCreator =
+      func::lazy([]() -> rtk::ActionCreator<FNPCInternalState> {
+        return rtk::createAction<FNPCInternalState>(TEXT("npc/setNPCInfo"));
+      });
+  return func::eval(ActionCreator);
 }
 
 /**
@@ -55,9 +60,11 @@ inline const rtk::ActionCreator<FNPCInternalState> &SetNPCInfoActionCreator() {
  * current actor can be changed consistently.
  */
 inline const rtk::ActionCreator<FString> &SetActiveNPCActionCreator() {
-  static const rtk::ActionCreator<FString> ActionCreator =
-      rtk::createAction<FString>(TEXT("npc/setActiveNPC"));
-  return ActionCreator;
+  static const func::Lazy<rtk::ActionCreator<FString>> ActionCreator =
+      func::lazy([]() -> rtk::ActionCreator<FString> {
+        return rtk::createAction<FString>(TEXT("npc/setActiveNPC"));
+      });
+  return func::eval(ActionCreator);
 }
 
 /**
@@ -67,9 +74,11 @@ inline const rtk::ActionCreator<FString> &SetActiveNPCActionCreator() {
  */
 inline const rtk::ActionCreator<FSetNPCStatePayload> &
 SetNPCStateActionCreator() {
-  static const rtk::ActionCreator<FSetNPCStatePayload> ActionCreator =
-      rtk::createAction<FSetNPCStatePayload>(TEXT("npc/setNPCState"));
-  return ActionCreator;
+  static const func::Lazy<rtk::ActionCreator<FSetNPCStatePayload>> ActionCreator =
+      func::lazy([]() -> rtk::ActionCreator<FSetNPCStatePayload> {
+        return rtk::createAction<FSetNPCStatePayload>(TEXT("npc/setNPCState"));
+      });
+  return func::eval(ActionCreator);
 }
 
 /**
@@ -79,9 +88,11 @@ SetNPCStateActionCreator() {
  */
 inline const rtk::ActionCreator<FUpdateNPCStatePayload> &
 UpdateNPCStateActionCreator() {
-  static const rtk::ActionCreator<FUpdateNPCStatePayload> ActionCreator =
-      rtk::createAction<FUpdateNPCStatePayload>(TEXT("npc/updateNPCState"));
-  return ActionCreator;
+  static const func::Lazy<rtk::ActionCreator<FUpdateNPCStatePayload>> ActionCreator =
+      func::lazy([]() -> rtk::ActionCreator<FUpdateNPCStatePayload> {
+        return rtk::createAction<FUpdateNPCStatePayload>(TEXT("npc/updateNPCState"));
+      });
+  return func::eval(ActionCreator);
 }
 
 /**
@@ -91,9 +102,11 @@ UpdateNPCStateActionCreator() {
  */
 inline const rtk::ActionCreator<FAddToHistoryPayload> &
 AddToHistoryActionCreator() {
-  static const rtk::ActionCreator<FAddToHistoryPayload> ActionCreator =
-      rtk::createAction<FAddToHistoryPayload>(TEXT("npc/addToHistory"));
-  return ActionCreator;
+  static const func::Lazy<rtk::ActionCreator<FAddToHistoryPayload>> ActionCreator =
+      func::lazy([]() -> rtk::ActionCreator<FAddToHistoryPayload> {
+        return rtk::createAction<FAddToHistoryPayload>(TEXT("npc/addToHistory"));
+      });
+  return func::eval(ActionCreator);
 }
 
 /**
@@ -102,9 +115,11 @@ AddToHistoryActionCreator() {
  * full transcript replacement uses a shared contract.
  */
 inline const rtk::ActionCreator<FSetHistoryPayload> &SetHistoryActionCreator() {
-  static const rtk::ActionCreator<FSetHistoryPayload> ActionCreator =
-      rtk::createAction<FSetHistoryPayload>(TEXT("npc/setHistory"));
-  return ActionCreator;
+  static const func::Lazy<rtk::ActionCreator<FSetHistoryPayload>> ActionCreator =
+      func::lazy([]() -> rtk::ActionCreator<FSetHistoryPayload> {
+        return rtk::createAction<FSetHistoryPayload>(TEXT("npc/setHistory"));
+      });
+  return func::eval(ActionCreator);
 }
 
 /**
@@ -114,9 +129,11 @@ inline const rtk::ActionCreator<FSetHistoryPayload> &SetHistoryActionCreator() {
  */
 inline const rtk::ActionCreator<FSetLastActionPayload> &
 SetLastActionActionCreator() {
-  static const rtk::ActionCreator<FSetLastActionPayload> ActionCreator =
-      rtk::createAction<FSetLastActionPayload>(TEXT("npc/setLastAction"));
-  return ActionCreator;
+  static const func::Lazy<rtk::ActionCreator<FSetLastActionPayload>> ActionCreator =
+      func::lazy([]() -> rtk::ActionCreator<FSetLastActionPayload> {
+        return rtk::createAction<FSetLastActionPayload>(TEXT("npc/setLastAction"));
+      });
+  return func::eval(ActionCreator);
 }
 
 /**
@@ -126,9 +143,11 @@ SetLastActionActionCreator() {
  */
 inline const rtk::ActionCreator<FBlockActionPayload> &
 BlockActionActionCreator() {
-  static const rtk::ActionCreator<FBlockActionPayload> ActionCreator =
-      rtk::createAction<FBlockActionPayload>(TEXT("npc/blockAction"));
-  return ActionCreator;
+  static const func::Lazy<rtk::ActionCreator<FBlockActionPayload>> ActionCreator =
+      func::lazy([]() -> rtk::ActionCreator<FBlockActionPayload> {
+        return rtk::createAction<FBlockActionPayload>(TEXT("npc/blockAction"));
+      });
+  return func::eval(ActionCreator);
 }
 
 /**
@@ -137,9 +156,11 @@ BlockActionActionCreator() {
  * can be removed consistently when conditions change.
  */
 inline const rtk::ActionCreator<FString> &ClearBlockActionCreator() {
-  static const rtk::ActionCreator<FString> ActionCreator =
-      rtk::createAction<FString>(TEXT("npc/clearBlock"));
-  return ActionCreator;
+  static const func::Lazy<rtk::ActionCreator<FString>> ActionCreator =
+      func::lazy([]() -> rtk::ActionCreator<FString> {
+        return rtk::createAction<FString>(TEXT("npc/clearBlock"));
+      });
+  return func::eval(ActionCreator);
 }
 
 /**
@@ -148,9 +169,11 @@ inline const rtk::ActionCreator<FString> &ClearBlockActionCreator() {
  * propagate through one shared reducer contract.
  */
 inline const rtk::ActionCreator<FString> &RemoveNPCActionCreator() {
-  static const rtk::ActionCreator<FString> ActionCreator =
-      rtk::createAction<FString>(TEXT("npc/removeNPC"));
-  return ActionCreator;
+  static const func::Lazy<rtk::ActionCreator<FString>> ActionCreator =
+      func::lazy([]() -> rtk::ActionCreator<FString> {
+        return rtk::createAction<FString>(TEXT("npc/removeNPC"));
+      });
+  return func::eval(ActionCreator);
 }
 
 /**

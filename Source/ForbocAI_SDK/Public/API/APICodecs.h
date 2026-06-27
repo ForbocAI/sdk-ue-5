@@ -19,7 +19,7 @@ namespace APISlice {
 
 using namespace rtk;
 
-extern rtk::ApiSlice<FStoreState> ForbocAiApi;
+extern rtk::Api<FStoreState> ForbocAiApi;
 
 namespace Detail {
 
@@ -341,7 +341,7 @@ inline ThunkAction<Result, FStoreState> MakeEndpoint(
   Endpoint.ProvidesTags = ProvidesTags;
   Endpoint.InvalidatesTags = InvalidatesTags;
   Endpoint.RequestBuilder = RequestBuilder;
-  return injectEndpoint(ForbocAiApi, Endpoint)(ArgValue);
+  return injectEndpoints(ForbocAiApi, Endpoint)(ArgValue);
 }
 
 /**

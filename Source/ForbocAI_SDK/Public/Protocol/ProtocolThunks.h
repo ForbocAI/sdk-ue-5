@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Core/rtk.hpp"
+#include "Core/functional_core.hpp"
+
 // Handler classification — pinned by the canonical instruction sequence in
 // classified/docs/design/api/architecture.md § Canonical Instruction Sequence.
 // Drift between this table and the dispatcher is treated as a contract bug.

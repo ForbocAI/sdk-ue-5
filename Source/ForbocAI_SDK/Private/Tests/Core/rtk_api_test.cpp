@@ -5,13 +5,13 @@
 
 using namespace rtk;
 
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRtkApiSliceTest, "ForbocAI.Core.RTK.ApiSlice",
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRtkApiTest, "ForbocAI.Core.RTK.Api",
                                  EAutomationTestFlags_ApplicationContextMask |
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
-bool FRtkApiSliceTest::RunTest(const FString &Parameters) {
+bool FRtkApiTest::RunTest(const FString &Parameters) {
   /**
    * 1. Define an API Endpoint
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
@@ -44,13 +44,13 @@ bool FRtkApiSliceTest::RunTest(const FString &Parameters) {
   };
 
   /**
-   * 2. Register Endpoint in ApiSlice
+   * 2. Register Endpoint in Api
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  ApiSlice<FAppMockState> TestApi =
-      createApiSlice<FAppMockState>(TEXT("testApi"), TArray<FString>());
+  Api<FAppMockState> TestApi =
+      createApi<FAppMockState>(TEXT("testApi"), TArray<FString>());
 
-  auto GetUserThunk = injectEndpoint(TestApi, GetUserEndpoint);
+  auto GetUserThunk = injectEndpoints(TestApi, GetUserEndpoint);
 
   TArray<FString> EventLog;
   std::function<AnyAction(const AnyAction &)> MockDispatch =
