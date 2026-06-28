@@ -690,8 +690,9 @@ template <typename F, typename G> Composed<F, G> compose(F f, G g) {
  *
  * @signature template helpers: identity, constant, flip, complement, both,
  * either_pred, all_pass, any_pass, converge2, juxt2, pipe3, pipe4,
- * fold_vector, filter_vector, find_vector, contains_value, unique_by,
- * traverse_maybe, sequence_maybe, fold_either, lift2, lift3, eq_by, has_key
+ * catalog, fold_catalog, zip_catalog_fold, tail_tuple, fold_vector,
+ * filter_vector, find_vector, contains_value, unique_by, traverse_maybe,
+ * sequence_maybe, fold_either, lift2, lift3, eq_by, has_key
  *
  * User Story: As a cross-SDK maintainer, I need the same unary-composition
  * recipes available in C++ as Rust, GDScript, and TypeScript so reducers,
@@ -715,6 +716,10 @@ template <typename F, typename G> Composed<F, G> compose(F f, G g) {
  *   multi-input domain operations. Do not create a new request struct when a
  *   reusable unary function, predicate, fold, lift, or traversal is the actual
  *   abstraction.
+ * - When only nouns change, put selectors, projectors, validators, or
+ *   transforms in catalogs and fold the catalog. When two noun lists advance
+ *   together, use zip_catalog_fold so recursion is one primitive instead of a
+ *   family of domain-shaped wrappers.
  * - Neutral primitives live below feature domains. Feature domains import
  *   downward into these primitives instead of borrowing helpers from siblings.
  * - Hidden fallback behavior belongs at explicit integration boundaries only.
@@ -882,6 +887,114 @@ auto pipe3(F f, G g, H h) -> decltype(compose(h, compose(g, f))) {
 template <typename F, typename G, typename H, typename I>
 auto pipe4(F f, G g, H h, I i) -> decltype(compose(i, pipe3(f, g, h))) {
   return compose(i, pipe3(f, g, h));
+}
+
+/**
+ * @brief Stores a typed compile-time catalog of values or functions.
+ *
+ * @signature template <typename... Values> struct Catalog
+ *
+ * User Story: As feature code, I need noun-changing entries to become data
+ * in one reusable list shape instead of spawning request/factory families.
+ */
+template <typename... Values> struct Catalog {
+  std::tuple<Values...> values;
+};
+
+/**
+ * @brief Builds a typed catalog from values or functions.
+ *
+ * @signature template <typename... Values> Catalog<decay<Values>...> catalog(Values &&...values)
+ *
+ * User Story: As composition code, I need a small variadic builder so repeated
+ * selectors, projectors, validators, and transforms can be folded uniformly.
+ */
+template <typename... Values>
+Catalog<typename std::decay<Values>::type...> catalog(Values &&...values) {
+  return Catalog<typename std::decay<Values>::type...>{
+      std::make_tuple(std::forward<Values>(values)...)};
+}
+
+namespace detail {
+template <typename Tuple, size_t... Indices>
+auto tailTupleImpl(const Tuple &values, seq<Indices...>)
+    -> decltype(std::make_tuple(std::get<Indices + 1>(values)...)) {
+  return std::make_tuple(std::get<Indices + 1>(values)...);
+}
+} // namespace detail
+
+/**
+ * @brief Returns a tuple containing every value after the head.
+ *
+ * @signature template <typename Head, typename... Tail> std::tuple<Tail...> tail_tuple(const std::tuple<Head, Tail...> &values)
+ *
+ * User Story: As catalog recursion, I need one neutral tuple-tail primitive so
+ * higher folds do not reimplement tuple slicing per domain.
+ */
+template <typename Head, typename... Tail>
+std::tuple<Tail...> tail_tuple(const std::tuple<Head, Tail...> &values) {
+  return detail::tailTupleImpl(values, gen_seq<sizeof...(Tail)>());
+}
+
+namespace detail {
+template <typename Acc, typename Step>
+Acc foldTupleRecursive(const std::tuple<> &, Acc acc, Step) {
+  return acc;
+}
+
+template <typename Head, typename... Tail, typename Acc, typename Step>
+Acc foldTupleRecursive(const std::tuple<Head, Tail...> &values, Acc acc,
+                       Step step) {
+  return foldTupleRecursive(tail_tuple(values),
+                            step(acc, std::get<0>(values)), step);
+}
+
+template <typename Acc, typename Step>
+Acc zipTupleFoldRecursive(const std::tuple<> &, const std::tuple<> &, Acc acc,
+                          Step) {
+  return acc;
+}
+
+template <typename LeftHead, typename... LeftTail, typename RightHead,
+          typename... RightTail, typename Acc, typename Step>
+Acc zipTupleFoldRecursive(const std::tuple<LeftHead, LeftTail...> &left,
+                          const std::tuple<RightHead, RightTail...> &right,
+                          Acc acc, Step step) {
+  return zipTupleFoldRecursive(
+      tail_tuple(left), tail_tuple(right),
+      step(acc, std::get<0>(left), std::get<0>(right)), step);
+}
+} // namespace detail
+
+/**
+ * @brief Folds a catalog through one accumulator step.
+ *
+ * @signature template <typename... Values, typename Acc, typename Step> Acc fold_catalog(const Catalog<Values...> &values, Acc seed, Step step)
+ *
+ * User Story: As ECS and RTK adapter code, I need function catalogs to execute
+ * through one reusable recursion instead of repeated named wrapper families.
+ */
+template <typename... Values, typename Acc, typename Step>
+Acc fold_catalog(const Catalog<Values...> &values, Acc seed, Step step) {
+  return detail::foldTupleRecursive(values.values, seed, step);
+}
+
+/**
+ * @brief Folds two catalogs in lockstep through one accumulator step.
+ *
+ * @signature template <typename... LeftValues, typename... RightValues, typename Acc, typename Step> Acc zip_catalog_fold(const Catalog<LeftValues...> &left, const Catalog<RightValues...> &right, Acc seed, Step step)
+ *
+ * User Story: As projection code, paired selector/projector lists should be
+ * registered as data and executed by one neutral fold.
+ */
+template <typename... LeftValues, typename... RightValues, typename Acc,
+          typename Step>
+Acc zip_catalog_fold(const Catalog<LeftValues...> &left,
+                     const Catalog<RightValues...> &right, Acc seed,
+                     Step step) {
+  static_assert(sizeof...(LeftValues) == sizeof...(RightValues),
+                "zip_catalog_fold requires equally sized catalogs");
+  return detail::zipTupleFoldRecursive(left.values, right.values, seed, step);
 }
 
 inline std::function<int(int)> example_clamp_channel() {
