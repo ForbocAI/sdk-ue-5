@@ -90,12 +90,9 @@ const FMemoryStore After = MemoryOps::Store(
 
 ## Quick start (Blueprint)
 
-1. Create a new Blueprint Actor parented to `ASDKTestActor` (shipped with the demo project).
-2. In **Class Defaults**, set **Persona** (and optionally **Api Url**).
-3. Implement **Event On Agent Response** to consume dialogue.
-4. Call **Process Input** from any input or UI event.
+The full demo project lives at [`ForbocAI/demo-ue-5.7`](https://github.com/ForbocAI/demo-ue-5.7) and ships source-controlled Blueprint and UMG assets for the happy-path runtime map. Open `/Game/Map/Maps/Runtime`, press Play, and use the tracked `BP_LevelGameMode`, `BP_PlayerRuntimeController`, `BP_TownspersonView`, `BP_SpeechPresenter`, and `WBP_Chat` assets as the editor-facing integration points.
 
-The full demo project lives at [`ForbocAI/demo-ue-5.7`](https://github.com/ForbocAI/demo-ue-5.7) and shows multi-bot orchestration, dialogue, speech, and ruleset-aware combat encounters.
+For SDK/API validation with `FORBOC_DEMO_WITH_SDK=1`, call the `UForbocAIBlueprintLibrary` nodes from source-controlled Blueprint assets and keep runtime decisions in reducers/thunks rather than local widget graphs.
 
 ---
 
