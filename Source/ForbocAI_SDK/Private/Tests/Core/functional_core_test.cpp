@@ -96,6 +96,176 @@ bool FDispatcherHasAndKeysTest::RunTest(const FString &Parameters) {
 }
 
 /**
+ * Test: Dispatcher — strict Either miss
+ * User Story: As a maintainer, I need strict dispatcher misses to surface as
+ * typed errors instead of fallback behavior.
+ */
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FDispatcherEitherMissTest,
+    "ForbocAI.Core.FunctionalCore.Dispatcher.EitherMiss",
+    EAutomationTestFlags_ApplicationContextMask |
+        EAutomationTestFlags::EngineFilter)
+/**
+ * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ */
+bool FDispatcherEitherMissTest::RunTest(const FString &Parameters) {
+  std::vector<std::pair<std::string, std::function<int()>>> entries;
+  entries.push_back(std::make_pair(std::string("ready"), []() { return 7; }));
+  auto dispatcher = func::createDispatcher<std::string, int>(entries);
+
+  auto hit = func::dispatch_either<std::string, std::string, int>(
+      dispatcher, std::string("ready"), std::string("missing"));
+  TestFalse("Existing key returns Right", hit.isLeft);
+  TestEqual("Existing key result", hit.right, 7);
+
+  auto miss = func::dispatch_either<std::string, std::string, int>(
+      dispatcher, std::string("absent"), std::string("missing"));
+  TestTrue("Missing key returns Left", miss.isLeft);
+  TestEqual("Missing key error", miss.left, std::string("missing"));
+
+  return true;
+}
+
+/**
+ * Test: ArgDispatcher — strict argument dispatch
+ * User Story: As ECS formatter code, I need argument dispatch to return Maybe
+ * on misses so no hidden fallback branch is required.
+ */
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FArgDispatcherStrictTest,
+    "ForbocAI.Core.FunctionalCore.Dispatcher.ArgStrict",
+    EAutomationTestFlags_ApplicationContextMask |
+        EAutomationTestFlags::EngineFilter)
+/**
+ * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ */
+bool FArgDispatcherStrictTest::RunTest(const FString &Parameters) {
+  typedef func::ArgDispatcher<std::string, int, std::string> FTestDispatcher;
+  FTestDispatcher dispatcher =
+      func::create_arg_dispatcher<std::string, int, std::string>();
+  dispatcher = func::arg_dispatcher_register<std::string, int, std::string>(
+      dispatcher, std::string("double"),
+      [](const int &value) { return std::string(value == 4 ? "eight" : "x"); });
+
+  std::string key = "double";
+  int arg = 4;
+  auto hit = func::arg_dispatcher_dispatch_maybe<std::string, int, std::string>(
+      func::ArgDispatcherDispatch<std::string, int, std::string>{
+          &dispatcher, &key, &arg});
+  TestTrue("Argument dispatcher hit returns Just", hit.hasValue);
+  TestEqual("Argument dispatcher hit value", hit.value, std::string("eight"));
+
+  std::string missing = "triple";
+  auto miss =
+      func::arg_dispatcher_dispatch_either<std::string, std::string, int,
+                                           std::string>(
+          func::ArgDispatcherDispatch<std::string, int, std::string>{
+              &dispatcher, &missing, &arg},
+          std::string("missing-handler"));
+  TestTrue("Argument dispatcher miss returns Left", miss.isLeft);
+  TestEqual("Argument dispatcher miss error", miss.left,
+            std::string("missing-handler"));
+
+  return true;
+}
+
+/**
+ * Test: Cookbook collection helpers
+ * User Story: As a maintainer, I need fold/filter/find/unique helpers covered
+ * so feature code can reuse them instead of inventing local request wrappers.
+ */
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FFunctionalCookbookCollectionsTest,
+    "ForbocAI.Core.FunctionalCore.Cookbook.Collections",
+    EAutomationTestFlags_ApplicationContextMask |
+        EAutomationTestFlags::EngineFilter)
+/**
+ * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ */
+bool FFunctionalCookbookCollectionsTest::RunTest(const FString &Parameters) {
+  std::vector<int> values;
+  values.push_back(1);
+  values.push_back(2);
+  values.push_back(2);
+  values.push_back(3);
+
+  int sum = func::fold_vector<int, int>(
+      values, 0, [](int acc, const int &value) { return acc + value; });
+  TestEqual("fold_vector sums values", sum, 8);
+
+  std::vector<int> twos = func::filter_vector<int>(
+      values, [](const int &value) { return value == 2; });
+  TestEqual("filter_vector keeps matching values",
+            static_cast<int>(twos.size()), 2);
+
+  auto found = func::find_vector<int>(
+      values, [](const int &value) { return value == 3; });
+  TestTrue("find_vector returns Just on hit", found.hasValue);
+  TestEqual("find_vector hit value", found.value, 3);
+
+  std::vector<int> unique = func::unique_by<int>(
+      values, [](const int &value) { return value; });
+  TestEqual("unique_by keeps first values", static_cast<int>(unique.size()),
+            3);
+  TestTrue("contains_value finds existing value",
+           func::contains_value<int>(unique, 2));
+
+  return true;
+}
+
+/**
+ * Test: Cookbook Maybe/Either composition helpers
+ * User Story: As data assembly code, I need traversal, sequence, lift, and
+ * Either folding covered so missing data stays explicit.
+ */
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FFunctionalCookbookMaybeEitherTest,
+    "ForbocAI.Core.FunctionalCore.Cookbook.MaybeEither",
+    EAutomationTestFlags_ApplicationContextMask |
+        EAutomationTestFlags::EngineFilter)
+/**
+ * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ */
+bool FFunctionalCookbookMaybeEitherTest::RunTest(const FString &Parameters) {
+  std::vector<int> values;
+  values.push_back(2);
+  values.push_back(4);
+
+  auto traversed = func::traverse_maybe<int>(
+      values, [](const int &value) { return func::just(value * 2); });
+  TestTrue("traverse_maybe succeeds when all values exist",
+           traversed.hasValue);
+  TestEqual("traverse_maybe maps two values",
+            static_cast<int>(traversed.value.size()), 2);
+  TestEqual("traverse_maybe first mapped value", traversed.value[0], 4);
+
+  std::vector<func::Maybe<int>> optionalValues;
+  optionalValues.push_back(func::just(1));
+  optionalValues.push_back(func::nothing<int>());
+  auto sequenced = func::sequence_maybe<int>(optionalValues);
+  TestFalse("sequence_maybe fails when any value is Nothing",
+            sequenced.hasValue);
+
+  auto lifted = func::lift3<int, int, int>(
+      func::just(1), func::just(2), func::just(3),
+      [](int a, int b, int c) { return a + b + c; });
+  TestTrue("lift3 succeeds with all values", lifted.hasValue);
+  TestEqual("lift3 combines values", lifted.value, 6);
+
+  auto folded = func::fold_either<std::string, int, int>(
+      values, 0,
+      [](int acc, const int &value) -> func::Either<std::string, int> {
+        return value < 5 ? func::make_right<std::string, int>(acc + value)
+                         : func::make_left<std::string, int>(
+                               std::string("too-large"));
+      });
+  TestFalse("fold_either succeeds while steps succeed", folded.isLeft);
+  TestEqual("fold_either accumulated value", folded.right, 6);
+
+  return true;
+}
+
+/**
  * Test: multi_match — predicate matching
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */

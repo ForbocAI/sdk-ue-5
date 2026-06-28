@@ -685,15 +685,41 @@ template <typename F, typename G> Composed<F, G> compose(F f, G g) {
 
 /**
  * @brief Unary-composition cookbook: neutral point-free helpers built on the
- * existing FP core so feature code can follow the factory-returns-unary-Fn
- * pattern used by Therapy 12 src/features.
+ * existing FP core so feature code can compose small reusable functions
+ * instead of inventing domain-shaped substitutes for RTK or ECS.
  *
  * @signature template helpers: identity, constant, flip, complement, both,
- * either_pred, all_pass, any_pass, converge2, juxt2, pipe3, pipe4
+ * either_pred, all_pass, any_pass, converge2, juxt2, pipe3, pipe4,
+ * fold_vector, filter_vector, find_vector, contains_value, unique_by,
+ * traverse_maybe, sequence_maybe, fold_either, lift2, lift3, eq_by, has_key
  *
  * User Story: As a cross-SDK maintainer, I need the same unary-composition
  * recipes available in C++ as Rust, GDScript, and TypeScript so reducers,
  * selectors, and ECS systems can share examples and semantics.
+ *
+ * Cookbook rules:
+ * - Functional core supplies pure composition, lazy values, Maybe/Either,
+ *   predicate builders, collection transforms, and strict dispatch helpers.
+ * - RTK owns the single store, event-style actions, reducers, selectors,
+ *   thunks, adapters, and unidirectional data flow.
+ * - ECS owns entity/component/system/world value transitions. ECS may use
+ *   functional helpers, but functional helpers must not become a parallel
+ *   action/store/reducer model.
+ * - Views dispatch actions and read selectors. They do not own reducer logic,
+ *   ECS query decisions, component matching, or derived domain state.
+ * - Prefer reusable factories that return unary functions:
+ *     auto HasTag = requireTag(World, Tag);
+ *     auto InDomain = requireDomain(World, Domain);
+ *     auto Matches = func::all_pass<EntityKey>({HasTag, InDomain});
+ * - Use request/payload structs at public domain boundaries and for genuine
+ *   multi-input domain operations. Do not create a new request struct when a
+ *   reusable unary function, predicate, fold, lift, or traversal is the actual
+ *   abstraction.
+ * - Neutral primitives live below feature domains. Feature domains import
+ *   downward into these primitives instead of borrowing helpers from siblings.
+ * - Hidden fallback behavior belongs at explicit integration boundaries only.
+ *   Reducers, selectors, and ECS systems should prefer Maybe/Either-returning
+ *   helpers so missing data is visible in the type.
  */
 
 template <typename T> T identity(T value) { return value; }
@@ -812,6 +838,42 @@ Juxt2<First, Second> juxt2(First first, Second second) {
   return Juxt2<First, Second>{first, second};
 }
 
+/**
+ * @brief Returns true when a projected value equals the expected value.
+ *
+ * @signature template <typename Projection, typename Expected> EqBy<Projection, Expected> eq_by(Projection projection, Expected expected)
+ *
+ * User Story: As reducer and ECS predicate code, I need reusable projected
+ * equality so query predicates compose without one-off request structs.
+ */
+template <typename Projection, typename Expected> struct EqBy {
+  Projection Project;
+  Expected ExpectedValue;
+
+  template <typename T> bool operator()(const T &value) const {
+    return Project(value) == ExpectedValue;
+  }
+};
+
+template <typename Projection, typename Expected>
+EqBy<Projection, Expected> eq_by(Projection projection, Expected expected) {
+  return EqBy<Projection, Expected>{projection, expected};
+}
+
+/**
+ * @brief Builds a unary predicate that checks whether a map contains a key.
+ *
+ * @signature template <typename Key, typename Value> std::function<bool(const Key &)> has_key(const std::unordered_map<Key, Value> &values)
+ *
+ * User Story: As validation and dispatcher code, I need map membership as a
+ * reusable unary predicate so rule composition stays point-free.
+ */
+template <typename Key, typename Value>
+std::function<bool(const Key &)>
+has_key(const std::unordered_map<Key, Value> &values) {
+  return [&values](const Key &key) { return values.find(key) != values.end(); };
+}
+
 template <typename F, typename G, typename H>
 auto pipe3(F f, G g, H h) -> decltype(compose(h, compose(g, f))) {
   return compose(h, compose(g, f));
@@ -841,6 +903,241 @@ inline std::function<bool(const std::pair<bool, bool> &)>
 example_alive_and_visible() {
   return both([](const std::pair<bool, bool> &flags) { return flags.first; },
               [](const std::pair<bool, bool> &flags) { return flags.second; });
+}
+
+namespace detail {
+template <typename T, typename Acc, typename Step>
+Acc foldVectorRecursive(const std::vector<T> &values, size_t index, Acc acc,
+                        Step step) {
+  return index == values.size()
+             ? acc
+             : foldVectorRecursive<T, Acc, Step>(
+                   values, index + 1, step(acc, values[index]), step);
+}
+
+template <typename T, typename Predicate>
+std::vector<T> filterVectorRecursive(const std::vector<T> &values,
+                                     size_t index, Predicate predicate,
+                                     std::vector<T> result) {
+  return index == values.size()
+             ? result
+             : (predicate(values[index]) ? result.push_back(values[index])
+                                         : void(),
+                filterVectorRecursive<T, Predicate>(values, index + 1,
+                                                    predicate,
+                                                    std::move(result)));
+}
+
+template <typename T, typename Predicate>
+Maybe<T> findVectorRecursive(const std::vector<T> &values, size_t index,
+                             Predicate predicate) {
+  return index == values.size()
+             ? nothing<T>()
+             : (predicate(values[index])
+                    ? just(values[index])
+                    : findVectorRecursive<T, Predicate>(values, index + 1,
+                                                       predicate));
+}
+
+template <typename Key>
+bool vectorContainsKey(const std::vector<Key> &values, const Key &key,
+                       size_t index) {
+  return index == values.size()
+             ? false
+             : (values[index] == key ||
+                vectorContainsKey<Key>(values, key, index + 1));
+}
+
+template <typename T, typename Projection, typename Key>
+std::vector<T> uniqueByRecursive(const std::vector<T> &values, size_t index,
+                                 Projection projection,
+                                 std::vector<Key> seen,
+                                 std::vector<T> result) {
+  return index == values.size()
+             ? result
+             : (vectorContainsKey<Key>(seen, projection(values[index]), 0)
+                    ? uniqueByRecursive<T, Projection, Key>(
+                          values, index + 1, projection, std::move(seen),
+                          std::move(result))
+                    : (seen.push_back(projection(values[index])),
+                       result.push_back(values[index]),
+                       uniqueByRecursive<T, Projection, Key>(
+                           values, index + 1, projection, std::move(seen),
+                           std::move(result))));
+}
+
+template <typename T, typename Func, typename U>
+Maybe<std::vector<U>> traverseMaybeRecursive(const std::vector<T> &values,
+                                             size_t index, Func fn,
+                                             std::vector<U> result) {
+  return index == values.size()
+             ? just(result)
+             : [&]() {
+                 Maybe<U> current = fn(values[index]);
+                 return current.hasValue
+                            ? (result.push_back(current.value),
+                               traverseMaybeRecursive<T, Func, U>(
+                                   values, index + 1, fn, std::move(result)))
+                            : nothing<std::vector<U>>();
+               }();
+}
+
+template <typename E, typename T, typename Acc, typename Step>
+Either<E, Acc> foldEitherRecursive(const std::vector<T> &values, size_t index,
+                                   Acc acc, Step step) {
+  return index == values.size()
+             ? make_right<E, Acc>(acc)
+             : ebind(step(acc, values[index]),
+                     [&](const Acc &next) -> Either<E, Acc> {
+                       return foldEitherRecursive<E, T, Acc, Step>(
+                           values, index + 1, next, step);
+                     });
+}
+} // namespace detail
+
+/**
+ * @brief Folds a vector through a pure accumulator step.
+ *
+ * @signature template <typename T, typename Acc, typename Step> Acc fold_vector(const std::vector<T> &values, Acc seed, Step step)
+ *
+ * User Story: As feature and ECS code, I need a reusable fold so repeated
+ * accumulation does not require domain-specific request wrappers.
+ */
+template <typename T, typename Acc, typename Step>
+Acc fold_vector(const std::vector<T> &values, Acc seed, Step step) {
+  return detail::foldVectorRecursive<T, Acc, Step>(values, 0, seed, step);
+}
+
+/**
+ * @brief Keeps vector values that satisfy a predicate.
+ *
+ * @signature template <typename T, typename Predicate> std::vector<T> filter_vector(const std::vector<T> &values, Predicate predicate)
+ *
+ * User Story: As selectors and ECS queries, I need reusable filtering so
+ * feature code can compose predicates instead of hand-writing branches.
+ */
+template <typename T, typename Predicate>
+std::vector<T> filter_vector(const std::vector<T> &values,
+                             Predicate predicate) {
+  return detail::filterVectorRecursive<T, Predicate>(values, 0, predicate,
+                                                     std::vector<T>());
+}
+
+/**
+ * @brief Finds the first vector value that satisfies a predicate.
+ *
+ * @signature template <typename T, typename Predicate> Maybe<T> find_vector(const std::vector<T> &values, Predicate predicate)
+ *
+ * User Story: As lookup code, I need Maybe-returning search so absence remains
+ * explicit and no fallback sentinel is required.
+ */
+template <typename T, typename Predicate>
+Maybe<T> find_vector(const std::vector<T> &values, Predicate predicate) {
+  return detail::findVectorRecursive<T, Predicate>(values, 0, predicate);
+}
+
+/**
+ * @brief Returns true when a vector contains a value by equality.
+ *
+ * @signature template <typename T> bool contains_value(const std::vector<T> &values, const T &expected)
+ *
+ * User Story: As predicate code, I need value membership as a neutral helper
+ * instead of duplicating index loops across domains.
+ */
+template <typename T>
+bool contains_value(const std::vector<T> &values, const T &expected) {
+  return detail::vectorContainsKey<T>(values, expected, 0);
+}
+
+/**
+ * @brief Keeps the first value for each projected key.
+ *
+ * @signature template <typename T, typename Projection> std::vector<T> unique_by(const std::vector<T> &values, Projection projection)
+ *
+ * User Story: As derived-data code, I need uniqueness by a reusable projection
+ * so selectors and ECS queries avoid one-off dedupe helpers.
+ */
+template <typename T, typename Projection>
+std::vector<T> unique_by(const std::vector<T> &values, Projection projection) {
+  typedef typename std::decay<decltype(projection(std::declval<const T &>()))>::
+      type Key;
+  return detail::uniqueByRecursive<T, Projection, Key>(
+      values, 0, projection, std::vector<Key>(), std::vector<T>());
+}
+
+/**
+ * @brief Maps each vector value through a Maybe-returning function.
+ *
+ * @signature template <typename T, typename Func> auto traverse_maybe(const std::vector<T> &values, Func fn) -> Maybe<std::vector<decltype(fn(std::declval<const T &>()).value)>>
+ *
+ * User Story: As JSON, ECS, and adapter code, I need all-or-nothing traversal
+ * so incomplete records short-circuit without hidden defaults.
+ */
+template <typename T, typename Func>
+auto traverse_maybe(const std::vector<T> &values, Func fn)
+    -> Maybe<std::vector<decltype(fn(std::declval<const T &>()).value)>> {
+  typedef decltype(fn(std::declval<const T &>()).value) U;
+  return detail::traverseMaybeRecursive<T, Func, U>(values, 0, fn,
+                                                   std::vector<U>());
+}
+
+/**
+ * @brief Converts a vector of Maybe values into a Maybe vector.
+ *
+ * @signature template <typename T> Maybe<std::vector<T>> sequence_maybe(const std::vector<Maybe<T>> &values)
+ *
+ * User Story: As composition code, I need to collect optional values only when
+ * every element exists so validation remains explicit.
+ */
+template <typename T>
+Maybe<std::vector<T>> sequence_maybe(const std::vector<Maybe<T>> &values) {
+  return traverse_maybe(values, [](const Maybe<T> &value) { return value; });
+}
+
+/**
+ * @brief Folds a vector through an Either-returning accumulator step.
+ *
+ * @signature template <typename E, typename T, typename Acc, typename Step> Either<E, Acc> fold_either(const std::vector<T> &values, Acc seed, Step step)
+ *
+ * User Story: As validation and reducer-boundary code, I need accumulation to
+ * stop on the first error while preserving successful accumulator values.
+ */
+template <typename E, typename T, typename Acc, typename Step>
+Either<E, Acc> fold_either(const std::vector<T> &values, Acc seed, Step step) {
+  return detail::foldEitherRecursive<E, T, Acc, Step>(values, 0, seed, step);
+}
+
+/**
+ * @brief Combines two Maybe values when both are present.
+ *
+ * @signature template <typename A, typename B, typename Combine> auto lift2(const Maybe<A> &a, const Maybe<B> &b, Combine combine) -> Maybe<decltype(combine(a.value, b.value))>
+ *
+ * User Story: As data assembly code, I need small optional records to compose
+ * without nested matches or fallback values.
+ */
+template <typename A, typename B, typename Combine>
+auto lift2(const Maybe<A> &a, const Maybe<B> &b, Combine combine)
+    -> Maybe<decltype(combine(a.value, b.value))> {
+  typedef decltype(combine(a.value, b.value)) R;
+  return (a.hasValue && b.hasValue) ? just(combine(a.value, b.value))
+                                    : nothing<R>();
+}
+
+/**
+ * @brief Combines three Maybe values when all are present.
+ *
+ * @signature template <typename A, typename B, typename C, typename Combine> auto lift3(const Maybe<A> &a, const Maybe<B> &b, const Maybe<C> &c, Combine combine) -> Maybe<decltype(combine(a.value, b.value, c.value))>
+ *
+ * User Story: As JSON and ECS seed code, I need small required-field groups to
+ * assemble through one reusable optional combinator.
+ */
+template <typename A, typename B, typename C, typename Combine>
+auto lift3(const Maybe<A> &a, const Maybe<B> &b, const Maybe<C> &c,
+           Combine combine) -> Maybe<decltype(combine(a.value, b.value, c.value))> {
+  typedef decltype(combine(a.value, b.value, c.value)) R;
+  return (a.hasValue && b.hasValue && c.hasValue)
+             ? just(combine(a.value, b.value, c.value))
+             : nothing<R>();
 }
 
 
@@ -1948,6 +2245,22 @@ Maybe<Result> dispatch(const Dispatcher<Key, Result> &d, const Key &key) {
 }
 
 /**
+ * @brief Looks up and invokes a handler or returns a typed error.
+ *
+ * @signature template <typename E, typename Key, typename Result> Either<E, Result> dispatch_either(const Dispatcher<Key, Result> &d, const Key &key, E error)
+ *
+ * User Story: As reducer and ECS code, I need strict dispatch misses to remain
+ * explicit errors instead of falling through to hidden defaults.
+ */
+template <typename E, typename Key, typename Result>
+Either<E, Result> dispatch_either(const Dispatcher<Key, Result> &d,
+                                  const Key &key, E error) {
+  Maybe<Result> result = dispatch(d, key);
+  return result.hasValue ? make_right<E, Result>(result.value)
+                         : make_left<E, Result>(error);
+}
+
+/**
  * @brief Reports whether a dispatcher has a handler for the given key.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
@@ -1979,43 +2292,94 @@ std::vector<Key> keys(const Dispatcher<Key, Result> &d) {
                                                       std::vector<Key>());
 }
 
+/**
+ * @brief Strict keyed dispatcher for handlers that consume one argument.
+ *
+ * @signature template <typename Key, typename Arg, typename Result> struct ArgDispatcher
+ *
+ * User Story: As ECS and adapter code, I need keyed argument handlers without
+ * fallback behavior so absent handlers return Maybe/Either at the boundary.
+ */
 template <typename Key, typename Arg, typename Result>
-struct FallbackDispatcher {
+struct ArgDispatcher {
   std::unordered_map<Key, std::function<Result(const Arg &)>> table;
-  std::function<Result(const Arg &)> fallback;
 };
 
+/**
+ * @brief Request payload for strict argument dispatch.
+ *
+ * @signature template <typename Key, typename Arg, typename Result> struct ArgDispatcherDispatch
+ *
+ * User Story: As function-composition code, I need multi-input dispatch calls
+ * carried through one payload while the dispatcher itself remains reusable.
+ */
 template <typename Key, typename Arg, typename Result>
-struct DispatcherDispatch {
-  const FallbackDispatcher<Key, Arg, Result> *dispatcher;
+struct ArgDispatcherDispatch {
+  const ArgDispatcher<Key, Arg, Result> *dispatcher;
   const Key *key;
   const Arg *arg;
 };
 
+/**
+ * @brief Creates an empty strict argument dispatcher.
+ *
+ * @signature template <typename Key, typename Arg, typename Result> ArgDispatcher<Key, Arg, Result> create_arg_dispatcher()
+ *
+ * User Story: As keyed dispatch setup code, I need an empty value that can be
+ * extended through registration functions and lazy cached when needed.
+ */
 template <typename Key, typename Arg, typename Result>
-FallbackDispatcher<Key, Arg, Result>
-create_dispatcher(std::function<Result(const Arg &)> fallback) {
-  FallbackDispatcher<Key, Arg, Result> DispatcherValue;
-  DispatcherValue.fallback = std::move(fallback);
-  return DispatcherValue;
+ArgDispatcher<Key, Arg, Result> create_arg_dispatcher() {
+  return ArgDispatcher<Key, Arg, Result>();
 }
 
+/**
+ * @brief Registers a key-to-argument-handler entry.
+ *
+ * @signature template <typename Key, typename Arg, typename Result> ArgDispatcher<Key, Arg, Result> arg_dispatcher_register(ArgDispatcher<Key, Arg, Result> dispatcher, Key key, std::function<Result(const Arg &)> handler)
+ *
+ * User Story: As formatter and adapter code, I need registration to return the
+ * next dispatcher value so tables compose through pipe/lazy helpers.
+ */
 template <typename Key, typename Arg, typename Result>
-FallbackDispatcher<Key, Arg, Result> dispatcher_register(
-    FallbackDispatcher<Key, Arg, Result> dispatcher, Key key,
+ArgDispatcher<Key, Arg, Result> arg_dispatcher_register(
+    ArgDispatcher<Key, Arg, Result> dispatcher, Key key,
     std::function<Result(const Arg &)> handler) {
   dispatcher.table[std::move(key)] = std::move(handler);
   return dispatcher;
 }
 
+/**
+ * @brief Looks up and invokes an argument handler when one exists.
+ *
+ * @signature template <typename Key, typename Arg, typename Result> Maybe<Result> arg_dispatcher_dispatch_maybe(const ArgDispatcherDispatch<Key, Arg, Result> &request)
+ *
+ * User Story: As ECS code, I need formatter and routing misses to be explicit
+ * Maybe values instead of implicit fallback paths.
+ */
 template <typename Key, typename Arg, typename Result>
-Result dispatcher_dispatch(
-    const DispatcherDispatch<Key, Arg, Result> &request) {
+Maybe<Result> arg_dispatcher_dispatch_maybe(
+    const ArgDispatcherDispatch<Key, Arg, Result> &request) {
   typename std::unordered_map<Key, std::function<Result(const Arg &)>>::
       const_iterator It = request.dispatcher->table.find(*request.key);
-  return It != request.dispatcher->table.end()
-             ? It->second(*request.arg)
-             : request.dispatcher->fallback(*request.arg);
+  return It != request.dispatcher->table.end() ? just(It->second(*request.arg))
+                                               : nothing<Result>();
+}
+
+/**
+ * @brief Looks up and invokes an argument handler or returns a typed error.
+ *
+ * @signature template <typename E, typename Key, typename Arg, typename Result> Either<E, Result> arg_dispatcher_dispatch_either(const ArgDispatcherDispatch<Key, Arg, Result> &request, E error)
+ *
+ * User Story: As reducer and ECS code, I need strict dispatch to return a typed
+ * error when a table misses instead of silently choosing a default branch.
+ */
+template <typename E, typename Key, typename Arg, typename Result>
+Either<E, Result> arg_dispatcher_dispatch_either(
+    const ArgDispatcherDispatch<Key, Arg, Result> &request, E error) {
+  Maybe<Result> result = arg_dispatcher_dispatch_maybe(request);
+  return result.hasValue ? make_right<E, Result>(result.value)
+                         : make_left<E, Result>(error);
 }
 
 /**
