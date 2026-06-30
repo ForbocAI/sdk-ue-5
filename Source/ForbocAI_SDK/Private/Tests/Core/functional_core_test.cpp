@@ -262,6 +262,39 @@ bool FFunctionalCookbookMaybeEitherTest::RunTest(const FString &Parameters) {
   TestFalse("fold_either succeeds while steps succeed", folded.isLeft);
   TestEqual("fold_either accumulated value", folded.right, 6);
 
+  int indexedEffectTotal = 0;
+  func::for_each_indexed(values, values.size(),
+                         [&indexedEffectTotal](const int &value) {
+                           indexedEffectTotal += value;
+                         });
+  TestEqual("for_each_indexed visits values", indexedEffectTotal, 6);
+
+  const int indexedSum =
+      func::fold_indexed(values, values.size(), 0,
+                         [](const int &acc, const int &value) {
+                           return acc + value;
+                         });
+  TestEqual("fold_indexed accumulates values", indexedSum, 6);
+
+  auto indexedFind = func::find_indexed(
+      values, values.size(), [](const int &value) { return value == 2; });
+  TestTrue("find_indexed finds matching value", indexedFind.hasValue);
+  TestEqual("find_indexed returns matching value", indexedFind.value, 2);
+  TestTrue("any_indexed finds matching predicate",
+           func::any_indexed(values, values.size(),
+                             [](const int &value) { return value > 2; }));
+  TestTrue("all_indexed validates all values",
+           func::all_indexed(values, values.size(),
+                             [](const int &value) { return value > 0; }));
+
+  const std::vector<int> grid =
+      func::map_grid<int>(2, 3, [](const func::GridIndex &index) {
+        return static_cast<int>(index.Row * 10 + index.Column);
+      });
+  TestEqual("map_grid output size", static_cast<int>(grid.size()), 6);
+  TestEqual("map_grid first value", grid[0], 0);
+  TestEqual("map_grid row-major value", grid[4], 11);
+
   return true;
 }
 
