@@ -188,6 +188,18 @@ inline AnyAction ClearGhostSession() {
 
 } // namespace Actions
 
+inline bool IsActiveSession(const FGhostSliceState &State,
+                            const FString &SessionId) {
+  return !State.ActiveSessionId.IsEmpty() && State.ActiveSessionId == SessionId;
+}
+
+template <typename Transform>
+inline FGhostSliceState ReduceActiveSession(const FGhostSliceState &State,
+                                            const FString &SessionId,
+                                            Transform TransformState) {
+  return IsActiveSession(State, SessionId) ? TransformState(State) : State;
+}
+
 /**
  * Builds the ghost slice reducer and initial state.
  * User Story: As ghost runtime setup, I need one slice factory so store
@@ -215,11 +227,14 @@ inline Slice<FGhostSliceState> CreateGhostSlice() {
       [](const FGhostSliceState &State,
                              const Action<FGhostSessionProgressPayload> &Action)
                               -> FGhostSliceState {
-                            FGhostSliceState Next = State;
-                            Next.ActiveSessionId = Action.PayloadValue.SessionId;
-                            Next.Status = Action.PayloadValue.Status;
-                            Next.Progress = Action.PayloadValue.Progress;
-                            return Next;
+                            return ReduceActiveSession(
+                                State, Action.PayloadValue.SessionId,
+                                [&Action](const FGhostSliceState &Active) {
+                                  FGhostSliceState Next = Active;
+                                  Next.Status = Action.PayloadValue.Status;
+                                  Next.Progress = Action.PayloadValue.Progress;
+                                  return Next;
+                                });
                           });
     Builder.addCase(Actions::GhostSessionCompletedActionCreator(),
       [](const FGhostSliceState &State,
@@ -236,12 +251,15 @@ inline Slice<FGhostSliceState> CreateGhostSlice() {
       [](const FGhostSliceState &State,
                              const Action<FGhostSessionFailedPayload> &Action)
                               -> FGhostSliceState {
-                            FGhostSliceState Next = State;
-                            Next.ActiveSessionId = Action.PayloadValue.SessionId;
-                            Next.Status = TEXT("failed");
-                            Next.bLoading = false;
-                            Next.Error = Action.PayloadValue.Error;
-                            return Next;
+                            return ReduceActiveSession(
+                                State, Action.PayloadValue.SessionId,
+                                [&Action](const FGhostSliceState &Active) {
+                                  FGhostSliceState Next = Active;
+                                  Next.Status = TEXT("failed");
+                                  Next.bLoading = false;
+                                  Next.Error = Action.PayloadValue.Error;
+                                  return Next;
+                                });
                           });
     Builder.addCase(Actions::GhostHistoryLoadedActionCreator(),
       [](const FGhostSliceState &State,

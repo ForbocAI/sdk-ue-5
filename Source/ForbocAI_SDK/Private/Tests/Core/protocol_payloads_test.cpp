@@ -5,12 +5,34 @@
 
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
+#include "Core/JsonInterop.h"
 #include "Core/ThunkDetail.h"
 #include "Protocol/ProtocolThunks.h"
 #include "Protocol/ProtocolRequestTypes.h"
 #include "API/APICodecs.h"
 
 using namespace rtk;
+
+namespace {
+
+FString StringField(const TSharedPtr<FJsonObject> &Object,
+                    const TCHAR *FieldName) {
+  FString Value;
+  Object.IsValid() ? (Object->TryGetStringField(FieldName, Value), void())
+                   : void();
+  return Value;
+}
+
+TSharedPtr<FJsonObject> ObjectField(const TSharedPtr<FJsonObject> &Object,
+                                    const TCHAR *FieldName) {
+  const TSharedPtr<FJsonObject> *Value = nullptr;
+  return Object.IsValid() && Object->TryGetObjectField(FieldName, Value) &&
+                 Value != nullptr
+             ? *Value
+             : TSharedPtr<FJsonObject>();
+}
+
+} // namespace
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FSerializeIdentifyActorPayloadTest,
@@ -27,10 +49,23 @@ bool FSerializeIdentifyActorPayloadTest::RunTest(const FString &Parameters) {
   Actor.Data.JsonData = FString(TEXT("{") TEXT("\"health\": 100}"));
   
   FString Json = rtk::detail::SerializeIdentifyActorResult(Actor);
-  TestTrue("Contains type", Json.Contains(TEXT("\"type\":\"IdentifyActorResult\"")));
-  TestTrue("Contains npcId", Json.Contains(TEXT("\"npcId\":\"npc_test_1\"")));
-  TestTrue("Contains persona", Json.Contains(TEXT("\"persona\":\"Tester\"")));
-  TestTrue("Contains data", Json.Contains(TEXT("\"data\":{\"health\":100\n}")));
+  TSharedPtr<FJsonObject> Root;
+  TestTrue("Payload parses", JsonInterop::ParseJsonObject(Json, Root));
+  const TSharedPtr<FJsonObject> ActorObject = ObjectField(Root, TEXT("actor"));
+  const TSharedPtr<FJsonObject> DataObject =
+      ObjectField(ActorObject, TEXT("data"));
+  double Health = 0.0;
+
+  TestEqual("type", StringField(Root, TEXT("type")),
+            FString(TEXT("IdentifyActorResult")));
+  TestEqual("npcId", StringField(ActorObject, TEXT("npcId")),
+            FString(TEXT("npc_test_1")));
+  TestEqual("persona", StringField(ActorObject, TEXT("persona")),
+            FString(TEXT("Tester")));
+  TestTrue("data health", DataObject.IsValid() &&
+                           DataObject->TryGetNumberField(TEXT("health"),
+                                                         Health));
+  TestEqual("health value", static_cast<int32>(Health), 100);
   
   return true;
 }
@@ -47,11 +82,19 @@ bool FSerializeDecisionPayloadTest::RunTest(const FString &Parameters) {
   FString Json =
       rtk::detail::SerializeDecisionResult(TEXT("Respond"), TEXT("SPEAK"),
                                            TEXT("Player"));
-  
-  TestTrue("Contains type", Json.Contains(TEXT("\"type\":\"Decision\"")));
-  TestTrue("Contains goal", Json.Contains(TEXT("\"goal\":\"Respond\"")));
-  TestTrue("Contains actionType", Json.Contains(TEXT("\"actionType\":\"SPEAK\"")));
-  TestTrue("Contains target", Json.Contains(TEXT("\"target\":\"Player\"")));
+  TSharedPtr<FJsonObject> Root;
+  TestTrue("Payload parses", JsonInterop::ParseJsonObject(Json, Root));
+  const TSharedPtr<FJsonObject> Intent =
+      ObjectField(Root, TEXT("decisionIntent"));
+
+  TestEqual("type", StringField(Root, TEXT("type")),
+            FString(TEXT("Decision")));
+  TestEqual("goal", StringField(Intent, TEXT("goal")),
+            FString(TEXT("Respond")));
+  TestEqual("actionType", StringField(Intent, TEXT("actionType")),
+            FString(TEXT("SPEAK")));
+  TestEqual("target", StringField(Intent, TEXT("target")),
+            FString(TEXT("Player")));
   
   return true;
 }
@@ -67,10 +110,19 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FSerializeReasoningPayloadTest::RunTest(const FString &Parameters) {
   FString Json = rtk::detail::SerializeReasoningResult(
       TEXT("Thinking..."), TEXT("Hello there"));
-  
-  TestTrue("Contains type", Json.Contains(TEXT("\"type\":\"Reasoning\"")));
-  TestTrue("Contains reasoningText", Json.Contains(TEXT("\"reasoningText\":\"Thinking...\"")));
-  TestTrue("Contains responseText", Json.Contains(TEXT("\"responseText\":\"Hello there\"")));
+  TSharedPtr<FJsonObject> Root;
+  TestTrue("Payload parses", JsonInterop::ParseJsonObject(Json, Root));
+  const TSharedPtr<FJsonObject> Reasoning =
+      ObjectField(Root, TEXT("reasoningOutput"));
+
+  TestEqual("type", StringField(Root, TEXT("type")),
+            FString(TEXT("Reasoning")));
+  TestEqual("reasoningText",
+            StringField(Reasoning, TEXT("reasoningText")),
+            FString(TEXT("Thinking...")));
+  TestEqual("responseText",
+            StringField(Reasoning, TEXT("responseText")),
+            FString(TEXT("Hello there")));
   
   return true;
 }
@@ -92,10 +144,17 @@ bool FEncodeProcessTapePayloadTest::RunTest(const FString &Parameters) {
   
   TSharedRef<FJsonObject> Obj = APISlice::Detail::EncodeProcessTapeObject(Tape);
   FString Json = APISlice::Detail::ToJsonString(Obj);
-  
-  TestTrue("Contains observation", Json.Contains(TEXT("\"observation\":\"Saw player\"")));
-  TestTrue("Contains persona", Json.Contains(TEXT("\"structuredPersona\":\"Guard\"")));
-  TestTrue("Contains context", Json.Contains(TEXT("\"context\":{\"time\":\"day\"\n}")));
+  TSharedPtr<FJsonObject> Root;
+  TestTrue("Payload parses", JsonInterop::ParseJsonObject(Json, Root));
+  const TSharedPtr<FJsonObject> Context =
+      ObjectField(Root, TEXT("context"));
+
+  TestEqual("observation", StringField(Root, TEXT("observation")),
+            FString(TEXT("Saw player")));
+  TestEqual("persona", StringField(Root, TEXT("structuredPersona")),
+            FString(TEXT("Guard")));
+  TestEqual("context time", StringField(Context, TEXT("time")),
+            FString(TEXT("day")));
   
   return true;
 }
