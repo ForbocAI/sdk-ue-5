@@ -27,16 +27,16 @@ inline FString ToBase36(uint64 Value) {
 }
 
 /**
- * Generates an NPC id matching TS SDK shape: ag_<base36 timestamp>
- * TS: generateNPCId() => `ag_${Date.now().toString(36)}`
- * Parity: Unix milliseconds, base36.
+ * Generates an NPC id matching the TS SDK shape: ag_<base36 timestamp>.
+ * UE uses Unix 100ns ticks so rapid same-frame creates do not collide while
+ * preserving the timestamp-only id contract.
  * User Story: As cross-SDK id generation, I need UE NPC ids to match the TS
  * format so imported and synchronized agents share one identifier shape.
  */
 inline FString GenerateNPCId() {
-  const int64 UnixMs =
-      FDateTime::UtcNow().ToUnixTimestamp() * 1000;
-  return TEXT("ag_") + ToBase36(static_cast<uint64>(UnixMs));
+  const int64 UnixTicks =
+      (FDateTime::UtcNow() - FDateTime(1970, 1, 1)).GetTicks();
+  return TEXT("ag_") + ToBase36(static_cast<uint64>(UnixTicks));
 }
 
 } // namespace NPCId

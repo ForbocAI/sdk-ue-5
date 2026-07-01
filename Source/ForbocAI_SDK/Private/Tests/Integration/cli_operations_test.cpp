@@ -2,6 +2,7 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "HAL/FileManager.h"
+#include "HAL/PlatformMisc.h"
 #include "Misc/AutomationTest.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Guid.h"
@@ -187,8 +188,12 @@ bool FOpsConfigTest::RunTest(const FString &Parameters) {
   SDKConfig::SetConfigFilePathOverride(TempConfigPath);
   SDKConfig::ReloadConfig();
 
-  TestEqual("Default runtime API URL is localhost:8080",
-            SDKConfig::GetApiUrl(), FString(SDKConfig::DEFAULT_API_URL));
+  const FString EnvApiUrl =
+      FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_API_URL"));
+  const FString ExpectedApiUrl =
+      EnvApiUrl.IsEmpty() ? FString(SDKConfig::DEFAULT_API_URL) : EnvApiUrl;
+  TestEqual("Resolved runtime API URL honors env or localhost default",
+            SDKConfig::GetApiUrl(), ExpectedApiUrl);
   TestTrue("Unset persisted apiUrl is empty",
            Ops::ConfigGet(TEXT("apiUrl")).IsEmpty());
 
