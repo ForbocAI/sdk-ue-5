@@ -738,6 +738,20 @@ template <typename F, typename G> Composed<F, G> compose(F f, G g) {
  *   the surrounding generic composer/context. Do not invent noun wrappers such
  *   as `FTownspersonSeeds(...)` just to forward a field list.
  *
+ *   📣 MEGAPHONE RULE: a generic helper repeated once per field/member is still
+ *   the wrong shape. Do not write `SettingField(...)`, `Required(...)`,
+ *   `ComponentField(...)`, `BindFloat(...)`, or equivalent per-field wrapper
+ *   calls at feature call sites. Settings, parser, projection, validation, and
+ *   formatter code should pass grouped declaration atoms such as
+ *   `ReadSettingsFields<FPlayerPresentationSettings>(
+ *       Object, {"CapsuleRadius", "CapsuleHalfHeight", ...})`.
+ *   The reusable composer owns `TEXT(...)`, snake_case/path conversion,
+ *   typed reader selection, validation, traversal, and fold expansion.
+ *   Digit-suffixed helper or macro families such as `READ_FIELD_1`,
+ *   `READ_FIELD_2`, `FIELDS_32`, or `GET_FIELD_READER_10` are not
+ *   compositional; they are arity plumbing hidden in names. Use one named
+ *   composition boundary plus grouped declaration data instead.
+ *
  *   This rule applies at every layer, including registries. A registry,
  *   adapter, validator, formatter, selector, reducer helper, or execution
  *   runner is not permission to hand-write
