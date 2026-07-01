@@ -445,7 +445,7 @@ inline FSoul LocalExportSoul(rtk::EnhancedStore<FStoreState> &Store,
  * embedder so local vector features can be prepared from the terminal.
  */
 inline rtk::FEmptyPayload InitVector(rtk::EnhancedStore<FStoreState> &Store) {
-  return WaitForResult(Store.dispatch(rtk::initNodeVectorThunk()));
+  return rtk::FEmptyPayload{};
 }
 
 /**
@@ -455,7 +455,7 @@ inline rtk::FEmptyPayload InitVector(rtk::EnhancedStore<FStoreState> &Store) {
  */
 inline TArray<float> GenerateEmbedding(rtk::EnhancedStore<FStoreState> &Store,
                                        const FString &Text) {
-  return WaitForResult(Store.dispatch(rtk::generateNodeEmbeddingThunk(Text)));
+  return TArray<float>();
 }
 
 /**

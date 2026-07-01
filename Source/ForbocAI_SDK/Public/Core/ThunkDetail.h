@@ -11,33 +11,13 @@
 #include "Interfaces/IHttpResponse.h"
 #include "JsonObjectConverter.h"
 #include "Misc/Paths.h"
-#include "NativeEngine.h"
+#include "NativeStorage.h"
 #include "RuntimeStore.h"
 #include "Core/JsonInterop.h"
 #include "Serialization/JsonSerializer.h"
 
 namespace rtk {
 namespace detail {
-
-/**
- * Returns the singleton handle backing the local inference cortex.
- * User Story: As node-cortex thunks, I need a shared inference handle so model
- * initialization and inference reuse the same native runtime.
- */
-inline Native::Llama::Context &NodeCortexHandle() {
-  static Native::Llama::Context Handle = nullptr;
-  return Handle;
-}
-
-/**
- * Returns the singleton handle backing the local embedding model.
- * User Story: As embedding thunks, I need a dedicated embedding handle so
- * vector generation does not conflict with the inference runtime.
- */
-inline Native::Llama::Context &NodeEmbeddingHandle() {
-  static Native::Llama::Context Handle = nullptr;
-  return Handle;
-}
 
 /**
  * Returns the singleton handle backing the local sqlite memory database.

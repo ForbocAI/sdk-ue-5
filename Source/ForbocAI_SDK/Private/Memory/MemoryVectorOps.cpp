@@ -43,13 +43,9 @@ VectorSearch(void *Handle, const FString &Query, int32 Limit) {
 
 MemoryTypes::MemoryStoreEmbeddingResult GenerateEmbedding(void *Handle,
                                                           const FString &Text) {
-  try {
-    const TArray<float> Vector = ::Native::Llama::Embed(Handle, Text);
-    return MemoryTypes::MemoryStoreEmbeddingResult{false, FString(), Vector};
-  } catch (const std::exception &e) {
-    return MemoryTypes::MemoryStoreEmbeddingResult{
-        true, FString(e.what()), TArray<float>()};
-  }
+  return MemoryTypes::MemoryStoreEmbeddingResult{
+      true, TEXT("Local embedding generation moved to API or opt-in plugins"),
+      TArray<float>()};
 }
 
 } // namespace SQLiteVSS

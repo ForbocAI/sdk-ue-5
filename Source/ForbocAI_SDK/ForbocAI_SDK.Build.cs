@@ -72,6 +72,7 @@ public class ForbocAI_SDK : ModuleRules
 		 * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
 		 */
 		bool bEnableSqliteVec = bHasSqlite3Header && bHasSqliteAmalgamation;
+		PublicDefinitions.Add("WITH_FORBOC_NATIVE=0");
 		PublicDefinitions.Add("WITH_FORBOC_SQLITE_VEC=" + (bEnableSqliteVec ? "1" : "0"));
 	}
 }

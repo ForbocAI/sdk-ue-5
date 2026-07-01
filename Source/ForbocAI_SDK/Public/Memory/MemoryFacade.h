@@ -5,7 +5,7 @@
  */
 
 #include "Memory/MemoryTypes.h"
-#include "NativeEngine.h"
+#include "NativeStorage.h"
 
 namespace Memory {
 

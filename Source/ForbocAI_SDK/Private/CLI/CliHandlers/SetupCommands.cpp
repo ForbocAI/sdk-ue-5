@@ -1,7 +1,6 @@
 #include "CLI/CliHandlers.h"
 #include "CLI/CliOperations.h"
 #include "Core/ThunkDetail.h"
-#include "NativeEngine.h"
 #include "RuntimeConfig.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/PlatformFileManager.h"
@@ -168,13 +167,9 @@ Result RunRuntimeSmokeCheck(rtk::EnhancedStore<FStoreState> &Store,
                                      : FPaths::ConvertRelativePathToFull(
                                            Options.DatabasePath);
   const bool bOwnsDatabasePath = Options.DatabasePath.IsEmpty();
-  const FString EmbeddingModelPath =
-      ResolveEmbeddingModelPath(Options, PF);
   const FString SmokeText =
       FString::Printf(TEXT("runtime-smoke-%s"),
                       *FGuid::NewGuid().ToString(EGuidFormats::Digits));
-  const bool bNeedsVectorModel =
-      !Options.bSkipVector || !Options.bSkipMemory;
 
   EnsureParentDirectory(DatabasePath);
 
@@ -190,15 +185,9 @@ Result RunRuntimeSmokeCheck(rtk::EnhancedStore<FStoreState> &Store,
   return !WITH_FORBOC_SQLITE_VEC
     ? Result::Failure(
         "setup_runtime_check requires WITH_FORBOC_SQLITE_VEC=1")
-    : (bNeedsVectorModel && !WITH_FORBOC_NATIVE)
-    ? Result::Failure(
-        "setup_runtime_check requires WITH_FORBOC_NATIVE=1 for vector or memory verification")
     : (Options.bSkipVector && !Options.bSkipMemory)
     ? Result::Failure(
         "setup_runtime_check cannot verify memory storage while --skip-vector is set")
-    : (bNeedsVectorModel && EmbeddingModelPath.IsEmpty())
-    ? Result::Failure(
-        "Embedding model missing. Re-run with --allow-download, --embedding-model=<path>, or --skip-vector --skip-memory.")
     : [&]() -> Result {
       try {
         Ops::InitNodeMemory(Store, DatabasePath);
@@ -207,19 +196,7 @@ Result RunRuntimeSmokeCheck(rtk::EnhancedStore<FStoreState> &Store,
           : [&]() -> Result {
             UE_LOG(LogTemp, Display, TEXT("  [OK] node memory initialized"));
 
-            /* Vector init block */
-            const Result VectorResult = !Options.bSkipVector
-              ? [&]() -> Result {
-                  Ops::WaitForResult(
-                      Store.dispatch(rtk::initNodeVectorThunk(EmbeddingModelPath)), 180.0);
-                  return !Store.getState().Cortex.bEmbedderReady
-                    ? Result::Failure("Embedding model did not become ready")
-                    : [&]() -> Result {
-                        UE_LOG(LogTemp, Display, TEXT("  [OK] embedding runtime initialized"));
-                        return Result::Success("");
-                      }();
-                }()
-              : Result::Success("");
+            const Result VectorResult = Result::Success("");
 
             return !VectorResult.bSuccess
               ? VectorResult

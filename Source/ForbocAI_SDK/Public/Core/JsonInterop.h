@@ -476,12 +476,8 @@ inline FMemoryItem MemoryItemFromObject(const TSharedPtr<FJsonObject> &Object) {
 inline TSharedRef<FJsonObject>
 PromptConstraintsToObject(const FPromptConstraints &Config) {
   const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
-  return (detail::SetIfNonEmpty(Object, TEXT("model"), Config.Model),
-          Object->SetBoolField(TEXT("useGPU"), Config.UseGPU),
-          Object->SetNumberField(TEXT("maxTokens"), Config.MaxTokens),
+  return (Object->SetNumberField(TEXT("maxTokens"), Config.MaxTokens),
           Object->SetNumberField(TEXT("temperature"), Config.Temperature),
-          Object->SetNumberField(TEXT("topK"), Config.TopK),
-          Object->SetNumberField(TEXT("topP"), Config.TopP),
           Config.Stop.Num() > 0
               ? [&]() {
                   TArray<TSharedPtr<FJsonValue>> StopValues;
@@ -505,18 +501,10 @@ PromptConstraintsFromObject(const TSharedPtr<FJsonObject> &Object) {
   FPromptConstraints Config;
   return !Object.IsValid()
              ? Config
-             : (Config.Model =
-                    OptionalStringFromField(Object, TEXT("model")),
-                Config.UseGPU = detail::TryGetBoolAs(Object, TEXT("useGPU"),
-                                                     Config.UseGPU),
-                Config.MaxTokens = detail::TryGetNumberAs<int32>(
+             : (Config.MaxTokens = detail::TryGetNumberAs<int32>(
                     Object, TEXT("maxTokens"), Config.MaxTokens),
                 Config.Temperature = detail::TryGetNumberAs<float>(
                     Object, TEXT("temperature"), Config.Temperature),
-                Config.TopK = detail::TryGetNumberAs<int32>(
-                    Object, TEXT("topK"), Config.TopK),
-                Config.TopP = detail::TryGetNumberAs<float>(
-                    Object, TEXT("topP"), Config.TopP),
                 [&]() {
                   const TArray<TSharedPtr<FJsonValue>> *StopValues = nullptr;
                   (Object->TryGetArrayField(TEXT("stop"), StopValues) &&
