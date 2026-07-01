@@ -1723,10 +1723,29 @@ auto map_array(const TArray<Source> &values, Map map)
       });
 }
 
+template <typename Source, typename Output, typename Map>
+TArray<Output> map_array(const TArray<Source> &values, Map map) {
+  return fold_array<Source, TArray<Output>>(
+      values, TArray<Output>(),
+      [map](const TArray<Output> &acc, const Source &value) {
+        return append_value<Output>(acc, map(value));
+      });
+}
+
 template <typename Source, typename Keep, typename Map>
 auto filter_map_array(const TArray<Source> &values, Keep keep, Map map)
     -> TArray<decltype(map(std::declval<const Source &>()))> {
   typedef decltype(map(std::declval<const Source &>())) Output;
+  return fold_array<Source, TArray<Output>>(
+      values, TArray<Output>(),
+      [keep, map](const TArray<Output> &acc, const Source &value) {
+        return keep(value) ? append_value<Output>(acc, map(value)) : acc;
+      });
+}
+
+template <typename Source, typename Output, typename Keep, typename Map>
+TArray<Output> filter_map_array(const TArray<Source> &values, Keep keep,
+                                Map map) {
   return fold_array<Source, TArray<Output>>(
       values, TArray<Output>(),
       [keep, map](const TArray<Output> &acc, const Source &value) {
@@ -1760,6 +1779,12 @@ auto traverse_maybe_array(const TArray<Source> &values, Map map)
             },
             []() { return nothing<TArray<Output>>(); });
       });
+}
+
+template <typename Source, typename Output, typename Map>
+Maybe<TArray<Output>> traverse_maybe_array(const TArray<Source> &values,
+                                           Map map) {
+  return traverse_maybe_array<Source, Map>(values, map);
 }
 
 template <typename T>
@@ -1847,6 +1872,12 @@ auto traverse_maybe_array_with_index(const TArray<Source> &values, Map map)
             },
             []() { return nothing<TArray<Output>>(); });
       });
+}
+
+template <typename Source, typename Output, typename Map>
+Maybe<TArray<Output>>
+traverse_maybe_array_with_index(const TArray<Source> &values, Map map) {
+  return traverse_maybe_array_with_index<Source, Map>(values, map);
 }
 
 template <typename Acc, typename Step>
