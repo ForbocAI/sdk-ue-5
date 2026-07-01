@@ -57,7 +57,6 @@ bool FSetupRuntimeSmokeDatabaseTest::RunTest(const FString &Parameters) {
       FString::Printf(TEXT("runtime-smoke-%s.db"),
                       *FGuid::NewGuid().ToString(EGuidFormats::Digits)));
   TArray<FString> Args;
-  Args.Add(TEXT("--skip-cortex"));
   Args.Add(TEXT("--skip-vector"));
   Args.Add(TEXT("--skip-memory"));
   Args.Add(FString(TEXT("--database=")) + DatabasePath);

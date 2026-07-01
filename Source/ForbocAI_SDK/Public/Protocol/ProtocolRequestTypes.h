@@ -86,7 +86,7 @@ struct FNPCProcessTape {
   FString Prompt;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FCortexConfig Constraints;
+  FPromptConstraints Constraints;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FString GeneratedOutput;
@@ -192,7 +192,7 @@ struct FContextResponse {
   FString Prompt;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FCortexConfig Constraints;
+  FPromptConstraints Constraints;
 };
 
 USTRUCT(BlueprintType)

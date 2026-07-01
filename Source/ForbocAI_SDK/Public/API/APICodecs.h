@@ -31,20 +31,6 @@ namespace Detail {
 namespace detail {
 
 /**
- * Recursively builds a JSON value array from a string array (stop values).
- * User Story: As a maintainer, I need this note so the surrounding code intent
- * stays clear during maintenance and debugging.
- */
-inline void BuildStopValuesRecursive(const TArray<FString> &Source,
-                                     TArray<TSharedPtr<FJsonValue>> &Out,
-                                     int32 Index) {
-  Index < Source.Num()
-      ? (Out.Add(MakeShared<FJsonValueString>(Source[Index])),
-         BuildStopValuesRecursive(Source, Out, Index + 1), void())
-      : void();
-}
-
-/**
  * Recursively extracts recalled memories from a JSON value array.
  * User Story: As a maintainer, I need this note so the surrounding code intent
  * stays clear during maintenance and debugging.
@@ -270,57 +256,6 @@ inline FString ToJsonString(const TSharedRef<FJsonObject> &Object) {
   const TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Json);
   FJsonSerializer::Serialize(Object, Writer);
   return Json;
-}
-
-/**
- * Tries to parse a JSON schema string into a JSON object field on target.
- * Returns void — sets the field only when parsing succeeds.
- * User Story: As a maintainer, I need this note so the surrounding code intent
- * stays clear during maintenance and debugging.
- */
-inline void TrySetJsonSchemaField(const TSharedRef<FJsonObject> &Target,
-                                  const FString &JsonSchemaJson) {
-  !JsonSchemaJson.IsEmpty()
-      ? [&]() {
-          TSharedPtr<FJsonObject> JsonSchema;
-          const TSharedRef<TJsonReader<>> Reader =
-              TJsonReaderFactory<>::Create(JsonSchemaJson);
-          (FJsonSerializer::Deserialize(Reader, JsonSchema) &&
-           JsonSchema.IsValid())
-              ? (Target->SetObjectField(TEXT("jsonSchema"), JsonSchema), void())
-              : void();
-        }()
-      : void();
-}
-
-/**
- * Builds the specialized payload for remote cortex completion.
- * User Story: As cortex completion flows, I need request shaping that omits
- * unset fields so the API only receives intentional completion options.
- */
-inline FString
-BuildCortexCompletePayload(const FCortexCompleteRequest &Request) {
-  const TSharedRef<FJsonObject> Payload = MakeShared<FJsonObject>();
-  return (
-      Payload->SetStringField(TEXT("prompt"), Request.Prompt),
-      Request.MaxTokens >= 0
-          ? (Payload->SetNumberField(TEXT("maxTokens"), Request.MaxTokens),
-             void())
-          : void(),
-      Request.Temperature >= 0.0f
-          ? (Payload->SetNumberField(TEXT("temperature"), Request.Temperature),
-             void())
-          : void(),
-      Request.Stop.Num() > 0
-          ? [&]() {
-              TArray<TSharedPtr<FJsonValue>> StopValues;
-              StopValues.Reserve(Request.Stop.Num());
-              detail::BuildStopValuesRecursive(Request.Stop, StopValues, 0);
-              Payload->SetArrayField(TEXT("stop"), StopValues);
-            }()
-          : void(),
-      TrySetJsonSchemaField(Payload, Request.JsonSchemaJson),
-      ToJsonString(Payload));
 }
 
 /**

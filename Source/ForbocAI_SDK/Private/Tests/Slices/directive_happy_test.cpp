@@ -69,7 +69,7 @@ bool FDirectiveHappyPathTest::RunTest(const FString &Parameters) {
    * Step 3: Context composed
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  FCortexConfig Constraints;
+  FPromptConstraints Constraints;
   Constraints.MaxTokens = 256;
   Constraints.Temperature = 0.7f;
 

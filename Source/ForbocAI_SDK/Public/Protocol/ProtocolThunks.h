@@ -31,9 +31,6 @@ struct FProtocolRuntime {
   std::function<ThunkAction<TArray<FMemoryItem>, FStoreState>(
       const FMemoryRecallRequest &)>
       RecallMemory;
-  std::function<ThunkAction<FCortexResponse, FStoreState>(
-      const FString &, const FCortexConfig &)>
-      CompleteInference;
 
   /**
    * Returns whether local memory store and recall handlers are configured.
@@ -44,18 +41,12 @@ struct FProtocolRuntime {
     return static_cast<bool>(StoreMemory) && static_cast<bool>(RecallMemory);
   }
 
-  /**
-   * Returns whether a local cortex completion handler is configured.
-   * User Story: As protocol orchestration, I need to know whether local
-   * inference is available before executing inference instructions.
-   */
-  bool HasCortex() const { return static_cast<bool>(CompleteInference); }
 };
 
 /**
- * Builds the default local protocol runtime backed by node memory and cortex.
+ * Builds the default local protocol runtime backed by node memory.
  * User Story: As local protocol execution, I need a ready-made runtime so the
- * protocol loop can call local memory and inference services consistently.
+ * protocol loop can call local memory services consistently.
  */
 inline FProtocolRuntime LocalProtocolRuntime() {
   FProtocolRuntime Runtime;
@@ -65,7 +56,6 @@ inline FProtocolRuntime LocalProtocolRuntime() {
   Runtime.RecallMemory = [](const FMemoryRecallRequest &Request) {
     return nodeMemoryRecallThunk(Request);
   };
-  Runtime.CompleteInference = nullptr;
   return Runtime;
 }
 

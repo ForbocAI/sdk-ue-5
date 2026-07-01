@@ -62,7 +62,7 @@ struct FPlayerState {
 };
 
 /**
- * Command groups (17 required for 100% coverage)
+ * Command groups (16 required for 100% coverage)
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 
@@ -82,21 +82,19 @@ enum class ECommandGroup : uint8 {
   SoulImport,
   SoulList,
   SoulChat,
-  GhostLifecycle,
-  CortexInit
+  GhostLifecycle
 };
 
 static const TArray<ECommandGroup> &RequiredGroups() {
   static const TArray<ECommandGroup> Groups = {
-      ECommandGroup::Status,          ECommandGroup::NpcLifecycle,
-      ECommandGroup::NpcProcessChat,  ECommandGroup::MemoryList,
-      ECommandGroup::MemoryRecall,    ECommandGroup::MemoryStore,
-      ECommandGroup::MemoryClear,     ECommandGroup::MemoryExport,
-      ECommandGroup::BridgeRules,     ECommandGroup::BridgeValidate,
-      ECommandGroup::BridgePreset,    ECommandGroup::SoulExport,
-      ECommandGroup::SoulImport,      ECommandGroup::SoulList,
-      ECommandGroup::SoulChat,        ECommandGroup::GhostLifecycle,
-      ECommandGroup::CortexInit};
+      ECommandGroup::Status,         ECommandGroup::NpcLifecycle,
+      ECommandGroup::NpcProcessChat, ECommandGroup::MemoryList,
+      ECommandGroup::MemoryRecall,   ECommandGroup::MemoryStore,
+      ECommandGroup::MemoryClear,    ECommandGroup::MemoryExport,
+      ECommandGroup::BridgeRules,    ECommandGroup::BridgeValidate,
+      ECommandGroup::BridgePreset,   ECommandGroup::SoulExport,
+      ECommandGroup::SoulImport,     ECommandGroup::SoulList,
+      ECommandGroup::SoulChat,       ECommandGroup::GhostLifecycle};
   return Groups;
 }
 

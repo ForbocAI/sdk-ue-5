@@ -96,7 +96,7 @@ bool FDirectiveContextAfterFailTest::RunTest(const FString &Parameters) {
    * Try to compose context on a failed directive
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  FCortexConfig Constraints;
+  FPromptConstraints Constraints;
   Constraints.MaxTokens = 256;
   State = DirSlice.Reducer(
       State,

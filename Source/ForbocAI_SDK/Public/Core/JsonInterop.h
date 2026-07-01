@@ -469,9 +469,9 @@ inline FMemoryItem MemoryItemFromObject(const TSharedPtr<FJsonObject> &Object) {
 }
 
 /**
- * Serializes cortex generation config into API JSON.
- * User Story: As cortex request builders, I need generation config encoded so
- * remote and local completion requests share the same config shape.
+ * Serializes prompt constraints into API JSON.
+ * User Story: As protocol request builders, I need prompt constraints encoded
+ * so API-issued generation limits keep a stable transport shape.
  */
 inline TSharedRef<FJsonObject>
 PromptConstraintsToObject(const FPromptConstraints &Config) {
@@ -496,9 +496,9 @@ PromptConstraintsToObject(const FPromptConstraints &Config) {
 }
 
 /**
- * Deserializes cortex generation config from API JSON.
- * User Story: As cortex response readers, I need generation config decoded so
- * returned settings can be reapplied or inspected in runtime state.
+ * Deserializes prompt constraints from API JSON.
+ * User Story: As protocol response readers, I need generation constraints
+ * decoded so returned settings can be reapplied or inspected in runtime state.
  */
 inline FPromptConstraints
 PromptConstraintsFromObject(const TSharedPtr<FJsonObject> &Object) {

@@ -63,44 +63,6 @@ inline Thunk<FApiStatusResponse> getApiStatus() {
 }
 
 /**
- * Builds the endpoint thunk that lists remote cortex models.
- * User Story: As model selection flows, I need a reusable endpoint thunk so
- * the SDK can enumerate available remote cortex models.
- */
-inline Thunk<TArray<FCortexModelInfo>> getCortexModels() {
-  return Detail::MakeGet<TArray<FCortexModelInfo>>(
-      TEXT("getCortexModels"), SDKConfig::GetApiUrl() + TEXT("/cortex/models"));
-}
-
-/**
- * Builds the endpoint thunk that initializes a remote cortex session.
- * User Story: As cortex session setup, I need a reusable endpoint thunk so the
- * runtime can start a remote inference session predictably.
- */
-inline Thunk<FCortexInitResponse> postCortexInit(const FCortexInitRequest &Request) {
-  return Detail::MakePost<FCortexInitRequest, FCortexInitResponse>(
-      TEXT("postCortexInit"), SDKConfig::GetApiUrl() + TEXT("/cortex/init"),
-      Request);
-}
-
-/**
- * Builds the endpoint thunk that runs remote completion for a cortex session.
- * User Story: As remote inference flows, I need a reusable endpoint thunk so a
- * configured cortex session can produce a completion from one helper.
- */
-inline Thunk<FCortexResponse> postCortexComplete(const FString &CortexId,
-                               const FCortexCompleteRequest &Request) {
-  return Detail::MakeEndpoint<FCortexCompleteRequest, FCortexResponse>(
-      TEXT("postCortexComplete"), Request,
-      [CortexId](const FCortexCompleteRequest &Arg) {
-        return func::AsyncHttp::Post<FCortexResponse>(
-            SDKConfig::GetApiUrl() + TEXT("/cortex/") +
-                Detail::Encode(CortexId) + TEXT("/complete"),
-            Detail::BuildCortexCompletePayload(Arg), SDKConfig::GetApiKey());
-      });
-}
-
-/**
  * Builds the endpoint thunk that executes the single-hop NPC process route.
  * User Story: As NPC processing flows, I need a reusable endpoint thunk so the
  * SDK can run one process turn against a remote NPC.
@@ -113,46 +75,6 @@ inline Thunk<FNPCProcessResponse> postNpcProcess(const FString &NpcId,
           TEXT("/process"),
       Request, Detail::EncodeNpcProcessRequest,
       Detail::DecodeNpcProcessResponse);
-}
-
-/**
- * Builds the endpoint thunk that requests directive composition for an NPC.
- * User Story: As directive generation flows, I need a reusable endpoint thunk
- * so the runtime can request directives for a specific NPC.
- */
-inline Thunk<FDirectiveResponse> postDirective(const FString &NpcId,
-                          const FDirectiveRequest &Request) {
-  return Detail::MakePostWithCodec<FDirectiveRequest, FDirectiveResponse>(
-      TEXT("postDirective"),
-      SDKConfig::GetApiUrl() + TEXT("/npcs/") + Detail::Encode(NpcId) +
-          TEXT("/directive"),
-      Request, Detail::EncodeDirectiveRequest, Detail::DecodeDirectiveResponse);
-}
-
-/**
- * Builds the endpoint thunk that requests context composition for an NPC.
- * User Story: As context assembly flows, I need a reusable endpoint thunk so
- * the runtime can request composed context for a specific NPC.
- */
-inline Thunk<FContextResponse> postContext(const FString &NpcId, const FContextRequest &Request) {
-  return Detail::MakePostWithCodec<FContextRequest, FContextResponse>(
-      TEXT("postContext"),
-      SDKConfig::GetApiUrl() + TEXT("/npcs/") + Detail::Encode(NpcId) +
-          TEXT("/context"),
-      Request, Detail::EncodeContextRequest, Detail::DecodeContextResponse);
-}
-
-/**
- * Builds the endpoint thunk that validates a verdict for an NPC turn.
- * User Story: As verdict evaluation flows, I need a reusable endpoint thunk so
- * the runtime can validate turn outcomes for a specific NPC.
- */
-inline Thunk<FVerdictResponse> postVerdict(const FString &NpcId, const FVerdictRequest &Request) {
-  return Detail::MakePostWithCodec<FVerdictRequest, FVerdictResponse>(
-      TEXT("postVerdict"),
-      SDKConfig::GetApiUrl() + TEXT("/npcs/") + Detail::Encode(NpcId) +
-          TEXT("/verdict"),
-      Request, Detail::EncodeVerdictRequest, Detail::DecodeVerdictResponse);
 }
 
 /**

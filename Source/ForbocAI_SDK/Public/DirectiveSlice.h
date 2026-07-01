@@ -28,7 +28,7 @@ struct FDirectiveReceivedPayload {
 struct FContextComposedPayload {
   FString Id;
   FString Prompt;
-  FCortexConfig Constraints;
+  FPromptConstraints Constraints;
 };
 
 struct FVerdictValidatedPayload {
@@ -171,10 +171,10 @@ inline AnyAction DirectiveReceived(const FString &Id,
 /**
  * Creates an action that stores composed context details.
  * User Story: As context composition, I need the prompt and constraints saved
- * so the run captures exactly what was sent to cortex.
+   * so the run captures the API-issued prompt constraints.
  */
 inline AnyAction ContextComposed(const FString &Id, const FString &Prompt,
-                                 const FCortexConfig &Constraints) {
+                                 const FPromptConstraints &Constraints) {
   return ContextComposedActionCreator()(
       FContextComposedPayload{Id, Prompt, Constraints});
 }

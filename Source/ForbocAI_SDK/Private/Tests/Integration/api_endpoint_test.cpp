@@ -28,10 +28,6 @@
 // @covers:api:getSouls
 // @covers:api:postBridgePreset
 // @covers:api:postBridgeValidate
-// @covers:api:postContext
-// @covers:api:postCortexComplete
-// @covers:api:postCortexInit
-// @covers:api:postDirective
 // @covers:api:postGhostRun
 // @covers:api:postGhostStop
 // @covers:api:postMemoryStore
@@ -43,7 +39,6 @@
 // @covers:api:postSoulExport
 // @covers:api:postSoulExportConfirm
 // @covers:api:postSoulVerify
-// @covers:api:postVerdict
 
 
 struct FApiEndpointTestState {
@@ -298,61 +293,6 @@ bool FApiEndpointNotFoundTest::RunTest(const FString &Parameters) {
           return;
         TestFalse("404 path fails", State->bSuccess);
         TestEqual("Returns 404", State->HttpCode, 404);
-      },
-      0.01f));
-
-  return true;
-}
-
-/**
- * postDirective — valid key, minimal request (may 400 if body invalid)
- * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
- */
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FApiEndpointPostDirectiveTest,
-    "ForbocAI.Integration.API.Endpoint.PostDirective",
-    EAutomationTestFlags_ApplicationContextMask |
-        EAutomationTestFlags::EngineFilter)
-/**
- * User Story: As a developer, I need RunTest to fulfill its role in the module.
- */
-bool FApiEndpointPostDirectiveTest::RunTest(const FString &Parameters) {
-  const FString Key =
-      FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_API_KEY"));
-  if (Key.IsEmpty()) {
-    AddInfo(TEXT("Skip: FORBOCAI_API_KEY not set"));
-    return true;
-  }
-  SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(), Key);
-
-  const FString NpcId = TEXT("api_ep_test_npc");
-  const FString Url =
-      GetBaseUrl() + TEXT("/npcs/") +
-      FGenericPlatformHttp::UrlEncode(NpcId) + TEXT("/directive");
-  const FString Payload = TEXT(
-      R"({"directiveId":"d1","observation":"test","tape":{},"persona":"Test"})");
-
-  auto State = MakeShared<FApiEndpointTestState>();
-  ADD_LATENT_AUTOMATION_COMMAND(
-      FHttpPostWaitComplete(Url, Payload, Key, State));
-
-  ADD_LATENT_AUTOMATION_COMMAND(FDelayedFunctionLatentCommand(
-      [this, State]() {
-        TestTrue("Request completed", State->bDone);
-        if (!State->bDone)
-          return;
-        /**
-         * 200 OK or 400/404 depending on NPC existence and body validity
-         * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-         */
-        TestTrue("Got HTTP response",
-                 State->HttpCode >= 200 && State->HttpCode < 600);
-        if (State->bSuccess && State->Body.Len() > 0) {
-          FDirectiveResponse Decoded;
-          TestTrue("Response parses as FDirectiveResponse",
-                   APISlice::Detail::DecodeDirectiveResponse(State->Body,
-                                                            Decoded));
-        }
       },
       0.01f));
 

@@ -11,7 +11,6 @@
 // @covers:coreThunk:checkApiStatusThunk
 // @covers:coreThunk:clearMemoryRemoteThunk
 // @covers:coreThunk:clearNodeMemoryThunk
-// @covers:coreThunk:completeNodeCortexThunk
 // @covers:coreThunk:completeRemoteThunk
 // @covers:coreThunk:deleteRulesetThunk
 // @covers:coreThunk:doctorThunk
@@ -25,11 +24,8 @@
 // @covers:coreThunk:importNpcFromSoulThunk
 // @covers:coreThunk:importSoulFromArweaveThunk
 // @covers:coreThunk:importSoulThunk
-// @covers:coreThunk:initNodeCortexThunk
 // @covers:coreThunk:initNodeMemoryThunk
 // @covers:coreThunk:initNodeVectorThunk
-// @covers:coreThunk:initRemoteCortexThunk
-// @covers:coreThunk:listCortexModelsThunk
 // @covers:coreThunk:listMemoryRemoteThunk
 // @covers:coreThunk:listRulePresetsThunk
 // @covers:coreThunk:listRulesetsThunk
@@ -48,7 +44,6 @@
 // @covers:coreThunk:stopGhostThunk
 // @covers:coreThunk:storeMemoryRemoteThunk
 // @covers:coreThunk:storeNodeMemoryThunk
-// @covers:coreThunk:streamNodeCortexThunk
 // @covers:coreThunk:validateBridgeThunk
 // @covers:coreThunk:verifySoulThunk
 

@@ -8,7 +8,6 @@
 rtk::Api<FStoreState> APISlice::ForbocAiApi = []() {
   return rtk::createApi<FStoreState>(
       TEXT("forbocApi"),
-      TArray<FString>{TEXT("NPC"),  TEXT("Memory"), TEXT("Cortex"),
-                      TEXT("Ghost"), TEXT("Soul"), TEXT("Bridge"),
-                      TEXT("Rule")});
+	      TArray<FString>{TEXT("NPC"),  TEXT("Memory"), TEXT("Ghost"),
+	                      TEXT("Soul"), TEXT("Bridge"), TEXT("Rule")});
 }();

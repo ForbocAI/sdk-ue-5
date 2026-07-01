@@ -22,20 +22,14 @@ static const TCHAR *SQLITE_VERSION = TEXT("3460100");
 static const TCHAR *SQLITE_VEC_VERSION = TEXT("v0.1.6");
 static const TCHAR *LLAMA_CPP_TAG = TEXT("b8420");
 static const TCHAR *MACOS_DEPLOYMENT_TARGET = TEXT("14.0");
-static const TCHAR *DEFAULT_CORTEX_MODEL_FILE =
-    TEXT("SmolLM2-135M-Instruct-Q4_K_M.gguf");
-static const TCHAR *DEFAULT_SMOKE_PROMPT = TEXT("Reply with the word ready.");
 
 struct FRuntimeCheckOptions {
   bool bAllowDownload;
-  bool bSkipCortex;
   bool bSkipVector;
   bool bSkipMemory;
   bool bCleanup;
-  FString CortexModel;
   FString EmbeddingModel;
   FString DatabasePath;
-  FString Prompt;
 };
 
 /**
@@ -64,24 +58,13 @@ FString FindOptionRecursive(const TArray<FString> &Args, const FString &Prefix,
 FRuntimeCheckOptions RuntimeCheckOptions(const TArray<FString> &Args) {
   FRuntimeCheckOptions Options;
   Options.bAllowDownload = HasFlagRecursive(Args, TEXT("--allow-download"));
-  Options.bSkipCortex = HasFlagRecursive(Args, TEXT("--skip-cortex"));
   Options.bSkipVector = HasFlagRecursive(Args, TEXT("--skip-vector"));
   Options.bSkipMemory = HasFlagRecursive(Args, TEXT("--skip-memory"));
   Options.bCleanup = HasFlagRecursive(Args, TEXT("--cleanup"));
-  Options.CortexModel = FindOptionRecursive(Args, TEXT("--model="));
   Options.EmbeddingModel =
       FindOptionRecursive(Args, TEXT("--embedding-model="));
   Options.DatabasePath = FindOptionRecursive(Args, TEXT("--database="));
-  Options.Prompt = FindOptionRecursive(Args, TEXT("--prompt="));
   return Options;
-}
-
-/**
- * User Story: As a developer, I need DefaultCortexModelPath to fulfill its role in the module.
- */
-FString DefaultCortexModelPath() {
-  return rtk::detail::GetLocalInfrastructureDir() + TEXT("models/") +
-         DEFAULT_CORTEX_MODEL_FILE;
 }
 
 /**
@@ -103,20 +86,6 @@ FString ResolveEmbeddingModelPath(const FRuntimeCheckOptions &Options,
   const FString DefaultPath = rtk::detail::DefaultEmbeddingModelPath();
   return !Options.EmbeddingModel.IsEmpty()
              ? Options.EmbeddingModel
-             : PF.FileExists(*DefaultPath) ? DefaultPath
-                                           : Options.bAllowDownload
-                                                 ? FString()
-                                                 : TEXT("");
-}
-
-/**
- * User Story: As a developer, I need ResolveCortexModelArg to fulfill its role in the module.
- */
-FString ResolveCortexModelArg(const FRuntimeCheckOptions &Options,
-                              IPlatformFile &PF) {
-  const FString DefaultPath = DefaultCortexModelPath();
-  return !Options.CortexModel.IsEmpty()
-             ? Options.CortexModel
              : PF.FileExists(*DefaultPath) ? DefaultPath
                                            : Options.bAllowDownload
                                                  ? FString()
@@ -201,9 +170,6 @@ Result RunRuntimeSmokeCheck(rtk::EnhancedStore<FStoreState> &Store,
   const bool bOwnsDatabasePath = Options.DatabasePath.IsEmpty();
   const FString EmbeddingModelPath =
       ResolveEmbeddingModelPath(Options, PF);
-  const FString CortexModelArg = ResolveCortexModelArg(Options, PF);
-  const FString Prompt =
-      Options.Prompt.IsEmpty() ? FString(DEFAULT_SMOKE_PROMPT) : Options.Prompt;
   const FString SmokeText =
       FString::Printf(TEXT("runtime-smoke-%s"),
                       *FGuid::NewGuid().ToString(EGuidFormats::Digits));
@@ -215,8 +181,6 @@ Result RunRuntimeSmokeCheck(rtk::EnhancedStore<FStoreState> &Store,
   UE_LOG(LogTemp, Display, TEXT(""));
   UE_LOG(LogTemp, Display, TEXT("=== ForbocAI Native Runtime Smoke Check ==="));
   UE_LOG(LogTemp, Display, TEXT("  Database: %s"), *DatabasePath);
-  UE_LOG(LogTemp, Display, TEXT("  Cortex: %s"),
-         Options.bSkipCortex ? TEXT("skipped") : TEXT("enabled"));
   UE_LOG(LogTemp, Display, TEXT("  Vector: %s"),
          Options.bSkipVector ? TEXT("skipped") : TEXT("enabled"));
   UE_LOG(LogTemp, Display, TEXT("  Memory: %s"),
@@ -235,9 +199,6 @@ Result RunRuntimeSmokeCheck(rtk::EnhancedStore<FStoreState> &Store,
     : (bNeedsVectorModel && EmbeddingModelPath.IsEmpty())
     ? Result::Failure(
         "Embedding model missing. Re-run with --allow-download, --embedding-model=<path>, or --skip-vector --skip-memory.")
-    : (!Options.bSkipCortex && CortexModelArg.IsEmpty())
-    ? Result::Failure(
-        "Cortex model missing. Re-run with --allow-download, --model=<path>, or --skip-cortex.")
     : [&]() -> Result {
       try {
         Ops::InitNodeMemory(Store, DatabasePath);
@@ -279,39 +240,8 @@ Result RunRuntimeSmokeCheck(rtk::EnhancedStore<FStoreState> &Store,
                     }()
                   : Result::Success("");
 
-                return !MemoryResult.bSuccess
-                  ? MemoryResult
-                  : [&]() -> Result {
-                    /* Cortex block */
-                    return !Options.bSkipCortex
-                      ? [&]() -> Result {
-                          const FString ModelsDir = rtk::detail::GetLocalInfrastructureDir() +
-                                                    TEXT("models");
-                          TArray<FString> ModelsBefore;
-                          TArray<FString> ModelsAfter;
-                          PF.FindFiles(ModelsBefore, *ModelsDir, TEXT(".gguf"));
-                          const FCortexStatus Status = Ops::InitCortex(Store, CortexModelArg);
-                          PF.FindFiles(ModelsAfter, *ModelsDir, TEXT(".gguf"));
-                          return !Status.bReady
-                            ? Result::Failure("Local cortex did not become ready")
-                            : (Options.CortexModel.IsEmpty() && ModelsAfter.Num() == 0)
-                            ? Result::Failure(
-                                "Local cortex initialized without a GGUF artifact in local_infrastructure/models")
-                            : [&]() -> Result {
-                                const FCortexResponse Response = Ops::CompleteCortex(Store, Prompt);
-                                return (Response.Text.IsEmpty() || Response.Text.StartsWith(TEXT("Error:")))
-                                  ? Result::Failure("Local cortex completion returned an error")
-                                  : [&]() -> Result {
-                                      UE_LOG(LogTemp, Display,
-                                             TEXT("  [OK] cortex initialized and generated a completion"));
-                                      UE_LOG(LogTemp, Display, TEXT("  Models before: %d | after: %d"),
-                                             ModelsBefore.Num(), ModelsAfter.Num());
-                                      return Result::Success("");
-                                    }();
-                              }();
-                        }()
-                      : Result::Success("");
-                  }();
+                return !MemoryResult.bSuccess ? MemoryResult
+                                              : Result::Success("");
               }();
           }();
       } catch (const std::exception &Error) {
@@ -587,13 +517,6 @@ Result VerifyThirdParty() {
     ? [&]() {
         UE_LOG(LogTemp, Display, TEXT(
             "  To set up: setup_deps --sqlite-only"));
-      }()
-    : (void)0;
-
-  (ModelCount == 0)
-    ? [&]() {
-        UE_LOG(LogTemp, Display, TEXT(
-            "  Models download automatically on first cortex_init."));
       }()
     : (void)0;
 

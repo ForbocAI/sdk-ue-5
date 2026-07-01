@@ -13,8 +13,6 @@
 // @covers:cliOp:BridgeRules
 // @covers:cliOp:CheckApiStatus
 // @covers:cliOp:ClearNodeMemory
-// @covers:cliOp:CompleteCortex
-// @covers:cliOp:CompleteRemoteCortex
 // @covers:cliOp:ConfigGet
 // @covers:cliOp:ConfigSet
 // @covers:cliOp:CreateNpc
@@ -28,11 +26,8 @@
 // @covers:cliOp:GhostStop
 // @covers:cliOp:ImportNpcFromSoul
 // @covers:cliOp:ImportSoul
-// @covers:cliOp:InitCortex
 // @covers:cliOp:InitNodeMemory
-// @covers:cliOp:InitRemoteCortex
 // @covers:cliOp:InitVector
-// @covers:cliOp:ListCortexModels
 // @covers:cliOp:ListNpcs
 // @covers:cliOp:ListSouls
 // @covers:cliOp:LocalExportSoul
@@ -57,10 +52,6 @@
 // @covers:cli:config_get
 // @covers:cli:config_list
 // @covers:cli:config_set
-// @covers:cli:cortex_complete
-// @covers:cli:cortex_init
-// @covers:cli:cortex_init_remote
-// @covers:cli:cortex_models
 // @covers:cli:doctor
 // @covers:cli:ghost_history
 // @covers:cli:ghost_results

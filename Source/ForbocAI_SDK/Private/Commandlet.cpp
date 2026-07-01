@@ -415,18 +415,14 @@ TArray<FString> BuildCommandArgs(const FString &Command,
                     return MergeArgs(
                         BuildPrefixed(
                             Params,
-                            {TEXT("Model="), TEXT("EmbeddingModel="),
-                             TEXT("Database="), TEXT("Prompt=")},
-                            {TEXT("--model="), TEXT("--embedding-model="),
-                             TEXT("--database="), TEXT("--prompt=")}),
+                            {TEXT("EmbeddingModel="), TEXT("Database=")},
+                            {TEXT("--embedding-model="), TEXT("--database=")}),
                         BuildFlags(
                             Params,
-                            {TEXT("AllowDownload"), TEXT("SkipCortex"),
-                             TEXT("SkipVector"), TEXT("SkipMemory"),
-                             TEXT("Cleanup")},
-                            {TEXT("--allow-download"), TEXT("--skip-cortex"),
-                             TEXT("--skip-vector"), TEXT("--skip-memory"),
-                             TEXT("--cleanup")}));
+                            {TEXT("AllowDownload"), TEXT("SkipVector"),
+                             TEXT("SkipMemory"), TEXT("Cleanup")},
+                            {TEXT("--allow-download"), TEXT("--skip-vector"),
+                             TEXT("--skip-memory"), TEXT("--cleanup")}));
                   }),
           }),
       TArray<FString>());

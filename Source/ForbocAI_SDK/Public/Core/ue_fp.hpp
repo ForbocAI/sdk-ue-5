@@ -720,12 +720,108 @@ template <typename F, typename G> Composed<F, G> compose(F f, G g) {
  *     auto HasTag = requireTag(World, Tag);
  *     auto InDomain = requireDomain(World, Domain);
  *     auto Matches = func::all_pass<EntityKey>({HasTag, InDomain});
+ * - Do not stop at a repeated family of typed factories. If call sites still
+ *   repeat `BindBool<Domain>(Name, Reader)`, `BindText<Domain>(Name, Reader)`,
+ *   `ComponentField(Name, Member)`, `field_names(...)` plus
+ *   `field_readers(...)`, or equivalent noun/type plumbing, push the
+ *   abstraction down another level. The lower layer should compose functions
+ *   into functions:
+ *     domain declaration -> registry lookup -> value transform -> fold
+ *   so higher domains provide only declaration data and the minimal
+ *   domain-specific facts. The target is a composed unary transform built from
+ *   smaller composed unary transforms, not a nicer-looking wrapper around the
+ *   same repeated call shape.
+ *
+ *   Definitive generic style: name the composition boundary once, then pass a
+ *   collection of irreducible domain atoms to one reusable composer. The source
+ *   type, reducer slice, validator target, or dispatch target should come from
+ *   the surrounding generic composer/context. Do not invent noun wrappers such
+ *   as `FTownspersonSeeds(...)` just to forward a field list.
+ *
+ *   This rule applies at every layer, including registries. A registry,
+ *   adapter, validator, formatter, selector, reducer helper, or execution
+ *   runner is not permission to hand-write
+ *   `compose(ReadMember(A), ReadMember(B))` chains. Source/target lookup must
+ *   also be declaration-shaped: use atoms, paths, conversions, predicates, and
+ *   cases as data, then let one generic composer expand those declarations
+ *   into readers, projectors, validators, dispatchers, reducers, or folds.
+ *
+ *   Definitive grouped declaration shape: the outer function owns the inner
+ *   expansion. A call site supplies grouped atoms and paths, not nested helper
+ *   calls:
+ *     RegisteredGroups({
+ *         {"Runtime/Bots",
+ *          {"HasActiveGoal",
+ *           "ActiveGoal",
+ *           "GoalQueue",
+ *           {"KnownLandmarkIds", {"Knowledge", "KnownLandmarkIds"}},
+ *           {"KnownBotIds", {"Knowledge", "KnownBotIds"}}}},
+ *         {"Runtime/Spatial", {"LocalLocation", "WorldLocation"}}});
+ *
+ *   A narrower boundary can accept only field/path atoms when the surrounding
+ *   composer already knows the group:
+ *     RegisteredFields({
+ *         {"KnownLandmarkIds", {"Knowledge", "KnownLandmarkIds"}},
+ *         {"KnownBotIds", {"Knowledge", "KnownBotIds"}}});
+ *
+ *   Converted values follow the same rule: declare the source path and the
+ *   conversion function as data, then let the generic composer build the unary
+ *   transform. This applies to component projection, validation, formatting,
+ *   selector derivation, reducer payload shaping, and execution pipelines:
+ *     RegisteredFields({
+ *         "BehaviorState", {"BehaviorState"}, Convert(BotBehaviorText),
+ *         "KnownBotIds", {"Knowledge", "KnownBotIds"}});
+ *
+ *   Domain grouping is still generic declaration data. The boundary function
+ *   owns the inner helper expansion; do not nest `RegisteredFields`,
+ *   `RegisteredRules`, `Required`, `Sequence`, or similar helper calls inside
+ *   the declaration unless the argument is genuinely custom/one-off behavior:
+ *     RegisteredDomain(
+ *         "Runtime/Bots",
+ *         {"Persona",
+ *          "InteractionPrompt",
+ *          "DefaultPlayerLine",
+ *          "PinnedResponse",
+ *          "InteractionIntent"});
+ *
+ *     RegisteredDomain(
+ *         "Validation/Bots",
+ *         {"Id", "Persona", "Goals"},
+ *         {"Type", "Priority", "TargetEntityId"});
+ *
+ *     RegisteredCases({"Entity", "Component", "Relationship", "System"});
+ *     RegisteredProjectionPasses({"Terrain", "Spawn", "Townsperson"});
+ *
+ *   Generic declaration helpers own platform string conversion. Do not repeat
+ *   `TEXT(...)` around every atom and do not hide that repetition behind a
+ *   noun wrapper. Do not replace field/path declarations with per-field
+ *   `ReadMember`, `ComponentField`, `BindText`, or hand-composed reader
+ *   chains.
+ *
+ *   The same rule applies to every repeated composition idiom, not only member
+ *   reading: path assembly, entity selection, source selection, value
+ *   conversion, binding construction, validation, formatting, lookup,
+ *   traversal, and execution folds. If a call site repeats
+ *   `ComposeX(Names, Readers)`, `ProjectPayloadY(Entity, Source, Fields)`, or
+ *   matching lambda chains across domains, that is still an abstraction leak.
+ *   Move the repeated shape into a higher composer and leave the current layer
+ *   with grouped declarations. If the current layer is a registry, it still
+ *   declares fields/paths/conversions as data.
+ *
+ *   Rule of thumb: if a feature file repeats a function call per field, per
+ *   type, per domain prefix, per selector/projector pair, per validation rule,
+ *   per formatting case, or per execution pass, it is not abstracted far
+ *   enough. Move that shape into one composer and feed it grouped declaration
+ *   data. Repetition is acceptable only for irreducible domain atoms inside
+ *   those declarations.
  * - Use request/payload structs at public domain boundaries and for genuine
  *   multi-input domain operations. Do not create a new request struct when a
  *   reusable unary function, predicate, fold, lift, or traversal is the actual
  *   abstraction.
  * - When only nouns change, put selectors, projectors, validators, or
- *   transforms in catalogs and fold the catalog. When two noun lists advance
+ *   transforms in registries/catalogs and fold those with generic declaration
+ *   functions. Do not create `FNounThing(...)` wrapper families that only
+ *   forward names into the same composer. When two noun lists advance
  *   together, use zip_catalog_fold so recursion is one primitive instead of a
  *   family of domain-shaped wrappers.
  * - Neutral primitives live below feature domains. Feature domains import
@@ -799,11 +895,12 @@ template <typename T>
 std::function<bool(const T &)>
 all_pass(const std::vector<std::function<bool(const T &)>> &predicates) {
   return [predicates](const T &value) {
-    return std::all_of(
-        predicates.begin(), predicates.end(),
-        [&value](const std::function<bool(const T &)> &predicate) {
-          return predicate(value);
-        });
+    std::function<bool(size_t)> eval = [&](size_t index) {
+      return index >= predicates.size()
+                 ? true
+                 : predicates[index](value) && eval(index + 1);
+    };
+    return eval(0);
   };
 }
 
@@ -811,11 +908,12 @@ template <typename T>
 std::function<bool(const T &)>
 any_pass(const std::vector<std::function<bool(const T &)>> &predicates) {
   return [predicates](const T &value) {
-    return std::any_of(
-        predicates.begin(), predicates.end(),
-        [&value](const std::function<bool(const T &)> &predicate) {
-          return predicate(value);
-        });
+    std::function<bool(size_t)> eval = [&](size_t index) {
+      return index >= predicates.size()
+                 ? false
+                 : predicates[index](value) || eval(index + 1);
+    };
+    return eval(0);
   };
 }
 
