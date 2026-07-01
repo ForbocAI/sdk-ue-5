@@ -14,6 +14,30 @@
 
 using namespace rtk;
 
+namespace {
+
+FString InstructionTypeName(const ENPCInstructionType Type) {
+  return Type == ENPCInstructionType::IdentifyActor
+             ? TEXT("IdentifyActor")
+             : Type == ENPCInstructionType::QueryVector
+                   ? TEXT("QueryVector")
+                   : Type == ENPCInstructionType::Decision
+                         ? TEXT("Decision")
+                         : Type == ENPCInstructionType::Reasoning
+                               ? TEXT("Reasoning")
+                               : Type == ENPCInstructionType::ExecuteInference
+                                     ? TEXT("ExecuteInference")
+                                     : TEXT("Finalize");
+}
+
+FString ExpectedInstructionError(const FString &Expected,
+                                 const ENPCInstructionType Actual) {
+  return FString::Printf(TEXT("Expected %s, got %s"), *Expected,
+                         *InstructionTypeName(Actual));
+}
+
+} // namespace
+
 struct FProcessLiveTestState {
   bool bCompleted = false;
   bool bSuccess = false;
@@ -44,13 +68,13 @@ bool FProcessLiveStepWait::Update() {
       
       APISlice::Endpoints::postNpcProcess(TEXT("live_npc_1"), Req)(Dispatch, GetState)
           .then([this](const FNPCProcessResponse &R) {
-              if (R.Instruction.Type == TEXT("IdentifyActor")) {
+              if (R.Instruction.Type == ENPCInstructionType::IdentifyActor) {
                   State->Step = 2;
                   State->Tape = R.Tape;
               } else {
                   State->bCompleted = true;
                   State->bSuccess = false;
-                  State->Error = FString::Printf(TEXT("Expected IdentifyActor, got %s"), *R.Instruction.Type);
+                  State->Error = ExpectedInstructionError(TEXT("IdentifyActor"), R.Instruction.Type);
               }
           })
           .catch_([this](std::string E) {
@@ -80,13 +104,13 @@ bool FProcessLiveStepWait::Update() {
       
       APISlice::Endpoints::postNpcProcess(TEXT("live_npc_1"), Req)(Dispatch, GetState)
           .then([this](const FNPCProcessResponse &R) {
-              if (R.Instruction.Type == TEXT("QueryVector")) {
+              if (R.Instruction.Type == ENPCInstructionType::QueryVector) {
                   State->Step = 4;
                   State->Tape = R.Tape;
               } else {
                   State->bCompleted = true;
                   State->bSuccess = false;
-                  State->Error = FString::Printf(TEXT("Expected QueryVector, got %s"), *R.Instruction.Type);
+                  State->Error = ExpectedInstructionError(TEXT("QueryVector"), R.Instruction.Type);
               }
           })
           .catch_([this](std::string E) {
@@ -113,13 +137,13 @@ bool FProcessLiveStepWait::Update() {
       
       APISlice::Endpoints::postNpcProcess(TEXT("live_npc_1"), Req)(Dispatch, GetState)
           .then([this](const FNPCProcessResponse &R) {
-              if (R.Instruction.Type == TEXT("Decision")) {
+              if (R.Instruction.Type == ENPCInstructionType::Decision) {
                   State->Step = 6;
                   State->Tape = R.Tape;
               } else {
                   State->bCompleted = true;
                   State->bSuccess = false;
-                  State->Error = FString::Printf(TEXT("Expected Decision, got %s"), *R.Instruction.Type);
+                  State->Error = ExpectedInstructionError(TEXT("Decision"), R.Instruction.Type);
               }
           })
           .catch_([this](std::string E) {
@@ -149,11 +173,11 @@ bool FProcessLiveStepWait::Update() {
       
       APISlice::Endpoints::postNpcProcess(TEXT("live_npc_1"), Req)(Dispatch, GetState)
           .then([this](const FNPCProcessResponse &R) {
-              if (R.Instruction.Type == TEXT("Reasoning")) {
+              if (R.Instruction.Type == ENPCInstructionType::Reasoning) {
                   State->Step = 8;
                   State->Tape = R.Tape;
                   
-                  if (!State->Tape.DecisionIntent.IsSet()) {
+                  if (!State->Tape.bDecisionCompleted) {
                       State->bCompleted = true;
                       State->bSuccess = false;
                       State->Error = TEXT("DecisionIntent was not stitched into tape");
@@ -161,7 +185,7 @@ bool FProcessLiveStepWait::Update() {
               } else {
                   State->bCompleted = true;
                   State->bSuccess = false;
-                  State->Error = FString::Printf(TEXT("Expected Reasoning, got %s"), *R.Instruction.Type);
+                  State->Error = ExpectedInstructionError(TEXT("Reasoning"), R.Instruction.Type);
               }
           })
           .catch_([this](std::string E) {
@@ -191,14 +215,14 @@ bool FProcessLiveStepWait::Update() {
       
       APISlice::Endpoints::postNpcProcess(TEXT("live_npc_1"), Req)(Dispatch, GetState)
           .then([this](const FNPCProcessResponse &R) {
-              if (R.Instruction.Type == TEXT("Finalize")) {
+              if (R.Instruction.Type == ENPCInstructionType::Finalize) {
                   State->Step = 10;
                   State->Tape = R.Tape;
                   
                   if (State->Tape.GeneratedOutput.IsEmpty()) {
                       State->Error = TEXT("GeneratedOutput was not stitched into tape");
                       State->bSuccess = false;
-                  } else if (!State->Tape.ReasoningOutput.IsSet()) {
+                  } else if (!State->Tape.bReasoningCompleted) {
                       State->Error = TEXT("ReasoningOutput was not stitched into tape");
                       State->bSuccess = false;
                   } else {
@@ -208,7 +232,7 @@ bool FProcessLiveStepWait::Update() {
               } else {
                   State->bCompleted = true;
                   State->bSuccess = false;
-                  State->Error = FString::Printf(TEXT("Expected Finalize, got %s"), *R.Instruction.Type);
+                  State->Error = ExpectedInstructionError(TEXT("Finalize"), R.Instruction.Type);
               }
           })
           .catch_([this](std::string E) {

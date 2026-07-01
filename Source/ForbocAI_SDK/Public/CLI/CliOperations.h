@@ -251,6 +251,7 @@ ClearNodeMemory(rtk::EnhancedStore<FStoreState> &Store) {
   return WaitForResult(Store.dispatch(rtk::clearNodeMemoryThunk()));
 }
 
+/**
  * Starts a ghost run for the requested test suite and duration.
  * User Story: As ghost-test CLI flows, I need one helper to launch a run so
  * automated test sessions can be started from the terminal.

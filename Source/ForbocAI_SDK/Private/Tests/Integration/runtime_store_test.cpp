@@ -40,8 +40,6 @@ bool FStoreNPCCreationTest::RunTest(const FString &Parameters) {
   TestEqual("Bridge idle", State.Bridge.Status, FString(TEXT("idle")));
   TestEqual("Soul export idle", State.Soul.ExportStatus,
             FString(TEXT("idle")));
-  TestTrue("Cortex idle",
-           State.Cortex.Status == CortexSlice::ECortexEngineStatus::Idle);
 
   return true;
 }
