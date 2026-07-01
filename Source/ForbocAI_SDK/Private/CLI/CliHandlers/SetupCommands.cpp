@@ -19,8 +19,6 @@ namespace {
  */
 static const TCHAR *SQLITE_VERSION = TEXT("3460100");
 static const TCHAR *SQLITE_VEC_VERSION = TEXT("v0.1.6");
-static const TCHAR *LLAMA_CPP_TAG = TEXT("b8420");
-static const TCHAR *MACOS_DEPLOYMENT_TARGET = TEXT("14.0");
 
 struct FRuntimeCheckOptions {
   bool bAllowDownload;
@@ -371,62 +369,10 @@ Result VerifyThirdParty() {
       FPaths::ProjectPluginsDir() / TEXT("ForbocAI_SDK");
   const FString ThirdPartyDir = PluginDir / TEXT("ThirdParty");
 
-  const FString LlamaInclude = ThirdPartyDir / TEXT("llama.cpp/include");
-  const FString LlamaHeader = LlamaInclude / TEXT("llama.h");
-  const FString GgmlHeader = LlamaInclude / TEXT("ggml.h");
-  const FString GgmlAllocHeader = LlamaInclude / TEXT("ggml-alloc.h");
-  const FString GgmlBackendHeader = LlamaInclude / TEXT("ggml-backend.h");
-  const FString GgmlCpuHeader = LlamaInclude / TEXT("ggml-cpu.h");
-  const FString GgmlOptHeader = LlamaInclude / TEXT("ggml-opt.h");
   const FString SqliteInclude = ThirdPartyDir / TEXT("sqlite-vss/include");
   const FString SqliteSrc = ThirdPartyDir / TEXT("sqlite-vss/src");
 
   IPlatformFile &PF = FPlatformFileManager::Get().GetPlatformFile();
-
-  const bool bLlamaHeaders = PF.DirectoryExists(*LlamaInclude) &&
-                             PF.FileExists(*LlamaHeader) &&
-                             PF.FileExists(*GgmlHeader) &&
-                             PF.FileExists(*GgmlAllocHeader) &&
-                             PF.FileExists(*GgmlBackendHeader) &&
-                             PF.FileExists(*GgmlCpuHeader) &&
-                             PF.FileExists(*GgmlOptHeader);
-
-#if PLATFORM_MAC
-  const FString LlamaLib =
-      ThirdPartyDir / TEXT("llama.cpp/lib/Mac/libllama.a");
-#elif PLATFORM_WINDOWS
-  const FString LlamaLib =
-      ThirdPartyDir / TEXT("llama.cpp/lib/Win64/llama.lib");
-#else
-  const FString LlamaLib = TEXT("");
-#endif
-  const bool bLlamaLib =
-      !LlamaLib.IsEmpty() && PF.FileExists(*LlamaLib);
-
-#if PLATFORM_MAC
-  const FString LlamaLibDir = ThirdPartyDir / TEXT("llama.cpp/lib/Mac");
-  const bool bGgmlCore =
-      PF.FileExists(*(LlamaLibDir / TEXT("libggml.a"))) &&
-      PF.FileExists(*(LlamaLibDir / TEXT("libggml-base.a"))) &&
-      PF.FileExists(*(LlamaLibDir / TEXT("libggml-cpu.a")));
-  const bool bGgmlMetal =
-      PF.FileExists(*(LlamaLibDir / TEXT("libggml-metal.a")));
-  const bool bGgmlBlas =
-      PF.FileExists(*(LlamaLibDir / TEXT("libggml-blas.a")));
-#elif PLATFORM_WINDOWS
-  const FString LlamaLibDir = ThirdPartyDir / TEXT("llama.cpp/lib/Win64");
-  const bool bGgmlCore =
-      PF.FileExists(*(LlamaLibDir / TEXT("ggml.lib"))) &&
-      PF.FileExists(*(LlamaLibDir / TEXT("ggml-base.lib"))) &&
-      PF.FileExists(*(LlamaLibDir / TEXT("ggml-cpu.lib")));
-  const bool bGgmlMetal = false;
-  const bool bGgmlBlas = false;
-#else
-  const FString LlamaLibDir = TEXT("");
-  const bool bGgmlCore = false;
-  const bool bGgmlMetal = false;
-  const bool bGgmlBlas = false;
-#endif
 
   const bool bSqliteHeaders = PF.DirectoryExists(*SqliteInclude) &&
                               PF.FileExists(*(SqliteInclude / TEXT("sqlite3.h")));
@@ -436,32 +382,12 @@ Result VerifyThirdParty() {
   const bool bVec0 = PF.FileExists(*(SqliteSrc / TEXT("vec0.c")));
 
   const FString LocalInfra = FPaths::ProjectDir() / TEXT("local_infrastructure");
-  const FString ModelsDir = LocalInfra / TEXT("models");
-  TArray<FString> ModelFiles;
-  PF.FindFiles(ModelFiles, *ModelsDir, TEXT(".gguf"));
-  const int32 ModelCount = ModelFiles.Num();
-
   const FString VectorsDir = LocalInfra / TEXT("vectors");
   const bool bVectorDb = PF.DirectoryExists(*VectorsDir);
 
   UE_LOG(LogTemp, Display, TEXT(""));
   UE_LOG(LogTemp, Display, TEXT("=== ForbocAI ThirdParty Dependency Check ==="));
   UE_LOG(LogTemp, Display, TEXT(""));
-  UE_LOG(LogTemp, Display, TEXT("  [%s] llama.cpp headers     (%s)"),
-         bLlamaHeaders ? TEXT("OK") : TEXT("--"), *LlamaInclude);
-  UE_LOG(LogTemp, Display, TEXT("       required headers      (llama.h, ggml.h, ggml-alloc.h, ggml-backend.h, ggml-cpu.h, ggml-opt.h)"));
-  UE_LOG(LogTemp, Display, TEXT("  [%s] llama.cpp library     (%s)"),
-         bLlamaLib ? TEXT("OK") : TEXT("--"), *LlamaLib);
-  UE_LOG(LogTemp, Display, TEXT("  [%s] ggml core libs        (ggml, ggml-base, ggml-cpu)"),
-         bGgmlCore ? TEXT("OK") : TEXT("--"));
-#if PLATFORM_MAC
-  UE_LOG(LogTemp, Display, TEXT("  [%s] ggml-metal            (%s)"),
-         bGgmlMetal ? TEXT("OK") : TEXT("--"),
-         *(LlamaLibDir / TEXT("libggml-metal.a")));
-  UE_LOG(LogTemp, Display, TEXT("  [%s] ggml-blas             (%s)"),
-         bGgmlBlas ? TEXT("OK") : TEXT("--"),
-         *(LlamaLibDir / TEXT("libggml-blas.a")));
-#endif
   UE_LOG(LogTemp, Display, TEXT("  [%s] sqlite3 headers       (%s)"),
          bSqliteHeaders ? TEXT("OK") : TEXT("--"), *SqliteInclude);
   UE_LOG(LogTemp, Display, TEXT("  [%s] sqlite3 amalgamation  (%s)"),
@@ -471,24 +397,13 @@ Result VerifyThirdParty() {
          *(SqliteSrc / TEXT("vec0.c")));
   UE_LOG(LogTemp, Display, TEXT(""));
   UE_LOG(LogTemp, Display, TEXT("  Compile defines:"));
-  UE_LOG(LogTemp, Display, TEXT("    WITH_FORBOC_NATIVE     = %d"),
-         WITH_FORBOC_NATIVE);
   UE_LOG(LogTemp, Display, TEXT("    WITH_FORBOC_SQLITE_VEC = %d"),
          WITH_FORBOC_SQLITE_VEC);
   UE_LOG(LogTemp, Display, TEXT(""));
   UE_LOG(LogTemp, Display, TEXT("  Runtime assets:"));
-  UE_LOG(LogTemp, Display, TEXT("  [%s] GGUF models           (%d file(s) in %s)"),
-         ModelCount > 0 ? TEXT("OK") : TEXT("--"), ModelCount, *ModelsDir);
   UE_LOG(LogTemp, Display, TEXT("  [%s] Vector DB             (%s)"),
          bVectorDb ? TEXT("OK") : TEXT("--"), *VectorsDir);
   UE_LOG(LogTemp, Display, TEXT(""));
-
-  (!bLlamaHeaders || !bLlamaLib)
-    ? [&]() {
-        UE_LOG(LogTemp, Display, TEXT(
-            "  To set up: setup_deps --llama-only, then setup_build_llama"));
-      }()
-    : (void)0;
 
   (!bSqliteHeaders || !bSqliteAmalgamation || !bVec0)
     ? [&]() {
@@ -497,16 +412,15 @@ Result VerifyThirdParty() {
       }()
     : (void)0;
 
-  const bool bAllBuild = bLlamaHeaders && bLlamaLib && bGgmlCore &&
-                         bSqliteHeaders && bSqliteAmalgamation && bVec0;
+  const bool bAllBuild = bSqliteHeaders && bSqliteAmalgamation && bVec0;
   return bAllBuild ? Result::Success("All build-time dependencies present")
                    : Result::Failure("Some build-time dependencies missing");
 }
 
 /**
  * Installs or verifies the ThirdParty dependency bundle.
- * User Story: As setup flows, I need one dependency installer so llama.cpp and
- * sqlite-vss assets can be downloaded and arranged predictably.
+ * User Story: As setup flows, I need one dependency installer so sqlite-vss
+ * assets can be downloaded and arranged predictably.
  */
 Result SetupThirdPartyDeps(rtk::EnhancedStore<FStoreState> &Store,
                            const TArray<FString> &Args) {
@@ -518,44 +432,14 @@ Result SetupThirdPartyDeps(rtk::EnhancedStore<FStoreState> &Store,
 
   IPlatformFile &PF = FPlatformFileManager::Get().GetPlatformFile();
 
-  /**
-   * Arg parsing via recursive helper replaces for/if loop
-   * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-   */
-  struct ArgFlags {
-    bool bDoSqlite;
-    bool bDoLlama;
-  };
-
-  struct ParseArgsHelper {
-    static ArgFlags apply(const TArray<FString> &Arr, int32 Idx,
-                          bool bSqlite, bool bLlama) {
-      return Idx >= Arr.Num()
-        ? ArgFlags{bSqlite, bLlama}
-        : Arr[Idx] == TEXT("--sqlite-only")
-          ? apply(Arr, Idx + 1, bSqlite, false)
-          : Arr[Idx] == TEXT("--llama-only")
-            ? apply(Arr, Idx + 1, false, bLlama)
-            : apply(Arr, Idx + 1, bSqlite, bLlama);
-    }
-  };
-
-  const ArgFlags Flags = ParseArgsHelper::apply(Args, 0, true, true);
-  const bool bDoSqlite = Flags.bDoSqlite;
-  const bool bDoLlama = Flags.bDoLlama;
+  (void)Args;
 
   UE_LOG(LogTemp, Display, TEXT(""));
   UE_LOG(LogTemp, Display, TEXT("=== ForbocAI ThirdParty Setup ==="));
 
-  const FString LlamaIncDir = ThirdPartyDir / TEXT("llama.cpp/include");
-  const FString LlamaLibMac = ThirdPartyDir / TEXT("llama.cpp/lib/Mac");
-  const FString LlamaLibWin = ThirdPartyDir / TEXT("llama.cpp/lib/Win64");
   const FString SqliteIncDir = ThirdPartyDir / TEXT("sqlite-vss/include");
   const FString SqliteSrcDir = ThirdPartyDir / TEXT("sqlite-vss/src");
 
-  PF.CreateDirectoryTree(*LlamaIncDir);
-  PF.CreateDirectoryTree(*LlamaLibMac);
-  PF.CreateDirectoryTree(*LlamaLibWin);
   PF.CreateDirectoryTree(*SqliteIncDir);
   PF.CreateDirectoryTree(*SqliteSrcDir);
   PF.CreateDirectoryTree(*TmpDir);
@@ -596,10 +480,8 @@ Result SetupThirdPartyDeps(rtk::EnhancedStore<FStoreState> &Store,
    * sqlite3 amalgamation + sqlite-vec (replaces vendor_sqlite in script)
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  bDoSqlite
-    ? [&]() {
-        UE_LOG(LogTemp, Display, TEXT(""));
-        UE_LOG(LogTemp, Display, TEXT("  --- sqlite3 + sqlite-vec ---"));
+  UE_LOG(LogTemp, Display, TEXT(""));
+  UE_LOG(LogTemp, Display, TEXT("  --- sqlite3 + sqlite-vec ---"));
 
         const FString Sqlite3hDest = SqliteIncDir / TEXT("sqlite3.h");
         const FString Sqlite3extDest = SqliteIncDir / TEXT("sqlite3ext.h");
@@ -736,40 +618,6 @@ Result SetupThirdPartyDeps(rtk::EnhancedStore<FStoreState> &Store,
           : [&]() {
               UE_LOG(LogTemp, Display, TEXT("  [skip] sqlite-vec vec0.c (exists)"));
             }();
-      }()
-    : (void)0;
-
-  /**
-   * llama.cpp headers (replaces vendor_llama_headers in script)
-   * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-   */
-  bDoLlama
-    ? [&]() {
-        UE_LOG(LogTemp, Display, TEXT(""));
-        UE_LOG(LogTemp, Display, TEXT("  --- llama.cpp headers (%s) ---"), LLAMA_CPP_TAG);
-
-        const FString LlamaBase = FString::Printf(
-            TEXT("https://raw.githubusercontent.com/ggml-org/llama.cpp/%s"),
-            LLAMA_CPP_TAG);
-
-        DownloadOne(LlamaBase / TEXT("include/llama.h"),
-                    LlamaIncDir / TEXT("llama.h"));
-        DownloadOne(LlamaBase / TEXT("ggml/include/ggml.h"),
-                    LlamaIncDir / TEXT("ggml.h"));
-        DownloadOne(LlamaBase / TEXT("ggml/include/ggml-alloc.h"),
-                    LlamaIncDir / TEXT("ggml-alloc.h"));
-        DownloadOne(LlamaBase / TEXT("ggml/include/ggml-backend.h"),
-                    LlamaIncDir / TEXT("ggml-backend.h"));
-        DownloadOne(LlamaBase / TEXT("ggml/include/ggml-cpu.h"),
-                    LlamaIncDir / TEXT("ggml-cpu.h"));
-        DownloadOne(LlamaBase / TEXT("ggml/include/ggml-opt.h"),
-                    LlamaIncDir / TEXT("ggml-opt.h"));
-
-        UE_LOG(LogTemp, Display, TEXT(""));
-        UE_LOG(LogTemp, Display, TEXT(
-            "  To build libllama, run: setup_build_llama"));
-      }()
-    : (void)0;
 
   /**
    * Clean up temp dir
@@ -781,283 +629,12 @@ Result SetupThirdPartyDeps(rtk::EnhancedStore<FStoreState> &Store,
   UE_LOG(LogTemp, Display, TEXT("  Downloaded: %d | Failed: %d"),
          DownloadCount, FailCount);
   UE_LOG(LogTemp, Display, TEXT(
-      "  Rebuild the UE project to pick up WITH_FORBOC_NATIVE / WITH_FORBOC_SQLITE_VEC."));
+      "  Rebuild the UE project to pick up WITH_FORBOC_SQLITE_VEC."));
   UE_LOG(LogTemp, Display, TEXT(""));
 
   return FailCount == 0
              ? Result::Success("ThirdParty setup completed")
              : Result::Failure("Some downloads failed — see logs above");
-}
-
-/**
- * Builds the native llama.cpp library for the current platform.
- * User Story: As native setup, I need a build helper so the local inference
- * library can be compiled after sources are downloaded.
- */
-Result BuildLlama(const TArray<FString> &Args) {
-  const FString PluginDir =
-      FPaths::ProjectPluginsDir() / TEXT("ForbocAI_SDK");
-  const FString ThirdPartyDir = PluginDir / TEXT("ThirdParty");
-  const FString TmpDir =
-      FPaths::ProjectDir() / TEXT("local_infrastructure/tmp/llama-build");
-
-  /**
-   * Arg parsing via recursive helper replaces for/if loop
-   * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-   */
-  struct BuildArgFlags {
-    FString Tag;
-    FString DeploymentTarget;
-  };
-
-  struct ParseBuildArgsHelper {
-    static BuildArgFlags apply(const TArray<FString> &Arr, int32 Idx,
-                               const FString &Tag, const FString &DT) {
-      return Idx >= Arr.Num()
-        ? BuildArgFlags{Tag, DT}
-        : Arr[Idx].StartsWith(TEXT("--tag="))
-          ? apply(Arr, Idx + 1, Arr[Idx].Mid(6), DT)
-#if PLATFORM_MAC
-          : Arr[Idx].StartsWith(TEXT("--macos-deployment-target="))
-            ? apply(Arr, Idx + 1, Tag,
-                    Arr[Idx].Mid(FString(TEXT("--macos-deployment-target=")).Len()))
-#endif
-            : apply(Arr, Idx + 1, Tag, DT);
-    }
-  };
-
-  const BuildArgFlags BAFlags = ParseBuildArgsHelper::apply(
-      Args, 0, FString(LLAMA_CPP_TAG), FString(MACOS_DEPLOYMENT_TARGET));
-  const FString Tag = BAFlags.Tag;
-  const FString DeploymentTarget = BAFlags.DeploymentTarget;
-
-  IPlatformFile &PF = FPlatformFileManager::Get().GetPlatformFile();
-
-  /**
-   * Check if lib already exists
-   * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-   */
-#if PLATFORM_MAC
-  const FString LibDest = ThirdPartyDir / TEXT("llama.cpp/lib/Mac/libllama.a");
-  const FString LibName = TEXT("libllama.a");
-#elif PLATFORM_WINDOWS
-  const FString LibDest = ThirdPartyDir / TEXT("llama.cpp/lib/Win64/llama.lib");
-  const FString LibName = TEXT("llama.lib");
-#else
-  return Result::Failure("build_llama not supported on this platform");
-#endif
-
-  return PF.FileExists(*LibDest)
-    ? [&]() -> Result {
-        UE_LOG(LogTemp, Display, TEXT("  [skip] %s already exists at %s"),
-               *LibName, *LibDest);
-        return Result::Success("llama library already present");
-      }()
-    : [&]() -> Result {
-        UE_LOG(LogTemp, Display, TEXT(""));
-        UE_LOG(LogTemp, Display, TEXT("=== Building llama.cpp (%s) ==="), *Tag);
-        UE_LOG(LogTemp, Display, TEXT("  This may take several minutes..."));
-#if PLATFORM_MAC
-        UE_LOG(LogTemp, Display, TEXT("  macOS deployment target: %s"),
-               *DeploymentTarget);
-#endif
-        UE_LOG(LogTemp, Display, TEXT(""));
-
-        /**
-         * Clean and create build dir
-         * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-         */
-        IFileManager::Get().DeleteDirectory(*TmpDir, true, true);
-        PF.CreateDirectoryTree(*TmpDir);
-
-        /**
-         * Step 1: Clone llama.cpp
-         * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-         */
-        UE_LOG(LogTemp, Display, TEXT("  Step 1/3: Cloning llama.cpp..."));
-        const FString CloneDir = TmpDir / TEXT("llama.cpp");
-
-#if PLATFORM_MAC || PLATFORM_LINUX
-        const FString GitExe = TEXT("/usr/bin/git");
-#elif PLATFORM_WINDOWS
-        const FString GitExe = TEXT("git.exe");
-#endif
-
-        const int32 CloneRc = RunProcess(GitExe, FString::Printf(
-            TEXT("clone --depth 1 --branch %s https://github.com/ggml-org/llama.cpp \"%s\""),
-            *Tag, *CloneDir), TEXT(""), 120.0f);
-
-        return CloneRc != 0
-          ? Result::Failure("git clone failed")
-          : [&]() -> Result {
-              /**
-               * Step 2: CMake configure
-               * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-               */
-              UE_LOG(LogTemp, Display, TEXT("  Step 2/3: Configuring with CMake..."));
-              const FString BuildDir = CloneDir / TEXT("build");
-
-#if PLATFORM_MAC || PLATFORM_LINUX
-              /**
-               * Try Homebrew paths first (Apple Silicon then Intel), fallback to PATH
-               * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-               */
-              const FString CmakeExe =
-                  PF.FileExists(TEXT("/opt/homebrew/bin/cmake"))
-                      ? FString(TEXT("/opt/homebrew/bin/cmake"))
-                      : (PF.FileExists(TEXT("/usr/local/bin/cmake"))
-                             ? FString(TEXT("/usr/local/bin/cmake"))
-                             : FString(TEXT("cmake")));
-              const FString CmakeExeAlt = TEXT("cmake");
-#elif PLATFORM_WINDOWS
-              const FString CmakeExe = TEXT("cmake.exe");
-              const FString CmakeExeAlt = CmakeExe;
-#endif
-
-              FString CmakeConfigArgs = FString::Printf(
-                  TEXT("-B \"%s\" -DBUILD_SHARED_LIBS=OFF"), *BuildDir);
-
-#if PLATFORM_MAC
-              CmakeConfigArgs += TEXT(" -DGGML_METAL=ON");
-              CmakeConfigArgs += FString::Printf(
-                  TEXT(" -DCMAKE_OSX_DEPLOYMENT_TARGET=%s"), *DeploymentTarget);
-#endif
-
-              const int32 ConfigRc = RunProcess(CmakeExe, CmakeConfigArgs, CloneDir, 120.0f);
-              /**
-               * Retry with alternative cmake path
-               * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-               */
-              const int32 EffectiveConfigRc = ConfigRc != 0
-                  ? RunProcess(CmakeExeAlt, CmakeConfigArgs, CloneDir, 120.0f)
-                  : ConfigRc;
-
-              return EffectiveConfigRc != 0
-                ? Result::Failure("cmake configure failed — is cmake installed?")
-                : [&]() -> Result {
-                    /**
-                     * Step 3: Build
-                     * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-                     */
-                    UE_LOG(LogTemp, Display, TEXT("  Step 3/3: Building llama target..."));
-                    const FString CmakeBuildArgs = FString::Printf(
-                        TEXT("--build \"%s\" --target llama -j"), *BuildDir);
-
-                    const int32 BuildRc = RunProcess(CmakeExe, CmakeBuildArgs, CloneDir, 600.0f);
-                    const int32 EffectiveBuildRc = BuildRc != 0
-                        ? RunProcess(CmakeExeAlt, CmakeBuildArgs, CloneDir, 600.0f)
-                        : BuildRc;
-
-                    return EffectiveBuildRc != 0
-                      ? Result::Failure("cmake build failed")
-                      : [&]() -> Result {
-                          /**
-                           * Copy llama + ggml libraries to ThirdParty
-                           * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-                           */
-#if PLATFORM_MAC
-                          const FString BuiltLib = BuildDir / TEXT("src/libllama.a");
-#elif PLATFORM_WINDOWS
-                          const FString BuiltLib = BuildDir / TEXT("src/Release/llama.lib");
-#endif
-
-                          PF.CreateDirectoryTree(*FPaths::GetPath(LibDest));
-
-                          return PF.FileExists(*BuiltLib)
-                            ? [&]() -> Result {
-                                IFileManager::Get().Copy(*LibDest, *BuiltLib);
-                                UE_LOG(LogTemp, Display, TEXT(""));
-                                UE_LOG(LogTemp, Display, TEXT("  [OK] %s copied to %s"), *LibName, *LibDest);
-
-                                /**
-                                 * Copy ggml dependency libraries (Build.cs links these alongside libllama)
-                                 * User Story: As build setup, I need ggml libs copied so UE linking succeeds.
-                                 */
-                                const FString LibDestDir = FPaths::GetPath(LibDest);
-                                IFileManager &FM = IFileManager::Get();
-                                int32 GgmlCopied = 0;
-
-#if PLATFORM_MAC
-                                struct GgmlEntry {
-                                  const TCHAR *BuildSubPath;
-                                  const TCHAR *DestName;
-                                };
-                                const GgmlEntry GgmlLibs[] = {
-                                    {TEXT("ggml/src/libggml.a"), TEXT("libggml.a")},
-                                    {TEXT("ggml/src/libggml-base.a"), TEXT("libggml-base.a")},
-                                    {TEXT("ggml/src/libggml-cpu.a"), TEXT("libggml-cpu.a")},
-                                    {TEXT("ggml/src/ggml-metal/libggml-metal.a"), TEXT("libggml-metal.a")},
-                                    {TEXT("ggml/src/ggml-blas/libggml-blas.a"), TEXT("libggml-blas.a")},
-                                };
-#elif PLATFORM_WINDOWS
-                                struct GgmlEntry {
-                                  const TCHAR *BuildSubPath;
-                                  const TCHAR *DestName;
-                                };
-                                const GgmlEntry GgmlLibs[] = {
-                                    {TEXT("ggml/src/Release/ggml.lib"), TEXT("ggml.lib")},
-                                    {TEXT("ggml/src/Release/ggml-base.lib"), TEXT("ggml-base.lib")},
-                                    {TEXT("ggml/src/Release/ggml-cpu.lib"), TEXT("ggml-cpu.lib")},
-                                };
-#endif
-
-                                const int32 GgmlCount = sizeof(GgmlLibs) / sizeof(GgmlLibs[0]);
-
-                                /**
-                                 * Recursive helper replaces for loop over ggml libs
-                                 */
-                                struct CopyGgmlHelper {
-                                  static int32 apply(const GgmlEntry *Libs, int32 Count, int32 Idx,
-                                                     const FString &BuildDir, const FString &LibDestDir,
-                                                     IPlatformFile &PF, IFileManager &FM, int32 Copied) {
-                                    return Idx >= Count
-                                      ? Copied
-                                      : [&]() -> int32 {
-                                          const FString Src = BuildDir / Libs[Idx].BuildSubPath;
-                                          const FString Dst = LibDestDir / Libs[Idx].DestName;
-                                          return PF.FileExists(*Src)
-                                            ? [&]() -> int32 {
-                                                FM.Copy(*Dst, *Src);
-                                                UE_LOG(LogTemp, Display, TEXT("  [OK] %s"), Libs[Idx].DestName);
-                                                return apply(Libs, Count, Idx + 1, BuildDir,
-                                                             LibDestDir, PF, FM, Copied + 1);
-                                              }()
-                                            : [&]() -> int32 {
-                                                UE_LOG(LogTemp, Warning, TEXT("  [--] %s not found at %s"),
-                                                       Libs[Idx].DestName, *Src);
-                                                return apply(Libs, Count, Idx + 1, BuildDir,
-                                                             LibDestDir, PF, FM, Copied);
-                                              }();
-                                        }();
-                                  }
-                                };
-
-                                GgmlCopied = CopyGgmlHelper::apply(
-                                    GgmlLibs, GgmlCount, 0, BuildDir, LibDestDir, PF, FM, 0);
-
-                                UE_LOG(LogTemp, Display, TEXT("  Copied %d ggml libraries"), GgmlCopied);
-
-                                /**
-                                 * Clean up build dir
-                                 * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-                                 */
-                                IFileManager::Get().DeleteDirectory(*TmpDir, true, true);
-
-                                UE_LOG(LogTemp, Display, TEXT(
-                                    "  Rebuild the UE project to enable WITH_FORBOC_NATIVE=1."));
-                                UE_LOG(LogTemp, Display, TEXT(""));
-
-                                return Result::Success("llama.cpp built and installed");
-                              }()
-                            : [&]() -> Result {
-                                UE_LOG(LogTemp, Warning, TEXT("  [FAIL] Built library not found at %s"),
-                                       *BuiltLib);
-                                return Result::Failure("Build succeeded but library not found");
-                              }();
-                        }();
-                  }();
-            }();
-      }();
 }
 
 } // anonymous namespace
@@ -1079,11 +656,6 @@ HandlerResult HandleSetup(rtk::EnhancedStore<FStoreState> &Store,
     ? [&]() -> HandlerResult {
         (void)Store;
         return just(VerifyThirdParty());
-      }()
-    : (CommandKey == TEXT("setup_build_llama"))
-    ? [&]() -> HandlerResult {
-        (void)Store;
-        return just(BuildLlama(Args));
       }()
     : (CommandKey == TEXT("setup_runtime_check"))
     ? just(RunRuntimeSmokeCheck(Store, Args))

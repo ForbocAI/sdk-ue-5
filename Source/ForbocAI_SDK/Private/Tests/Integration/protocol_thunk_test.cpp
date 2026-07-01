@@ -33,6 +33,13 @@
 // @covers:coreThunk:localExportSoulThunk
 // @covers:coreThunk:localImportSoulThunk
 // @covers:coreThunk:localValidateBridgeThunk
+// @covers:coreThunk:MakeDelete
+// @covers:coreThunk:MakeEndpoint
+// @covers:coreThunk:MakeGet
+// @covers:coreThunk:MakeGetWithCodec
+// @covers:coreThunk:MakePost
+// @covers:coreThunk:MakePostRawWithCodec
+// @covers:coreThunk:MakePostWithCodec
 // @covers:coreThunk:nodeMemoryRecallThunk
 // @covers:coreThunk:nodeMemoryStoreThunk
 // @covers:coreThunk:processNPC

@@ -7,6 +7,12 @@
 #include "RuntimeCommandlet.h"
 #include "RuntimeStore.h"
 
+// @covers:cli:setup
+// @covers:cli:setup_check
+// @covers:cli:setup_deps
+// @covers:cli:setup_runtime_check
+// @covers:cli:setup_verify
+
 /**
  * Test: setup_check passes commandlet validation and executes.
  * User Story: As CLI automation, I need setup commands accepted by the

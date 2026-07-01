@@ -8,42 +8,6 @@
 namespace {
 
 /**
- * Normalizes legacy agent-prefixed commands to the canonical npc names.
- * User Story: As CLI compatibility, I need old command aliases mapped forward
- * so legacy scripts keep working with the renamed NPC command surface.
- */
-FString NormalizeCommand(const FString &Command) {
-  return func::or_else(
-      func::multi_match<FString, FString>(
-          Command,
-          {func::when<FString, FString>(
-               func::equals<FString>(TEXT("agent_list")),
-               [](const FString &) { return FString(TEXT("npc_list")); }),
-           func::when<FString, FString>(
-               func::equals<FString>(TEXT("agent_create")),
-               [](const FString &) { return FString(TEXT("npc_create")); }),
-           func::when<FString, FString>(
-               func::equals<FString>(TEXT("agent_process")),
-               [](const FString &) { return FString(TEXT("npc_process")); }),
-           func::when<FString, FString>(
-               func::equals<FString>(TEXT("agent_active")),
-               [](const FString &) { return FString(TEXT("npc_active")); }),
-           func::when<FString, FString>(
-               func::equals<FString>(TEXT("agent_state")),
-               [](const FString &) { return FString(TEXT("npc_state")); }),
-           func::when<FString, FString>(
-               func::equals<FString>(TEXT("agent_update")),
-               [](const FString &) { return FString(TEXT("npc_update")); }),
-           func::when<FString, FString>(
-               func::equals<FString>(TEXT("agent_import")),
-               [](const FString &) { return FString(TEXT("npc_import")); }),
-           func::when<FString, FString>(
-               func::equals<FString>(TEXT("agent_chat")),
-               [](const FString &) { return FString(TEXT("npc_chat")); })}),
-      Command);
-}
-
-/**
  * Extracts a named param from UE command-line params string.
  * Returns empty string if not found.
  * User Story: As commandlet parsing, I need named parameter extraction so raw
@@ -391,23 +355,14 @@ TArray<FString> BuildCommandArgs(const FString &Command,
                * into setup flags so the commandlet path matches the direct CLI surface.
                */
               func::when<FString, TArray<FString>>(
-                  func::equals<FString>(TEXT("setup_build_llama")),
-                  [&Params](const FString &) {
-                    return BuildPrefixed(
-                        Params,
-                        {TEXT("Tag="), TEXT("MacOSDeploymentTarget=")},
-                        {TEXT("--tag="),
-                         TEXT("--macos-deployment-target=")});
-                  }),
-              func::when<FString, TArray<FString>>(
                   [](const FString &C) {
                     return C == TEXT("setup") || C == TEXT("setup_deps");
                   },
                   [&Params](const FString &) {
                     return BuildFlags(
                         Params,
-                        {TEXT("SqliteOnly"), TEXT("LlamaOnly")},
-                        {TEXT("--sqlite-only"), TEXT("--llama-only")});
+                        {TEXT("SqliteOnly")},
+                        {TEXT("--sqlite-only")});
                   }),
               func::when<FString, TArray<FString>>(
                   func::equals<FString>(TEXT("setup_runtime_check")),
@@ -451,14 +406,13 @@ UForbocAICommandlet::UForbocAICommandlet() {
 /**
  * Runs the commandlet entrypoint for the requested CLI command.
  * User Story: As Unreal CLI execution, I need one main entrypoint so command
- * parameters can be validated, normalized, and dispatched consistently.
+ * parameters can be validated and dispatched consistently.
  */
 int32 UForbocAICommandlet::Main(const FString &Params) {
   SDKConfig::InitializeConfig();
 
   FString Command;
   FParse::Value(*Params, TEXT("Command="), Command);
-  Command = NormalizeCommand(Command);
 
   FString ApiUrl;
   FParse::Value(*Params, TEXT("ApiUrl="), ApiUrl);
@@ -603,7 +557,7 @@ UForbocAICommandlet::commandValidationPipeline() {
             TEXT("vector_init"),
             TEXT("setup"),            TEXT("setup_deps"),
             TEXT("setup_check"),      TEXT("setup_verify"),
-            TEXT("setup_build_llama"), TEXT("setup_runtime_check"),
+            TEXT("setup_runtime_check"),
             TEXT("test_game")};
            return !ValidCommands.Contains(Command)
                       ? CLITypes::make_left(
