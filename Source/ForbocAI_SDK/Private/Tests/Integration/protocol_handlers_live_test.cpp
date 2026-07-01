@@ -7,6 +7,7 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "API/APIEndpoints.h"
+#include "Core/JsonInterop.h"
 #include "HAL/PlatformProcess.h"
 #include "Misc/AutomationTest.h"
 #include "RuntimeConfig.h"
@@ -34,6 +35,10 @@ FString ExpectedInstructionError(const FString &Expected,
                                  const ENPCInstructionType Actual) {
   return FString::Printf(TEXT("Expected %s, got %s"), *Expected,
                          *InstructionTypeName(Actual));
+}
+
+FString LastResultJson(const TSharedPtr<FJsonObject> &Object) {
+  return JsonInterop::StringifyObject(Object);
 }
 
 } // namespace
@@ -97,7 +102,8 @@ bool FProcessLiveStepWait::Update() {
       ActorObj->SetStringField(TEXT("npcId"), TEXT("live_npc_1"));
       ActorObj->SetObjectField(TEXT("data"), MakeShared<FJsonObject>());
       ActorRes->SetObjectField(TEXT("actor"), ActorObj);
-      Req.LastResult = ActorRes;
+      Req.LastResult = LastResultJson(ActorRes);
+      Req.bHasLastResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
       auto GetState = [this]() { return State->Store->getState(); };
@@ -130,7 +136,8 @@ bool FProcessLiveStepWait::Update() {
       TSharedPtr<FJsonObject> QueryRes = MakeShared<FJsonObject>();
       QueryRes->SetStringField(TEXT("type"), TEXT("QueryVectorResult"));
       QueryRes->SetArrayField(TEXT("memories"), TArray<TSharedPtr<FJsonValue>>());
-      Req.LastResult = QueryRes;
+      Req.LastResult = LastResultJson(QueryRes);
+      Req.bHasLastResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
       auto GetState = [this]() { return State->Store->getState(); };
@@ -166,7 +173,8 @@ bool FProcessLiveStepWait::Update() {
       IntentObj->SetStringField(TEXT("goal"), TEXT("test"));
       IntentObj->SetStringField(TEXT("actionType"), TEXT("SPEAK"));
       DecRes->SetObjectField(TEXT("decisionIntent"), IntentObj);
-      Req.LastResult = DecRes;
+      Req.LastResult = LastResultJson(DecRes);
+      Req.bHasLastResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
       auto GetState = [this]() { return State->Store->getState(); };
@@ -208,7 +216,8 @@ bool FProcessLiveStepWait::Update() {
       OutObj->SetStringField(TEXT("reasoningText"), TEXT("I think"));
       OutObj->SetStringField(TEXT("responseText"), TEXT("I speak"));
       RsgRes->SetObjectField(TEXT("reasoningOutput"), OutObj);
-      Req.LastResult = RsgRes;
+      Req.LastResult = LastResultJson(RsgRes);
+      Req.bHasLastResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
       auto GetState = [this]() { return State->Store->getState(); };

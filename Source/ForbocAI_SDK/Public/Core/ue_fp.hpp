@@ -1975,7 +1975,22 @@ auto traverse_maybe_array_with_index(const TArray<Source> &values, Map map)
 template <typename Source, typename Output, typename Map>
 Maybe<TArray<Output>>
 traverse_maybe_array_with_index(const TArray<Source> &values, Map map) {
-  return traverse_maybe_array_with_index<Source, Map>(values, map);
+  return fold_index_range<Maybe<TArray<Output>>>(
+      values.Num(), just<TArray<Output>>(TArray<Output>()),
+      [&values, map](const Maybe<TArray<Output>> &acc, int32 index) {
+        return match(
+            acc,
+            [&values, map, index](const TArray<Output> &items) {
+              return match(
+                  map(values[index], index),
+                  [&items](const Output &output) {
+                    return just<TArray<Output>>(
+                        append_value<Output>(items, output));
+                  },
+                  []() { return nothing<TArray<Output>>(); });
+            },
+            []() { return nothing<TArray<Output>>(); });
+      });
 }
 
 template <typename Acc, typename Step>
