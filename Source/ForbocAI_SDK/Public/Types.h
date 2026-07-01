@@ -2,7 +2,7 @@
 
 #include "Core/rtk.hpp"
 
-#include "Core/functional_core.hpp"
+#include "Core/ue_fp.hpp"
 #include "CoreMinimal.h"
 
 /**
@@ -19,7 +19,7 @@
 #include "Soul/SoulTypes.h"
 
 /**
- * Functional Core Type Aliases for SDK types
+ * UE FP Core Type Aliases for SDK types
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 namespace SDKTypes {

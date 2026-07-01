@@ -5,7 +5,7 @@
  */
 
 #include "Core/rtk.hpp"
-#include "Core/functional_core.hpp"
+#include "Core/ue_fp.hpp"
 #include "CoreMinimal.h"
 #include "NPC/NPCSliceActions.h"
 #include "NPC/NPCTypes.h"

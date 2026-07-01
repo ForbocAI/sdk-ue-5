@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/rtk.hpp"
-#include "Core/functional_core.hpp"
+#include "Core/ue_fp.hpp"
 
 /**
  * DEPRECATED: Include "NPC/NPCBaseTypes.h" instead.

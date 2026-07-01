@@ -1,7 +1,7 @@
 #include "NPC/NPCModule.h"
 #include "NPC/NPCId.h"
 #include "Containers/UnrealString.h"
-#include "Core/functional_core.hpp"
+#include "Core/ue_fp.hpp"
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"

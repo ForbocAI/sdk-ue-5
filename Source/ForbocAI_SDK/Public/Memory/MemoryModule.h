@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Async/Async.h"
-#include "Core/functional_core.hpp"
+#include "Core/ue_fp.hpp"
 #include "CoreMinimal.h"
 #include "Types.h"
 
 /**
- * Functional Core Type Aliases for Memory operations
+ * UE FP Core Type Aliases for Memory operations
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 namespace MemoryTypes {

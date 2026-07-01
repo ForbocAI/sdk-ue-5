@@ -1,12 +1,12 @@
 #pragma once
 
 #include "NPC/NPCModule.h"
-#include "Core/functional_core.hpp"
+#include "Core/ue_fp.hpp"
 #include "CoreMinimal.h"
 #include "Types.h"
 
 /**
- * Functional Core Type Aliases for Ghost operations
+ * UE FP Core Type Aliases for Ghost operations
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 namespace GhostTypes {
@@ -131,7 +131,7 @@ inline FGhost Create(const FGhostConfig &Config) {
 
 /**
  * GhostHelpers moved to end of file to ensure type visibility
- * Functional Core Helper Functions for Ghost operations
+ * UE FP Core Helper Functions for Ghost operations
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 namespace GhostHelpers {

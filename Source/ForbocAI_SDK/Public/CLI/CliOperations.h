@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Core/functional_core.hpp"
+#include "Core/ue_fp.hpp"
 #include "NPC/NPCId.h"
 #include "NPC/NPCSlice.h"
 #include "RuntimeConfig.h"

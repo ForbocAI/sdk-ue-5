@@ -7,7 +7,7 @@
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
-#include "Core/functional_core.hpp"
+#include "Core/ue_fp.hpp"
 #include "TestGame/TestGameTypes.h"
 
 namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {

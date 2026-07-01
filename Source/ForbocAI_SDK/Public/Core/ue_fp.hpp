@@ -1,9 +1,9 @@
 #pragma once
-#ifndef FUNCTIONAL_CORE_HPP
-#define FUNCTIONAL_CORE_HPP
+#ifndef UE_FP_HPP
+#define UE_FP_HPP
 
 /**
- * @brief Functional Core Library — Strict C++11 Pure C++11 functional programming primitives. No C++14, C++17, or later features are used. This header is the canonical source of truth for the functional substrate. If surrounding docs disagree, this file wins. DESIGN PRINCIPLES: - Prefer structs and plain data for domain state. - Prefer factory functions for construction of public values. - Keep domain behavior in free functions under the `func` namespace. - Use compatibility member wrappers only when preserving an existing callable C++11 surface is materially cheaper than duplicating abstractions (`MemoizedLast::operator()`, `AsyncResult` chaining). - Value semantics throughout. CONTENTS: 1. seq / gen_seq        — Index sequence (C++14 backport) 2. apply                — Tuple application (C++17 backport) 3. Maybe<T>             — Optional monad (data only) 4. Either<E, T>         — Result/Error monad (data only) 5. Curried / curry      — Automatic function currying 6. Lazy<T> / lazy       — Memoized deferred evaluation 7. MemoizedLast         — Last-input memoization for derived values 8. Pipeline<T> / pipe   — Value transformation chains (operator|) 9. Composed / compose   — Binary function composition 10. fmap                 — Functor map (Maybe, Either, vector) 11. mbind / ebind        — Monadic bind for Maybe / Either 12. or_else / match      — Extraction / pattern matching 13. ValidationPipeline   — Functional validation chain 14. ConfigBuilder        — Functional configuration builder 15. TestResult           — Functional testing result 16. AsyncResult          — Functional async result handling 17. HttpResult           — Functional HTTP result wrapper 18. AsyncChain           — AsyncResult chaining helpers 19. Dispatcher            — Dictionary-based typed dispatch 20. multi_match           — Multi-case value-based pattern matching 21. from_nullable         — Lift nullable values into Maybe REQUIREMENTS: Several helpers default-construct inactive payloads or error branches as a deliberate C++11 trade-off: `Maybe<T>`, `Either<E, T>`, `ValidationPipeline<T, E>`, `TestResult<T>`, and `HttpResult<T>`. All host types used with these primitives are expected to satisfy that requirement. See also: C++11-FP-GUIDE.md for patterns and usage.
+ * @brief UE FP Core Library — Strict UE C++11 functional programming primitives. No C++14, C++17, or later language features are used; Unreal container overloads are first-class because this SDK is UE-only. This header is the canonical source of truth for the functional substrate. If surrounding docs disagree, this file wins. DESIGN PRINCIPLES: - Prefer structs and plain data for domain state. - Prefer factory functions for construction of public values. - Keep domain behavior in free functions under the `func` namespace. - Use compatibility member wrappers only when preserving an existing callable C++11 surface is materially cheaper than duplicating abstractions (`MemoizedLast::operator()`, `AsyncResult` chaining). - Value semantics throughout. CONTENTS: 1. seq / gen_seq        — Index sequence (C++14 backport) 2. apply                — Tuple application (C++17 backport) 3. Maybe<T>             — Optional monad (data only) 4. Either<E, T>         — Result/Error monad (data only) 5. Curried / curry      — Automatic function currying 6. Lazy<T> / lazy       — Memoized deferred evaluation 7. MemoizedLast         — Last-input memoization for derived values 8. Pipeline<T> / pipe   — Value transformation chains (operator|) 9. Composed / compose   — Binary function composition 10. fmap                 — Functor map (Maybe, Either, vector, TArray) 11. mbind / ebind        — Monadic bind for Maybe / Either 12. or_else / match      — Extraction / pattern matching 13. ValidationPipeline   — Functional validation chain 14. ConfigBuilder        — Functional configuration builder 15. TestResult           — Functional testing result 16. AsyncResult          — Functional async result handling 17. HttpResult           — Functional HTTP result wrapper 18. AsyncChain           — AsyncResult chaining helpers 19. Dispatcher            — Dictionary-based typed dispatch 20. multi_match           — Multi-case value-based pattern matching 21. from_nullable         — Lift nullable values into Maybe 22. Unreal containers     — TArray and TMap folds, maps, traversal, lookup, update, equality REQUIREMENTS: Several helpers default-construct inactive payloads or error branches as a deliberate C++11 trade-off: `Maybe<T>`, `Either<E, T>`, `ValidationPipeline<T, E>`, `TestResult<T>`, and `HttpResult<T>`. All host types used with these primitives are expected to satisfy that requirement. See also: C++11-FP-GUIDE.md for patterns and usage.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
@@ -17,6 +17,8 @@
  * 
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
+
+#include "CoreMinimal.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -1330,7 +1332,7 @@ auto fmap(const std::vector<T> &vec, Func f)
  * @signature struct GridIndex { size_t Row; size_t Column; }
  *
  * User Story: As SDK users mapping grid-shaped data, I need a neutral index
- * value that does not depend on Unreal, ECS, RTK, or project code.
+ * value that does not depend on ECS, RTK, or project code.
  */
 struct GridIndex {
   size_t Row;
@@ -1634,6 +1636,343 @@ template <typename E, typename T, typename FLeft, typename FRight>
 auto either_match(const Either<E, T> &e, FLeft onLeft, FRight onRight)
     -> decltype(onRight(e.right)) {
   return ematch(e, onLeft, onRight);
+}
+
+/**
+ * @brief Unreal container combinators for TArray/TMap using the same FP
+ * semantics as the vector, Maybe, Either, indexed, and catalog primitives.
+ *
+ * User Story: As UE feature, RTK, and ECS code, I need Unreal-native
+ * collection traversal, lookup, update, and equality helpers to live in the
+ * FP core so higher domains compose neutral functions instead of owning local
+ * loop, request, or factory families.
+ */
+template <typename Item, typename Acc, typename Step>
+Acc fold_array(const TArray<Item> &values, Acc seed, Step step) {
+  return fold_indexed<TArray<Item>, Acc>(
+      values, static_cast<size_t>(values.Num()), seed,
+      [step](const Acc &acc, const Item &item) { return step(acc, item); });
+}
+
+template <typename Item, typename Effect>
+void for_each_array(const TArray<Item> &values, Effect effect) {
+  for_each_indexed<TArray<Item>, Effect>(
+      values, static_cast<size_t>(values.Num()), effect);
+}
+
+template <typename Item, typename Predicate>
+bool all_array(const TArray<Item> &values, Predicate predicate) {
+  return all_indexed<TArray<Item>, Predicate>(
+      values, static_cast<size_t>(values.Num()), predicate);
+}
+
+template <typename Item, typename Predicate>
+bool any_array(const TArray<Item> &values, Predicate predicate) {
+  return any_indexed<TArray<Item>, Predicate>(
+      values, static_cast<size_t>(values.Num()), predicate);
+}
+
+template <typename Item>
+bool contains_value(const TArray<Item> &values, const Item &expected) {
+  return any_array<Item>(
+      values, [&expected](const Item &value) { return value == expected; });
+}
+
+template <typename Item, typename Predicate>
+Maybe<Item> find_array(const TArray<Item> &values, Predicate predicate) {
+  return find_indexed<TArray<Item>, Predicate>(
+      values, static_cast<size_t>(values.Num()), predicate);
+}
+
+template <typename Item>
+TArray<Item> append_value(TArray<Item> values, const Item &value) {
+  values.Add(value);
+  return values;
+}
+
+template <typename Item>
+TArray<Item> append_unique_value(TArray<Item> values, const Item &value) {
+  values.AddUnique(value);
+  return values;
+}
+
+template <typename Item>
+TArray<Item> append_values(TArray<Item> values,
+                           const TArray<Item> &additional_values) {
+  values.Append(additional_values);
+  return values;
+}
+
+template <typename Item, typename Predicate>
+TArray<Item> filter_array(const TArray<Item> &values, Predicate predicate) {
+  return fold_array<Item, TArray<Item>>(
+      values, TArray<Item>(),
+      [predicate](const TArray<Item> &acc, const Item &value) {
+        return predicate(value) ? append_value<Item>(acc, value) : acc;
+      });
+}
+
+template <typename Source, typename Map>
+auto map_array(const TArray<Source> &values, Map map)
+    -> TArray<decltype(map(std::declval<const Source &>()))> {
+  typedef decltype(map(std::declval<const Source &>())) Output;
+  return fold_array<Source, TArray<Output>>(
+      values, TArray<Output>(),
+      [map](const TArray<Output> &acc, const Source &value) {
+        return append_value<Output>(acc, map(value));
+      });
+}
+
+template <typename Source, typename Keep, typename Map>
+auto filter_map_array(const TArray<Source> &values, Keep keep, Map map)
+    -> TArray<decltype(map(std::declval<const Source &>()))> {
+  typedef decltype(map(std::declval<const Source &>())) Output;
+  return fold_array<Source, TArray<Output>>(
+      values, TArray<Output>(),
+      [keep, map](const TArray<Output> &acc, const Source &value) {
+        return keep(value) ? append_value<Output>(acc, map(value)) : acc;
+      });
+}
+
+template <typename T, typename Func>
+auto fmap(const TArray<T> &values, Func f)
+    -> TArray<decltype(f(std::declval<const T &>()))> {
+  return map_array<T, Func>(values, f);
+}
+
+template <typename Source, typename Map>
+auto traverse_maybe_array(const TArray<Source> &values, Map map)
+    -> Maybe<TArray<decltype(map(std::declval<const Source &>()).value)>> {
+  typedef decltype(map(std::declval<const Source &>()).value) Output;
+  return fold_array<Source, Maybe<TArray<Output>>>(
+      values, just<TArray<Output>>(TArray<Output>()),
+      [map](const Maybe<TArray<Output>> &acc, const Source &value) {
+        return match(
+            acc,
+            [map, &value](const TArray<Output> &items) {
+              return match(
+                  map(value),
+                  [&items](const Output &output) {
+                    return just<TArray<Output>>(
+                        append_value<Output>(items, output));
+                  },
+                  []() { return nothing<TArray<Output>>(); });
+            },
+            []() { return nothing<TArray<Output>>(); });
+      });
+}
+
+template <typename T>
+Maybe<TArray<T>> sequence_maybe_array(const TArray<Maybe<T>> &values) {
+  return traverse_maybe_array(
+      values, [](const Maybe<T> &value) { return value; });
+}
+
+template <typename E, typename Item, typename Acc, typename Step>
+Either<E, Acc> fold_either_array(const TArray<Item> &values, Acc seed,
+                                 Step step) {
+  return fold_array<Item, Either<E, Acc>>(
+      values, make_right<E, Acc>(seed),
+      [step](const Either<E, Acc> &acc, const Item &value) {
+        return ebind(acc, [&value, step](const Acc &current) {
+          return step(current, value);
+        });
+      });
+}
+
+template <typename Item>
+TArray<Item> concat_arrays(const TArray<TArray<Item>> &arrays) {
+  return fold_array<TArray<Item>, TArray<Item>>(
+      arrays, TArray<Item>(),
+      [](const TArray<Item> &acc, const TArray<Item> &values) {
+        return append_values<Item>(acc, values);
+      });
+}
+
+template <typename Item>
+TArray<Item> unique_array(const TArray<Item> &values) {
+  return fold_array<Item, TArray<Item>>(
+      values, TArray<Item>(),
+      [](const TArray<Item> &acc, const Item &value) {
+        return append_unique_value<Item>(acc, value);
+      });
+}
+
+template <typename Acc, typename Step>
+Acc fold_index_range(int32 count, Acc seed, Step step, int32 index = 0) {
+  return index >= count
+             ? seed
+             : fold_index_range<Acc, Step>(count, step(seed, index), step,
+                                           index + 1);
+}
+
+inline TArray<int32> index_range(int32 count) {
+  return fold_index_range<TArray<int32>>(
+      count, TArray<int32>(),
+      [](const TArray<int32> &acc, int32 index) {
+        return append_value<int32>(acc, index);
+      });
+}
+
+template <typename Map>
+auto map_index_range(int32 count, Map map)
+    -> TArray<decltype(map(std::declval<int32>()))> {
+  typedef decltype(map(std::declval<int32>())) Output;
+  return fold_index_range<TArray<Output>>(
+      count, TArray<Output>(),
+      [map](const TArray<Output> &acc, int32 index) {
+        return append_value<Output>(acc, map(index));
+      });
+}
+
+template <typename Source, typename Map>
+auto traverse_maybe_array_with_index(const TArray<Source> &values, Map map)
+    -> Maybe<TArray<decltype(map(std::declval<const Source &>(),
+                                  std::declval<int32>()).value)>> {
+  typedef decltype(map(std::declval<const Source &>(),
+                       std::declval<int32>()).value) Output;
+  return fold_index_range<Maybe<TArray<Output>>>(
+      values.Num(), just<TArray<Output>>(TArray<Output>()),
+      [&values, map](const Maybe<TArray<Output>> &acc, int32 index) {
+        return match(
+            acc,
+            [&values, map, index](const TArray<Output> &items) {
+              return match(
+                  map(values[index], index),
+                  [&items](const Output &output) {
+                    return just<TArray<Output>>(
+                        append_value<Output>(items, output));
+                  },
+                  []() { return nothing<TArray<Output>>(); });
+            },
+            []() { return nothing<TArray<Output>>(); });
+      });
+}
+
+template <typename Acc, typename Step>
+Acc fold_grid_range(size_t rows, size_t columns, Acc seed, Step step) {
+  return fold_index_range<Acc>(
+      static_cast<int32>(rows), seed,
+      [columns, step](const Acc &row_acc, int32 row) {
+        return fold_index_range<Acc>(
+            static_cast<int32>(columns), row_acc,
+            [row, step](const Acc &column_acc, int32 column) {
+              return step(column_acc,
+                          GridIndex{static_cast<size_t>(row),
+                                    static_cast<size_t>(column)});
+            });
+      });
+}
+
+template <typename Output, typename Map>
+TArray<Output> map_grid_array(size_t rows, size_t columns, Map map) {
+  return fold_grid_range<TArray<Output>>(
+      rows, columns, TArray<Output>(),
+      [map](const TArray<Output> &acc, const GridIndex &index) {
+        return append_value<Output>(acc, map(index));
+      });
+}
+
+template <typename Key, typename Value>
+TArray<Key> map_keys(const TMap<Key, Value> &values) {
+  TArray<Key> keys;
+  values.GetKeys(keys);
+  return keys;
+}
+
+template <typename Key, typename Value>
+TArray<Key> append_map_keys(TArray<Key> values,
+                            const TMap<Key, Value> &map) {
+  return append_values<Key>(values, map_keys<Key, Value>(map));
+}
+
+template <typename Key, typename Value>
+Maybe<const Value *> find_map_value_ptr(const TMap<Key, Value> &values,
+                                        const Key &key) {
+  const Value *found = values.Find(key);
+  return found ? just<const Value *>(found) : nothing<const Value *>();
+}
+
+template <typename Key, typename Value>
+Maybe<Value> find_map_value(const TMap<Key, Value> &values, const Key &key) {
+  return match(
+      find_map_value_ptr<Key, Value>(values, key),
+      [](const Value *found) { return just<Value>(*found); },
+      []() { return nothing<Value>(); });
+}
+
+template <typename Key, typename Value>
+Value map_value_or(const TMap<Key, Value> &values, const Key &key,
+                   const Value &fallback) {
+  return or_else(find_map_value<Key, Value>(values, key), fallback);
+}
+
+template <typename Key, typename Value, typename Transform>
+TMap<Key, Value> update_map_value_when_present(TMap<Key, Value> values,
+                                               const Key &key,
+                                               Transform transform) {
+  return match(
+      find_map_value<Key, Value>(values, key),
+      [values, key, transform](const Value &found) mutable {
+        values.Add(key, transform(found));
+        return values;
+      },
+      [values]() { return values; });
+}
+
+template <typename Key, typename Value, typename Transform>
+TMap<Key, Value> upsert_map_value(TMap<Key, Value> values, const Key &key,
+                                  const Value &fallback,
+                                  Transform transform) {
+  values.Add(key, transform(map_value_or<Key, Value>(values, key, fallback)));
+  return values;
+}
+
+template <typename Key, typename Value>
+std::function<bool(const Key &)> map_has_key(const TMap<Key, Value> &values) {
+  return [&values](const Key &key) { return values.Contains(key); };
+}
+
+template <typename Key, typename Item>
+bool map_array_contains(const TMap<Key, TArray<Item>> &values,
+                        const Key &key, const Item &item) {
+  return match(
+      find_map_value_ptr<Key, TArray<Item>>(values, key),
+      [&item](const TArray<Item> *items) {
+        return contains_value<Item>(*items, item);
+      },
+      []() { return false; });
+}
+
+template <typename Key, typename Value, typename Equals>
+bool map_values_equal(const TMap<Key, Value> &left,
+                      const TMap<Key, Value> &right, Equals equals) {
+  const TArray<Key> keys = map_keys<Key, Value>(left);
+  return left.Num() == right.Num() &&
+         all_array<Key>(
+             keys, [&left, &right, equals](const Key &key) {
+               return match(
+                   find_map_value_ptr<Key, Value>(right, key),
+                   [&left, &key, equals](const Value *right_value) {
+                     const Value *left_value = left.Find(key);
+                     return left_value && equals(*left_value, *right_value);
+                   },
+                   []() { return false; });
+             });
+}
+
+template <typename Key, typename Value, typename ErrorMessage>
+auto require_map_key(const TMap<Key, Value> &values,
+                     ErrorMessage error_message)
+    -> std::function<Either<decltype(error_message(
+                         std::declval<const Key &>())), bool>(const Key &)> {
+  typedef decltype(error_message(std::declval<const Key &>())) Error;
+  const std::function<bool(const Key &)> exists =
+      map_has_key<Key, Value>(values);
+  return [exists, error_message](const Key &key) {
+    return exists(key) ? make_right<Error, bool>(true)
+                       : make_left<Error, bool>(error_message(key));
+  };
 }
 
 /**
@@ -2856,4 +3195,4 @@ T require_just(const Maybe<T> &m, const std::string &errorMsg) {
 
 } // namespace func
 
-#endif // FUNCTIONAL_CORE_HPP
+#endif // UE_FP_HPP

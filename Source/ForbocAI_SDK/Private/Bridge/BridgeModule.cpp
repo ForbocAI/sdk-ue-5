@@ -2,7 +2,7 @@
 #include "Bridge/BridgeSlice.h"
 #include "CLI/CliOperations.h"
 #include "NPC/NPCModule.h"
-#include "Core/functional_core.hpp"
+#include "Core/ue_fp.hpp"
 #include "HAL/PlatformFilemanager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"

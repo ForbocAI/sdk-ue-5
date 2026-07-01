@@ -5,7 +5,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Types.h"
-#include "Core/functional_core.hpp"
+#include "Core/ue_fp.hpp"
 
 namespace JsonInterop {
 

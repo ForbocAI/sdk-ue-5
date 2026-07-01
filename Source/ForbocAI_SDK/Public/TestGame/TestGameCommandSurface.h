@@ -25,7 +25,7 @@
 #include "CLI/CLIModule.h"
 #include "CLI/CliHandlers.h"
 #include "CLI/CliOperations.h"
-#include "Core/functional_core.hpp"
+#include "Core/ue_fp.hpp"
 #include "CoreMinimal.h"
 #include "RuntimeStore.h"
 #include "TestGame/TestGameContract.h"

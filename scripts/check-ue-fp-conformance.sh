@@ -176,8 +176,8 @@ MUTABLE_HITS="$(rg -n '\bmutable\b' \
 MUTABLE_REAL=""
 while IFS= read -r line; do
   [ -z "$line" ] && continue
-  # Allow functional_core.hpp mutable (Lazy, MemoizedLast)
-  echo "$line" | rg -q 'functional_core\.hpp' 2>/dev/null && continue
+  # Allow ue_fp.hpp mutable (Lazy, MemoizedLast)
+  echo "$line" | rg -q 'ue_fp\.hpp' 2>/dev/null && continue
   # Allow rtk.hpp mutable
   echo "$line" | rg -q 'rtk\.hpp' 2>/dev/null && continue
   # Skip comments

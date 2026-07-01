@@ -2,7 +2,7 @@
 #include "Ghost/GhostModuleInternal.h"
 #include "Ghost/GhostSlice.h"
 #include "Ghost/GhostThunks.h"
-#include "Core/functional_core.hpp"
+#include "Core/ue_fp.hpp"
 #include "HAL/PlatformFilemanager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"

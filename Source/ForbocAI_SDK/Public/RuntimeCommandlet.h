@@ -3,7 +3,7 @@
 #include "CLI/CLIModule.h"
 #include "CoreMinimal.h"
 #include "Commandlets/Commandlet.h"
-#include "Core/functional_core.hpp"
+#include "Core/ue_fp.hpp"
 #include "TestGame/TestGameCommandSurface.h"
 #include "RuntimeCommandlet.generated.h"
 
@@ -52,7 +52,7 @@ public:
    */
   virtual int32 Main(const FString &Params) override;
   /**
-   * Functional Core Type Aliases for Commandlet operations
+   * UE FP Core Type Aliases for Commandlet operations
    * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
    */
   using CommandResult = CLITypes::TestResult<void>;

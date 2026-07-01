@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/functional_core.hpp"
+#include "Core/ue_fp.hpp"
 #include "CoreMinimal.h"
 #include "Types.h"
 #include "HttpModule.h"
@@ -9,7 +9,7 @@
 #include <functional>
 
 /**
- * Functional Core Type Aliases for Soul operations
+ * UE FP Core Type Aliases for Soul operations
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 namespace SoulTypes {
@@ -101,7 +101,7 @@ ExportToArweave(const FSoul &Soul, const FString &ApiUrl);
 } // namespace SoulOps
 
 /**
- * Functional Core Helper Functions for Soul operations
+ * UE FP Core Helper Functions for Soul operations
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 namespace SoulHelpers {

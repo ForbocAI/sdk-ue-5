@@ -2,12 +2,12 @@
 
 #include "Containers/Map.h"
 #include "Containers/UnrealString.h"
-#include "Core/functional_core.hpp" // C++11 Functional Core Library
+#include "Core/ue_fp.hpp" // C++11 UE FP Core Library
 #include "CoreMinimal.h"
 #include "Types.h"
 
 /**
- * Functional Core Type Aliases for Agent operations
+ * UE FP Core Type Aliases for Agent operations
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 namespace AgentTypes {
@@ -127,7 +127,7 @@ FORBOCAI_SDK_API FSoul Export(const FAgent &Agent);
 } // namespace AgentOps
 
 /**
- * Functional Core Helper Functions for Agent operations
+ * UE FP Core Helper Functions for Agent operations
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 namespace AgentHelpers {
