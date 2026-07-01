@@ -125,9 +125,11 @@ static bool SkipApiEndpointIntegration() {
   return FPlatformMisc::GetEnvironmentVariable(
              TEXT("FORBOC_RUN_API_ENDPOINT_TESTS"))
              .IsEmpty()
-         ? (UE_LOG(LogTemp, Display,
-                   TEXT("Skipping API endpoint integration tests until API work resumes.")),
-            true)
+         ? []() {
+             UE_LOG(LogTemp, Display,
+                    TEXT("Skipping API endpoint integration tests until API work resumes."));
+             return true;
+           }()
          : false;
 }
 

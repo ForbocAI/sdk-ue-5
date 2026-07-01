@@ -10,9 +10,11 @@ bool SkipTestGameOrchestratorRuntimeIntegration() {
   return FPlatformMisc::GetEnvironmentVariable(
              TEXT("FORBOC_RUN_TEST_GAME_RUNTIME_TESTS"))
              .IsEmpty()
-         ? (UE_LOG(LogTemp, Display,
-                   TEXT("Skipping test-game orchestrator runtime integration tests until API work resumes.")),
-            true)
+         ? []() {
+             UE_LOG(LogTemp, Display,
+                    TEXT("Skipping test-game orchestrator runtime integration tests until API work resumes."));
+             return true;
+           }()
          : false;
 }
 

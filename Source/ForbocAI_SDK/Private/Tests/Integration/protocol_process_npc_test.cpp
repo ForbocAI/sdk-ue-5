@@ -22,9 +22,11 @@ bool SkipProcessNpcIntegration() {
   return FPlatformMisc::GetEnvironmentVariable(
              TEXT("FORBOC_RUN_PROCESS_NPC_TESTS"))
              .IsEmpty()
-         ? (UE_LOG(LogTemp, Display,
-                   TEXT("Skipping processNPC integration tests until API work resumes.")),
-            true)
+         ? []() {
+             UE_LOG(LogTemp, Display,
+                    TEXT("Skipping processNPC integration tests until API work resumes."));
+             return true;
+           }()
          : false;
 }
 
