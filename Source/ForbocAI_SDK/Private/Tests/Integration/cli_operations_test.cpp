@@ -190,9 +190,15 @@ bool FOpsConfigTest::RunTest(const FString &Parameters) {
 
   const FString EnvApiUrl =
       FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_API_URL"));
+  const FString DefaultApiUrl = FString(SDKConfig::DEFAULT_API_URL);
   const FString ExpectedApiUrl =
-      EnvApiUrl.IsEmpty() ? FString(SDKConfig::DEFAULT_API_URL) : EnvApiUrl;
-  TestEqual("Resolved runtime API URL honors env or localhost default",
+      !EnvApiUrl.IsEmpty()
+          ? EnvApiUrl
+          : (SDKConfig::IsLocalHostReachable(
+                 SDKConfig::ExtractLocalhostPort(DefaultApiUrl))
+                 ? DefaultApiUrl
+                 : FString(SDKConfig::PRODUCTION_API_URL));
+  TestEqual("Resolved runtime API URL honors env or localhost fallback",
             SDKConfig::GetApiUrl(), ExpectedApiUrl);
   TestTrue("Unset persisted apiUrl is empty",
            Ops::ConfigGet(TEXT("apiUrl")).IsEmpty());

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include <atomic>
 
 namespace NPCId {
 
@@ -10,6 +11,11 @@ namespace NPCId {
  * short while preserving timestamp uniqueness.
  */
 namespace detail {
+inline std::atomic<uint64> &SequenceStorage() {
+  static std::atomic<uint64> Value{0};
+  return Value;
+}
+
 inline FString ToBase36Recursive(uint64 Value, const TCHAR *Digits,
                                  const FString &Acc) {
   return Value == 0
@@ -27,16 +33,20 @@ inline FString ToBase36(uint64 Value) {
 }
 
 /**
- * Generates an NPC id matching the TS SDK shape: ag_<base36 timestamp>.
- * UE uses Unix 100ns ticks so rapid same-frame creates do not collide while
- * preserving the timestamp-only id contract.
+ * Generates an NPC id matching the TS SDK shape: ag_<base36 numeric id>.
+ * UE combines Unix milliseconds with a process-local sequence so rapid
+ * same-frame creates do not collide.
  * User Story: As cross-SDK id generation, I need UE NPC ids to match the TS
  * format so imported and synchronized agents share one identifier shape.
  */
 inline FString GenerateNPCId() {
   const int64 UnixTicks =
       (FDateTime::UtcNow() - FDateTime(1970, 1, 1)).GetTicks();
-  return TEXT("ag_") + ToBase36(static_cast<uint64>(UnixTicks));
+  const uint64 UnixMs = static_cast<uint64>(UnixTicks / 10000);
+  const uint64 Sequence =
+      detail::SequenceStorage().fetch_add(1, std::memory_order_relaxed) %
+      1000000;
+  return TEXT("ag_") + ToBase36((UnixMs * 1000000) + Sequence);
 }
 
 } // namespace NPCId
