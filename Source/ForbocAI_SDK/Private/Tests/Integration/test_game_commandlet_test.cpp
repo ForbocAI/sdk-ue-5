@@ -1,4 +1,5 @@
 #include "Misc/AutomationTest.h"
+#include "HAL/PlatformMisc.h"
 #include "RuntimeCommandlet.h"
 #include "TestGame/TestGameCommandSurface.h"
 #include "TestGame/TestGameRuntime.h"
@@ -9,10 +10,14 @@ using namespace TestGame;
 
 namespace {
 
-bool SkipTestGameRuntimeIntegration() {
-  UE_LOG(LogTemp, Display,
-         TEXT("Skipping test-game runtime integration tests until API work resumes."));
-  return true;
+bool SkipTestGameCommandletRuntimeIntegration() {
+  return FPlatformMisc::GetEnvironmentVariable(
+             TEXT("FORBOC_RUN_TEST_GAME_RUNTIME_TESTS"))
+             .IsEmpty()
+         ? (UE_LOG(LogTemp, Display,
+                   TEXT("Skipping test-game commandlet runtime integration tests until API work resumes.")),
+            true)
+         : false;
 }
 
 CommandSurface::FCommandExecutor MakeCommandletExecutor(
@@ -43,7 +48,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  */
 bool FTestGameCommandletPipelineSuccessTest::RunTest(
     const FString &Parameters) {
-  return SkipTestGameRuntimeIntegration();
+  if (SkipTestGameCommandletRuntimeIntegration()) {
+    return true;
+  }
   (void)Parameters;
   UForbocAICommandlet *Commandlet = NewObject<UForbocAICommandlet>();
   bool bCompleted = false;
@@ -75,7 +82,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  */
 bool FTestGameCommandletPipelineFailureTest::RunTest(
     const FString &Parameters) {
-  return SkipTestGameRuntimeIntegration();
+  if (SkipTestGameCommandletRuntimeIntegration()) {
+    return true;
+  }
   (void)Parameters;
   AddExpectedError(TEXT("LOG_ERR_CRITICAL // BIT_ROT_DETECTED"),
                    EAutomationExpectedErrorFlags::Contains, 1);

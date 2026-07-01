@@ -122,9 +122,13 @@ static FString GetBaseUrl() { return SDKConfig::GetApiUrl(); }
 static FString GetApiKey() { return SDKConfig::GetApiKey(); }
 
 static bool SkipApiEndpointIntegration() {
-  UE_LOG(LogTemp, Display,
-         TEXT("Skipping API endpoint integration tests until API work resumes."));
-  return true;
+  return FPlatformMisc::GetEnvironmentVariable(
+             TEXT("FORBOC_RUN_API_ENDPOINT_TESTS"))
+             .IsEmpty()
+         ? (UE_LOG(LogTemp, Display,
+                   TEXT("Skipping API endpoint integration tests until API work resumes.")),
+            true)
+         : false;
 }
 
 /**
@@ -140,7 +144,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FApiEndpointStatusNoAuthTest::RunTest(const FString &Parameters) {
-  return SkipApiEndpointIntegration();
+  if (SkipApiEndpointIntegration()) {
+    return true;
+  }
   SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(), TEXT(""));
 
   auto State = MakeShared<FApiEndpointTestState>();
@@ -176,7 +182,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FApiEndpointSoulsValidKeyTest::RunTest(const FString &Parameters) {
-  return SkipApiEndpointIntegration();
+  if (SkipApiEndpointIntegration()) {
+    return true;
+  }
   const FString Key =
       FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_API_KEY"));
   if (Key.IsEmpty()) {
@@ -221,7 +229,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FApiEndpointSoulsNoKeyTest::RunTest(const FString &Parameters) {
-  return SkipApiEndpointIntegration();
+  if (SkipApiEndpointIntegration()) {
+    return true;
+  }
   SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(), TEXT(""));
 
   auto State = MakeShared<FApiEndpointTestState>();
@@ -255,7 +265,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FApiEndpointSoulsInvalidKeyTest::RunTest(const FString &Parameters) {
-  return SkipApiEndpointIntegration();
+  if (SkipApiEndpointIntegration()) {
+    return true;
+  }
   SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(),
                           TEXT("invalid_key_12345"));
 
@@ -290,7 +302,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FApiEndpointNotFoundTest::RunTest(const FString &Parameters) {
-  return SkipApiEndpointIntegration();
+  if (SkipApiEndpointIntegration()) {
+    return true;
+  }
   SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(), TEXT(""));
 
   auto State = MakeShared<FApiEndpointTestState>();

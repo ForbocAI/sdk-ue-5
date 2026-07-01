@@ -1,14 +1,19 @@
 #include "Misc/AutomationTest.h"
+#include "HAL/PlatformMisc.h"
 #include "TestGame/TestGameOrchestrator.h"
 
 using namespace TestGame;
 
 namespace {
 
-bool SkipTestGameRuntimeIntegration() {
-  UE_LOG(LogTemp, Display,
-         TEXT("Skipping test-game runtime integration tests until API work resumes."));
-  return true;
+bool SkipTestGameOrchestratorRuntimeIntegration() {
+  return FPlatformMisc::GetEnvironmentVariable(
+             TEXT("FORBOC_RUN_TEST_GAME_RUNTIME_TESTS"))
+             .IsEmpty()
+         ? (UE_LOG(LogTemp, Display,
+                   TEXT("Skipping test-game orchestrator runtime integration tests until API work resumes.")),
+            true)
+         : false;
 }
 
 int32 CountScenarioCommands() {
@@ -67,7 +72,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FTestGameRunGameSuccessTest::RunTest(const FString &Parameters) {
-  return SkipTestGameRuntimeIntegration();
+  if (SkipTestGameOrchestratorRuntimeIntegration()) {
+    return true;
+  }
   (void)Parameters;
 
   const auto Result =
@@ -95,7 +102,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  */
 bool FTestGameRunGameTranscriptErrorFailsTest::RunTest(
     const FString &Parameters) {
-  return SkipTestGameRuntimeIntegration();
+  if (SkipTestGameOrchestratorRuntimeIntegration()) {
+    return true;
+  }
   (void)Parameters;
   AddExpectedError(TEXT("LOG_ERR_CRITICAL // BIT_ROT_DETECTED"),
                    EAutomationExpectedErrorFlags::Contains, 1);
@@ -126,7 +135,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  */
 bool FTestGameRunGameFailedCommandLeavesCoverageGapTest::RunTest(
     const FString &Parameters) {
-  return SkipTestGameRuntimeIntegration();
+  if (SkipTestGameOrchestratorRuntimeIntegration()) {
+    return true;
+  }
   (void)Parameters;
   AddExpectedError(TEXT("LOG_ERR_CRITICAL // BIT_ROT_DETECTED"),
                    EAutomationExpectedErrorFlags::Contains, 1);
