@@ -25,7 +25,10 @@ bool FRtkMiddlewareTest::RunTest(const FString &Parameters) {
         return Action;
       };
 
-  std::function<FAppMockState()> GetState = []() { return FAppMockState{}; };
+  const FAppMockState State{};
+  std::function<const FAppMockState &()> GetState = [&State]() -> const FAppMockState & {
+    return State;
+  };
 
   /**
    * 2. Setup Middleware A (Logging before and after)

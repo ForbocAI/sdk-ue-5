@@ -95,7 +95,7 @@ inline func::AsyncResult<rtk::FEmptyPayload>
 PersistMemoryInstructions(const TArray<FMemoryStoreInstruction> &Instructions,
                           int32 Index, const FProtocolRuntime &Runtime,
                           std::function<AnyAction(const AnyAction &)> Dispatch,
-                          std::function<FStoreState()> GetState);
+                          std::function<const FStoreState &()> GetState);
 
 func::AsyncResult<FAgentResponse>
 RunProtocolTurn(const FString &NpcId, const FString &Input,
@@ -103,7 +103,7 @@ RunProtocolTurn(const FString &NpcId, const FString &Input,
                 const FString &LastResult, bool bHasLastResult,
                 int32 Turn, const FProtocolRuntime &Runtime,
                 std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<FStoreState()> GetState);
+                std::function<const FStoreState &()> GetState);
 
 /**
  * Handles the IdentifyActor protocol instruction by serializing actor info
@@ -117,7 +117,7 @@ HandleIdentifyActor(const FNPCProcessResponse &Response,
                     const FString &RunId, int32 Turn,
                     const FProtocolRuntime &Runtime,
                     std::function<AnyAction(const AnyAction &)> Dispatch,
-                    std::function<FStoreState()> GetState) {
+                    std::function<const FStoreState &()> GetState) {
   FNPCActorInfo Actor;
   Actor.NpcId = NpcId;
   Actor.Persona = Response.Tape.Persona;
@@ -140,7 +140,7 @@ HandleQueryVector(const FNPCProcessResponse &Response,
                   const FString &RunId, int32 Turn,
                   const FProtocolRuntime &Runtime,
                   std::function<AnyAction(const AnyAction &)> Dispatch,
-                  std::function<FStoreState()> GetState) {
+                  std::function<const FStoreState &()> GetState) {
   return !Runtime.HasMemory()
              ? (Dispatch(DirectiveSlice::Actions::DirectiveRunFailed(
                     RunId,
@@ -194,7 +194,7 @@ HandleDecision(const FNPCProcessResponse &Response,
                const FString &RunId, int32 Turn,
                const FProtocolRuntime &Runtime,
                std::function<AnyAction(const AnyAction &)> Dispatch,
-               std::function<FStoreState()> GetState) {
+               std::function<const FStoreState &()> GetState) {
   FNPCProcessTape NextTape = Response.Tape;
   
   const FString ObsLower = Response.Tape.Observation.ToLower();
@@ -274,7 +274,7 @@ HandleReasoning(const FNPCProcessResponse &Response,
                 const FString &RunId, int32 Turn,
                 const FProtocolRuntime &Runtime,
                 std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<FStoreState()> GetState) {
+                std::function<const FStoreState &()> GetState) {
   FNPCProcessTape NextTape = Response.Tape;
   NextTape.bReasoningCompleted = true;
 
@@ -296,7 +296,7 @@ HandleFinalize(const FNPCInstruction &Instruction,
                const FString &RunId,
                const FProtocolRuntime &Runtime,
                std::function<AnyAction(const AnyAction &)> Dispatch,
-               std::function<FStoreState()> GetState) {
+               std::function<const FStoreState &()> GetState) {
   FVerdictResponse Verdict;
   Verdict.bValid = Instruction.bValid;
   Verdict.Signature = Instruction.Signature;
@@ -342,7 +342,7 @@ RunProtocolTurn(const FString &NpcId, const FString &Input,
                 const FString &LastResult, bool bHasLastResult,
                 int32 Turn, const FProtocolRuntime &Runtime,
                 std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<FStoreState()> GetState) {
+                std::function<const FStoreState &()> GetState) {
   return Turn >= 12
              ? (Dispatch(DirectiveSlice::Actions::DirectiveRunFailed(
                     RunId, TEXT("Max turns exceeded"))),
@@ -407,7 +407,7 @@ inline func::AsyncResult<rtk::FEmptyPayload>
 PersistMemoryInstructions(const TArray<FMemoryStoreInstruction> &Instructions,
                           int32 Index, const FProtocolRuntime &Runtime,
                           std::function<AnyAction(const AnyAction &)> Dispatch,
-                          std::function<FStoreState()> GetState) {
+                          std::function<const FStoreState &()> GetState) {
   return Index >= Instructions.Num()
              ? ResolveAsync(rtk::FEmptyPayload{})
          : !Runtime.StoreMemory
@@ -440,7 +440,7 @@ processNPC(const FString &NpcId, const FString &Input = TEXT(""),
            const FProtocolRuntime &Runtime = FProtocolRuntime()) {
   return [NpcId, Input, ContextJson, Persona, InitialState, Runtime](
              std::function<AnyAction(const AnyAction &)> Dispatch,
-             std::function<FStoreState()> GetState)
+             std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<FAgentResponse> {
     const auto ExistingNpc = NPCSlice::SelectNPCById(GetState().NPCs, NpcId);
     const bool bHasExplicitState =

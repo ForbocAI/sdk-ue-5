@@ -39,8 +39,10 @@ bool FRtkAsyncThunkTest::RunTest(const FString &Parameters) {
         return Action;
       };
 
-  std::function<FAppMockState()> MockGetState = []() {
-    return FAppMockState{};
+  const FAppMockState State{};
+  std::function<const FAppMockState &()> MockGetState =
+      [&State]() -> const FAppMockState & {
+    return State;
   };
 
   /**

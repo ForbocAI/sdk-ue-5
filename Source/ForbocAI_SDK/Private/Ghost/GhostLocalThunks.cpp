@@ -13,7 +13,7 @@ namespace rtk {
 ThunkAction<FGhostTestResult, FStoreState>
 runLocalGhostTestThunk(const FAgent &Agent, const FString &Scenario) {
   return [Agent, Scenario](std::function<AnyAction(const AnyAction &)> Dispatch,
-                           std::function<FStoreState()> GetState)
+                           std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<FGhostTestResult> {
     return Scenario.IsEmpty()
                ? detail::RejectAsync<FGhostTestResult>(

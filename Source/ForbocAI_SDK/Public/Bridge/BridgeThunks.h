@@ -33,7 +33,7 @@ localValidateBridgeThunk(const FAgentAction &Action,
                          const FBridgeRuleContext &Context) {
   return [Action, Rules, Context](
              std::function<AnyAction(const AnyAction &)> Dispatch,
-             std::function<FStoreState()> GetState)
+             std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<FValidationResult> {
     Dispatch(BridgeSlice::Actions::BridgeValidationPending());
 
@@ -61,7 +61,7 @@ validateBridgeThunk(const FAgentAction &Action,
                     const FString &NpcId = TEXT("")) {
   return [Action, Context, NpcId](
              std::function<AnyAction(const AnyAction &)> Dispatch,
-             std::function<FStoreState()> GetState)
+             std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<FValidationResult> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -92,7 +92,7 @@ validateBridgeThunk(const FAgentAction &Action,
 inline ThunkAction<FDirectiveRuleSet, FStoreState>
 loadBridgePresetThunk(const FString &PresetName) {
   return [PresetName](std::function<AnyAction(const AnyAction &)> Dispatch,
-                      std::function<FStoreState()> GetState)
+                      std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<FDirectiveRuleSet> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -119,7 +119,7 @@ loadBridgePresetThunk(const FString &PresetName) {
  */
 inline ThunkAction<TArray<FBridgeRule>, FStoreState> getBridgeRulesThunk() {
   return [](std::function<AnyAction(const AnyAction &)> Dispatch,
-            std::function<FStoreState()> GetState)
+            std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<TArray<FBridgeRule>> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -136,7 +136,7 @@ inline ThunkAction<TArray<FBridgeRule>, FStoreState> getBridgeRulesThunk() {
  */
 inline ThunkAction<TArray<FDirectiveRuleSet>, FStoreState> listRulesetsThunk() {
   return [](std::function<AnyAction(const AnyAction &)> Dispatch,
-            std::function<FStoreState()> GetState)
+            std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<TArray<FDirectiveRuleSet>> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -160,7 +160,7 @@ inline ThunkAction<TArray<FDirectiveRuleSet>, FStoreState> listRulesetsThunk() {
  */
 inline ThunkAction<TArray<FString>, FStoreState> listRulePresetsThunk() {
   return [](std::function<AnyAction(const AnyAction &)> Dispatch,
-            std::function<FStoreState()> GetState)
+            std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<TArray<FString>> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -184,7 +184,7 @@ inline ThunkAction<TArray<FString>, FStoreState> listRulePresetsThunk() {
 inline ThunkAction<FDirectiveRuleSet, FStoreState>
 registerRulesetThunk(const FDirectiveRuleSet &Ruleset) {
   return [Ruleset](std::function<AnyAction(const AnyAction &)> Dispatch,
-                   std::function<FStoreState()> GetState)
+                   std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<FDirectiveRuleSet> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -220,7 +220,7 @@ registerRulesetThunk(const FDirectiveRuleSet &Ruleset) {
 inline ThunkAction<rtk::FEmptyPayload, FStoreState>
 deleteRulesetThunk(const FString &RulesetId) {
   return [RulesetId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                     std::function<FStoreState()> GetState)
+                     std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<rtk::FEmptyPayload> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());

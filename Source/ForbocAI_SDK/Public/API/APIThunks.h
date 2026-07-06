@@ -14,7 +14,7 @@ namespace rtk {
  */
 inline ThunkAction<FApiStatusResponse, FStoreState> doctorThunk() {
   return [](std::function<AnyAction(const AnyAction &)> Dispatch,
-            std::function<FStoreState()> GetState)
+            std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<FApiStatusResponse> {
     return APISlice::Endpoints::getApiStatus()(Dispatch, GetState);
   };

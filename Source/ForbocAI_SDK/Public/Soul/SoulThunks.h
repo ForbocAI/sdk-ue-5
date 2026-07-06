@@ -20,7 +20,7 @@ namespace rtk {
 inline ThunkAction<FSoulExportResult, FStoreState>
 exportSoulThunk(const FString &NpcId) {
   return [NpcId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                 std::function<FStoreState()> GetState)
+                 std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<FSoulExportResult> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -84,7 +84,7 @@ exportSoulThunk(const FString &NpcId) {
 inline ThunkAction<FSoulExportResult, FStoreState>
 exportSoulThunk(const FSoul &Soul) {
   return [Soul](std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<FStoreState()> GetState)
+                std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<FSoulExportResult> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -144,7 +144,7 @@ exportSoulThunk(const FSoul &Soul) {
 inline ThunkAction<FSoul, FStoreState>
 importSoulThunk(const FString &TxId) {
   return [TxId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<FStoreState()> GetState)
+                std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<FSoul> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -197,7 +197,7 @@ importSoulThunk(const FString &TxId) {
 inline ThunkAction<FSoul, FStoreState>
 localExportSoulThunk(const FString &NpcId = TEXT("")) {
   return [NpcId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                 std::function<FStoreState()> GetState)
+                 std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<FSoul> {
     const FString TargetNpcId =
         NpcId.IsEmpty() ? NPCSlice::SelectActiveNpcId(GetState().NPCs) : NpcId;
@@ -220,7 +220,7 @@ localExportSoulThunk(const FString &NpcId = TEXT("")) {
 inline ThunkAction<FSoul, FStoreState>
 localImportSoulThunk(const FSoul &Soul) {
   return [Soul](std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<FStoreState()> GetState)
+                std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<FSoul> {
     return Soul.Id.IsEmpty()
         ? detail::RejectAsync<FSoul>(TEXT("Soul ID is required"))
@@ -239,7 +239,7 @@ localImportSoulThunk(const FSoul &Soul) {
 inline ThunkAction<FSoulExportResult, FStoreState>
 remoteExportSoulThunk(const FString &NpcId = TEXT("")) {
   return [NpcId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                 std::function<FStoreState()> GetState)
+                 std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<FSoulExportResult> {
     const FString TargetNpcId =
         NpcId.IsEmpty() ? NPCSlice::SelectActiveNpcId(GetState().NPCs) : NpcId;
@@ -255,7 +255,7 @@ importSoulFromArweaveThunk(const FString &TxId) {
 inline ThunkAction<TArray<FSoulListItem>, FStoreState>
 getSoulListThunk(int32 Limit = 50) {
   return [Limit](std::function<AnyAction(const AnyAction &)> Dispatch,
-                 std::function<FStoreState()> GetState)
+                 std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<TArray<FSoulListItem>> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -273,7 +273,7 @@ getSoulListThunk(int32 Limit = 50) {
 inline ThunkAction<FSoulVerifyResult, FStoreState>
 verifySoulThunk(const FString &TxId) {
   return [TxId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<FStoreState()> GetState)
+                std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<FSoulVerifyResult> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -286,7 +286,7 @@ verifySoulThunk(const FString &TxId) {
 inline ThunkAction<FImportedNpc, FStoreState>
 importNpcFromSoulThunk(const FString &TxId) {
   return [TxId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<FStoreState()> GetState)
+                std::function<const FStoreState &()> GetState)
              -> func::AsyncResult<FImportedNpc> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());

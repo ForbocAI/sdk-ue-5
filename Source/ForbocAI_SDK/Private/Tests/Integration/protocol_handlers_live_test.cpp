@@ -69,7 +69,7 @@ bool FProcessLiveStepWait::Update() {
       Req.Tape.Observation = TEXT("test observation");
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
-      auto GetState = [this]() { return State->Store->getState(); };
+      auto GetState = [this]() -> const FStoreState & { return State->Store->getState(); };
       
       APISlice::Endpoints::postNpcProcess(TEXT("live_npc_1"), Req)(Dispatch, GetState)
           .then([this](const FNPCProcessResponse &R) {
@@ -106,7 +106,7 @@ bool FProcessLiveStepWait::Update() {
       Req.bHasLastResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
-      auto GetState = [this]() { return State->Store->getState(); };
+      auto GetState = [this]() -> const FStoreState & { return State->Store->getState(); };
       
       APISlice::Endpoints::postNpcProcess(TEXT("live_npc_1"), Req)(Dispatch, GetState)
           .then([this](const FNPCProcessResponse &R) {
@@ -140,7 +140,7 @@ bool FProcessLiveStepWait::Update() {
       Req.bHasLastResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
-      auto GetState = [this]() { return State->Store->getState(); };
+      auto GetState = [this]() -> const FStoreState & { return State->Store->getState(); };
       
       APISlice::Endpoints::postNpcProcess(TEXT("live_npc_1"), Req)(Dispatch, GetState)
           .then([this](const FNPCProcessResponse &R) {
@@ -177,7 +177,7 @@ bool FProcessLiveStepWait::Update() {
       Req.bHasLastResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
-      auto GetState = [this]() { return State->Store->getState(); };
+      auto GetState = [this]() -> const FStoreState & { return State->Store->getState(); };
       
       APISlice::Endpoints::postNpcProcess(TEXT("live_npc_1"), Req)(Dispatch, GetState)
           .then([this](const FNPCProcessResponse &R) {
@@ -220,7 +220,7 @@ bool FProcessLiveStepWait::Update() {
       Req.bHasLastResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
-      auto GetState = [this]() { return State->Store->getState(); };
+      auto GetState = [this]() -> const FStoreState & { return State->Store->getState(); };
       
       APISlice::Endpoints::postNpcProcess(TEXT("live_npc_1"), Req)(Dispatch, GetState)
           .then([this](const FNPCProcessResponse &R) {

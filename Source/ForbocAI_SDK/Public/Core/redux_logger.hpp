@@ -173,7 +173,8 @@ template <typename State> struct ReduxLoggerOptions {
       CollapsedFn;
 
   // predicate(getState, action)
-  std::function<bool(const std::function<State()> &, const AnyAction &)> Predicate;
+  std::function<bool(const std::function<const State &()> &, const AnyAction &)>
+      Predicate;
 
   // duration: false
   bool bDuration = false;
@@ -204,7 +205,8 @@ template <typename State> struct ReduxLoggerOptions {
   bool bDiff = false;
 
   // diffPredicate: undefined
-  std::function<bool(const std::function<State()> &, const AnyAction &)> DiffPredicate;
+  std::function<bool(const std::function<const State &()> &, const AnyAction &)>
+      DiffPredicate;
 
   // titleFormatter = defaultTitleFormatter(options)
   std::function<FString(const AnyAction &, const FString &, double)> TitleFormatter;
@@ -539,7 +541,7 @@ LogEntry finishLogEntry(const ReduxLoggerOptions<State> &Options,
 template <typename State>
 ReduxLoggerOptions<State>
 withResolvedDiff(const ReduxLoggerOptions<State> &Options,
-                 const std::function<State()> &GetState,
+                 const std::function<const State &()> &GetState,
                  const AnyAction &Action) {
   ReduxLoggerOptions<State> PrintOptions = Options;
   PrintOptions.bDiff = (Options.bDiff && Options.DiffPredicate)
@@ -564,7 +566,8 @@ AnyAction dispatchWithLogging(
     const std::function<void(const FString &)> &Logger,
     const std::shared_ptr<std::vector<LogEntry>> &LogBuffer,
     const MiddlewareApi<State> &Api, Dispatcher Next,
-    const AnyAction &Action, const std::function<State()> &GetState) {
+    const AnyAction &Action,
+    const std::function<const State &()> &GetState) {
   const LogEntry StartedEntry = startLogEntry(Options, Api, Action);
   const LoggedDispatchResult DispatchResult =
       dispatchNext(Options, Next, Action);
@@ -588,7 +591,7 @@ AnyAction dispatchOrSkip(
     const std::shared_ptr<std::vector<LogEntry>> &LogBuffer,
     const MiddlewareApi<State> &Api, Dispatcher Next,
     const AnyAction &Action) {
-  const std::function<State()> GetState = [Api]() -> State {
+  const std::function<const State &()> GetState = [Api]() -> const State & {
     return Api.getState();
   };
   return (Options.Predicate && !Options.Predicate(GetState, Action))

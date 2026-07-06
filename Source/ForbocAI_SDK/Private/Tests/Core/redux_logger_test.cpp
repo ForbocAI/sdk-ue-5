@@ -23,7 +23,8 @@ bool FReduxLoggerMiddlewareTest::RunTest(const FString &Parameters) {
   int32 DispatchCount = 0;
   MiddlewareApi<FString> Api;
   Api.dispatch = [](const AnyAction &Action) { return Action; };
-  Api.getState = []() { return FString(TEXT("ready")); };
+  const FString State = TEXT("ready");
+  Api.getState = [&State]() -> const FString & { return State; };
 
   Dispatcher Next = [&DispatchCount](const AnyAction &Action) -> AnyAction {
     ++DispatchCount;

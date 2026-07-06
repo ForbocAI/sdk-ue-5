@@ -118,7 +118,9 @@ MemoryOps::Store(const FMemoryStore &Store, const FString &Text,
                  Item.Timestamp =
                      FDateTime::Now().ToUnixTimestamp();
 
-                 auto RuntimeStore = ConfigureStore();
+                 auto RuntimeStore =
+                     MakeShared<rtk::EnhancedStore<FStoreState>>(
+                         ConfigureStore());
 
                  /**
                   * Dispatch the store thunk
@@ -126,10 +128,10 @@ MemoryOps::Store(const FMemoryStore &Store, const FString &Text,
                   */
                  auto ThunkResult = rtk::nodeMemoryStoreThunk(Item)(
                      [RuntimeStore](const rtk::AnyAction &a) {
-                       return RuntimeStore.dispatch(a);
+                       return RuntimeStore->dispatch(a);
                      },
-                     [RuntimeStore]() {
-                       return RuntimeStore.getState();
+                     [RuntimeStore]() -> const FStoreState & {
+                       return RuntimeStore->getState();
                      });
 
                  /**
@@ -182,7 +184,9 @@ MemoryOps::Recall(const FMemoryStore &Store, const FString &Query,
                      Promise = MakeShared<
                          TPromise<MemoryTypes::MemoryStoreRecallResult>>();
 
-                 auto RuntimeStore = ConfigureStore();
+                 auto RuntimeStore =
+                     MakeShared<rtk::EnhancedStore<FStoreState>>(
+                         ConfigureStore());
                  FMemoryRecallRequest RecallRequest;
                  RecallRequest.Query = Query;
                  RecallRequest.Limit =
@@ -195,10 +199,10 @@ MemoryOps::Recall(const FMemoryStore &Store, const FString &Query,
                   */
                  auto ThunkResult = rtk::nodeMemoryRecallThunk(RecallRequest)(
                      [RuntimeStore](const rtk::AnyAction &a) {
-                       return RuntimeStore.dispatch(a);
+                       return RuntimeStore->dispatch(a);
                      },
-                     [RuntimeStore]() {
-                       return RuntimeStore.getState();
+                     [RuntimeStore]() -> const FStoreState & {
+                       return RuntimeStore->getState();
                      });
 
                  /**

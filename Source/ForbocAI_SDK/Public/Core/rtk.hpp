@@ -1373,12 +1373,13 @@ createEntityAdapter(std::function<FString(const T &)> selectId) {
 
 template <typename State> struct ThunkApi {
   std::function<AnyAction(const AnyAction &)> dispatch;
-  std::function<State()> getState;
+  std::function<const State &()> getState;
 };
 
 template <typename Result, typename State>
 using ThunkAction = std::function<func::AsyncResult<Result>(
-    std::function<AnyAction(const AnyAction &)>, std::function<State()>)>;
+    std::function<AnyAction(const AnyAction &)>,
+    std::function<const State &()>)>;
 
 template <typename Result, typename Arg, typename State>
 struct AsyncThunkConfig {
@@ -1445,7 +1446,8 @@ AsyncThunkConfig<Result, Arg, State> createAsyncThunk(
                                 const Arg &arg) -> ThunkAction<Result, State> {
     return [pending, fulfilled, rejected, PayloadCreator,
             arg](std::function<AnyAction(const AnyAction &)> dispatch,
-                 std::function<State()> getState) -> func::AsyncResult<Result> {
+                 std::function<const State &()> getState)
+                 -> func::AsyncResult<Result> {
       /**
        * 1. Dispatch pending synchronously
        * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
@@ -1517,7 +1519,7 @@ ActionReducerMapBuilder<State> &ActionReducerMapBuilder<State>::addAsyncThunk(
 
 template <typename State> struct MiddlewareApi {
   std::function<AnyAction(const AnyAction &)> dispatch;
-  std::function<State()> getState;
+  std::function<const State &()> getState;
 };
 
 /**
@@ -1546,7 +1548,7 @@ Dispatcher applyMiddlewareRecursive(
 
 /**
  * @brief Wraps a dispatcher with middleware while preserving RTK-style composition order.
- * @signature template <typename State> Dispatcher applyMiddleware(Dispatcher baseDispatch, std::function<State()> getState, const std::vector<Middleware<State>> &middlewares)
+ * @signature template <typename State> Dispatcher applyMiddleware(Dispatcher baseDispatch, std::function<const State &()> getState, const std::vector<Middleware<State>> &middlewares)
  * @param baseDispatch The core store dispatch function.
  * @param getState The function returning current state.
  * @param middlewares The list of middlewares to apply.
@@ -1558,7 +1560,7 @@ Dispatcher applyMiddlewareRecursive(
 template <typename State>
 Dispatcher
 applyMiddleware(Dispatcher baseDispatch,
-                std::function<State()> getState,
+                std::function<const State &()> getState,
                 const std::vector<Middleware<State>> &middlewares) {
   /**
    * Use shared_ptr so middleware closures can reference the final enhanced
@@ -1874,7 +1876,9 @@ template <typename State> struct EnhancedStore {
   func::AsyncResult<Result>
   dispatch(const ThunkAction<Result, State> &thunk) const {
     auto dispatchAny = Dispatch;
-    auto getState = [this]() -> State { return CoreStore->getState(); };
+    auto getState = [this]() -> const State & {
+      return CoreStore->getState();
+    };
     return thunk(dispatchAny, getState);
   }
 };
@@ -1903,7 +1907,9 @@ configureStore(CaseReducer<State> rootReducer, State preloadedState,
     return coreStore->dispatch(action);
   };
 
-  auto getState = [coreStore]() -> State { return coreStore->getState(); };
+  auto getState = [coreStore]() -> const State & {
+    return coreStore->getState();
+  };
 
   enhanced.Dispatch =
       applyMiddleware<State>(coreDispatch, getState, middlewares);

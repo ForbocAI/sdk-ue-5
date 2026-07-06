@@ -58,8 +58,10 @@ bool FRtkApiTest::RunTest(const FString &Parameters) {
         EventLog.Add(Action.Type);
         return Action;
       };
-  std::function<FAppMockState()> MockGetState = []() {
-    return FAppMockState{};
+  const FAppMockState State{};
+  std::function<const FAppMockState &()> MockGetState =
+      [&State]() -> const FAppMockState & {
+    return State;
   };
 
   /**
