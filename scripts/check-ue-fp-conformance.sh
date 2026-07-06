@@ -17,7 +17,7 @@ set -euo pipefail
 #   5. No direct HTTP calls in command handler files
 #   6. No `if` statements in non-test code (ternary only)
 #   7. No `switch` statements (visitor/variant dispatch only)
-#   8. No mocking — the word "mock" must not appear in demo tests or new code
+#   8. No mocking — the word "mock" must not appear in runtime tests or new code
 #
 # Usage:
 #   bash scripts/check-ue-fp-conformance.sh
@@ -28,7 +28,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SRC="$ROOT/Source/ForbocAI_SDK"
 STATUS=0
-DEMO_ROOT=""
+RUNTIME_ROOT=""
 
 # Hard dependency: without ripgrep every rule below silently produces no
 # hits and the script reports a false "PASS". Fail loudly instead.
@@ -44,8 +44,8 @@ normalize_crlf() {
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --demo-root)
-      DEMO_ROOT="$2"
+    --runtime-root)
+      RUNTIME_ROOT="$2"
       shift 2
       ;;
     *)
@@ -54,14 +54,14 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [ -n "$DEMO_ROOT" ]; then
-  DEMO_SRC="$DEMO_ROOT/Source/DemoProject"
+if [ -n "$RUNTIME_ROOT" ]; then
+  RUNTIME_SRC="$RUNTIME_ROOT/Source"
 else
-  DEMO_SRC="$ROOT/../../Source/DemoProject"
+  RUNTIME_SRC="$ROOT/../../Source"
 fi
 
 SRC_DIRS=("$SRC/Public" "$SRC/Private")
-[ -d "$DEMO_SRC" ] && SRC_DIRS+=("$DEMO_SRC")
+[ -d "$RUNTIME_SRC" ] && SRC_DIRS+=("$RUNTIME_SRC")
 WARN_COUNT=0
 FAIL_COUNT=0
 
@@ -356,7 +356,7 @@ echo ""
 
 echo "── Rule 8: No mocking (strict policy) ──"
 
-# Check demo test files (if demo source exists alongside SDK)
+# Check runtime test files (if runtime source exists alongside SDK)
 MOCK_VIOLATIONS=""
 
 # Check SDK Public/ and Private/ (excluding quarantined legacy tests)
@@ -369,25 +369,25 @@ SDK_MOCK="$(rg -ni '\bmock\b' \
 [ -n "$SDK_MOCK" ] && MOCK_VIOLATIONS="$MOCK_VIOLATIONS
 $SDK_MOCK"
 
-# Check demo tests if present
-if [ -d "$DEMO_SRC/Tests" ]; then
-  DEMO_MOCK="$(rg -ni '\bmock\b' \
-    "$DEMO_SRC/Tests" \
+# Check runtime tests if present
+if [ -d "$RUNTIME_SRC/Tests" ]; then
+  RUNTIME_TEST_MOCK="$(rg -ni '\bmock\b' \
+    "$RUNTIME_SRC/Tests" \
     --type-add 'cpp:*.{h,hpp,cpp}' --type cpp \
     2>/dev/null | normalize_crlf || true)"
-  [ -n "$DEMO_MOCK" ] && MOCK_VIOLATIONS="$MOCK_VIOLATIONS
-$DEMO_MOCK"
+  [ -n "$RUNTIME_TEST_MOCK" ] && MOCK_VIOLATIONS="$MOCK_VIOLATIONS
+$RUNTIME_TEST_MOCK"
 fi
 
-# Check demo non-test source if present
-if [ -d "$DEMO_SRC" ]; then
-  DEMO_SRC_MOCK="$(rg -ni '\bmock\b' \
-    "$DEMO_SRC" \
+# Check runtime non-test source if present
+if [ -d "$RUNTIME_SRC" ]; then
+  RUNTIME_SRC_MOCK="$(rg -ni '\bmock\b' \
+    "$RUNTIME_SRC" \
     --glob '!**/Tests/**' \
     --type-add 'cpp:*.{h,hpp,cpp}' --type cpp \
     2>/dev/null | normalize_crlf || true)"
-  [ -n "$DEMO_SRC_MOCK" ] && MOCK_VIOLATIONS="$MOCK_VIOLATIONS
-$DEMO_SRC_MOCK"
+  [ -n "$RUNTIME_SRC_MOCK" ] && MOCK_VIOLATIONS="$MOCK_VIOLATIONS
+$RUNTIME_SRC_MOCK"
 fi
 
 MOCK_VIOLATIONS="$(echo "$MOCK_VIOLATIONS" | sed '/^$/d')"
@@ -398,7 +398,7 @@ if [ -n "$MOCK_VIOLATIONS" ]; then
   MOCK_COUNT="$(echo "$MOCK_VIOLATIONS" | wc -l | tr -d ' ')"
   [ "$MOCK_COUNT" -gt 20 ] && echo "  ... and $((MOCK_COUNT - 20)) more"
 else
-  pass "No mock references in demo or SDK public code"
+  pass "No mock references in runtime or SDK public code"
 fi
 
 echo ""

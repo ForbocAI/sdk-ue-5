@@ -90,9 +90,9 @@ const FMemoryStore After = MemoryOps::Store(
 
 ## Quick start (Blueprint)
 
-The full demo project lives at [`ForbocAI/demo-ue-5.7`](https://github.com/ForbocAI/demo-ue-5.7) and ships source-controlled Blueprint and UMG assets for the happy-path runtime map. Open `/Game/Map/Maps/Runtime`, press Play, and use the tracked `BP_LevelGameMode`, `BP_PlayerRuntimeController`, `BP_TownspersonView`, `BP_SpeechPresenter`, and `WBP_Chat` assets as the editor-facing integration points.
+The full `demo-ue-5.7` runtime project lives at [`ForbocAI/demo-ue-5.7`](https://github.com/ForbocAI/demo-ue-5.7) and ships source-controlled Blueprint and UMG assets for the happy-path runtime map. Open `/Game/Map/Maps/Runtime`, press Play, and use the tracked `BP_LevelGameMode`, `BP_PlayerRuntimeController`, `BP_TownspersonView`, `BP_SpeechPresenter`, and `WBP_Chat` assets as the editor-facing integration points.
 
-For SDK/API validation with `FORBOC_DEMO_WITH_SDK=1`, call the `UForbocAIBlueprintLibrary` nodes from source-controlled Blueprint assets and keep runtime decisions in reducers/thunks rather than local widget graphs.
+For SDK/API validation, call the `UForbocAIBlueprintLibrary` nodes from source-controlled Blueprint assets and keep runtime decisions in reducers/thunks rather than local widget graphs.
 
 ---
 
@@ -151,7 +151,7 @@ API Status: online (v0.4.0)
 ## Documentation & support
 
 - Full reference, tutorials, and protocol docs: <https://docs.forboc.ai>
-- Demo project: <https://github.com/ForbocAI/demo-ue-5.7>
+- Runtime project: <https://github.com/ForbocAI/demo-ue-5.7>
 - Issues and feature requests: <https://github.com/ForbocAI/sdk-ue-5.7/issues>
 
 ---

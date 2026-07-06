@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # check-test-quality.sh
-# Audits the UE SDK and Demo tests for simulated/mocked test patterns.
+# Audits the UE SDK and runtime tests for simulated/mocked test patterns.
 #
 # User Story: As a maintainer, I need to ensure tests verify actual runtime
 # logic against real infrastructure, rather than using stubs or fake data.
@@ -28,11 +28,11 @@ fi
 PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SDK_TESTS="$PLUGIN_ROOT/Source/ForbocAI_SDK/Private/Tests"
 
-DEMO_ROOT=""
+RUNTIME_ROOT=""
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --demo-root)
-      DEMO_ROOT="$2"
+    --runtime-root)
+      RUNTIME_ROOT="$2"
       shift 2
       ;;
     *)
@@ -41,15 +41,15 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [ -n "$DEMO_ROOT" ]; then
-  DEMO_TESTS="$DEMO_ROOT/Source/DemoProject/Tests"
+if [ -n "$RUNTIME_ROOT" ]; then
+  RUNTIME_TESTS="$RUNTIME_ROOT/Source/Tests"
 else
-  DEMO_TESTS="$PLUGIN_ROOT/../../Source/DemoProject/Tests"
+  RUNTIME_TESTS="$PLUGIN_ROOT/../../Source/Tests"
 fi
 
 TEST_DIRS=()
 [ -d "$SDK_TESTS" ] && TEST_DIRS+=("$SDK_TESTS")
-[ -d "$DEMO_TESTS" ] && TEST_DIRS+=("$DEMO_TESTS")
+[ -d "$RUNTIME_TESTS" ] && TEST_DIRS+=("$RUNTIME_TESTS")
 
 if [ ${#TEST_DIRS[@]} -eq 0 ]; then
   echo "No test directories found to scan."

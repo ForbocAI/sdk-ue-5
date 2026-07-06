@@ -28,7 +28,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 QUICK_MODE=0
-DEMO_ROOT=""
+RUNTIME_ROOT=""
 SKIPPED=0
 UE_CONFORMANCE_STATUS="skipped"
 FP_CONFORMANCE_STATUS="skipped"
@@ -46,8 +46,8 @@ while [[ $# -gt 0 ]]; do
       QUICK_MODE=1
       shift
       ;;
-    --demo-root)
-      DEMO_ROOT="$2"
+    --runtime-root)
+      RUNTIME_ROOT="$2"
       shift 2
       ;;
     *)
@@ -81,7 +81,7 @@ run_check() {
 
   if [ -f "$script" ]; then
     local args=()
-    [ -n "$DEMO_ROOT" ] && args+=("--demo-root" "$DEMO_ROOT")
+    [ -n "$RUNTIME_ROOT" ] && args+=("--runtime-root" "$RUNTIME_ROOT")
 
     if case "$script" in
       *.py) python3 "$script" "${args[@]}" 2>&1 ;;

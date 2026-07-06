@@ -28,11 +28,11 @@ PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="$PLUGIN_ROOT/Source/ForbocAI_SDK"
 PUBLIC="$SRC/Public"
 
-DEMO_ROOT=""
+RUNTIME_ROOT=""
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --demo-root)
-      DEMO_ROOT="$2"
+    --runtime-root)
+      RUNTIME_ROOT="$2"
       shift 2
       ;;
     *)
@@ -41,14 +41,14 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [ -n "$DEMO_ROOT" ]; then
-  DEMO_SRC="$DEMO_ROOT/Source/DemoProject"
+if [ -n "$RUNTIME_ROOT" ]; then
+  RUNTIME_SRC="$RUNTIME_ROOT/Source"
 else
-  DEMO_SRC="$PLUGIN_ROOT/../../Source/DemoProject"
+  RUNTIME_SRC="$PLUGIN_ROOT/../../Source"
 fi
 
 SRC_DIRS=("$PUBLIC")
-[ -d "$DEMO_SRC" ] && SRC_DIRS+=("$DEMO_SRC")
+[ -d "$RUNTIME_SRC" ] && SRC_DIRS+=("$RUNTIME_SRC")
 
 VIOLATIONS=0
 

@@ -159,10 +159,10 @@ inline void ApplyScenarioInitialState(
       ? [&]() {
           FMarkSoulExportedPayload ExportPayload;
           ExportPayload.NpcId = TEXT("doomguard");
-          ExportPayload.TxId = TEXT("tx-demo-001");
+          ExportPayload.TxId = TEXT("tx-runtime-001");
           Store.dispatch(GameSoulActions::MarkSoulExported(ExportPayload));
           Store.dispatch(
-              GameSoulActions::MarkSoulImported(TEXT("tx-demo-001")));
+              GameSoulActions::MarkSoulImported(TEXT("tx-runtime-001")));
           Store.dispatch(
               GameMemoryActions::ClearMemoryForNpc(TEXT("doomguard")));
         }()
