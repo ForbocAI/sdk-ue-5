@@ -1,6 +1,7 @@
 #pragma once
 
 // clang-format off
+#include "Algo/Transform.h"
 #include "Core/rtk.hpp"
 #include "Core/ue_fp.hpp"
 #include "CoreMinimal.h"
@@ -121,7 +122,10 @@ inline FAgentState MergeStateDelta(const FAgentState &Current,
               ? Delta
               : [&]() -> FAgentState {
                   TArray<FString> Keys;
-                  DeltaJson->Values.GetKeys(Keys);
+                  Keys.Reserve(DeltaJson->Values.Num());
+                  Algo::Transform(DeltaJson->Values, Keys, [](const auto &Field) {
+                    return FString(Field.Key.Len(), *Field.Key);
+                  });
                   struct MergeFields {
                     static void apply(
                         const TSharedPtr<FJsonObject> &Src,

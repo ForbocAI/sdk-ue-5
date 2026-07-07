@@ -4,9 +4,9 @@
 
   <br/>
 
-# ForbocAI SDK for Unreal Engine 5.7
+# ForbocAI SDK for Unreal Engine 5.8
 
-Drop-in autonomous NPCs for Unreal Engine 5.7 — neuro-symbolic agents with persistent memory, identity, and ruleset-aware decision making, callable from C++ and Blueprints.
+Drop-in autonomous NPCs for Unreal Engine 5.8 — neuro-symbolic agents with persistent memory, identity, and ruleset-aware decision making, callable from C++ and Blueprints.
 
 [![Documentation](https://img.shields.io/badge/docs-docs.forboc.ai-blue)](https://docs.forboc.ai)
 [![Fab](https://img.shields.io/badge/Fab-ForbocAI-orange)](https://fab.com)
@@ -48,9 +48,9 @@ NPC reasoning is hosted on the ForbocAI API; the plugin handles local capabiliti
 
 | Platform | Tools |
 |---|---|
-| Windows | UE 5.7, [VS Build Tools 2022](https://aka.ms/vs/17/release/vs_buildtools.exe) (C++ workload + Windows 11 SDK) |
-| macOS | UE 5.7, Xcode 15+ |
-| Linux | UE 5.7, Clang 16+ |
+| Windows | UE 5.8, [VS Build Tools 2022](https://aka.ms/vs/17/release/vs_buildtools.exe) (C++ workload + Windows 11 SDK) |
+| macOS | UE 5.8, Xcode 15+ |
+| Linux | UE 5.8, Clang 16+ |
 
 The plugin reaches an API endpoint at runtime. By default it tries `http://localhost:8080`, then falls back to `https://api.forboc.ai`. Override with `FAgentConfig::ApiUrl` or via the SDK config.
 
@@ -103,7 +103,7 @@ The plugin ships a Commandlet you can run via `UnrealEditor-Cmd` to verify the i
 ### Windows
 
 ```powershell
-& "C:\Program Files\Epic Games\UE_5.7\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" `
+& "C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" `
   "C:\Path\To\Your.uproject" `
   -run=ForbocAI -Command=doctor `
   -nosplash -nopause -unattended
@@ -112,7 +112,7 @@ The plugin ships a Commandlet you can run via `UnrealEditor-Cmd` to verify the i
 ### macOS
 
 ```bash
-"/Users/Shared/Epic Games/UE_5.7/Engine/Binaries/Mac/UnrealEditor-Cmd" \
+"/Users/Shared/Epic Games/UE_5.8/Engine/Binaries/Mac/UnrealEditor-Cmd" \
   "/Path/To/Your.uproject" \
   -run=ForbocAI -Command=doctor \
   -nosplash -nopause -unattended

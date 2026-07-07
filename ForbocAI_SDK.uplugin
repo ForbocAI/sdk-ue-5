@@ -9,7 +9,7 @@
     "DocsURL": "https://docs.forboc.ai",
     "MarketplaceURL": "",
     "SupportURL": "",
-    "Description": "Autonomous AI for Unreal Engine 5.7.",
+    "Description": "Autonomous AI for Unreal Engine 5.8.",
     "EnabledByDefault": true,
     "Modules": [
         {

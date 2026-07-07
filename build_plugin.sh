@@ -5,17 +5,17 @@ set -euo pipefail
 # regardless of where it is invoked from.
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# UE engine root. Override with UE_ROOT=/path/to/UE_5.7 to point at
+# UE engine root. Override with UE_ROOT=/path/to/UE_5.8 to point at
 # a non-default install. The default matches the macOS shared-install
 # convention; Windows/Linux developers should set UE_ROOT explicitly.
 if [[ "$OSTYPE" == "msys"* ]] || [[ "$OSTYPE" == "cygwin"* ]] || [[ "$OSTYPE" == "win32"* ]]; then
-    UE_ROOT="${UE_ROOT:-C:/Program Files/Epic Games/UE_5.7}"
+    UE_ROOT="${UE_ROOT:-C:/Program Files/Epic Games/UE_5.8}"
     UAT_PATH="$UE_ROOT/Engine/Build/BatchFiles/RunUAT.bat"
 elif grep -qi microsoft /proc/version 2>/dev/null; then
-    UE_ROOT="${UE_ROOT:-/mnt/c/Program Files/Epic Games/UE_5.7}"
+    UE_ROOT="${UE_ROOT:-/mnt/c/Program Files/Epic Games/UE_5.8}"
     UAT_PATH="$UE_ROOT/Engine/Build/BatchFiles/RunUAT.bat"
 else
-    UE_ROOT="${UE_ROOT:-/Users/Shared/Epic Games/UE_5.7}"
+    UE_ROOT="${UE_ROOT:-/Users/Shared/Epic Games/UE_5.8}"
     UAT_PATH="$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh"
 fi
 
@@ -36,7 +36,7 @@ OUTPUT_DIR="${OUTPUT_DIR:-$PROJECT_ROOT/dist_ForbocAI_SDK_v$PLUGIN_VERSION}"
 
 if [[ ! -f "$UAT_PATH" ]]; then
     echo "RunUAT.sh not found at: $UAT_PATH" >&2
-    echo "Set UE_ROOT to your UE 5.7 engine install (the directory containing Engine/)." >&2
+    echo "Set UE_ROOT to your UE 5.8 engine install (the directory containing Engine/)." >&2
     exit 1
 fi
 
