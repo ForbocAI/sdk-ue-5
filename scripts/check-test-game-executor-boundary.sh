@@ -6,7 +6,7 @@
 # This check fails if any code re-introduces an in-process command executor
 # under the test-game surface. The legacy `TestGameLib.h` header used to
 # host `ExecuteForbocAICommand`, a shadow CLI that bypassed CLIOps; that
-# entire header is retired (see ForbocAI/sdk-ue-5.7#5). All UE test-game
+# entire header is retired (see ForbocAI/sdk-ue-5#5). All UE test-game
 # command execution must flow through `TestGame::CommandSurface`
 # (`TestGame/TestGameCommandSurface.h`), which delegates to the canonical
 # `CLIOps::DispatchCommand`.

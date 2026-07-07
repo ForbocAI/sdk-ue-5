@@ -9,6 +9,6 @@ if [ -n "$1" ]; then
   echo "Runtime path set to: $1"
 else
   echo ""
-  echo "To auto-sync the demo-ue-5.7 checkout after each SDK commit/pull, run:"
-  echo "  git config forboc.runtimePath /path/to/demo-ue-5.7"
+  echo "To auto-sync the demo-ue-5 checkout after each SDK commit/pull, run:"
+  echo "  git config forboc.runtimePath /path/to/demo-ue-5"
 fi

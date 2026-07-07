@@ -39,7 +39,7 @@ NPC reasoning is hosted on the ForbocAI API; the plugin handles local capabiliti
 
 ### Option 2 — Manual
 
-1. Download a release archive from the [Releases](https://github.com/ForbocAI/sdk-ue-5.7/releases) page or clone this repository.
+1. Download a release archive from the [Releases](https://github.com/ForbocAI/sdk-ue-5/releases) page or clone this repository.
 2. Place the repository contents into your project's `Plugins/ForbocAI_SDK/` directory.
 3. Right-click your `.uproject` and **Generate Visual Studio project files**.
 4. Build in `Development Editor`.
@@ -90,7 +90,7 @@ const FMemoryStore After = MemoryOps::Store(
 
 ## Quick start (Blueprint)
 
-The full `demo-ue-5.7` runtime project lives at [`ForbocAI/demo-ue-5.7`](https://github.com/ForbocAI/demo-ue-5.7) and ships source-controlled Blueprint and UMG assets for the happy-path runtime map. Open `/Game/Map/Maps/Runtime`, press Play, and use the tracked `BP_LevelGameMode`, `BP_PlayerRuntimeController`, `BP_TownspersonView`, `BP_SpeechPresenter`, and `WBP_Chat` assets as the editor-facing integration points.
+The full `demo-ue-5` runtime project lives at [`ForbocAI/demo-ue-5`](https://github.com/ForbocAI/demo-ue-5) and ships source-controlled Blueprint and UMG assets for the happy-path runtime map. Open `/Game/Map/Maps/Runtime`, press Play, and use the tracked `BP_LevelGameMode`, `BP_PlayerRuntimeController`, `BP_TownspersonView`, `BP_SpeechPresenter`, and `WBP_Chat` assets as the editor-facing integration points.
 
 For SDK/API validation, call the `UForbocAIBlueprintLibrary` nodes from source-controlled Blueprint assets and keep runtime decisions in reducers/thunks rather than local widget graphs.
 
@@ -151,8 +151,8 @@ API Status: online (v0.4.0)
 ## Documentation & support
 
 - Full reference, tutorials, and protocol docs: <https://docs.forboc.ai>
-- Runtime project: <https://github.com/ForbocAI/demo-ue-5.7>
-- Issues and feature requests: <https://github.com/ForbocAI/sdk-ue-5.7/issues>
+- Runtime project: <https://github.com/ForbocAI/demo-ue-5>
+- Issues and feature requests: <https://github.com/ForbocAI/sdk-ue-5/issues>
 
 ---
 

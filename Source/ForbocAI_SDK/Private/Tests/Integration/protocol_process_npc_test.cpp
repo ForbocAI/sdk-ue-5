@@ -97,7 +97,7 @@ bool FProcessNPCWaitComplete::Update() {
 /**
  * Test: processNPC with real API — full flow (valid verdict).
  * Drives the live SDKConfig-resolved API; renamed from the original
- * "Mock" prefix per ForbocAI/demo-ue-5.7#7 — the test has no fake
+ * "Mock" prefix per ForbocAI/demo-ue-5#7 — the test has no fake
  * response object and asserts the real wire payload returned by the
  * API.
  */
@@ -168,7 +168,7 @@ bool FProcessNPCLiveFinalizeValidTest::RunTest(const FString &Parameters) {
 /**
  * Test: processNPC with real API — block behavior (invalid verdict).
  * Uses observation that the API's bridge ruleset blocks. Renamed from
- * the original "Mock" prefix per ForbocAI/demo-ue-5.7#7 — the test
+ * the original "Mock" prefix per ForbocAI/demo-ue-5#7 — the test
  * dispatches the real `rtk::processNPC` thunk against the live SDKConfig
  * URL and asserts the actual `bIsBlocked` / `BlockReason` shape the API
  * returns.

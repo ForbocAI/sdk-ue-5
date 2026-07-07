@@ -1,6 +1,6 @@
 #!/bin/sh
 # Syncs the demo repo's submodule pin after a pull/merge.
-# Configure with: git config forboc.demoPath /path/to/demo-ue-5.7
+# Configure with: git config forboc.demoPath /path/to/demo-ue-5
 DEMO=$(git config forboc.demoPath)
 [ -z "$DEMO" ] && exit 0
 [ -d "$DEMO" ] || { echo "[forboc] demo path not found: $DEMO"; exit 0; }
