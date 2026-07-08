@@ -1381,6 +1381,14 @@ using ThunkAction = std::function<func::AsyncResult<Result>(
     std::function<AnyAction(const AnyAction &)>,
     std::function<const State &()>)>;
 
+/**
+ * @brief Callback type for the createAsyncThunk condition guard.
+ * Returning false skips thunk execution (no pending/fulfilled dispatched).
+ */
+template <typename Arg, typename State>
+using ConditionCallback =
+    std::function<bool(const Arg &, const ThunkApi<State> &)>;
+
 template <typename Result, typename Arg, typename State>
 struct AsyncThunkConfig {
   FString TypePrefix;
@@ -1423,31 +1431,57 @@ ActionReducerMapBuilder<State> &addAsyncThunkSettledMatcherWhen(
 } // namespace detail
 
 /**
- * @brief Creates a thunk config with pending, fulfilled, and rejected lifecycle actions.
- * @signature template <typename Result, typename Arg, typename State> AsyncThunkConfig<Result, Arg, State> createAsyncThunk(const FString &TypePrefix, std::function<func::AsyncResult<Result>(const Arg &, const ThunkApi<State> &)> PayloadCreator)
+ * @brief Creates a thunk config with pending, fulfilled, and rejected lifecycle
+ * actions, plus an optional condition guard.
+ * @signature template <typename Result, typename Arg, typename State> AsyncThunkConfig<Result, Arg, State> createAsyncThunk(const FString &TypePrefix, PayloadCreator, Condition)
  * @param TypePrefix The prefix string used for action types.
  * @param PayloadCreator The async function returning an AsyncResult.
+ * @param Condition Optional guard - return false to skip execution.
  * @return AsyncThunkConfig<Result, Arg, State> The thunk configuration.
  *
  * User Story: As async thunk authors, I need lifecycle action wiring generated
  * automatically so pending and result dispatch stay consistent.
+ *
+ * RTK-THUNK-004: The condition callback is evaluated before dispatching
+ * pending. When it returns false the thunk returns a rejected AsyncResult
+ * ("Aborted: condition returned false") with no lifecycle actions dispatched,
+ * preventing StrictMode double-invokes and stale duplicate requests.
  */
 template <typename Result, typename Arg, typename State>
 AsyncThunkConfig<Result, Arg, State> createAsyncThunk(
     const FString &TypePrefix,
     std::function<func::AsyncResult<Result>(const Arg &,
                                             const ThunkApi<State> &)>
-        PayloadCreator) {
+        PayloadCreator,
+    ConditionCallback<Arg, State> Condition) {
   auto pending = createAction<Arg>(TypePrefix + TEXT("/pending"));
   auto fulfilled = createAction<Result>(TypePrefix + TEXT("/fulfilled"));
   auto rejected = createAction<FString>(TypePrefix + TEXT("/rejected"));
 
-  auto thunkActionCreator = [pending, fulfilled, rejected, PayloadCreator](
+  auto thunkActionCreator = [pending, fulfilled, rejected, PayloadCreator,
+                             Condition](
                                 const Arg &arg) -> ThunkAction<Result, State> {
-    return [pending, fulfilled, rejected, PayloadCreator,
+    return [pending, fulfilled, rejected, PayloadCreator, Condition,
             arg](std::function<AnyAction(const AnyAction &)> dispatch,
                  std::function<const State &()> getState)
                  -> func::AsyncResult<Result> {
+      /**
+       * 0. Evaluate condition guard (RTK-THUNK-004)
+       * User Story: As a thunk author, I need a condition guard so
+       * StrictMode double-invokes and stale requests are skipped at the
+       * thunk level before any lifecycle actions are dispatched.
+       */
+      if (Condition) {
+        ThunkApi<State> conditionApi{dispatch, getState};
+        if (!Condition(arg, conditionApi)) {
+          return func::createAsyncResult<Result>(
+              [](std::function<void(Result)>,
+                 std::function<void(std::string)> Reject) {
+                Reject("Aborted: condition returned false");
+              });
+        }
+      }
+
       /**
        * 1. Dispatch pending synchronously
        * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
@@ -1491,6 +1525,19 @@ AsyncThunkConfig<Result, Arg, State> createAsyncThunk(
 
   return AsyncThunkConfig<Result, Arg, State>{TypePrefix, pending, fulfilled,
                                               rejected, thunkActionCreator};
+}
+
+/**
+ * @brief Convenience overload without a condition guard (always proceeds).
+ */
+template <typename Result, typename Arg, typename State>
+AsyncThunkConfig<Result, Arg, State> createAsyncThunk(
+    const FString &TypePrefix,
+    std::function<func::AsyncResult<Result>(const Arg &,
+                                            const ThunkApi<State> &)>
+        PayloadCreator) {
+  return createAsyncThunk<Result, Arg, State>(
+      TypePrefix, PayloadCreator, ConditionCallback<Arg, State>{});
 }
 
 template <typename State>
