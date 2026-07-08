@@ -284,7 +284,7 @@ inline FAgentResponse BuildAgentResponse(const FNPCInstruction &Instruction) {
  *  - txId derivation order:
  *      1. (UE-only enhancement) x-id response header
  *      2. Response JSON ".id" field        (same as TS)
- *      3. Generated hash fallback          (same as TS)
+ *      3. Generated hash default           (same as TS)
  *  - On exhausted retries, resolves with error result (does NOT reject)
  */
 inline func::AsyncResult<FArweaveUploadResult>

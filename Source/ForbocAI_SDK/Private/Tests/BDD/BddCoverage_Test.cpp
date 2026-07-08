@@ -47,7 +47,7 @@ void FBddCoverageSpec::Define() {
       // Find the absolute root for the SDK Plugin directory
       FString PluginDir = FPaths::Combine(FPaths::ProjectDir(), TEXT("Plugins/ForbocAI_SDK"));
       if (!IFileManager::Get().DirectoryExists(*PluginDir)) { 
-        // fallback mapping depending on UE directory structuring
+        // alternate mapping depending on UE directory structuring
         PluginDir = FPaths::Combine(FPaths::ProjectDir(), TEXT(".."));
       }
       

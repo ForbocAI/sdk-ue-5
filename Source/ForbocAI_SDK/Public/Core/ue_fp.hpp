@@ -3,7 +3,7 @@
 #define UE_FP_HPP
 
 /**
- * @brief UE FP Core Library — Strict UE C++11 functional programming primitives. No C++14, C++17, or later language features are used; Unreal container overloads are first-class because this SDK is UE-only. This header is the canonical source of truth for the functional substrate. If surrounding docs disagree, this file wins. DESIGN PRINCIPLES: - Prefer structs and plain data for domain state. - Prefer factory functions for construction of public values. - Keep domain behavior in free functions under the `func` namespace. - Use compatibility member wrappers only when preserving an existing callable C++11 surface is materially cheaper than duplicating abstractions (`MemoizedLast::operator()`, `AsyncResult` chaining). - Value semantics throughout. CONTENTS: 1. seq / gen_seq        — Index sequence (C++14 backport) 2. apply                — Tuple application (C++17 backport) 3. Maybe<T>             — Optional monad (data only) 4. Either<E, T>         — Result/Error monad (data only) 5. Curried / curry      — Automatic function currying 6. Lazy<T> / lazy       — Memoized deferred evaluation 7. MemoizedLast         — Last-input memoization for derived values 8. Pipeline<T> / pipe   — Value transformation chains (operator|) 9. Composed / compose   — Binary function composition 10. fmap                 — Functor map (Maybe, Either, vector, TArray) 11. mbind / ebind        — Monadic bind for Maybe / Either 12. or_else / match      — Extraction / pattern matching 13. ValidationPipeline   — Functional validation chain 14. ConfigBuilder        — Functional configuration builder 15. TestResult           — Functional testing result 16. AsyncResult          — Functional async result handling 17. HttpResult           — Functional HTTP result wrapper 18. AsyncChain           — AsyncResult chaining helpers 19. Dispatcher            — Dictionary-based typed dispatch 20. multi_match           — Multi-case value-based pattern matching 21. from_nullable         — Lift nullable values into Maybe 22. Unreal containers     — TArray and TMap folds, maps, traversal, lookup, update, equality REQUIREMENTS: Several helpers default-construct inactive payloads or error branches as a deliberate C++11 trade-off: `Maybe<T>`, `Either<E, T>`, `ValidationPipeline<T, E>`, `TestResult<T>`, and `HttpResult<T>`. All host types used with these primitives are expected to satisfy that requirement. See also: C++11-FP-GUIDE.md for patterns and usage.
+ * @brief UE FP Core Library — Strict UE C++11 functional programming primitives. No C++14, C++17, or later language features are used; Unreal container overloads are first-class because this SDK is UE-only. This header is the canonical source of truth for the functional substrate. If surrounding docs disagree, this file wins. DESIGN PRINCIPLES: - Prefer structs and plain data for domain state. - Prefer factory functions for construction of public values. - Keep domain behavior in free functions under the `func` namespace. - Use member wrappers only when preserving an existing callable C++11 surface is materially cheaper than duplicating abstractions (`MemoizedLast::operator()`, `AsyncResult` chaining). - Value semantics throughout. CONTENTS: 1. seq / gen_seq        — Index sequence (C++14 backport) 2. apply                — Tuple application (C++17 backport) 3. Maybe<T>             — Optional monad (data only) 4. Either<E, T>         — Result/Error monad (data only) 5. Curried / curry      — Automatic function currying 6. Lazy<T> / lazy       — Memoized deferred evaluation 7. MemoizedLast         — Last-input memoization for derived values 8. Pipeline<T> / pipe   — Value transformation chains (operator|) 9. Composed / compose   — Binary function composition 10. fmap                 — Functor map (Maybe, Either, vector, TArray) 11. mbind / ebind        — Monadic bind for Maybe / Either 12. or_else / match      — Extraction / pattern matching 13. ValidationPipeline   — Functional validation chain 14. ConfigBuilder        — Functional configuration builder 15. TestResult           — Functional testing result 16. AsyncResult          — Functional async result handling 17. HttpResult           — Functional HTTP result wrapper 18. AsyncChain           — AsyncResult chaining helpers 19. Dispatcher            — Dictionary-based typed dispatch 20. multi_match           — Multi-case value-based pattern matching 21. from_nullable         — Lift nullable values into Maybe 22. Unreal containers     — TArray and TMap folds, maps, traversal, lookup, update, equality REQUIREMENTS: Several helpers default-construct inactive payloads or error branches as a deliberate C++11 trade-off: `Maybe<T>`, `Either<E, T>`, `ValidationPipeline<T, E>`, `TestResult<T>`, and `HttpResult<T>`. All host types used with these primitives are expected to satisfy that requirement. See also: C++11-FP-GUIDE.md for patterns and usage.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
@@ -145,7 +145,7 @@ template <typename T> bool is_just(const Maybe<T> &m) { return m.hasValue; }
  * @signature template <typename T> bool is_nothing(const Maybe<T> &m)
  *
  * User Story: As a boundary author, I need an explicit absence predicate so
- * fallback branches are visible instead of hidden behind raw struct fields.
+ * absence branches are visible instead of hidden behind raw struct fields.
  */
 template <typename T> bool is_nothing(const Maybe<T> &m) {
   return !m.hasValue;
@@ -226,7 +226,7 @@ template <typename E, typename T> Either<E, T> make_left(E e) {
 }
 
 /**
- * @brief Constructs the error branch while preserving an explicit fallback payload.
+ * @brief Constructs the error branch while preserving an explicit default payload.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  * 
@@ -254,7 +254,7 @@ template <typename E, typename T> Either<E, T> make_right(T v) {
 }
 
 /**
- * @brief Constructs the success branch while preserving an explicit fallback error value.
+ * @brief Constructs the success branch while preserving an explicit default error value.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  * 
@@ -840,7 +840,7 @@ template <typename F, typename G> Composed<F, G> compose(F f, G g) {
  *   family of domain-shaped wrappers.
  * - Neutral primitives live below feature domains. Feature domains import
  *   downward into these primitives instead of borrowing helpers from siblings.
- * - Hidden fallback behavior belongs at explicit integration boundaries only.
+ * - Hidden substitute behavior belongs at explicit integration boundaries only.
  *   Reducers, selectors, and ECS systems should prefer Maybe/Either-returning
  *   helpers so missing data is visible in the type.
  */
@@ -1262,7 +1262,7 @@ std::vector<T> filter_vector(const std::vector<T> &values,
  * @signature template <typename T, typename Predicate> Maybe<T> find_vector(const std::vector<T> &values, Predicate predicate)
  *
  * User Story: As lookup code, I need Maybe-returning search so absence remains
- * explicit and no fallback sentinel is required.
+ * explicit and no default sentinel is required.
  */
 template <typename T, typename Predicate>
 Maybe<T> find_vector(const std::vector<T> &values, Predicate predicate) {
@@ -1346,7 +1346,7 @@ Either<E, Acc> fold_either(const std::vector<T> &values, Acc seed, Step step) {
  * @signature template <typename A, typename B, typename Combine> auto lift2(const Maybe<A> &a, const Maybe<B> &b, Combine combine) -> Maybe<decltype(combine(a.value, b.value))>
  *
  * User Story: As data assembly code, I need small optional records to compose
- * without nested matches or fallback values.
+ * without nested matches or substitute values.
  */
 template <typename A, typename B, typename Combine>
 auto lift2(const Maybe<A> &a, const Maybe<B> &b, Combine combine)
@@ -1527,7 +1527,7 @@ void for_each_indexed(const IndexedCollection &values, size_t count,
  * @signature template <typename IndexedCollection, typename Predicate> Maybe<Value> find_indexed(const IndexedCollection &values, size_t count, Predicate predicate)
  *
  * User Story: As lookup code, I need indexed collection searches to return
- * Maybe values without hidden sentinel fallbacks.
+ * Maybe values without hidden sentinels.
  */
 template <typename IndexedCollection, typename Predicate>
 auto find_indexed(const IndexedCollection &values, size_t count,
@@ -1697,7 +1697,7 @@ T maybe_or_else(const Maybe<T> &m, DefaultFactory defaultFactory) {
  * @signature template <typename E, typename T> T either_or_else(const Either<E, T> &e, const T &def)
  *
  * User Story: As an integration author, I need to collapse recoverable
- * failures into a concrete fallback at engine and UI boundaries.
+ * failures into a concrete default at engine and UI boundaries.
  */
 template <typename E, typename T>
 T either_or_else(const Either<E, T> &e, const T &def) {
@@ -2061,8 +2061,8 @@ Maybe<Value> find_map_value(const TMap<Key, Value> &values, const Key &key) {
 
 template <typename Key, typename Value>
 Value map_value_or(const TMap<Key, Value> &values, const Key &key,
-                   const Value &fallback) {
-  return or_else(find_map_value<Key, Value>(values, key), fallback);
+                   const Value &defaultValue) {
+  return or_else(find_map_value<Key, Value>(values, key), defaultValue);
 }
 
 template <typename Key, typename Value, typename Transform>
@@ -2080,9 +2080,10 @@ TMap<Key, Value> update_map_value_when_present(TMap<Key, Value> values,
 
 template <typename Key, typename Value, typename Transform>
 TMap<Key, Value> upsert_map_value(TMap<Key, Value> values, const Key &key,
-                                  const Value &fallback,
+                                  const Value &defaultValue,
                                   Transform transform) {
-  values.Add(key, transform(map_value_or<Key, Value>(values, key, fallback)));
+  values.Add(key,
+             transform(map_value_or<Key, Value>(values, key, defaultValue)));
   return values;
 }
 
@@ -3063,7 +3064,7 @@ std::vector<Key> keys(const Dispatcher<Key, Result> &d) {
  * @signature template <typename Key, typename Arg, typename Result> struct ArgDispatcher
  *
  * User Story: As ECS and adapter code, I need keyed argument handlers without
- * fallback behavior so absent handlers return Maybe/Either at the boundary.
+ * substitute behavior so absent handlers return Maybe/Either at the boundary.
  */
 template <typename Key, typename Arg, typename Result>
 struct ArgDispatcher {
@@ -3120,7 +3121,7 @@ ArgDispatcher<Key, Arg, Result> arg_dispatcher_register(
  * @signature template <typename Key, typename Arg, typename Result> Maybe<Result> arg_dispatcher_dispatch_maybe(const ArgDispatcherDispatch<Key, Arg, Result> &request)
  *
  * User Story: As ECS code, I need formatter and routing misses to be explicit
- * Maybe values instead of implicit fallback paths.
+ * Maybe values instead of implicit substitute paths.
  */
 template <typename Key, typename Arg, typename Result>
 Maybe<Result> arg_dispatcher_dispatch_maybe(

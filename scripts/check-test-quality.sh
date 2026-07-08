@@ -16,7 +16,7 @@
 
 set -euo pipefail
 
-# Determine search tool (rg preferred, grep as fallback)
+# Determine search tool (rg preferred, grep otherwise)
 if command -v rg >/dev/null 2>&1; then
   SEARCH_CMD="rg -ni"
   COUNT_CMD="rg -ci"

@@ -194,20 +194,20 @@ inline bool HasNonNullField(const TSharedPtr<FJsonObject> &Object,
 }
 
 /**
- * Reads a field as a string, falling back to serialized JSON or a default.
+ * Reads a field as a string, using serialized JSON or a default when needed.
  * User Story: As JSON field readers, I need a tolerant string extractor so
  * scalar and structured fields can be consumed through one helper.
  */
 inline FString OptionalStringFromField(const TSharedPtr<FJsonObject> &Object,
                                        const FString &FieldName,
-                                       const FString &Fallback = TEXT("")) {
+                                       const FString &DefaultValue = TEXT("")) {
   return !HasNonNullField(Object, FieldName)
-             ? Fallback
+             ? DefaultValue
              : [&]() -> FString {
                  const TSharedPtr<FJsonValue> Value =
                      Object->TryGetField(FieldName);
                  return !Value.IsValid()
-                            ? Fallback
+                            ? DefaultValue
                             : (Value->Type == EJson::String
                                    ? Value->AsString()
                                    : StringifyValue(Value));
@@ -232,14 +232,14 @@ inline TSharedPtr<FJsonObject> ParseJsonObjectOrEmpty(const FString &Json) {
  */
 inline FString JsonStringFromField(const TSharedPtr<FJsonObject> &Object,
                                    const FString &FieldName,
-                                   const FString &Fallback = TEXT("{}")) {
+                                   const FString &DefaultValue = TEXT("{}")) {
   return (!Object.IsValid() || !Object->HasField(FieldName))
-             ? Fallback
+             ? DefaultValue
              : [&]() -> FString {
                  const TSharedPtr<FJsonValue> Value =
                      Object->TryGetField(FieldName);
                  return (!Value.IsValid() || Value->Type == EJson::Null)
-                            ? Fallback
+                            ? DefaultValue
                             : ((Value->Type == EJson::Object ||
                                 Value->Type == EJson::Array)
                                    ? StringifyValue(Value)
@@ -328,7 +328,7 @@ inline TSharedRef<FJsonObject> ActionToObject(const FAgentAction &Action) {
 }
 
 /**
- * Extracts a string field with a primary name, falling back to an alias.
+ * Extracts a string field with a primary name, then an alias.
  * User Story: As a maintainer, I need this note so the surrounding code intent
  * stays clear during maintenance and debugging.
  */
@@ -341,9 +341,9 @@ inline FString ExtractWithAlias(const TSharedPtr<FJsonObject> &Object,
 }
 
 /**
- * Deserializes an API action object, including legacy field aliases.
+ * Deserializes an API action object, including prior field aliases.
  * User Story: As protocol response readers, I need action payloads normalized
- * so legacy and current server fields map into one runtime shape.
+ * so prior and current server fields map into one runtime shape.
  */
 inline FAgentAction ActionFromObject(const TSharedPtr<FJsonObject> &Object) {
   FAgentAction Action;

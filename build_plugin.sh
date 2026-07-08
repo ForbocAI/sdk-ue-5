@@ -8,12 +8,14 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # UE engine root. Override with UE_ROOT=/path/to/UE_5.8 to point at
 # a non-default install. The default matches the macOS shared-install
 # convention; Windows/Linux developers should set UE_ROOT explicitly.
+USE_CMD=0
 if [[ "$OSTYPE" == "msys"* ]] || [[ "$OSTYPE" == "cygwin"* ]] || [[ "$OSTYPE" == "win32"* ]]; then
     UE_ROOT="${UE_ROOT:-C:/Program Files/Epic Games/UE_5.8}"
     UAT_PATH="$UE_ROOT/Engine/Build/BatchFiles/RunUAT.bat"
 elif grep -qi microsoft /proc/version 2>/dev/null; then
     UE_ROOT="${UE_ROOT:-/mnt/c/Program Files/Epic Games/UE_5.8}"
     UAT_PATH="$UE_ROOT/Engine/Build/BatchFiles/RunUAT.bat"
+    USE_CMD=1
 else
     UE_ROOT="${UE_ROOT:-/Users/Shared/Epic Games/UE_5.8}"
     UAT_PATH="$UE_ROOT/Engine/Build/BatchFiles/RunUAT.sh"
@@ -32,7 +34,8 @@ if [[ -z "$PLUGIN_VERSION" ]]; then
     exit 1
 fi
 
-OUTPUT_DIR="${OUTPUT_DIR:-$PROJECT_ROOT/dist_ForbocAI_SDK_v$PLUGIN_VERSION}"
+DEFAULT_OUTPUT_ROOT="$(cd "$PROJECT_ROOT/.." && pwd)"
+OUTPUT_DIR="${OUTPUT_DIR:-$DEFAULT_OUTPUT_ROOT/dist_ForbocAI_SDK_v$PLUGIN_VERSION}"
 
 if [[ ! -f "$UAT_PATH" ]]; then
     echo "RunUAT.sh not found at: $UAT_PATH" >&2
@@ -46,6 +49,13 @@ echo "  UE_ROOT:      $UE_ROOT"
 echo "  VERSION:      $PLUGIN_VERSION"
 echo "  OUTPUT_DIR:   $OUTPUT_DIR"
 
-"$UAT_PATH" BuildPlugin -Plugin="$PLUGIN_PATH" -Package="$OUTPUT_DIR" -Rocket
+if [[ "$USE_CMD" -eq 1 ]]; then
+    UAT_WIN="$(wslpath -w "$UAT_PATH")"
+    PLUGIN_WIN="$(wslpath -w "$PLUGIN_PATH")"
+    OUTPUT_WIN="$(wslpath -w "$OUTPUT_DIR")"
+    cmd.exe /c call "$UAT_WIN" BuildPlugin -Plugin="$PLUGIN_WIN" -Package="$OUTPUT_WIN" -Rocket
+else
+    "$UAT_PATH" BuildPlugin -Plugin="$PLUGIN_PATH" -Package="$OUTPUT_DIR" -Rocket
+fi
 
 echo "Build complete. Output in $OUTPUT_DIR"

@@ -52,3 +52,4 @@ local_infrastructure/
 *.log
 *.tmp
 dist_ForbocAI_SDK/
+dist_ForbocAI_SDK_v*/

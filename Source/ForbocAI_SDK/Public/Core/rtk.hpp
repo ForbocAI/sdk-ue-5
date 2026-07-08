@@ -129,7 +129,7 @@ template <typename K, typename V> FString DebugPayloadString(const TMap<K, V> &M
 }
 
 /**
- * @brief Fallback conversion for payloads that cannot be easily stringified.
+ * @brief Default conversion for payloads that cannot be easily stringified.
  * @signature template <typename T> typename std::enable_if<!HasToString<T>::value && !std::is_integral<T>::value && !std::is_floating_point<T>::value && !std::is_same<T, bool>::value, FString>::type DebugPayloadString(const T &)
  * @param unused The opaque payload.
  * @return FString A placeholder string "<opaque>".
@@ -819,9 +819,9 @@ template <typename State> struct ActionReducerMapBuilder {
   }
 
   /**
-   * Registers a fallback reducer for otherwise-unhandled actions.
+   * Registers the default reducer for otherwise-unhandled actions.
    * User Story: As createReducer/createSlice users, I need addDefaultCase
-   * semantics so fallback behavior only runs when no case or matcher handled
+   * semantics so default-case behavior only runs when no case or matcher handled
    * the action.
    */
   ActionReducerMapBuilder<State> &addDefaultCase(CaseReducer<State> ReducerFunc) {
@@ -1659,7 +1659,7 @@ addListener(ListenerMiddleware<State> MiddlewareValue,
  * @brief Builds the final Middleware function from the ListenerMiddleware registry.
  * @signature template <typename State> Middleware<State> buildListenerMiddleware(const ListenerMiddleware<State> &MiddlewareValue)
  * @param MiddlewareValue The configured listener middleware.
- * @return Middleware<State> A middleware function compatible with applyMiddleware.
+ * @return Middleware<State> A middleware function usable with applyMiddleware.
  *
  * User Story: As a functional store implementer, I need to convert my listener registry into standard composed middleware.
  */

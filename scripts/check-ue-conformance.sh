@@ -107,7 +107,7 @@ fi
 # 5) No FPlatformProcess::CreateProc outside approved CLI/setup code.
 #    Approved locations (Public + Private):
 #      CLI/              — CLI command handlers (setup, build, etc.)
-#    The legacy TestGame/TestGameLib.h scenario command runner was retired
+#    The retired TestGame/TestGameLib.h scenario command runner was removed
 #    in favor of TestGame::CommandSurface — no test-game exemption remains.
 DIRECT_PROC="$(rg -n 'FPlatformProcess::CreateProc' \
   "$SRC/Public" "$SRC/Private" \

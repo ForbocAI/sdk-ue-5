@@ -22,7 +22,7 @@
  *   helpers.js  -> helpers::{repeat, pad, formatTime, timerNow}
  *   defaults.js -> ReduxLoggerOptions and LoggerColors
  *   core.js     -> detail::{getLogLevel, defaultTitleFormatter, printBuffer}
- *   diff.js     -> detail::{diffKindText, diffStyle, fallbackDiffLogger}
+ *   diff.js     -> detail::{diffKindText, diffStyle, defaultDiffLogger}
  *   index.js    -> createLogger and defaultLogger
  *
  * Port notes:
@@ -155,7 +155,7 @@ template <typename State> struct ReduxLoggerOptions {
   // level as a function: level(action)
   std::function<FString(const AnyAction &)> LevelFn;
 
-  // logger: console. Empty Logger falls back to UE_LOG when bLoggerAvailable is true.
+  // logger: console. Empty Logger uses UE_LOG when bLoggerAvailable is true.
   std::function<void(const FString &)> Logger;
 
   // Return if 'console' object is not defined.
@@ -325,7 +325,7 @@ inline FString diffStyle(const FString &Kind) {
   return FString::Printf(TEXT("color: %s; font-weight: bold"), *Color);
 }
 
-inline void fallbackDiffLogger(
+inline void defaultDiffLogger(
     const FString &PrevState, const FString &NextState,
     const std::function<void(const FString &)> &Logger, bool bIsCollapsed) {
   Logger(bIsCollapsed ? TEXT("  diff (collapsed)") : TEXT("  diff"));
@@ -379,7 +379,7 @@ void logDiffWhen(const ReduxLoggerOptions<State> &Options,
   Options.bDiff
       ? (Options.DiffLogger
              ? Options.DiffLogger(PrevState, NextState, Logger, bIsCollapsed)
-             : fallbackDiffLogger(PrevState, NextState, Logger, bIsCollapsed))
+             : defaultDiffLogger(PrevState, NextState, Logger, bIsCollapsed))
       : void();
 }
 
@@ -456,7 +456,7 @@ void printBufferRecursive(const std::vector<LogEntry> &Buffer, size_t Key,
  *   - resolve collapsed
  *   - build title and render group/log rows
  *   - emit optional trace and diff
- *   - end group, falling back to a log line when grouping is unavailable
+ *   - end group, using a log line when grouping is unavailable
  */
 template <typename State>
 void printBuffer(const std::vector<LogEntry> &Buffer,

@@ -8,7 +8,7 @@
  * TestGame::CommandSurface (defined in TestGame/TestGameCommandSurface.h),
  * which delegates to the canonical CLIOps command surface.
  *
- * Background: this file was split out of the legacy TestGameLib.h, which
+ * Background: this file was split out of the retired TestGameLib.h, which
  * previously combined ASCII rendering, runtime URL helpers, and an
  * in-process command executor on one surface. The executor was retired
  * in favor of the first-class commandlet/command-surface boundary; the

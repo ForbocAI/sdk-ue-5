@@ -304,7 +304,7 @@ inline void SetConfigFilePathOverride(const FString &ConfigFilePath) {
 }
 
 /**
- * Resolves the home directory from environment variables with project fallback.
+ * Resolves the home directory from environment variables with a project default.
  * User Story: As config path helpers, I need a home directory resolver so
  * config file location can be determined across platforms.
  */

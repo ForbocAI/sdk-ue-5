@@ -9,7 +9,7 @@
  * TestGame/TestGameCommandSurface.h), which delegates to the canonical
  * CLIOps command surface.
  *
- * Background: this file was split out of the legacy TestGameLib.h, which
+ * Background: this file was split out of the retired TestGameLib.h, which
  * previously combined runtime URL helpers, ASCII grid rendering, and an
  * in-process command executor on one surface. The executor was retired
  * in favor of the first-class commandlet/command-surface boundary; the
@@ -19,7 +19,7 @@
  *
  * User Story: As the UE test-game harness, I need a narrow runtime-URL
  * resolution surface so the harness can decide which API host to call
- * without including the legacy TestGameLib in-process executor surface.
+ * without including the retired TestGameLib in-process executor surface.
  */
 
 #include "Core/AsyncHttp.h"
@@ -38,7 +38,7 @@ using FRuntimeConnectivityProbe = TFunction<bool(const FString &)>;
  * Checks runtime connectivity to a given status URL.
  * Returns true if the endpoint responds with JSON containing a status field
  * within 1.5s.
- * User Story: As runtime fallback selection, I need a connectivity probe so
+ * User Story: As runtime URL selection, I need a connectivity probe so
  * the test game can decide which runtime URL is available.
  */
 namespace detail {
@@ -65,8 +65,8 @@ inline bool CheckRuntimeConnectivity(
 
 /**
  * Resolves the explicitly configured runtime URL without probing.
- * Prefers FORBOC_RUNTIME_URL, then falls back to FORBOCAI_API_URL.
- * User Story: As the no-fallback runtime policy, I need consumers to set the
+ * Prefers FORBOC_RUNTIME_URL, then uses FORBOCAI_API_URL.
+ * User Story: As the explicit-runtime policy, I need consumers to set the
  * runtime URL explicitly so production hosts never silently downgrade to
  * localhost or an unintended remote.
  */
@@ -89,7 +89,7 @@ inline FString ResolveRuntimeUrlFromEnv() {
  *
  * Production code paths must NOT call this. Use ResolveRuntimeUrl
  * (or set FORBOC_RUNTIME_URL / FORBOCAI_API_URL explicitly) so the
- * no-fallback policy holds.
+ * explicit-runtime policy holds.
  */
 inline FString ResolveVerificationRuntimeUrl(
     const FRuntimeConnectivityProbe &Probe) {
@@ -101,8 +101,8 @@ inline FString ResolveVerificationRuntimeUrl(
 }
 
 /**
- * Default test-harness resolver. Prefers explicit runtime configuration; falls
- * back to the probe-based path only if no env var is configured.
+ * Default test-harness resolver. Prefers explicit runtime configuration; uses
+ * the probe-based path only if no env var is configured.
  * User Story: As a test runner, I need explicit env-var configuration to take
  * precedence so CI can pin the runtime without relying on probe order.
  */
@@ -119,7 +119,7 @@ inline FString ResolveVerificationRuntimeUrl() {
 /**
  * Production/runtime resolver. Explicit configuration only.
  * User Story: As a production runtime caller, I need hard-fail behavior when
- * the runtime URL is unset so verification-only probe fallback never leaks
+ * the runtime URL is unset so verification-only probing never leaks
  * into shipped entrypoints.
  */
 inline FString ResolveRuntimeUrl() { return ResolveRuntimeUrlFromEnv(); }

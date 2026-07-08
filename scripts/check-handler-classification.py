@@ -70,7 +70,7 @@ def main():
         print("Error: Could not parse classification table from ProtocolThunks.h")
         return 1
 
-    # Filter out ExecuteInference from UE as it's legacy TS only
+    # Filter out ExecuteInference from UE as it's TS-only retained surface
     # Actually wait, TS has it but UE doesn't. We'll handle this in the diff.
 
     failures = 0
@@ -145,7 +145,7 @@ def main():
             elif in_table and not line.strip().startswith('* |'):
                 break
 
-        # Remove ExecuteInference for parity check if it's TS-only legacy
+        # Remove ExecuteInference for parity check if it's TS-only retained surface
         if 'ExecuteInference' in ts_classifications:
             del ts_classifications['ExecuteInference']
         if 'ExecuteInference' in ue_classifications:

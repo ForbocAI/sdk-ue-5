@@ -198,7 +198,7 @@ bool FOpsConfigTest::RunTest(const FString &Parameters) {
                  SDKConfig::ExtractLocalhostPort(DefaultApiUrl))
                  ? DefaultApiUrl
                  : FString(SDKConfig::PRODUCTION_API_URL));
-  TestEqual("Resolved runtime API URL honors env or localhost fallback",
+  TestEqual("Resolved runtime API URL honors env or localhost default",
             SDKConfig::GetApiUrl(), ExpectedApiUrl);
   TestTrue("Unset persisted apiUrl is empty",
            Ops::ConfigGet(TEXT("apiUrl")).IsEmpty());

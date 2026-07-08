@@ -352,14 +352,14 @@ echo ""
 # ── 8. No mocking ─────────────────────────────────────────────
 # Mocking is strictly prohibited. Tests exercise real code paths
 # or skip gracefully when infrastructure is unavailable.
-# Legacy rtk_test_mocks.h is quarantined under Private/Tests/Core/.
+# Retired rtk_test_mocks.h is quarantined under Private/Tests/Core/.
 
 echo "── Rule 8: No mocking (strict policy) ──"
 
 # Check runtime test files (if runtime source exists alongside SDK)
 MOCK_VIOLATIONS=""
 
-# Check SDK Public/ and Private/ (excluding quarantined legacy tests)
+# Check SDK Public/ and Private/ (excluding quarantined retired tests)
 SDK_MOCK="$(rg -ni '\bmock\b' \
   "$SRC/Public" \
   --glob '!**/ThirdParty/**' \

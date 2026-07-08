@@ -197,7 +197,7 @@ inline void ExtractGhostHistoryEntriesRecursive(
     TArray<FGhostHistoryEntry> &Out, int32 Index);
 
 /**
- * Helper to resolve a field with alias fallback.
+ * Helper to resolve a field through its primary name, then its alias.
  * User Story: As a maintainer, I need this note so the surrounding code intent
  * stays clear during maintenance and debugging.
  */

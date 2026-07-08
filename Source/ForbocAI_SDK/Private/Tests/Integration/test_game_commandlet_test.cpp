@@ -132,7 +132,7 @@ bool FTestGameRuntimeUrlResolutionTest::RunTest(const FString &Parameters) {
 
   const FString ApiUrlConfigured = ResolveConfiguredRuntimeUrl(
       FString(), TEXT("https://api.forboc.ai"));
-  TestEqual("ResolveConfiguredRuntimeUrl falls back to FORBOCAI_API_URL",
+  TestEqual("ResolveConfiguredRuntimeUrl uses FORBOCAI_API_URL when runtime is unset",
             ApiUrlConfigured, FString(TEXT("https://api.forboc.ai")));
 
   const FString MissingConfiguredRuntime =
@@ -145,11 +145,11 @@ bool FTestGameRuntimeUrlResolutionTest::RunTest(const FString &Parameters) {
   TestEqual("ResolveVerificationRuntimeUrl prefers localhost when available",
             LocalPreferred, FString(TEXT("http://localhost:8080")));
 
-  const FString RemoteFallback = ResolveVerificationRuntimeUrl([](const FString &Url) {
+  const FString RemoteDefault = ResolveVerificationRuntimeUrl([](const FString &Url) {
     return Url.Contains(TEXT("api.forboc.ai"));
   });
-  TestEqual("ResolveVerificationRuntimeUrl falls back to remote API when localhost fails",
-            RemoteFallback, FString(TEXT("https://api.forboc.ai")));
+  TestEqual("ResolveVerificationRuntimeUrl uses remote API when localhost fails",
+            RemoteDefault, FString(TEXT("https://api.forboc.ai")));
 
   const FString MissingRuntime =
       ResolveVerificationRuntimeUrl([](const FString &) { return false; });

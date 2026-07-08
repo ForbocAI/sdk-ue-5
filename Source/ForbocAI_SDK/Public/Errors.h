@@ -248,9 +248,9 @@ inline FSDKError classifyError(const FString &RawError) {
  * UI surfaces never render empty failure text.
  */
 inline FString extractThunkErrorMessage(const FString &Message,
-                                        const FString &Fallback =
+                                        const FString &DefaultMessage =
                                             TEXT("Request failed")) {
-  return Message.IsEmpty() ? Fallback : Message;
+  return Message.IsEmpty() ? DefaultMessage : Message;
 }
 
 /**
@@ -259,9 +259,10 @@ inline FString extractThunkErrorMessage(const FString &Message,
  * native std::string errors so reporting stays consistent across layers.
  */
 inline FString extractThunkErrorMessage(const std::string &Message,
-                                        const FString &Fallback =
+                                        const FString &DefaultMessage =
                                             TEXT("Request failed")) {
-  return Message.empty() ? Fallback : FString(UTF8_TO_TCHAR(Message.c_str()));
+  return Message.empty() ? DefaultMessage
+                         : FString(UTF8_TO_TCHAR(Message.c_str()));
 }
 
 /**

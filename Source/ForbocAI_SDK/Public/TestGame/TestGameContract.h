@@ -3,7 +3,7 @@
  * TestGameContract — Consumes the authoritative test-game contract
  * from the API.
  *
- * Retired: the legacy in-tree TestGameScenarios.h mirror, which used
+ * Retired: the prior in-tree TestGameScenarios.h mirror, which used
  * to define scenario steps locally and silently drift from the API.
  * This module is now the only source of scenarios for the UE test-game
  * harness:
@@ -83,7 +83,7 @@ inline ECommandGroup ParseCommandGroup(const FString &GroupStr) {
        : GroupStr == TEXT("soul_list")      ? ECommandGroup::SoulList
        : GroupStr == TEXT("soul_chat")      ? ECommandGroup::SoulChat
        : GroupStr == TEXT("ghost_lifecycle") ? ECommandGroup::GhostLifecycle
-       : ECommandGroup::Status; // fallback
+       : ECommandGroup::Status; // default
 }
 
 inline EEventType ParseEventType(const FString &TypeStr) {
@@ -91,7 +91,7 @@ inline EEventType ParseEventType(const FString &TypeStr) {
        : TypeStr == TEXT("social")      ? EEventType::Social
        : TypeStr == TEXT("escape")      ? EEventType::Escape
        : TypeStr == TEXT("persistence") ? EEventType::Persistence
-       : EEventType::Stealth; // fallback
+       : EEventType::Stealth; // default
 }
 
 /**
@@ -283,7 +283,7 @@ inline FContractResponse ParseContractJson(const FString &JsonBody) {
  * Fetch the authoritative test-game contract from the API.
  *
  * Returns a FContractResponse with bValid=true on success.
- * Falls back to empty response on network/parse failure.
+ * Returns an empty response on network/parse failure.
  *
  * User Story: As the UE test-game, I need to fetch the contract from
  * GET /test-game/contract so I prove real API-authoritative parity.
@@ -308,9 +308,9 @@ inline FContractResponse FetchContract(
 /**
  * Get scenario steps from the API contract.
  *
- * The legacy local mirror (TestGameScenarios.h) was retired once the
+ * The prior local mirror (TestGameScenarios.h) was retired once the
  * API contract at GET /test-game/contract became authoritative — there
- * is no offline fallback. If the API is unreachable the harness logs
+ * is no offline scenario source. If the API is unreachable the harness logs
  * an error and returns an empty list, and the caller is expected to
  * treat that as a hard failure (not as a "use cached scenarios" path).
  *
@@ -330,7 +330,7 @@ inline TArray<FScenarioStep> GetContractScenarioSteps(
   }
 
   UE_LOG(LogTemp, Error,
-         TEXT("TestGameContract: API contract unavailable, no local fallback exists"));
+         TEXT("TestGameContract: API contract unavailable, no local scenario source exists"));
   return TArray<FScenarioStep>();
 }
 

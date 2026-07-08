@@ -17,7 +17,7 @@ typedef func::Maybe<FString> FForbocAISDKPublicNPCNPCBaseTypesHOptionalDomainId;
  * User Story: As NPC state transport, I need a simple immutable wrapper so
  * arbitrary serialized state can move through SDK flows unchanged.
  *
- * NOTE: Struct names retain the FAgent* prefix for Blueprint compatibility.
+ * NOTE: Struct names retain the FAgent* prefix for Blueprint continuity.
  * The file was renamed from AgentTypes.h as part of the Agent→NPC terminology
  * migration. Include "NPC/NPCBaseTypes.h" in new code.
  */

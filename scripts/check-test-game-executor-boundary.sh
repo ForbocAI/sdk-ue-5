@@ -4,7 +4,7 @@
 # Coverage-script guard for the UE test-game executor boundary.
 #
 # This check fails if any code re-introduces an in-process command executor
-# under the test-game surface. The legacy `TestGameLib.h` header used to
+# under the test-game surface. The retired `TestGameLib.h` header used to
 # host `ExecuteForbocAICommand`, a shadow CLI that bypassed CLIOps; that
 # entire header is retired (see ForbocAI/sdk-ue-5#5). All UE test-game
 # command execution must flow through `TestGame::CommandSurface`
@@ -64,12 +64,12 @@ fi
 
 # 2) The retired header itself must not be re-added.
 if [ -f "$SRC/Public/TestGame/TestGameLib.h" ]; then
-  echo "[fail] TestGame/TestGameLib.h has been re-added. The legacy" >&2
+  echo "[fail] TestGame/TestGameLib.h has been re-added. The retired" >&2
   echo "       in-process executor surface is retired — split helpers" >&2
   echo "       into TestGameRuntime.h / TestGameGridRender.h instead." >&2
   STATUS=1
 else
-  echo "[ok] Legacy TestGameLib.h is absent"
+  echo "[ok] Retired TestGameLib.h is absent"
 fi
 
 # 3) Integration tests must not reintroduce an executor symbol.

@@ -121,7 +121,7 @@ inline FString ResolveNpcAlias(const FAliasState &Aliases,
 /**
  * Tokenize a command string, respecting quoted strings.
  * Local to this command surface — the historical TestGameLib tokenizer is
- * retired alongside the rest of the legacy in-process executor surface.
+ * retired alongside the rest of the prior in-process executor surface.
  */
 inline TArray<FString> Tokenize(const FString &Command) {
   TArray<FString> Tokens;

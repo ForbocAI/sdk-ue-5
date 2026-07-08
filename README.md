@@ -52,7 +52,7 @@ NPC reasoning is hosted on the ForbocAI API; the plugin handles local capabiliti
 | macOS | UE 5.8, Xcode 15+ |
 | Linux | UE 5.8, Clang 16+ |
 
-The plugin reaches an API endpoint at runtime. By default it tries `http://localhost:8080`, then falls back to `https://api.forboc.ai`. Override with `FAgentConfig::ApiUrl` or via the SDK config.
+The plugin reaches an API endpoint at runtime. By default it tries `http://localhost:8080`, then uses `https://api.forboc.ai` when localhost is unavailable. Override with `FAgentConfig::ApiUrl` or via the SDK config.
 
 ---
 
@@ -65,7 +65,7 @@ The plugin reaches an API endpoint at runtime. By default it tries `http://local
 // 1. Create an agent
 FAgentConfig Config;
 Config.Persona = TEXT("Cyber-Merchant");
-// Config.ApiUrl is optional — defaults to localhost, falls back to api.forboc.ai.
+// Config.ApiUrl is optional — defaults to localhost, then api.forboc.ai.
 
 const FAgent Merchant = AgentFactory::Create(Config);
 

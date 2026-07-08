@@ -44,7 +44,7 @@ bool FApiCodecBridgeRulesAliasTest::RunTest(const FString &Parameters) {
            APISlice::Detail::DecodeBridgeRulesResponse(Json, Rules));
   TestEqual("One rule decoded", Rules.Num(), 1);
   if (Rules.Num() == 1) {
-    TestEqual("Rule name falls back to alias", Rules[0].RuleName,
+    TestEqual("Rule name uses alias when primary field is absent", Rules[0].RuleName,
               FString(TEXT("rule_no_self_harm")));
     TestEqual("Rule description preserved", Rules[0].RuleDescription,
               FString(TEXT("No self harm")));

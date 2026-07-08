@@ -98,7 +98,7 @@ bool FDispatcherHasAndKeysTest::RunTest(const FString &Parameters) {
 /**
  * Test: Dispatcher — strict Either miss
  * User Story: As a maintainer, I need strict dispatcher misses to surface as
- * typed errors instead of fallback behavior.
+ * typed errors instead of substitute behavior.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FDispatcherEitherMissTest,
@@ -129,7 +129,7 @@ bool FDispatcherEitherMissTest::RunTest(const FString &Parameters) {
 /**
  * Test: ArgDispatcher — strict argument dispatch
  * User Story: As ECS formatter code, I need argument dispatch to return Maybe
- * on misses so no hidden fallback branch is required.
+ * on misses so no hidden default branch is required.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FArgDispatcherStrictTest,
