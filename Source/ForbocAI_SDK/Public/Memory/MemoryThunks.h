@@ -59,7 +59,7 @@ nodeMemoryStoreThunk(const FMemoryItem &Item) {
   return [Item](std::function<AnyAction(const AnyAction &)> Dispatch,
                 std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FMemoryItem> {
-    Dispatch(MemorySlice::Actions::MemoryStoreStart());
+    Dispatch(MemorySlice::Actions::memoryStoreStart());
 
     return func::AsyncResult<FMemoryItem>::create(
         [Item, Dispatch](std::function<void(FMemoryItem)> Resolve,
@@ -73,7 +73,7 @@ nodeMemoryStoreThunk(const FMemoryItem &Item) {
                     AsyncTask(ENamedThreads::GameThread,
                               [Dispatch, Reject, Error]() {
                                 Dispatch(MemorySlice::Actions::
-                                             MemoryStoreFailed(Error));
+                                             memoryStoreFailed(Error));
                                 Reject(TCHAR_TO_UTF8(*Error));
                               });
                   }()
@@ -88,13 +88,13 @@ nodeMemoryStoreThunk(const FMemoryItem &Item) {
                         [Dispatch, Resolve, Reject, Stored, bStored]() {
                           bStored
                               ? (Dispatch(MemorySlice::Actions::
-                                              MemoryStoreSuccess(Stored)),
+                                              memoryStoreSuccess(Stored)),
                                  Resolve(Stored), void())
                               : [&]() {
                                   const FString Error =
                                       TEXT("Failed to store local memory");
                                   Dispatch(MemorySlice::Actions::
-                                               MemoryStoreFailed(Error));
+                                               memoryStoreFailed(Error));
                                   Reject(TCHAR_TO_UTF8(*Error));
                                 }();
                         });
@@ -109,7 +109,7 @@ nodeMemoryRecallThunk(const FMemoryRecallRequest &Request) {
   return [Request](std::function<AnyAction(const AnyAction &)> Dispatch,
                    std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<TArray<FMemoryItem>> {
-    Dispatch(MemorySlice::Actions::MemoryRecallStart());
+    Dispatch(MemorySlice::Actions::memoryRecallStart());
 
     return func::AsyncResult<TArray<FMemoryItem>>::create(
         [Request, Dispatch](std::function<void(TArray<FMemoryItem>)> Resolve,
@@ -124,7 +124,7 @@ nodeMemoryRecallThunk(const FMemoryRecallRequest &Request) {
                     AsyncTask(ENamedThreads::GameThread,
                               [Dispatch, Reject, Error]() {
                                 Dispatch(MemorySlice::Actions::
-                                             MemoryRecallFailed(Error));
+                                             memoryRecallFailed(Error));
                                 Reject(TCHAR_TO_UTF8(*Error));
                               });
                   }()
@@ -145,7 +145,7 @@ nodeMemoryRecallThunk(const FMemoryRecallRequest &Request) {
                     AsyncTask(ENamedThreads::GameThread,
                               [Dispatch, Resolve, Results]() {
                                 Dispatch(MemorySlice::Actions::
-                                             MemoryRecallSuccess(Results));
+                                             memoryRecallSuccess(Results));
                                 Resolve(Results);
                               });
                   }();
@@ -199,7 +199,7 @@ inline ThunkAction<rtk::FEmptyPayload, FRuntimeState> clearNodeMemoryThunk() {
             detail::NodeMemoryPathStorage() = detail::DefaultNodeMemoryPath();
 
             AsyncTask(ENamedThreads::GameThread, [Dispatch, Resolve]() {
-              Dispatch(MemorySlice::Actions::clearMemory());
+              Dispatch(MemorySlice::Actions::memoryClear());
               Resolve(rtk::FEmptyPayload{});
             });
           });
@@ -233,7 +233,7 @@ listMemoryRemoteThunk(const FString &NpcId) {
     return func::AsyncChain::then<TArray<FMemoryItem>, TArray<FMemoryItem>>(
         APISlice::Endpoints::getMemoryList(NpcId)(Dispatch, GetState),
         [Dispatch](const TArray<FMemoryItem> &Items) {
-          Dispatch(MemorySlice::Actions::MemoryRecallSuccess(Items));
+          Dispatch(MemorySlice::Actions::memoryRecallSuccess(Items));
           return detail::ResolveAsync(Items);
         });
   };
@@ -246,17 +246,17 @@ recallMemoryRemoteThunk(const FString &NpcId, const FString &Query,
           Similarity](std::function<AnyAction(const AnyAction &)> Dispatch,
                       std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<TArray<FMemoryItem>> {
-    Dispatch(MemorySlice::Actions::MemoryRecallStart());
+    Dispatch(MemorySlice::Actions::memoryRecallStart());
     return func::AsyncChain::then<TArray<FMemoryItem>, TArray<FMemoryItem>>(
                APISlice::Endpoints::postMemoryRecall(
                    NpcId, TypeFactory::RemoteMemoryRecallRequest(
                               Query, Similarity))(Dispatch, GetState),
                [Dispatch](const TArray<FMemoryItem> &Items) {
-                 Dispatch(MemorySlice::Actions::MemoryRecallSuccess(Items));
+                 Dispatch(MemorySlice::Actions::memoryRecallSuccess(Items));
                  return detail::ResolveAsync(Items);
                })
         .catch_([Dispatch](std::string Error) {
-          Dispatch(MemorySlice::Actions::MemoryRecallFailed(
+          Dispatch(MemorySlice::Actions::memoryRecallFailed(
               FString(UTF8_TO_TCHAR(Error.c_str()))));
         });
   };
@@ -270,7 +270,7 @@ clearMemoryRemoteThunk(const FString &NpcId) {
     return func::AsyncChain::then<rtk::FEmptyPayload, rtk::FEmptyPayload>(
         APISlice::Endpoints::deleteMemoryClear(NpcId)(Dispatch, GetState),
         [Dispatch](const rtk::FEmptyPayload &Payload) {
-          Dispatch(MemorySlice::Actions::clearMemory());
+          Dispatch(MemorySlice::Actions::memoryClear());
           return detail::ResolveAsync(Payload);
         });
   };

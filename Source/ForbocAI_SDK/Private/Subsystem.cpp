@@ -108,7 +108,7 @@ FAgentState UForbocAISubsystem::GetNPCState(FString NpcId) const {
              ? FAgentState()
              : func::or_else(
                    func::fmap(
-                       NPCSlice::SelectNPCById(Store->getState().NPCs, NpcId),
+                       NPCSlice::selectNPCById(Store->getState().NPCs, NpcId),
                        [](const FNPCInternalState &Npc) { return Npc.State; }),
                    FAgentState());
 }
@@ -121,7 +121,7 @@ FAgentState UForbocAISubsystem::GetNPCState(FString NpcId) const {
 FString UForbocAISubsystem::GetActiveNPCId() const {
   return !Store.IsValid()
              ? FString()
-             : NPCSlice::SelectActiveNpcId(Store->getState().NPCs);
+             : NPCSlice::selectActiveNpcId(Store->getState().NPCs);
 }
 
 /**
@@ -133,7 +133,7 @@ bool UForbocAISubsystem::GetActiveNPC(FNPCInternalState &OutNPC) const {
   return !Store.IsValid()
              ? false
              : func::match(
-                   NPCSlice::SelectActiveNPC(Store->getState().NPCs),
+                   NPCSlice::selectActiveNPC(Store->getState().NPCs),
                    [&OutNPC](const FNPCInternalState &Active) {
                      OutNPC = Active;
                      return true;
@@ -149,7 +149,7 @@ bool UForbocAISubsystem::GetActiveNPC(FNPCInternalState &OutNPC) const {
 TArray<FMemoryItem> UForbocAISubsystem::GetLastRecalledMemories() const {
   return !Store.IsValid()
              ? TArray<FMemoryItem>()
-             : MemorySlice::SelectLastRecalledMemories(
+             : MemorySlice::selectLastRecalledMemories(
                    Store->getState().Memory);
 }
 
@@ -190,10 +190,10 @@ bool UForbocAISubsystem::GetLastImportedSoul(FSoul &OutSoul) const {
  * into delegates so blueprint and C++ subscribers can react to runtime changes.
  */
 void UForbocAISubsystem::HandleAction(const rtk::AnyAction &Action) {
-  NPCSlice::Actions::SetLastActionActionCreator().match(Action)
+  NPCSlice::Actions::setLastActionActionCreator().match(Action)
       ? [this, &Action]() {
           const auto Payload =
-              NPCSlice::Actions::SetLastActionActionCreator().extract(Action);
+              NPCSlice::Actions::setLastActionActionCreator().extract(Action);
           Payload.hasValue
               ? (OnNPCActionReceived.Broadcast(Payload.value.Action), void())
               : void();

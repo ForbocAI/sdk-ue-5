@@ -274,10 +274,10 @@ inline rtk::Middleware<FRuntimeState> createNpcRemovalListener() {
         const FString ActiveNpcIdBefore = Api.getState().NPCs.ActiveNpcId;
         const rtk::AnyAction Result = Next(Action);
 
-        NPCSlice::Actions::RemoveNPCActionCreator().match(Action)
+        NPCSlice::Actions::removeNPCActionCreator().match(Action)
             ? [&]() {
                 const auto RemovedNpcId =
-                    NPCSlice::Actions::RemoveNPCActionCreator().extract(Action);
+                    NPCSlice::Actions::removeNPCActionCreator().extract(Action);
                 RemovedNpcId.hasValue
                     ? (Api.dispatch(
                            DirectiveSlice::Actions::ClearDirectivesForNpc(
@@ -288,10 +288,10 @@ inline rtk::Middleware<FRuntimeState> createNpcRemovalListener() {
                            GhostSlice::Actions::ClearGhostSession()),
                        Api.dispatch(SoulSlice::Actions::ClearSoulState()),
                        Api.dispatch(
-                           NPCSlice::Actions::ClearBlock(RemovedNpcId.value)),
+                           NPCSlice::Actions::clearBlock(RemovedNpcId.value)),
                        RemovedNpcId.value == ActiveNpcIdBefore
                            ? (Api.dispatch(
-                                  MemorySlice::Actions::clearMemory()),
+                                  MemorySlice::Actions::memoryClear()),
                               void())
                            : void(),
                        void())

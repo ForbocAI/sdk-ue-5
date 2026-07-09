@@ -26,7 +26,7 @@ inline Slice<FNPCSliceState> CreateNPCSlice() {
       TEXT("npc"), FNPCSliceState(),
       [](ActionReducerMapBuilder<FNPCSliceState> &Builder) {
         Builder.addCase(
-            Actions::SetNPCInfoActionCreator(),
+            Actions::setNPCInfoActionCreator(),
             [](const FNPCSliceState &State,
                const Action<FNPCInternalState> &Action) -> FNPCSliceState {
               FNPCSliceState Next = State;
@@ -37,7 +37,7 @@ inline Slice<FNPCSliceState> CreateNPCSlice() {
               Next.ActiveNpcId = NewNPC.Id;
               return Next;
             });
-        Builder.addCase(Actions::SetActiveNPCActionCreator(),
+        Builder.addCase(Actions::setActiveNPCActionCreator(),
                         [](const FNPCSliceState &State,
                            const Action<FString> &Action) -> FNPCSliceState {
                           FNPCSliceState Next = State;
@@ -45,7 +45,7 @@ inline Slice<FNPCSliceState> CreateNPCSlice() {
                           return Next;
                         });
         Builder.addCase(
-            Actions::SetNPCStateActionCreator(),
+            Actions::setNPCStateActionCreator(),
             [](const FNPCSliceState &State,
                const Action<FSetNPCStatePayload> &Action) -> FNPCSliceState {
               FNPCSliceState Next = State;
@@ -62,7 +62,7 @@ inline Slice<FNPCSliceState> CreateNPCSlice() {
               return Next;
             });
         Builder.addCase(
-            Actions::UpdateNPCStateActionCreator(),
+            Actions::updateNPCStateActionCreator(),
             [](const FNPCSliceState &State,
                const Action<FUpdateNPCStatePayload> &Action) -> FNPCSliceState {
               FNPCSliceState Next = State;
@@ -80,7 +80,7 @@ inline Slice<FNPCSliceState> CreateNPCSlice() {
               return Next;
             });
         Builder.addCase(
-            Actions::AddToHistoryActionCreator(),
+            Actions::addToHistoryActionCreator(),
             [](const FNPCSliceState &State,
                const Action<FAddToHistoryPayload> &Action) -> FNPCSliceState {
               FNPCSliceState Next = State;
@@ -98,7 +98,7 @@ inline Slice<FNPCSliceState> CreateNPCSlice() {
               return Next;
             });
         Builder.addCase(
-            Actions::SetHistoryActionCreator(),
+            Actions::setHistoryActionCreator(),
             [](const FNPCSliceState &State,
                const Action<FSetHistoryPayload> &Action) -> FNPCSliceState {
               FNPCSliceState Next = State;
@@ -113,7 +113,7 @@ inline Slice<FNPCSliceState> CreateNPCSlice() {
               return Next;
             });
         Builder.addCase(
-            Actions::SetLastActionActionCreator(),
+            Actions::setLastActionActionCreator(),
             [](const FNPCSliceState &State,
                const Action<FSetLastActionPayload> &Action) -> FNPCSliceState {
               FNPCSliceState Next = State;
@@ -132,7 +132,7 @@ inline Slice<FNPCSliceState> CreateNPCSlice() {
               return Next;
             });
         Builder.addCase(
-            Actions::BlockActionActionCreator(),
+            Actions::blockActionActionCreator(),
             [](const FNPCSliceState &State,
                const Action<FBlockActionPayload> &Action) -> FNPCSliceState {
               FNPCSliceState Next = State;
@@ -147,7 +147,7 @@ inline Slice<FNPCSliceState> CreateNPCSlice() {
                   });
               return Next;
             });
-        Builder.addCase(Actions::ClearBlockActionCreator(),
+        Builder.addCase(Actions::clearBlockActionCreator(),
                         [](const FNPCSliceState &State,
                            const Action<FString> &Action) -> FNPCSliceState {
                           FNPCSliceState Next = State;
@@ -161,7 +161,7 @@ inline Slice<FNPCSliceState> CreateNPCSlice() {
                               });
                           return Next;
                         });
-        Builder.addCase(Actions::RemoveNPCActionCreator(),
+        Builder.addCase(Actions::removeNPCActionCreator(),
                         [](const FNPCSliceState &State,
                            const Action<FString> &Action) -> FNPCSliceState {
                           FNPCSliceState Next = State;
@@ -180,9 +180,28 @@ inline Slice<FNPCSliceState> CreateNPCSlice() {
  * User Story: As NPC lookups, I need direct access to one NPC so reducers,
  * thunks, and UI code can target the correct entity.
  */
-inline func::Maybe<FNPCInternalState> SelectNPCById(const FNPCSliceState &State,
+inline func::Maybe<FNPCInternalState> selectNPCById(const FNPCSliceState &State,
                                                     const FString &Id) {
   return GetNPCAdapter().getSelectors().selectById(State.Entities, Id);
+}
+
+/**
+ * Selects all NPC ids currently held in adapter order.
+ * User Story: As NPC list consumers, I need entity ids without materializing
+ * every NPC so callers can mirror RTK entity selector behavior.
+ */
+inline TArray<FString> selectNPCIds(const FNPCSliceState &State) {
+  return GetNPCAdapter().getSelectors().selectIds(State.Entities);
+}
+
+/**
+ * Selects the NPC entity map keyed by id.
+ * User Story: As direct entity consumers, I need the id-to-NPC map so UE
+ * callers can mirror TS adapter selector behavior.
+ */
+inline TMap<FString, FNPCInternalState>
+selectNPCEntities(const FNPCSliceState &State) {
+  return State.Entities.entities;
 }
 
 /**
@@ -190,8 +209,17 @@ inline func::Maybe<FNPCInternalState> SelectNPCById(const FNPCSliceState &State,
  * User Story: As NPC inspection flows, I need the full entity list so tools
  * and runtime systems can review current NPC state.
  */
-inline TArray<FNPCInternalState> SelectAllNPCs(const FNPCSliceState &State) {
+inline TArray<FNPCInternalState> selectAllNPCs(const FNPCSliceState &State) {
   return GetNPCAdapter().getSelectors().selectAll(State.Entities);
+}
+
+/**
+ * Selects the current NPC count.
+ * User Story: As NPC list consumers, I need a count selector so callers can
+ * mirror RTK entity selector behavior without reading collection internals.
+ */
+inline int32 selectTotalNPCs(const FNPCSliceState &State) {
+  return GetNPCAdapter().getSelectors().selectTotal(State.Entities);
 }
 
 /**
@@ -199,7 +227,7 @@ inline TArray<FNPCInternalState> SelectAllNPCs(const FNPCSliceState &State) {
  * id so UI and orchestration logic can resolve the current actor consistently.
  * (From TS)
  */
-inline FString SelectActiveNpcId(const FNPCSliceState &State) {
+inline FString selectActiveNpcId(const FNPCSliceState &State) {
   return State.ActiveNpcId;
 }
 
@@ -209,10 +237,10 @@ inline FString SelectActiveNpcId(const FNPCSliceState &State) {
  * current actor can be processed without manual id lookups.
  */
 inline func::Maybe<FNPCInternalState>
-SelectActiveNPC(const FNPCSliceState &State) {
+selectActiveNPC(const FNPCSliceState &State) {
   return State.ActiveNpcId.IsEmpty()
              ? func::nothing<FNPCInternalState>()
-             : SelectNPCById(State, State.ActiveNpcId);
+             : selectNPCById(State, State.ActiveNpcId);
 }
 
 } // namespace NPCSlice

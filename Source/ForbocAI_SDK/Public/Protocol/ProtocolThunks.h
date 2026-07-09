@@ -308,7 +308,7 @@ HandleFinalize(const FNPCInstruction &Instruction,
   Dispatch(DirectiveSlice::Actions::VerdictValidated(RunId, Verdict));
 
   return !Instruction.bValid
-             ? (Dispatch(NPCSlice::Actions::BlockAction(
+             ? (Dispatch(NPCSlice::Actions::blockAction(
                     NpcId, Instruction.Dialogue.IsEmpty()
                                ? FString(TEXT("Validation failed"))
                                : Instruction.Dialogue)),
@@ -319,17 +319,17 @@ HandleFinalize(const FNPCInstruction &Instruction,
                    [NpcId, Input, Instruction, Dispatch,
                     GetState](const rtk::FEmptyPayload &) {
                      HasStatePayload(Instruction.StateTransform)
-                         ? (Dispatch(NPCSlice::Actions::UpdateNPCState(
+                         ? (Dispatch(NPCSlice::Actions::updateNPCState(
                                 NpcId, Instruction.StateTransform)),
                             void())
                          : void();
 
-                     Dispatch(NPCSlice::Actions::SetLastAction(
+                     Dispatch(NPCSlice::Actions::setLastAction(
                          NpcId, Instruction.Action, Instruction.bHasAction));
 
-                     Dispatch(NPCSlice::Actions::AddToHistory(
+                     Dispatch(NPCSlice::Actions::addToHistory(
                          NpcId, TEXT("user"), Input));
-                     Dispatch(NPCSlice::Actions::AddToHistory(
+                     Dispatch(NPCSlice::Actions::addToHistory(
                          NpcId, TEXT("assistant"), Instruction.Dialogue));
 
                      return ResolveAsync(BuildAgentResponse(Instruction));
@@ -442,7 +442,7 @@ processNPC(const FString &NpcId, const FString &Input = TEXT(""),
              std::function<AnyAction(const AnyAction &)> Dispatch,
              std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FAgentResponse> {
-    const auto ExistingNpc = NPCSlice::SelectNPCById(GetState().NPCs, NpcId);
+    const auto ExistingNpc = NPCSlice::selectNPCById(GetState().NPCs, NpcId);
     const bool bHasExplicitState =
         !InitialState.JsonData.IsEmpty() && InitialState.JsonData != TEXT("{}");
 
@@ -463,10 +463,10 @@ processNPC(const FString &NpcId, const FString &Input = TEXT(""),
               Info.Id = NpcId;
               Info.Persona = ResolvedPersona;
               Info.State = InitialState;
-              Dispatch(NPCSlice::Actions::SetNPCInfo(Info));
+              Dispatch(NPCSlice::Actions::setNPCInfo(Info));
             }()
-          : (NPCSlice::SelectActiveNpcId(GetState().NPCs) != NpcId
-                 ? (Dispatch(NPCSlice::Actions::SetActiveNPC(NpcId)), void())
+          : (NPCSlice::selectActiveNpcId(GetState().NPCs) != NpcId
+                 ? (Dispatch(NPCSlice::Actions::setActiveNPC(NpcId)), void())
                  : void());
 
       const FString RunId = FString::Printf(

@@ -88,9 +88,9 @@ namespace Actions {
  * User Story: As memory storage flows, I need a cached action creator so every
  * caller dispatches the same pending action contract.
  */
-inline const ActionCreatorWithoutPayload &MemoryStoreStartActionCreator() {
+inline const ActionCreatorWithoutPayload &memoryStoreStartActionCreator() {
   static const ActionCreatorWithoutPayload ActionCreator =
-      createAction(TEXT("memory/storeStart"));
+      createAction(TEXT("memory/memoryStoreStart"));
   return ActionCreator;
 }
 
@@ -99,9 +99,9 @@ inline const ActionCreatorWithoutPayload &MemoryStoreStartActionCreator() {
  * User Story: As memory storage flows, I need a cached success action creator
  * so stored items enter the slice through one contract.
  */
-inline const ActionCreator<FMemoryItem> &MemoryStoreSuccessActionCreator() {
+inline const ActionCreator<FMemoryItem> &memoryStoreSuccessActionCreator() {
   static const ActionCreator<FMemoryItem> ActionCreator =
-      createAction<FMemoryItem>(TEXT("memory/storeSuccess"));
+      createAction<FMemoryItem>(TEXT("memory/memoryStoreSuccess"));
   return ActionCreator;
 }
 
@@ -110,9 +110,9 @@ inline const ActionCreator<FMemoryItem> &MemoryStoreSuccessActionCreator() {
  * User Story: As memory error handling, I need a cached failure action creator
  * so storage errors can be surfaced consistently.
  */
-inline const ActionCreator<FString> &MemoryStoreFailedActionCreator() {
+inline const ActionCreator<FString> &memoryStoreFailedActionCreator() {
   static const ActionCreator<FString> ActionCreator =
-      createAction<FString>(TEXT("memory/storeFailed"));
+      createAction<FString>(TEXT("memory/memoryStoreFailed"));
   return ActionCreator;
 }
 
@@ -121,9 +121,9 @@ inline const ActionCreator<FString> &MemoryStoreFailedActionCreator() {
  * User Story: As recall flows, I need a cached pending action creator so
  * recall state transitions stay uniform across callers.
  */
-inline const ActionCreatorWithoutPayload &MemoryRecallStartActionCreator() {
+inline const ActionCreatorWithoutPayload &memoryRecallStartActionCreator() {
   static const ActionCreatorWithoutPayload ActionCreator =
-      createAction(TEXT("memory/recallStart"));
+      createAction(TEXT("memory/memoryRecallStart"));
   return ActionCreator;
 }
 
@@ -133,9 +133,9 @@ inline const ActionCreatorWithoutPayload &MemoryRecallStartActionCreator() {
  * recalled items are stored through one reducer contract.
  */
 inline const ActionCreator<TArray<FMemoryItem>> &
-MemoryRecallSuccessActionCreator() {
+memoryRecallSuccessActionCreator() {
   static const ActionCreator<TArray<FMemoryItem>> ActionCreator =
-      createAction<TArray<FMemoryItem>>(TEXT("memory/recallSuccess"));
+      createAction<TArray<FMemoryItem>>(TEXT("memory/memoryRecallSuccess"));
   return ActionCreator;
 }
 
@@ -144,9 +144,9 @@ MemoryRecallSuccessActionCreator() {
  * User Story: As recall error handling, I need a cached failure action creator
  * so recall problems are represented consistently in slice state.
  */
-inline const ActionCreator<FString> &MemoryRecallFailedActionCreator() {
+inline const ActionCreator<FString> &memoryRecallFailedActionCreator() {
   static const ActionCreator<FString> ActionCreator =
-      createAction<FString>(TEXT("memory/recallFailed"));
+      createAction<FString>(TEXT("memory/memoryRecallFailed"));
   return ActionCreator;
 }
 
@@ -155,9 +155,9 @@ inline const ActionCreator<FString> &MemoryRecallFailedActionCreator() {
  * User Story: As cleanup flows, I need a cached clear action creator so memory
  * state can be reset through a single action contract.
  */
-inline const ActionCreatorWithoutPayload &MemoryClearActionCreator() {
+inline const ActionCreatorWithoutPayload &memoryClearActionCreator() {
   static const ActionCreatorWithoutPayload ActionCreator =
-      createAction(TEXT("memory/clear"));
+      createAction(TEXT("memory/memoryClear"));
   return ActionCreator;
 }
 
@@ -166,8 +166,8 @@ inline const ActionCreatorWithoutPayload &MemoryClearActionCreator() {
  * User Story: As memory status tracking, I need pending actions so the UI can
  * reflect that a store operation has started.
  */
-inline AnyAction MemoryStoreStart() {
-  return MemoryStoreStartActionCreator()();
+inline AnyAction memoryStoreStart() {
+  return memoryStoreStartActionCreator()();
 }
 
 /**
@@ -175,8 +175,8 @@ inline AnyAction MemoryStoreStart() {
  * User Story: As storage completion handling, I need stored items captured so
  * later queries can immediately see new memories.
  */
-inline AnyAction MemoryStoreSuccess(const FMemoryItem &Item) {
-  return MemoryStoreSuccessActionCreator()(Item);
+inline AnyAction memoryStoreSuccess(const FMemoryItem &Item) {
+  return memoryStoreSuccessActionCreator()(Item);
 }
 
 /**
@@ -184,8 +184,8 @@ inline AnyAction MemoryStoreSuccess(const FMemoryItem &Item) {
  * User Story: As storage error handling, I need failure messages preserved so
  * callers can explain why a memory write failed.
  */
-inline AnyAction MemoryStoreFailed(const FString &Error) {
-  return MemoryStoreFailedActionCreator()(Error);
+inline AnyAction memoryStoreFailed(const FString &Error) {
+  return memoryStoreFailedActionCreator()(Error);
 }
 
 /**
@@ -193,8 +193,8 @@ inline AnyAction MemoryStoreFailed(const FString &Error) {
  * User Story: As recall status tracking, I need pending actions so consumers
  * know recall results have not arrived yet.
  */
-inline AnyAction MemoryRecallStart() {
-  return MemoryRecallStartActionCreator()();
+inline AnyAction memoryRecallStart() {
+  return memoryRecallStartActionCreator()();
 }
 
 /**
@@ -202,8 +202,8 @@ inline AnyAction MemoryRecallStart() {
  * User Story: As recall completion handling, I need recalled items stored so
  * the latest retrieval can be rendered and reused.
  */
-inline AnyAction MemoryRecallSuccess(const TArray<FMemoryItem> &Items) {
-  return MemoryRecallSuccessActionCreator()(Items);
+inline AnyAction memoryRecallSuccess(const TArray<FMemoryItem> &Items) {
+  return memoryRecallSuccessActionCreator()(Items);
 }
 
 /**
@@ -211,8 +211,8 @@ inline AnyAction MemoryRecallSuccess(const TArray<FMemoryItem> &Items) {
  * User Story: As recall error handling, I need failure messages stored so UI
  * and logs can explain why recall did not complete.
  */
-inline AnyAction MemoryRecallFailed(const FString &Error) {
-  return MemoryRecallFailedActionCreator()(Error);
+inline AnyAction memoryRecallFailed(const FString &Error) {
+  return memoryRecallFailedActionCreator()(Error);
 }
 
 /**
@@ -220,7 +220,7 @@ inline AnyAction MemoryRecallFailed(const FString &Error) {
  * User Story: As cleanup flows, I need a clear action so memory state can be
  * reset before switching NPC context or rerunning tests.
  */
-inline AnyAction clearMemory() { return MemoryClearActionCreator()(); }
+inline AnyAction memoryClear() { return memoryClearActionCreator()(); }
 
 } // namespace Actions
 
@@ -233,7 +233,7 @@ inline Slice<FMemorySliceState> CreateMemorySlice() {
   return rtk::createSlice<FMemorySliceState>(
   TEXT("memory"), FMemorySliceState(),
   [](rtk::ActionReducerMapBuilder<FMemorySliceState> &Builder) {
-    Builder.addCase(Actions::MemoryStoreStartActionCreator(),
+    Builder.addCase(Actions::memoryStoreStartActionCreator(),
       [](const FMemorySliceState &State,
                    const Action<rtk::FEmptyPayload> &Action) -> FMemorySliceState {
                   FMemorySliceState Next = State;
@@ -241,7 +241,7 @@ inline Slice<FMemorySliceState> CreateMemorySlice() {
                   Next.Error.Empty();
                   return Next;
                 });
-    Builder.addCase(Actions::MemoryStoreSuccessActionCreator(),
+    Builder.addCase(Actions::memoryStoreSuccessActionCreator(),
       [](const FMemorySliceState &State,
                              const Action<FMemoryItem> &Action) -> FMemorySliceState {
                             FMemorySliceState Next = State;
@@ -250,7 +250,7 @@ inline Slice<FMemorySliceState> CreateMemorySlice() {
                                 Next.Entities, Action.PayloadValue);
                             return Next;
                           });
-    Builder.addCase(Actions::MemoryStoreFailedActionCreator(),
+    Builder.addCase(Actions::memoryStoreFailedActionCreator(),
       [](const FMemorySliceState &State,
                              const Action<FString> &Action) -> FMemorySliceState {
                             FMemorySliceState Next = State;
@@ -258,7 +258,7 @@ inline Slice<FMemorySliceState> CreateMemorySlice() {
                             Next.Error = Action.PayloadValue;
                             return Next;
                           });
-    Builder.addCase(Actions::MemoryRecallStartActionCreator(),
+    Builder.addCase(Actions::memoryRecallStartActionCreator(),
       [](const FMemorySliceState &State,
                    const Action<rtk::FEmptyPayload> &Action) -> FMemorySliceState {
                   FMemorySliceState Next = State;
@@ -266,7 +266,7 @@ inline Slice<FMemorySliceState> CreateMemorySlice() {
                   Next.Error.Empty();
                   return Next;
                 });
-    Builder.addCase(Actions::MemoryRecallSuccessActionCreator(),
+    Builder.addCase(Actions::memoryRecallSuccessActionCreator(),
       [](const FMemorySliceState &State,
                    const Action<TArray<FMemoryItem>> &Action) -> FMemorySliceState {
                   FMemorySliceState Next = State;
@@ -278,7 +278,7 @@ inline Slice<FMemorySliceState> CreateMemorySlice() {
                                               Next.LastRecalledIds, 0);
                   return Next;
                 });
-    Builder.addCase(Actions::MemoryRecallFailedActionCreator(),
+    Builder.addCase(Actions::memoryRecallFailedActionCreator(),
       [](const FMemorySliceState &State,
                              const Action<FString> &Action) -> FMemorySliceState {
                             FMemorySliceState Next = State;
@@ -286,7 +286,7 @@ inline Slice<FMemorySliceState> CreateMemorySlice() {
                             Next.Error = Action.PayloadValue;
                             return Next;
                           });
-    Builder.addCase(Actions::MemoryClearActionCreator(),
+    Builder.addCase(Actions::memoryClearActionCreator(),
       [](const FMemorySliceState &State,
                    const Action<rtk::FEmptyPayload> &Action) -> FMemorySliceState {
                   return FMemorySliceState();
@@ -299,7 +299,7 @@ inline Slice<FMemorySliceState> CreateMemorySlice() {
  * User Story: As memory lookups, I need a direct selector so code can resolve
  * one memory record without scanning the full collection.
  */
-inline Maybe<FMemoryItem> SelectMemoryById(const FMemorySliceState &State,
+inline Maybe<FMemoryItem> selectMemoryById(const FMemorySliceState &State,
                                            const FString &Id) {
   return GetMemoryAdapter().getSelectors().selectById(State.Entities, Id);
 }
@@ -309,7 +309,7 @@ inline Maybe<FMemoryItem> SelectMemoryById(const FMemorySliceState &State,
  * User Story: As memory inspection, I need the full memory collection so tools
  * and runtime systems can review current stored observations.
  */
-inline TArray<FMemoryItem> SelectAllMemories(const FMemorySliceState &State) {
+inline TArray<FMemoryItem> selectAllMemories(const FMemorySliceState &State) {
   return GetMemoryAdapter().getSelectors().selectAll(State.Entities);
 }
 
@@ -319,11 +319,11 @@ inline TArray<FMemoryItem> SelectAllMemories(const FMemorySliceState &State) {
  * (From TS)
  */
 inline TArray<FMemoryItem>
-SelectLastRecalledMemories(const FMemorySliceState &State) {
+selectLastRecalledMemories(const FMemorySliceState &State) {
   TArray<FMemoryItem> Results;
   detail::ResolveIdsRecursive(
       State.LastRecalledIds, Results, 0,
-      [&State](const FString &Id) { return SelectMemoryById(State, Id); });
+      [&State](const FString &Id) { return selectMemoryById(State, Id); });
   return Results;
 }
 

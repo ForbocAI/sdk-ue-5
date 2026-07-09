@@ -46,7 +46,7 @@ namespace Actions {
  * User Story: As NPC lifecycle flows, I need a cached action creator so new or
  * updated NPC records dispatch through one contract.
  */
-inline const rtk::ActionCreator<FNPCInternalState> &SetNPCInfoActionCreator() {
+inline const rtk::ActionCreator<FNPCInternalState> &setNPCInfoActionCreator() {
   static const func::Lazy<rtk::ActionCreator<FNPCInternalState>> ActionCreator =
       func::lazy([]() -> rtk::ActionCreator<FNPCInternalState> {
         return rtk::createAction<FNPCInternalState>(TEXT("npc/setNPCInfo"));
@@ -59,7 +59,7 @@ inline const rtk::ActionCreator<FNPCInternalState> &SetNPCInfoActionCreator() {
  * User Story: As active-NPC selection, I need a cached action creator so the
  * current actor can be changed consistently.
  */
-inline const rtk::ActionCreator<FString> &SetActiveNPCActionCreator() {
+inline const rtk::ActionCreator<FString> &setActiveNPCActionCreator() {
   static const func::Lazy<rtk::ActionCreator<FString>> ActionCreator =
       func::lazy([]() -> rtk::ActionCreator<FString> {
         return rtk::createAction<FString>(TEXT("npc/setActiveNPC"));
@@ -73,7 +73,7 @@ inline const rtk::ActionCreator<FString> &SetActiveNPCActionCreator() {
  * state replacement uses one action contract.
  */
 inline const rtk::ActionCreator<FSetNPCStatePayload> &
-SetNPCStateActionCreator() {
+setNPCStateActionCreator() {
   static const func::Lazy<rtk::ActionCreator<FSetNPCStatePayload>> ActionCreator =
       func::lazy([]() -> rtk::ActionCreator<FSetNPCStatePayload> {
         return rtk::createAction<FSetNPCStatePayload>(TEXT("npc/setNPCState"));
@@ -87,7 +87,7 @@ SetNPCStateActionCreator() {
  * state changes can be dispatched consistently.
  */
 inline const rtk::ActionCreator<FUpdateNPCStatePayload> &
-UpdateNPCStateActionCreator() {
+updateNPCStateActionCreator() {
   static const func::Lazy<rtk::ActionCreator<FUpdateNPCStatePayload>> ActionCreator =
       func::lazy([]() -> rtk::ActionCreator<FUpdateNPCStatePayload> {
         return rtk::createAction<FUpdateNPCStatePayload>(TEXT("npc/updateNPCState"));
@@ -101,7 +101,7 @@ UpdateNPCStateActionCreator() {
  * history entries are added through one reducer contract.
  */
 inline const rtk::ActionCreator<FAddToHistoryPayload> &
-AddToHistoryActionCreator() {
+addToHistoryActionCreator() {
   static const func::Lazy<rtk::ActionCreator<FAddToHistoryPayload>> ActionCreator =
       func::lazy([]() -> rtk::ActionCreator<FAddToHistoryPayload> {
         return rtk::createAction<FAddToHistoryPayload>(TEXT("npc/addToHistory"));
@@ -114,7 +114,7 @@ AddToHistoryActionCreator() {
  * User Story: As history synchronization, I need a cached action creator so
  * full transcript replacement uses a shared contract.
  */
-inline const rtk::ActionCreator<FSetHistoryPayload> &SetHistoryActionCreator() {
+inline const rtk::ActionCreator<FSetHistoryPayload> &setHistoryActionCreator() {
   static const func::Lazy<rtk::ActionCreator<FSetHistoryPayload>> ActionCreator =
       func::lazy([]() -> rtk::ActionCreator<FSetHistoryPayload> {
         return rtk::createAction<FSetHistoryPayload>(TEXT("npc/setHistory"));
@@ -128,7 +128,7 @@ inline const rtk::ActionCreator<FSetHistoryPayload> &SetHistoryActionCreator() {
  * emitted action can be updated consistently.
  */
 inline const rtk::ActionCreator<FSetLastActionPayload> &
-SetLastActionActionCreator() {
+setLastActionActionCreator() {
   static const func::Lazy<rtk::ActionCreator<FSetLastActionPayload>> ActionCreator =
       func::lazy([]() -> rtk::ActionCreator<FSetLastActionPayload> {
         return rtk::createAction<FSetLastActionPayload>(TEXT("npc/setLastAction"));
@@ -142,7 +142,7 @@ SetLastActionActionCreator() {
  * so block reasons are stored through one contract.
  */
 inline const rtk::ActionCreator<FBlockActionPayload> &
-BlockActionActionCreator() {
+blockActionActionCreator() {
   static const func::Lazy<rtk::ActionCreator<FBlockActionPayload>> ActionCreator =
       func::lazy([]() -> rtk::ActionCreator<FBlockActionPayload> {
         return rtk::createAction<FBlockActionPayload>(TEXT("npc/blockAction"));
@@ -155,7 +155,7 @@ BlockActionActionCreator() {
  * User Story: As unblock flows, I need a cached action creator so block state
  * can be removed consistently when conditions change.
  */
-inline const rtk::ActionCreator<FString> &ClearBlockActionCreator() {
+inline const rtk::ActionCreator<FString> &clearBlockActionCreator() {
   static const func::Lazy<rtk::ActionCreator<FString>> ActionCreator =
       func::lazy([]() -> rtk::ActionCreator<FString> {
         return rtk::createAction<FString>(TEXT("npc/clearBlock"));
@@ -168,7 +168,7 @@ inline const rtk::ActionCreator<FString> &ClearBlockActionCreator() {
  * User Story: As NPC teardown, I need a cached action creator so removals
  * propagate through one shared reducer contract.
  */
-inline const rtk::ActionCreator<FString> &RemoveNPCActionCreator() {
+inline const rtk::ActionCreator<FString> &removeNPCActionCreator() {
   static const func::Lazy<rtk::ActionCreator<FString>> ActionCreator =
       func::lazy([]() -> rtk::ActionCreator<FString> {
         return rtk::createAction<FString>(TEXT("npc/removeNPC"));
@@ -181,8 +181,8 @@ inline const rtk::ActionCreator<FString> &RemoveNPCActionCreator() {
  * User Story: As NPC lifecycle flows, I need a simple action factory so NPC
  * records can be inserted or refreshed without manual payload wiring.
  */
-inline rtk::AnyAction SetNPCInfo(const FNPCInternalState &Info) {
-  return SetNPCInfoActionCreator()(Info);
+inline rtk::AnyAction setNPCInfo(const FNPCInternalState &Info) {
+  return setNPCInfoActionCreator()(Info);
 }
 
 /**
@@ -190,8 +190,8 @@ inline rtk::AnyAction SetNPCInfo(const FNPCInternalState &Info) {
  * User Story: As actor selection, I need an action factory so the runtime can
  * mark one NPC as active through a single helper.
  */
-inline rtk::AnyAction SetActiveNPC(const FString &Id) {
-  return SetActiveNPCActionCreator()(Id);
+inline rtk::AnyAction setActiveNPC(const FString &Id) {
+  return setActiveNPCActionCreator()(Id);
 }
 
 /**
@@ -199,8 +199,8 @@ inline rtk::AnyAction SetActiveNPC(const FString &Id) {
  * User Story: As full state updates, I need an action factory so entire NPC
  * state blobs can be dispatched consistently.
  */
-inline rtk::AnyAction SetNPCState(const FString &Id, const FAgentState &State) {
-  return SetNPCStateActionCreator()(FSetNPCStatePayload{Id, State});
+inline rtk::AnyAction setNPCState(const FString &Id, const FAgentState &State) {
+  return setNPCStateActionCreator()(FSetNPCStatePayload{Id, State});
 }
 
 /**
@@ -208,9 +208,9 @@ inline rtk::AnyAction SetNPCState(const FString &Id, const FAgentState &State) {
  * User Story: As delta updates, I need an action factory so partial NPC state
  * changes can be dispatched without manual payload structs.
  */
-inline rtk::AnyAction UpdateNPCState(const FString &Id,
+inline rtk::AnyAction updateNPCState(const FString &Id,
                                      const FAgentState &Delta) {
-  return UpdateNPCStateActionCreator()(FUpdateNPCStatePayload{Id, Delta});
+  return updateNPCStateActionCreator()(FUpdateNPCStatePayload{Id, Delta});
 }
 
 /**
@@ -218,9 +218,9 @@ inline rtk::AnyAction UpdateNPCState(const FString &Id,
  * User Story: As conversation logging, I need an action factory so new history
  * entries are recorded with one helper call.
  */
-inline rtk::AnyAction AddToHistory(const FString &Id, const FString &Role,
+inline rtk::AnyAction addToHistory(const FString &Id, const FString &Role,
                                    const FString &Content) {
-  return AddToHistoryActionCreator()(FAddToHistoryPayload{Id, Role, Content});
+  return addToHistoryActionCreator()(FAddToHistoryPayload{Id, Role, Content});
 }
 
 /**
@@ -228,9 +228,9 @@ inline rtk::AnyAction AddToHistory(const FString &Id, const FString &Role,
  * User Story: As transcript synchronization, I need an action factory so
  * complete history sets can be applied consistently.
  */
-inline rtk::AnyAction SetHistory(const FString &Id,
+inline rtk::AnyAction setHistory(const FString &Id,
                                  const TArray<FNPCHistoryEntry> &History) {
-  return SetHistoryActionCreator()(FSetHistoryPayload{Id, History});
+  return setHistoryActionCreator()(FSetHistoryPayload{Id, History});
 }
 
 /**
@@ -238,10 +238,10 @@ inline rtk::AnyAction SetHistory(const FString &Id,
  * User Story: As last-action tracking, I need an action factory so reducers can
  * update whether an NPC has a recent action in one dispatch.
  */
-inline rtk::AnyAction SetLastAction(const FString &Id,
+inline rtk::AnyAction setLastAction(const FString &Id,
                                     const FAgentAction &LastAction,
                                     bool bHasAction = true) {
-  return SetLastActionActionCreator()(
+  return setLastActionActionCreator()(
       FSetLastActionPayload{Id, LastAction, bHasAction});
 }
 
@@ -250,8 +250,8 @@ inline rtk::AnyAction SetLastAction(const FString &Id,
  * User Story: As rule enforcement, I need an action factory so block reasons
  * can be applied consistently to the targeted NPC.
  */
-inline rtk::AnyAction BlockAction(const FString &Id, const FString &Reason) {
-  return BlockActionActionCreator()(FBlockActionPayload{Id, Reason});
+inline rtk::AnyAction blockAction(const FString &Id, const FString &Reason) {
+  return blockActionActionCreator()(FBlockActionPayload{Id, Reason});
 }
 
 /**
@@ -259,8 +259,8 @@ inline rtk::AnyAction BlockAction(const FString &Id, const FString &Reason) {
  * User Story: As unblock flows, I need an action factory so NPC block state can
  * be removed without custom payload assembly.
  */
-inline rtk::AnyAction ClearBlock(const FString &Id) {
-  return ClearBlockActionCreator()(Id);
+inline rtk::AnyAction clearBlock(const FString &Id) {
+  return clearBlockActionCreator()(Id);
 }
 
 /**
@@ -268,8 +268,8 @@ inline rtk::AnyAction ClearBlock(const FString &Id) {
  * User Story: As NPC teardown, I need an action factory so removal dispatches
  * stay consistent across runtime, tests, and tools.
  */
-inline rtk::AnyAction RemoveNPC(const FString &Id) {
-  return RemoveNPCActionCreator()(Id);
+inline rtk::AnyAction removeNPC(const FString &Id) {
+  return removeNPCActionCreator()(Id);
 }
 
 } // namespace Actions

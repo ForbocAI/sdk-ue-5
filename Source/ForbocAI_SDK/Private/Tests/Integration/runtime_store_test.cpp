@@ -23,12 +23,12 @@ bool FStoreNPCCreationTest::RunTest(const FString &Parameters) {
   Info.Id = TEXT("int_npc_1");
   Info.Persona = TEXT("Test NPC");
 
-  State = StoreReducer(State, NPCSlice::Actions::SetNPCInfo(Info));
+  State = StoreReducer(State, NPCSlice::Actions::setNPCInfo(Info));
 
   TestEqual("NPC active", State.NPCs.ActiveNpcId,
             FString(TEXT("int_npc_1")));
   TestTrue("NPC in entities",
-           NPCSlice::SelectNPCById(State.NPCs, TEXT("int_npc_1")).hasValue);
+           NPCSlice::selectNPCById(State.NPCs, TEXT("int_npc_1")).hasValue);
 
   /**
    * Other slices remain at initial state
@@ -66,7 +66,7 @@ bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
   FNPCInternalState Info;
   Info.Id = TEXT("cascade_npc");
   Info.Persona = TEXT("Cascade test");
-  Store.dispatch(NPCSlice::Actions::SetNPCInfo(Info));
+  Store.dispatch(NPCSlice::Actions::setNPCInfo(Info));
 
   TestEqual("NPC active before removal", Store.getState().NPCs.ActiveNpcId,
             FString(TEXT("cascade_npc")));
@@ -79,8 +79,8 @@ bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
   MemItem.Id = TEXT("cascade_mem");
   MemItem.Text = TEXT("Important memory");
   MemItem.Importance = 0.9f;
-  Store.dispatch(MemorySlice::Actions::MemoryStoreSuccess(MemItem));
-  TestEqual("Memory exists", MemorySlice::SelectAllMemories(
+  Store.dispatch(MemorySlice::Actions::memoryStoreSuccess(MemItem));
+  TestEqual("Memory exists", MemorySlice::selectAllMemories(
                                   Store.getState().Memory)
                                   .Num(),
             1);
@@ -128,10 +128,10 @@ bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
    * Remove NPC — should cascade clear
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  Store.dispatch(NPCSlice::Actions::RemoveNPC(TEXT("cascade_npc")));
+  Store.dispatch(NPCSlice::Actions::removeNPC(TEXT("cascade_npc")));
 
   TestTrue("NPC removed",
-           !NPCSlice::SelectNPCById(Store.getState().NPCs, TEXT("cascade_npc"))
+           !NPCSlice::selectNPCById(Store.getState().NPCs, TEXT("cascade_npc"))
                 .hasValue);
   TestTrue("ActiveNpcId cleared",
            Store.getState().NPCs.ActiveNpcId.IsEmpty());
@@ -141,7 +141,7 @@ bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
   TestEqual("Memory cleared after active NPC removal",
-            MemorySlice::SelectAllMemories(Store.getState().Memory).Num(), 0);
+            MemorySlice::selectAllMemories(Store.getState().Memory).Num(), 0);
   TestEqual("Bridge reset", Store.getState().Bridge.Status,
             FString(TEXT("idle")));
   TestEqual("Bridge active presets preserved",
@@ -182,12 +182,12 @@ bool FStoreRemoveNonActiveTest::RunTest(const FString &Parameters) {
   FNPCInternalState A;
   A.Id = TEXT("npc_a");
   A.Persona = TEXT("Alpha");
-  Store.dispatch(NPCSlice::Actions::SetNPCInfo(A));
+  Store.dispatch(NPCSlice::Actions::setNPCInfo(A));
 
   FNPCInternalState B;
   B.Id = TEXT("npc_b");
   B.Persona = TEXT("Beta");
-  Store.dispatch(NPCSlice::Actions::SetNPCInfo(B));
+  Store.dispatch(NPCSlice::Actions::setNPCInfo(B));
 
   /**
    * Active is now B
@@ -204,21 +204,21 @@ bool FStoreRemoveNonActiveTest::RunTest(const FString &Parameters) {
   Mem.Id = TEXT("keep_mem");
   Mem.Text = TEXT("Should survive");
   Mem.Importance = 0.5f;
-  Store.dispatch(MemorySlice::Actions::MemoryStoreSuccess(Mem));
+  Store.dispatch(MemorySlice::Actions::memoryStoreSuccess(Mem));
 
   /**
    * Remove A (not active) — memory should NOT be cleared
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  Store.dispatch(NPCSlice::Actions::RemoveNPC(TEXT("npc_a")));
+  Store.dispatch(NPCSlice::Actions::removeNPC(TEXT("npc_a")));
 
   TestFalse("A removed",
-            NPCSlice::SelectNPCById(Store.getState().NPCs, TEXT("npc_a"))
+            NPCSlice::selectNPCById(Store.getState().NPCs, TEXT("npc_a"))
                 .hasValue);
   TestEqual("Active still B", Store.getState().NPCs.ActiveNpcId,
             FString(TEXT("npc_b")));
   TestEqual("Memory preserved",
-            MemorySlice::SelectAllMemories(Store.getState().Memory).Num(), 1);
+            MemorySlice::selectAllMemories(Store.getState().Memory).Num(), 1);
 
   return true;
 }
@@ -239,7 +239,7 @@ bool FRuntimeProtocolLoggerSummaryTest::RunTest(const FString &Parameters) {
   (void)Parameters;
 
   const rtk::AnyAction SetActiveAction =
-      NPCSlice::Actions::SetActiveNPC(TEXT("logger_npc"));
+      NPCSlice::Actions::setActiveNPC(TEXT("logger_npc"));
   TestEqual("String payloads are preserved for logger output",
             SetActiveAction.describePayload(), FString(TEXT("logger_npc")));
 

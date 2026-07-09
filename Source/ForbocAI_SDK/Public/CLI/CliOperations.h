@@ -104,9 +104,9 @@ inline FNPCInternalState createNpc(rtk::EnhancedStore<FRuntimeState> &Store,
   FNPCInternalState Info;
   Info.Id = Id;
   Info.Persona = Persona;
-  Store.dispatch(NPCSlice::Actions::SetNPCInfo(Info));
+  Store.dispatch(NPCSlice::Actions::setNPCInfo(Info));
   func::Maybe<FNPCInternalState> Active =
-      NPCSlice::SelectActiveNPC(Store.getState().NPCs);
+      NPCSlice::selectActiveNPC(Store.getState().NPCs);
   return Active.hasValue ? Active.value : Info;
 }
 
@@ -117,7 +117,7 @@ inline FNPCInternalState createNpc(rtk::EnhancedStore<FRuntimeState> &Store,
  */
 inline func::Maybe<FNPCInternalState>
 getActiveNpc(rtk::EnhancedStore<FRuntimeState> &Store) {
-  return NPCSlice::SelectActiveNPC(Store.getState().NPCs);
+  return NPCSlice::selectActiveNPC(Store.getState().NPCs);
 }
 
 /**
@@ -128,8 +128,8 @@ getActiveNpc(rtk::EnhancedStore<FRuntimeState> &Store) {
 inline func::Maybe<FNPCInternalState>
 updateNpc(rtk::EnhancedStore<FRuntimeState> &Store, const FString &NpcId,
           const FAgentState &Delta) {
-  Store.dispatch(NPCSlice::Actions::UpdateNPCState(NpcId, Delta));
-  return NPCSlice::SelectNPCById(Store.getState().NPCs, NpcId);
+  Store.dispatch(NPCSlice::Actions::updateNPCState(NpcId, Delta));
+  return NPCSlice::selectNPCById(Store.getState().NPCs, NpcId);
 }
 
 /**
@@ -152,7 +152,7 @@ inline FAgentResponse processNpc(rtk::EnhancedStore<FRuntimeState> &Store,
  */
 inline TArray<FNPCInternalState>
 listNpcs(rtk::EnhancedStore<FRuntimeState> &Store) {
-  return NPCSlice::SelectAllNPCs(Store.getState().NPCs);
+  return NPCSlice::selectAllNPCs(Store.getState().NPCs);
 }
 
 /**

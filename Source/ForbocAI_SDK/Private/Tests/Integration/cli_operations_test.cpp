@@ -32,7 +32,7 @@
 // @covers:cliOp:listNpcs
 // @covers:cliOp:listSouls
 // @covers:cliOp:localExportSoul
-// @covers:cliOp:clearMemory
+// @covers:cliOp:memoryClear
 // @covers:cliOp:listMemory
 // @covers:cliOp:recallMemory
 // @covers:cliOp:storeMemory
@@ -257,7 +257,7 @@ bool FOpsCreateAndRemoveTest::RunTest(const FString &Parameters) {
 
   TestEqual("One NPC exists", Ops::listNpcs(Store).Num(), 1);
 
-  Store.dispatch(NPCSlice::Actions::RemoveNPC(NpcId));
+  Store.dispatch(NPCSlice::Actions::removeNPC(NpcId));
 
   TestEqual("Zero NPCs after removal", Ops::listNpcs(Store).Num(), 0);
 

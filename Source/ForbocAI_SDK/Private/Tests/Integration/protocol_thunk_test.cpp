@@ -78,8 +78,8 @@ bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
   FNPCInternalState Npc;
   Npc.Id = TEXT("ag_test1");
   Npc.Persona = TEXT("A test knight");
-  TestStore.dispatch(NPCSlice::Actions::SetNPCInfo(Npc));
-  TestStore.dispatch(NPCSlice::Actions::SetActiveNPC(TEXT("ag_test1")));
+  TestStore.dispatch(NPCSlice::Actions::setNPCInfo(Npc));
+  TestStore.dispatch(NPCSlice::Actions::setActiveNPC(TEXT("ag_test1")));
 
   /**
    * Verify NPC exists
@@ -87,13 +87,13 @@ bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
    */
   FRuntimeState State = TestStore.getState();
   func::Maybe<FNPCInternalState> Found =
-      NPCSlice::SelectNPCById(State.NPCs, TEXT("ag_test1"));
+      NPCSlice::selectNPCById(State.NPCs, TEXT("ag_test1"));
   TestTrue("NPC found in store", Found.hasValue);
   if (Found.hasValue) {
     TestEqual("NPC persona", Found.value.Persona,
               FString(TEXT("A test knight")));
   }
-  TestEqual("Active NPC set", NPCSlice::SelectActiveNpcId(State.NPCs),
+  TestEqual("Active NPC set", NPCSlice::selectActiveNpcId(State.NPCs),
             FString(TEXT("ag_test1")));
 
   /**
@@ -102,10 +102,10 @@ bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
    */
   FAgentState NewState;
   NewState.JsonData = FString(TEXT("{") TEXT("\"health\":100}"));
-  TestStore.dispatch(NPCSlice::Actions::UpdateNPCState(TEXT("ag_test1"), NewState));
+  TestStore.dispatch(NPCSlice::Actions::updateNPCState(TEXT("ag_test1"), NewState));
 
   State = TestStore.getState();
-  Found = NPCSlice::SelectNPCById(State.NPCs, TEXT("ag_test1"));
+  Found = NPCSlice::selectNPCById(State.NPCs, TEXT("ag_test1"));
   TestTrue("NPC still found", Found.hasValue);
   if (Found.hasValue) {
     TestTrue("State updated",
@@ -116,13 +116,13 @@ bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
    * Add history
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  TestStore.dispatch(NPCSlice::Actions::AddToHistory(
+  TestStore.dispatch(NPCSlice::Actions::addToHistory(
       TEXT("ag_test1"), TEXT("player"), TEXT("Hello")));
-  TestStore.dispatch(NPCSlice::Actions::AddToHistory(
+  TestStore.dispatch(NPCSlice::Actions::addToHistory(
       TEXT("ag_test1"), TEXT("npc"), TEXT("Greetings")));
 
   State = TestStore.getState();
-  Found = NPCSlice::SelectNPCById(State.NPCs, TEXT("ag_test1"));
+  Found = NPCSlice::selectNPCById(State.NPCs, TEXT("ag_test1"));
   TestTrue("NPC found after history", Found.hasValue);
   if (Found.hasValue) {
     TestEqual("Two history entries", Found.value.History.Num(), 2);
@@ -140,10 +140,10 @@ bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
   Attack.Type = TEXT("ATTACK");
   Attack.Target = TEXT("goblin");
   Attack.Reason = TEXT("In combat");
-  TestStore.dispatch(NPCSlice::Actions::SetLastAction(TEXT("ag_test1"), Attack));
+  TestStore.dispatch(NPCSlice::Actions::setLastAction(TEXT("ag_test1"), Attack));
 
   State = TestStore.getState();
-  Found = NPCSlice::SelectNPCById(State.NPCs, TEXT("ag_test1"));
+  Found = NPCSlice::selectNPCById(State.NPCs, TEXT("ag_test1"));
   TestTrue("NPC found after action", Found.hasValue);
   if (Found.hasValue) {
     TestEqual("LastAction type", Found.value.LastAction.Type,
@@ -156,11 +156,11 @@ bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
    * Block action
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  TestStore.dispatch(NPCSlice::Actions::BlockAction(
+  TestStore.dispatch(NPCSlice::Actions::blockAction(
       TEXT("ag_test1"), TEXT("Cannot attack civilians")));
 
   State = TestStore.getState();
-  Found = NPCSlice::SelectNPCById(State.NPCs, TEXT("ag_test1"));
+  Found = NPCSlice::selectNPCById(State.NPCs, TEXT("ag_test1"));
   TestTrue("NPC found after block", Found.hasValue);
   if (Found.hasValue) {
     TestTrue("NPC is blocked", Found.value.bIsBlocked);
@@ -172,9 +172,9 @@ bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
    * Clear block
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  TestStore.dispatch(NPCSlice::Actions::ClearBlock(TEXT("ag_test1")));
+  TestStore.dispatch(NPCSlice::Actions::clearBlock(TEXT("ag_test1")));
   State = TestStore.getState();
-  Found = NPCSlice::SelectNPCById(State.NPCs, TEXT("ag_test1"));
+  Found = NPCSlice::selectNPCById(State.NPCs, TEXT("ag_test1"));
   TestTrue("NPC found after unblock", Found.hasValue);
   if (Found.hasValue) {
     TestFalse("NPC is unblocked", Found.value.bIsBlocked);
@@ -204,8 +204,8 @@ bool FProtocolDirectiveLifecycleTest::RunTest(const FString &Parameters) {
   FNPCInternalState Npc;
   Npc.Id = TEXT("ag_dir_test");
   Npc.Persona = TEXT("A directive test NPC");
-  TestStore.dispatch(NPCSlice::Actions::SetNPCInfo(Npc));
-  TestStore.dispatch(NPCSlice::Actions::SetActiveNPC(TEXT("ag_dir_test")));
+  TestStore.dispatch(NPCSlice::Actions::setNPCInfo(Npc));
+  TestStore.dispatch(NPCSlice::Actions::setActiveNPC(TEXT("ag_dir_test")));
 
   /**
    * Start directive run
@@ -284,7 +284,7 @@ bool FProtocolMemoryLifecycleTest::RunTest(const FString &Parameters) {
    * Store start
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  TestStore.dispatch(MemorySlice::Actions::MemoryStoreStart());
+  TestStore.dispatch(MemorySlice::Actions::memoryStoreStart());
   FRuntimeState State = TestStore.getState();
   TestEqual("Store status storing", State.Memory.StorageStatus,
             FString(TEXT("storing")));
@@ -299,7 +299,7 @@ bool FProtocolMemoryLifecycleTest::RunTest(const FString &Parameters) {
   Item.Type = TEXT("observation");
   Item.Importance = 0.8f;
   Item.Timestamp = 1000;
-  TestStore.dispatch(MemorySlice::Actions::MemoryStoreSuccess(Item));
+  TestStore.dispatch(MemorySlice::Actions::memoryStoreSuccess(Item));
 
   State = TestStore.getState();
   TestEqual("Store status idle", State.Memory.StorageStatus,
@@ -309,7 +309,7 @@ bool FProtocolMemoryLifecycleTest::RunTest(const FString &Parameters) {
    * Recall start
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  TestStore.dispatch(MemorySlice::Actions::MemoryRecallStart());
+  TestStore.dispatch(MemorySlice::Actions::memoryRecallStart());
   State = TestStore.getState();
   TestEqual("Recall status recalling", State.Memory.RecallStatus,
             FString(TEXT("recalling")));
@@ -324,13 +324,13 @@ bool FProtocolMemoryLifecycleTest::RunTest(const FString &Parameters) {
   Recalled1.Text = TEXT("The player found a key");
   Recalled1.Similarity = 0.9f;
   Recalled.Add(Recalled1);
-  TestStore.dispatch(MemorySlice::Actions::MemoryRecallSuccess(Recalled));
+  TestStore.dispatch(MemorySlice::Actions::memoryRecallSuccess(Recalled));
 
   State = TestStore.getState();
   TestEqual("Recall status idle", State.Memory.RecallStatus,
             FString(TEXT("idle")));
   TArray<FMemoryItem> LastRecalled =
-      MemorySlice::SelectLastRecalledMemories(State.Memory);
+      MemorySlice::selectLastRecalledMemories(State.Memory);
   TestEqual("One recalled memory", LastRecalled.Num(), 1);
   TestEqual("Recalled text", LastRecalled[0].Text,
             FString(TEXT("The player found a key")));
@@ -339,9 +339,9 @@ bool FProtocolMemoryLifecycleTest::RunTest(const FString &Parameters) {
    * Store failure
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  TestStore.dispatch(MemorySlice::Actions::MemoryStoreStart());
+  TestStore.dispatch(MemorySlice::Actions::memoryStoreStart());
   TestStore.dispatch(
-      MemorySlice::Actions::MemoryStoreFailed(TEXT("DB connection lost")));
+      MemorySlice::Actions::memoryStoreFailed(TEXT("DB connection lost")));
   State = TestStore.getState();
   TestEqual("Store status error", State.Memory.StorageStatus,
             FString(TEXT("error")));
@@ -350,9 +350,9 @@ bool FProtocolMemoryLifecycleTest::RunTest(const FString &Parameters) {
    * Recall failure
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  TestStore.dispatch(MemorySlice::Actions::MemoryRecallStart());
+  TestStore.dispatch(MemorySlice::Actions::memoryRecallStart());
   TestStore.dispatch(
-      MemorySlice::Actions::MemoryRecallFailed(TEXT("Query timeout")));
+      MemorySlice::Actions::memoryRecallFailed(TEXT("Query timeout")));
   State = TestStore.getState();
   TestEqual("Recall status error", State.Memory.RecallStatus,
             FString(TEXT("error")));
@@ -361,10 +361,10 @@ bool FProtocolMemoryLifecycleTest::RunTest(const FString &Parameters) {
    * Clear
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  TestStore.dispatch(MemorySlice::Actions::clearMemory());
+  TestStore.dispatch(MemorySlice::Actions::memoryClear());
   State = TestStore.getState();
   TestEqual("Memories cleared",
-            MemorySlice::SelectAllMemories(State.Memory).Num(), 0);
+            MemorySlice::selectAllMemories(State.Memory).Num(), 0);
 
   return true;
 }
@@ -390,13 +390,13 @@ bool FProtocolNpcRemovalCascadeTest::RunTest(const FString &Parameters) {
   FNPCInternalState Npc;
   Npc.Id = TEXT("ag_cascade");
   Npc.Persona = TEXT("Cascade test");
-  TestStore.dispatch(NPCSlice::Actions::SetNPCInfo(Npc));
+  TestStore.dispatch(NPCSlice::Actions::setNPCInfo(Npc));
   TestStore.dispatch(DirectiveSlice::Actions::DirectiveRunStarted(
       TEXT("dir_cascade"), TEXT("ag_cascade"), TEXT("obs")));
 
   FRuntimeState State = TestStore.getState();
   TestTrue("NPC exists",
-           NPCSlice::SelectNPCById(State.NPCs, TEXT("ag_cascade")).hasValue);
+           NPCSlice::selectNPCById(State.NPCs, TEXT("ag_cascade")).hasValue);
   TestTrue("Directive exists",
            DirectiveSlice::SelectDirectiveById(State.Directives,
                                                 TEXT("dir_cascade")).hasValue);
@@ -405,11 +405,11 @@ bool FProtocolNpcRemovalCascadeTest::RunTest(const FString &Parameters) {
    * Remove NPC — listener should cascade-clear directives
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  TestStore.dispatch(NPCSlice::Actions::RemoveNPC(TEXT("ag_cascade")));
+  TestStore.dispatch(NPCSlice::Actions::removeNPC(TEXT("ag_cascade")));
 
   State = TestStore.getState();
   TestFalse("NPC removed",
-            NPCSlice::SelectNPCById(State.NPCs, TEXT("ag_cascade")).hasValue);
+            NPCSlice::selectNPCById(State.NPCs, TEXT("ag_cascade")).hasValue);
 
   /**
    * Directive cleanup depends on listener middleware being installed.
@@ -442,13 +442,13 @@ bool FProtocolMultiNpcTest::RunTest(const FString &Parameters) {
   Npc2.Id = TEXT("ag_m2");
   Npc2.Persona = TEXT("Merchant");
 
-  TestStore.dispatch(NPCSlice::Actions::SetNPCInfo(Npc1));
-  TestStore.dispatch(NPCSlice::Actions::SetNPCInfo(Npc2));
-  TestStore.dispatch(NPCSlice::Actions::SetActiveNPC(TEXT("ag_m1")));
+  TestStore.dispatch(NPCSlice::Actions::setNPCInfo(Npc1));
+  TestStore.dispatch(NPCSlice::Actions::setNPCInfo(Npc2));
+  TestStore.dispatch(NPCSlice::Actions::setActiveNPC(TEXT("ag_m1")));
 
   FRuntimeState State = TestStore.getState();
-  TestEqual("Two NPCs", NPCSlice::SelectAllNPCs(State.NPCs).Num(), 2);
-  TestEqual("Active is m1", NPCSlice::SelectActiveNpcId(State.NPCs),
+  TestEqual("Two NPCs", NPCSlice::selectAllNPCs(State.NPCs).Num(), 2);
+  TestEqual("Active is m1", NPCSlice::selectActiveNpcId(State.NPCs),
             FString(TEXT("ag_m1")));
 
   /**
@@ -457,11 +457,11 @@ bool FProtocolMultiNpcTest::RunTest(const FString &Parameters) {
    */
   FAgentState M2State;
   M2State.JsonData = TEXT("{") TEXT("\n\"goods\":[\"sword\",\"potion\"]\n}");
-  TestStore.dispatch(NPCSlice::Actions::UpdateNPCState(TEXT("ag_m2"), M2State));
+  TestStore.dispatch(NPCSlice::Actions::updateNPCState(TEXT("ag_m2"), M2State));
 
   State = TestStore.getState();
-  auto M1 = NPCSlice::SelectNPCById(State.NPCs, TEXT("ag_m1"));
-  auto M2 = NPCSlice::SelectNPCById(State.NPCs, TEXT("ag_m2"));
+  auto M1 = NPCSlice::selectNPCById(State.NPCs, TEXT("ag_m1"));
+  auto M2 = NPCSlice::selectNPCById(State.NPCs, TEXT("ag_m2"));
   TestTrue("M1 exists", M1.hasValue);
   TestTrue("M2 exists", M2.hasValue);
   if (M1.hasValue && M2.hasValue) {
@@ -474,12 +474,12 @@ bool FProtocolMultiNpcTest::RunTest(const FString &Parameters) {
    * Switch active
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  TestStore.dispatch(NPCSlice::Actions::SetActiveNPC(TEXT("ag_m2")));
+  TestStore.dispatch(NPCSlice::Actions::setActiveNPC(TEXT("ag_m2")));
   State = TestStore.getState();
-  TestEqual("Active is m2", NPCSlice::SelectActiveNpcId(State.NPCs),
+  TestEqual("Active is m2", NPCSlice::selectActiveNpcId(State.NPCs),
             FString(TEXT("ag_m2")));
 
-  auto Active = NPCSlice::SelectActiveNPC(State.NPCs);
+  auto Active = NPCSlice::selectActiveNPC(State.NPCs);
   TestTrue("Active NPC found", Active.hasValue);
   if (Active.hasValue) {
     TestEqual("Active persona", Active.value.Persona,

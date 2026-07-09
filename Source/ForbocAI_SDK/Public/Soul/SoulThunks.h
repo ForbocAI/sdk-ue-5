@@ -27,7 +27,7 @@ exportSoulThunk(const FString &NpcId) {
     return ApiKeyError.hasValue
         ? detail::RejectAsync<FSoulExportResult>(ApiKeyError.value)
         : [&]() -> func::AsyncResult<FSoulExportResult> {
-            const auto Npc = NPCSlice::SelectNPCById(GetState().NPCs, NpcId);
+            const auto Npc = NPCSlice::selectNPCById(GetState().NPCs, NpcId);
             return !Npc.hasValue
                 ? detail::RejectAsync<FSoulExportResult>(
                       TEXT("NPC not found"))
@@ -200,14 +200,14 @@ localExportSoulThunk(const FString &NpcId = TEXT("")) {
                  std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FSoul> {
     const FString TargetNpcId =
-        NpcId.IsEmpty() ? NPCSlice::SelectActiveNpcId(GetState().NPCs) : NpcId;
-    const auto Npc = NPCSlice::SelectNPCById(GetState().NPCs, TargetNpcId);
+        NpcId.IsEmpty() ? NPCSlice::selectActiveNpcId(GetState().NPCs) : NpcId;
+    const auto Npc = NPCSlice::selectNPCById(GetState().NPCs, TargetNpcId);
     return !Npc.hasValue
         ? detail::RejectAsync<FSoul>(TEXT("NPC not found"))
         : detail::ResolveAsync(TypeFactory::Soul(
               TargetNpcId, TEXT("1.0.0"), TEXT("NPC"), Npc.value.Persona,
               Npc.value.State,
-              MemorySlice::SelectAllMemories(GetState().Memory)));
+              MemorySlice::selectAllMemories(GetState().Memory)));
   };
 }
 
@@ -229,7 +229,7 @@ localImportSoulThunk(const FSoul &Soul) {
             Npc.Id = Soul.Id;
             Npc.Persona = Soul.Persona;
             Npc.State = Soul.State;
-            Dispatch(NPCSlice::Actions::SetNPCInfo(Npc));
+            Dispatch(NPCSlice::Actions::setNPCInfo(Npc));
             Dispatch(SoulSlice::Actions::ImportSoulSuccess(Soul));
             return detail::ResolveAsync(Soul);
           }();
@@ -242,7 +242,7 @@ remoteExportSoulThunk(const FString &NpcId = TEXT("")) {
                  std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FSoulExportResult> {
     const FString TargetNpcId =
-        NpcId.IsEmpty() ? NPCSlice::SelectActiveNpcId(GetState().NPCs) : NpcId;
+        NpcId.IsEmpty() ? NPCSlice::selectActiveNpcId(GetState().NPCs) : NpcId;
     return exportSoulThunk(TargetNpcId)(Dispatch, GetState);
   };
 }
@@ -317,7 +317,7 @@ importNpcFromSoulThunk(const FString &TxId) {
                             Npc.Persona = ImportedNpc.Persona;
                             Npc.State = TypeFactory::AgentState(
                                 ImportedNpc.DataJson);
-                            Dispatch(NPCSlice::Actions::SetNPCInfo(Npc));
+                            Dispatch(NPCSlice::Actions::setNPCInfo(Npc));
                             return detail::ResolveAsync(ImportedNpc);
                           });
                     });

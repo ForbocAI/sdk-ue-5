@@ -147,7 +147,7 @@ bool FProcessNPCLiveFinalizeValidTest::RunTest(const FString &Parameters) {
         }
 
         auto Npc =
-            NPCSlice::SelectNPCById(StoreState.NPCs, TEXT("npc_valid_1"));
+            NPCSlice::selectNPCById(StoreState.NPCs, TEXT("npc_valid_1"));
         TestTrue("NPC exists", Npc.hasValue);
         if (Npc.hasValue) {
           TestTrue("History has entries", Npc.value.History.Num() >= 1);
@@ -208,7 +208,7 @@ bool FProcessNPCLiveFinalizeInvalidTest::RunTest(const FString &Parameters) {
 
         FRuntimeState StoreState = State->Store->getState();
         auto Npc =
-            NPCSlice::SelectNPCById(StoreState.NPCs, TEXT("npc_block_1"));
+            NPCSlice::selectNPCById(StoreState.NPCs, TEXT("npc_block_1"));
         TestTrue("NPC exists", Npc.hasValue);
         if (Npc.hasValue && Npc.value.bIsBlocked) {
           TestTrue("Block reason set when blocked",
