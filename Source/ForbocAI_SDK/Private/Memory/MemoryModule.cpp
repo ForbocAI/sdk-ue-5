@@ -120,7 +120,7 @@ MemoryOps::Store(const FMemoryStore &Store, const FString &Text,
 
                  auto RuntimeStore =
                      MakeShared<rtk::EnhancedStore<FStoreState>>(
-                         ConfigureStore());
+                         store());
 
                  /**
                   * Dispatch the store thunk
@@ -186,7 +186,7 @@ MemoryOps::Recall(const FMemoryStore &Store, const FString &Query,
 
                  auto RuntimeStore =
                      MakeShared<rtk::EnhancedStore<FStoreState>>(
-                         ConfigureStore());
+                         store());
                  FMemoryRecallRequest RecallRequest;
                  RecallRequest.Query = Query;
                  RecallRequest.Limit =

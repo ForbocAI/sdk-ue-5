@@ -347,9 +347,10 @@ inline void addExtraReducer(const ExtraReducerFn &Reducer) {
  * tests and games can start from custom state and middleware.
  */
 inline rtk::EnhancedStore<FStoreState>
-createStore(func::Maybe<FStoreState> PreloadedState =
-                func::nothing<FStoreState>(),
-            std::vector<rtk::Middleware<FStoreState>> ExtraMiddlewares = {}) {
+createRuntimeStore(func::Maybe<FStoreState> PreloadedState =
+                       func::nothing<FStoreState>(),
+                   std::vector<rtk::Middleware<FStoreState>> ExtraMiddlewares =
+                       {}) {
   std::vector<rtk::Middleware<FStoreState>> Middlewares;
   Middlewares.push_back(createReduxLoggerMiddleware());
   Middlewares.push_back(createNpcRemovalListener());
@@ -381,7 +382,7 @@ createStore(func::Maybe<FStoreState> PreloadedState =
  * User Story: As shared runtime access, I need a singleton store so Blueprint,
  * CLI, and subsystem helpers all dispatch through the same state container.
  */
-inline rtk::EnhancedStore<FStoreState> ConfigureStore() {
-  static rtk::EnhancedStore<FStoreState> GlobalStore = createStore();
+inline rtk::EnhancedStore<FStoreState> store() {
+  static rtk::EnhancedStore<FStoreState> GlobalStore = createRuntimeStore();
   return GlobalStore;
 }

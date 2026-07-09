@@ -9,7 +9,7 @@ namespace CLIOps {
 namespace {
 
 rtk::EnhancedStore<FStoreState> &GetStore() {
-  static rtk::EnhancedStore<FStoreState> Store = ConfigureStore();
+  static rtk::EnhancedStore<FStoreState> Store = store();
   return Store;
 }
 

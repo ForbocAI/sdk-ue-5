@@ -71,7 +71,7 @@ SoulTypes::SoulExportResult SoulOps::ExportToArweave(const FSoul &Soul,
       [Soul, ApiUrl](std::function<void(FSoulExportResult)> resolve,
                      std::function<void(std::string)> reject) {
         SDKConfig::SetApiConfig(ApiUrl, SDKConfig::GetApiKey());
-        auto Store = ConfigureStore();
+        auto Store = store();
 
         Store.dispatch(rtk::exportSoulThunk(Soul))
             .then([resolve](const FSoulExportResult &Result) { resolve(Result); })

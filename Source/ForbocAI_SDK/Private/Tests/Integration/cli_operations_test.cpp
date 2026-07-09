@@ -101,7 +101,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsCreateNpcTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FOpsCreateNpcTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> Store = createStore();
+  EnhancedStore<FStoreState> Store = createRuntimeStore();
 
   FNPCInternalState Result = Ops::CreateNpc(Store, TEXT("A loyal guard"));
 
@@ -132,7 +132,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsGetActiveEmptyTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FOpsGetActiveEmptyTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> Store = createStore();
+  EnhancedStore<FStoreState> Store = createRuntimeStore();
 
   func::Maybe<FNPCInternalState> Active = Ops::GetActiveNpc(Store);
   TestFalse("No active NPC on fresh store", Active.hasValue);
@@ -152,7 +152,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsListNpcsTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FOpsListNpcsTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> Store = createStore();
+  EnhancedStore<FStoreState> Store = createRuntimeStore();
 
   TArray<FNPCInternalState> Empty = Ops::ListNpcs(Store);
   TestEqual("Empty list initially", Empty.Num(), 0);
@@ -250,7 +250,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FOpsCreateAndRemoveTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> Store = createStore();
+  EnhancedStore<FStoreState> Store = createRuntimeStore();
 
   FNPCInternalState Npc = Ops::CreateNpc(Store, TEXT("Ephemeral"));
   FString NpcId = Npc.Id;

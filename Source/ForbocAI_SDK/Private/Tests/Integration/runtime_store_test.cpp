@@ -57,7 +57,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> Store = createStore();
+  EnhancedStore<FStoreState> Store = createRuntimeStore();
 
   /**
    * Create NPC
@@ -173,7 +173,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FStoreRemoveNonActiveTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> Store = createStore();
+  EnhancedStore<FStoreState> Store = createRuntimeStore();
 
   /**
    * Create two NPCs

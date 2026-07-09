@@ -99,7 +99,7 @@ TArray<FValidationRule> BridgeOps::CreateDefaultRules() {
 FValidationResult BridgeOps::Validate(const FAgentAction &Action,
                                       const TArray<FValidationRule> &Rules,
                                       const FBridgeRuleContext &Context) {
-  auto Store = ConfigureStore();
+  auto Store = store();
   return Ops::WaitForResult(
       Store.dispatch(rtk::localValidateBridgeThunk(Action, Rules, Context)));
 }
@@ -125,7 +125,7 @@ BridgeOps::RegisterRule(const FValidationRule &Rule, const FString &ApiUrl) {
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
   static_cast<void>(ApiUrl);
-  auto Store = ConfigureStore();
+  auto Store = store();
   FDirectiveRuleSet Ruleset;
   Ruleset.Id = Rule.Id;
   Ruleset.RulesetId = Rule.Name;

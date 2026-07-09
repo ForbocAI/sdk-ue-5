@@ -9,7 +9,7 @@ namespace {
  * convenience functions reflect the same runtime state across blueprint nodes.
  */
 rtk::EnhancedStore<FStoreState> &GetBPStore() {
-  static rtk::EnhancedStore<FStoreState> Store = ConfigureStore();
+  static rtk::EnhancedStore<FStoreState> Store = store();
   return Store;
 }
 } // namespace

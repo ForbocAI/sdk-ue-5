@@ -62,7 +62,7 @@ bool FProcessLiveStepWait::Update() {
 
   if (State->Step == 0) {
       State->Step = 1;
-      State->Store = MakeShared<rtk::EnhancedStore<FStoreState>>(createStore());
+      State->Store = MakeShared<rtk::EnhancedStore<FStoreState>>(createRuntimeStore());
       
       FNPCProcessRequest Req;
       Req.Tape = FNPCProcessTape();

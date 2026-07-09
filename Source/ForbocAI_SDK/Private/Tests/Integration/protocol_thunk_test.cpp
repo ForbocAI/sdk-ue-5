@@ -69,7 +69,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProtocolStoreWiringTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> TestStore = createStore();
+  EnhancedStore<FStoreState> TestStore = createRuntimeStore();
 
   /**
    * Create NPC
@@ -195,7 +195,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProtocolDirectiveLifecycleTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FProtocolDirectiveLifecycleTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> TestStore = createStore();
+  EnhancedStore<FStoreState> TestStore = createRuntimeStore();
 
   /**
    * Set up NPC
@@ -278,7 +278,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProtocolMemoryLifecycleTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FProtocolMemoryLifecycleTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> TestStore = createStore();
+  EnhancedStore<FStoreState> TestStore = createRuntimeStore();
 
   /**
    * Store start
@@ -381,7 +381,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProtocolNpcRemovalCascadeTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FProtocolNpcRemovalCascadeTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> TestStore = createStore();
+  EnhancedStore<FStoreState> TestStore = createRuntimeStore();
 
   /**
    * Create NPC and directive
@@ -433,7 +433,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProtocolMultiNpcTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FProtocolMultiNpcTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> TestStore = createStore();
+  EnhancedStore<FStoreState> TestStore = createRuntimeStore();
 
   FNPCInternalState Npc1;
   Npc1.Id = TEXT("ag_m1");

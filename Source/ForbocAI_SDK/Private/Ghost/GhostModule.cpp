@@ -34,7 +34,7 @@ GhostTypes::GhostTestRunResult GhostOps::RunTest(const FGhost &Ghost,
                       std::function<void(std::string)> Reject) {
                      Reject("Ghost not initialized");
                    })
-             : ConfigureStore().dispatch(
+             : store().dispatch(
                    rtk::runLocalGhostTestThunk(Ghost.Config.Agent, Scenario));
 }
 
@@ -52,13 +52,13 @@ GhostTypes::GhostTestRunAllResult GhostOps::RunAllTests(const FGhost &Ghost) {
         GhostInternal::RunTestsSequentially(
             Ghost, Report, 0,
             [resolve](FGhostTestReport FinalReport) {
-              auto Store = ConfigureStore();
+              auto Store = store();
               Store.dispatch(
                   GhostSlice::Actions::GhostSessionCompleted(FinalReport));
               resolve(FinalReport);
             },
             [reject](std::string Error) {
-              auto Store = ConfigureStore();
+              auto Store = store();
               Store.dispatch(GhostSlice::Actions::GhostSessionFailed(
                   TEXT("ghost-run"), FString(Error.c_str())));
               reject(Error);
