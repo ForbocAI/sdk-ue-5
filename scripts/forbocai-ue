@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+if [[ $# -eq 0 ]]; then
+  echo "Usage: scripts/forbocai-ue <command> [subcommand] [args]"
+  echo "Examples:"
+  echo "  scripts/forbocai-ue status"
+  echo "  scripts/forbocai-ue doctor"
+  echo "  scripts/forbocai-ue --api-url https://api.forboc.ai status"
+  exit 2
+fi
+
+if grep -qi microsoft /proc/version 2>/dev/null; then
+  if command -v powershell.exe >/dev/null 2>&1; then
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(wslpath -w "$SCRIPT_DIR/forbocai-ue.ps1")" "$@"
+    exit $?
+  fi
+fi
+
+PROJECT="$ROOT/ForbocAI_CLI.uproject"
+case "$(uname -s)" in
+  Darwin)
+    UE_ROOT="${UE_ROOT:-/Users/Shared/Epic Games/UE_5.8}"
+    BUILD="$UE_ROOT/Engine/Build/BatchFiles/Mac/Build.sh"
+    EDITOR_CMD="$UE_ROOT/Engine/Binaries/Mac/UnrealEditor-Cmd"
+    PLATFORM="Mac"
+    ;;
+  Linux)
+    UE_ROOT="${UE_ROOT:-/opt/UnrealEngine}"
+    BUILD="$UE_ROOT/Engine/Build/BatchFiles/Linux/Build.sh"
+    EDITOR_CMD="$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd"
+    PLATFORM="Linux"
+    ;;
+  *)
+    echo "Unsupported platform. On Windows, run scripts/forbocai-ue.cmd or scripts/forbocai-ue.ps1." >&2
+    exit 2
+    ;;
+esac
+
+if [[ ! -f "$PROJECT" ]]; then
+  echo "CLI host project not found: $PROJECT" >&2
+  exit 1
+fi
+if [[ ! -x "$BUILD" && ! -f "$BUILD" ]]; then
+  echo "Unreal build script not found: $BUILD" >&2
+  echo "Set UE_ROOT to your UE 5.8 install." >&2
+  exit 1
+fi
+if [[ ! -x "$EDITOR_CMD" && ! -f "$EDITOR_CMD" ]]; then
+  echo "UnrealEditor-Cmd not found: $EDITOR_CMD" >&2
+  echo "Set UE_ROOT to your UE 5.8 install." >&2
+  exit 1
+fi
+
+if [[ "${FORBOCAI_UE_SKIP_BUILD:-0}" != "1" ]]; then
+  "$BUILD" ForbocAI_CLI_Editor "$PLATFORM" Development -Project="$PROJECT" -WaitMutex -NoHotReloadFromIDE
+fi
+
+CLI_ARGS=()
+index=0
+for arg in "$@"; do
+  CLI_ARGS+=("-CliArg${index}=${arg}")
+  index=$((index + 1))
+done
+
+"$EDITOR_CMD" "$PROJECT" -run=ForbocAI \
+  -nosplash -nopause -unattended -NoSound -NoRHI -NullRHI \
+  "${CLI_ARGS[@]}"

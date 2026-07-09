@@ -1,0 +1,14 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "5.8",
+	"Category": "CLI",
+	"Description": "ForbocAI SDK commandlet host.",
+	"DisableEnginePluginsByDefault": true,
+	"Modules": [
+		{
+			"Name": "ForbocAI_SDK",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}

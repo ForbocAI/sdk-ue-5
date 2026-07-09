@@ -1,4 +1,5 @@
 #include "RuntimeCommandlet.h"
+#include "CLI/CliCommandMatrix.h"
 #include "CLI/CLIModule.h"
 #include "Core/ue_fp.hpp"
 #include "Misc/Parse.h"
@@ -167,6 +168,93 @@ TArray<FString> MergeArgs(TArray<FString> Base, const TArray<FString> &Extra) {
   return commandlet_detail::mergeArraysRecursive(MoveTemp(Base), Extra, 0);
 }
 
+struct FCliInvocation {
+  TArray<FString> Tokens;
+  FString ApiUrl;
+  FString ApiKey;
+};
+
+/**
+ * Extracts wrapper-provided TS-style CLI tokens from -CliArgN params.
+ * User Story: As UE CLI users, I need Node-style argv routed through the
+ * commandlet so the SDK checkout can expose the same command ergonomics as TS.
+ */
+TArray<FString> BuildCliArgTokensRecursive(const FString &Params, int32 Index,
+                                           TArray<FString> Tokens) {
+  FString Value;
+  const FString ParamName = FString::Printf(TEXT("CliArg%d="), Index);
+  return !FParse::Value(*Params, *ParamName, Value)
+             ? Tokens
+             : (Tokens.Add(Value),
+                BuildCliArgTokensRecursive(Params, Index + 1,
+                                           MoveTemp(Tokens)));
+}
+
+/**
+ * Pulls global CLI flags out of TS-style argv before command-key parsing.
+ * User Story: As CLI parity, I need --api-url/--api-key accepted the same way
+ * wrapper commands pass normal positional command tokens.
+ */
+TArray<FString> BuildCliArgTokens(const FString &Params) {
+  return BuildCliArgTokensRecursive(Params, 0, TArray<FString>());
+}
+
+FCliInvocation NormalizeCliInvocationRecursive(
+    const TArray<FString> &RawTokens, int32 Index, FCliInvocation Invocation) {
+  const FString Token =
+      Index < RawTokens.Num() ? RawTokens[Index] : FString(TEXT(""));
+  return Index >= RawTokens.Num()
+             ? Invocation
+             : ((Token == TEXT("--api-url") || Token == TEXT("--apiUrl")) &&
+                Index + 1 < RawTokens.Num())
+                   ? (Invocation.ApiUrl = RawTokens[Index + 1],
+                      NormalizeCliInvocationRecursive(
+                          RawTokens, Index + 2, MoveTemp(Invocation)))
+                   : Token.StartsWith(TEXT("--api-url="))
+                         ? (Invocation.ApiUrl =
+                                Token.Mid(FString(TEXT("--api-url=")).Len()),
+                            NormalizeCliInvocationRecursive(
+                                RawTokens, Index + 1, MoveTemp(Invocation)))
+                         : Token.StartsWith(TEXT("--apiUrl="))
+                               ? (Invocation.ApiUrl = Token.Mid(
+                                      FString(TEXT("--apiUrl=")).Len()),
+                                  NormalizeCliInvocationRecursive(
+                                      RawTokens, Index + 1,
+                                      MoveTemp(Invocation)))
+                               : ((Token == TEXT("--api-key") ||
+                                   Token == TEXT("--apiKey")) &&
+                                  Index + 1 < RawTokens.Num())
+                                     ? (Invocation.ApiKey =
+                                            RawTokens[Index + 1],
+                                        NormalizeCliInvocationRecursive(
+                                            RawTokens, Index + 2,
+                                            MoveTemp(Invocation)))
+                                     : Token.StartsWith(TEXT("--api-key="))
+                                           ? (Invocation.ApiKey = Token.Mid(
+                                                  FString(TEXT("--api-key="))
+                                                      .Len()),
+                                              NormalizeCliInvocationRecursive(
+                                                  RawTokens, Index + 1,
+                                                  MoveTemp(Invocation)))
+                                           : Token.StartsWith(TEXT("--apiKey="))
+                                                 ? (Invocation.ApiKey =
+                                                        Token.Mid(FString(
+                                                                      TEXT("--apiKey="))
+                                                                      .Len()),
+                                                    NormalizeCliInvocationRecursive(
+                                                        RawTokens, Index + 1,
+                                                        MoveTemp(Invocation)))
+                                                 : (Invocation.Tokens.Add(
+                                                        Token),
+                                                    NormalizeCliInvocationRecursive(
+                                                        RawTokens, Index + 1,
+                                                        MoveTemp(Invocation)));
+}
+
+FCliInvocation NormalizeCliInvocation(const TArray<FString> &RawTokens) {
+  return NormalizeCliInvocationRecursive(RawTokens, 0, FCliInvocation());
+}
+
 /**
  * Builds positional command arguments from raw Unreal commandlet params.
  * User Story: As command dispatch, I need raw commandlet params converted into
@@ -316,6 +404,12 @@ TArray<FString> BuildCommandArgs(const FString &Command,
                     return BuildParams(Params, {TEXT("TxId=")});
                   }),
               func::when<FString, TArray<FString>>(
+                  func::equals<FString>(TEXT("soul_chat")),
+                  [&Params](const FString &) {
+                    return BuildParams(Params,
+                                      {TEXT("Id="), TEXT("Message=")});
+                  }),
+              func::when<FString, TArray<FString>>(
                   func::equals<FString>(TEXT("soul_list")),
                   [&Params](const FString &) {
                     return BuildParams(Params, {TEXT("Limit=")});
@@ -414,26 +508,48 @@ int32 UForbocAICommandlet::Main(const FString &Params) {
   FString Command;
   FParse::Value(*Params, TEXT("Command="), Command);
 
+  const FCliInvocation CliInvocation =
+      NormalizeCliInvocation(BuildCliArgTokens(Params));
+  const ForbocAI::CLI::FCommandParseResult ParsedCli =
+      ForbocAI::CLI::ParseCommandTokens(CliInvocation.Tokens);
+  const bool bUseCliTokens = Command.IsEmpty() && ParsedCli.bMatched;
+  const FString EffectiveCommand =
+      !Command.IsEmpty()
+          ? Command
+          : bUseCliTokens
+                ? ParsedCli.CommandKey
+                : (CliInvocation.Tokens.Num() > 0
+                       ? CliInvocation.Tokens[0]
+                       : FString(TEXT("")));
+  const TArray<FString> Args =
+      bUseCliTokens ? ParsedCli.Args : BuildCommandArgs(EffectiveCommand, Params);
+
   FString ApiUrl;
   FParse::Value(*Params, TEXT("ApiUrl="), ApiUrl);
 
   FString ApiKey;
   FParse::Value(*Params, TEXT("ApiKey="), ApiKey);
 
-  (!ApiUrl.IsEmpty() || !ApiKey.IsEmpty())
+  const FString EffectiveApiUrl =
+      !ApiUrl.IsEmpty() ? ApiUrl : CliInvocation.ApiUrl;
+  const FString EffectiveApiKey =
+      !ApiKey.IsEmpty() ? ApiKey : CliInvocation.ApiKey;
+
+  (!EffectiveApiUrl.IsEmpty() || !EffectiveApiKey.IsEmpty())
       ? (SDKConfig::SetApiConfig(
-             ApiUrl.IsEmpty() ? SDKConfig::GetApiUrl() : ApiUrl,
-             ApiKey.IsEmpty() ? SDKConfig::GetApiKey() : ApiKey),
+             EffectiveApiUrl.IsEmpty() ? SDKConfig::GetApiUrl()
+                                       : EffectiveApiUrl,
+             EffectiveApiKey.IsEmpty() ? SDKConfig::GetApiKey()
+                                       : EffectiveApiKey),
          void())
       : void();
 
   UE_LOG(LogTemp, Display, TEXT("ForbocAI CLI (UE5) - Command: %s"),
-         *Command);
+         *EffectiveCommand);
 
-  const TArray<FString> Args = BuildCommandArgs(Command, Params);
   bool bCommandFailed = false;
   FString CommandError;
-  createCommandPipeline(Command, Args)
+  createCommandPipeline(EffectiveCommand, Args)
       .then([]() {
         UE_LOG(LogTemp, Display, TEXT(""));
         UE_LOG(LogTemp, Display,
@@ -530,36 +646,7 @@ UForbocAICommandlet::commandValidationPipeline() {
                       : CLITypes::make_right(FString(), Command);
          } |
          [](const FString &Command) -> CLITypes::Either<FString, FString> {
-        static const TArray<FString> ValidCommands = {
-            TEXT("version"),          TEXT("status"),
-            TEXT("doctor"),           TEXT("system_status"),
-            TEXT("npc_list"),         TEXT("npc_create"),
-            TEXT("npc_process"),      TEXT("npc_active"),
-            TEXT("npc_state"),        TEXT("npc_update"),
-            TEXT("npc_import"),       TEXT("npc_chat"),
-            TEXT("memory_list"),      TEXT("memory_recall"),
-            TEXT("memory_store"),     TEXT("memory_clear"),
-            TEXT("memory_export"),
-            
-            
-            TEXT("ghost_run"),        TEXT("ghost_status"),
-            TEXT("ghost_results"),    TEXT("ghost_stop"),
-            TEXT("ghost_history"),
-            TEXT("bridge_validate"),  TEXT("bridge_rules"),
-            TEXT("bridge_preset"),
-            TEXT("rules_list"),       TEXT("rules_presets"),
-            TEXT("rules_register"),   TEXT("rules_delete"),
-            TEXT("soul_export"),      TEXT("soul_import"),
-            TEXT("soul_import_npc"),  TEXT("soul_list"),
-            TEXT("soul_verify"),
-            TEXT("config_set"),       TEXT("config_get"),
-            TEXT("config_list"),
-            TEXT("vector_init"),
-            TEXT("setup"),            TEXT("setup_deps"),
-            TEXT("setup_check"),      TEXT("setup_verify"),
-            TEXT("setup_runtime_check"),
-            TEXT("test_game")};
-           return !ValidCommands.Contains(Command)
+           return !ForbocAI::CLI::IsValidCommandKey(Command)
                       ? CLITypes::make_left(
                             FString::Printf(TEXT("Invalid command: %s"),
                                              *Command),

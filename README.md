@@ -23,7 +23,7 @@ Drop-in autonomous NPCs for Unreal Engine 5.8 — neuro-symbolic agents with per
 - **Souls**: Export and re-import an agent's identity (JSON) — portable across projects and saves.
 - **Speech & dialogue hooks**: Drop-in components for TTS, viseme blending, and chat UI.
 - **Blueprint surface**: All public operations exposed as `BlueprintCallable` nodes.
-- **CLI**: `doctor`, `npc_list`, `npc_create`, `npc_process`, `soul_export`, and friends, runnable through `UnrealEditor-Cmd` for smoke-testing in CI or after install.
+- **CLI**: `doctor`, `status`, `npc create`, `npc process`, `soul export`, and friends, runnable from the SDK checkout through `scripts/forbocai-ue`.
 
 NPC reasoning is hosted on the ForbocAI API; the plugin handles local capabilities (memory, identification, soul transport, command surface) and talks to the API over HTTP.
 
@@ -98,46 +98,35 @@ For SDK/API validation, call the `UForbocAIBlueprintLibrary` nodes from source-c
 
 ## CLI smoke tests
 
-The plugin ships a Commandlet you can run via `UnrealEditor-Cmd` to verify the install and exercise the API path without launching the editor UI.
+The SDK ships a dedicated CLI host project at `ForbocAI_CLI.uproject` and runner scripts under `scripts/`. The runner builds the commandlet host when needed and dispatches through the same `CLIOps`/RTK store path used by runtime C++ and Blueprint integrations. It does not use the test game.
 
 ### Windows
 
 ```powershell
-& "C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" `
-  "C:\Path\To\Your.uproject" `
-  -run=ForbocAI -Command=doctor `
-  -nosplash -nopause -unattended
+.\scripts\forbocai-ue.cmd status
+.\scripts\forbocai-ue.cmd doctor
+.\scripts\forbocai-ue.cmd --api-url https://api.forboc.ai status
 ```
 
-### macOS
+### macOS / Linux
 
 ```bash
-"/Users/Shared/Epic Games/UE_5.8/Engine/Binaries/Mac/UnrealEditor-Cmd" \
-  "/Path/To/Your.uproject" \
-  -run=ForbocAI -Command=doctor \
-  -nosplash -nopause -unattended
+scripts/forbocai-ue status
+scripts/forbocai-ue doctor
+scripts/forbocai-ue --api-url https://api.forboc.ai status
 ```
 
-### Linux
-
-```bash
-"/opt/UnrealEngine/Engine/Binaries/Linux/UnrealEditor-Cmd" \
-  "/path/to/Your.uproject" \
-  -run=ForbocAI -Command=doctor \
-  -nosplash -nopause -unattended
-```
-
-The first run may take a few minutes (DDC warm-up, shader compile). Subsequent runs are ~30 s.
+Set `UE_ROOT` if Unreal Engine 5.8 is not installed in the default location. The first run may take a few minutes while Unreal builds the CLI host; subsequent runs are faster. Set `FORBOCAI_UE_SKIP_BUILD=1` in CI after the host target has already been built.
 
 | Command | Purpose |
 |---|---|
 | `doctor` | Check API connectivity and report SDK version |
-| `npc_list` | List active agents |
-| `npc_create -Persona="..."` | Create a new agent |
-| `npc_process -Id="..." -Input="..."` | Send input to an agent |
-| `soul_export -Id="..."` | Export an agent's soul to JSON |
-| `config_set -Key="..." -Value="..."` | Persist a CLI config value |
-| `config_get -Key="..."` | Read a stored CLI config value |
+| `status` | Check API connectivity |
+| `npc create "..."` | Create a new agent |
+| `npc process <id> "..."` | Send input to an agent |
+| `soul export <id>` | Export an agent's soul |
+| `config set apiUrl https://api.forboc.ai` | Persist a CLI config value |
+| `config get apiUrl` | Read a stored CLI config value |
 
 Sample `doctor` output:
 
@@ -145,6 +134,8 @@ Sample `doctor` output:
 ForbocAI CLI (UE5) — Command: doctor
 API Status: online (v0.4.0)
 ```
+
+Advanced users can still call the underlying commandlet directly with `UnrealEditor-Cmd`, `-run=ForbocAI`, `-Command=<command_key>`, and named parameters such as `-Id=` or `-Input=`.
 
 ---
 

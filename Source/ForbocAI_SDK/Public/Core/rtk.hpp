@@ -1471,55 +1471,59 @@ AsyncThunkConfig<Result, Arg, State> createAsyncThunk(
        * StrictMode double-invokes and stale requests are skipped at the
        * thunk level before any lifecycle actions are dispatched.
        */
-      if (Condition) {
-        ThunkApi<State> conditionApi{dispatch, getState};
-        if (!Condition(arg, conditionApi)) {
-          return func::createAsyncResult<Result>(
-              [](std::function<void(Result)>,
-                 std::function<void(std::string)> Reject) {
-                Reject("Aborted: condition returned false");
-              });
-        }
-      }
+      ThunkApi<State> conditionApi{dispatch, getState};
+      const bool bConditionAllowsRun =
+          Condition ? Condition(arg, conditionApi) : true;
+      return !bConditionAllowsRun
+                 ? func::createAsyncResult<Result>(
+                       [](std::function<void(Result)>,
+                          std::function<void(std::string)> Reject) {
+                         Reject("Aborted: condition returned false");
+                       })
+                 : [&]() -> func::AsyncResult<Result> {
 
-      /**
-       * 1. Dispatch pending synchronously
-       * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
-       */
-      dispatch(pending(arg));
+                     /**
+                      * 1. Dispatch pending synchronously
+                      * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
+                      */
+                     dispatch(pending(arg));
 
-      /**
-       * 2. Build the ThunkApi surface
-       * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-       */
-      ThunkApi<State> api{dispatch, getState};
+                     /**
+                      * 2. Build the ThunkApi surface
+                      * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
+                      */
+                     ThunkApi<State> api{dispatch, getState};
 
-      /**
-       * 3. Execute payload creator
-       * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-       */
-      auto result = PayloadCreator(arg, api);
+                     /**
+                      * 3. Execute payload creator
+                      * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
+                      */
+                     auto result = PayloadCreator(arg, api);
 
-      /**
-       * 4. Chain lifecycle actions using FP core AsyncChain.
-       *    The returned AsyncResult carries both the fulfilled chain and
-       *    the catch_ error handler. The caller is responsible for calling
-       *    .execute() on the returned result to trigger the full chain.
-       * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
-       */
-      func::AsyncResult<Result> Chained = func::AsyncChain::then<Result, Result>(
-          result, [dispatch, fulfilled](Result res) {
-            dispatch(fulfilled(res));
-            return func::createAsyncResult<Result>(
-                [res](std::function<void(Result)> resolve,
-                      std::function<void(std::string)> reject) {
-                  resolve(res);
-                });
-          });
-      func::catchAsync(Chained, [dispatch, rejected](std::string err) {
-        dispatch(rejected(FString(UTF8_TO_TCHAR(err.c_str()))));
-      });
-      return Chained;
+                     /**
+                      * 4. Chain lifecycle actions using FP core AsyncChain.
+                      *    The returned AsyncResult carries both the fulfilled chain and
+                      *    the catch_ error handler. The caller is responsible for calling
+                      *    .execute() on the returned result to trigger the full chain.
+                      * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
+                      */
+                     func::AsyncResult<Result> Chained =
+                         func::AsyncChain::then<Result, Result>(
+                             result, [dispatch, fulfilled](Result res) {
+                               dispatch(fulfilled(res));
+                               return func::createAsyncResult<Result>(
+                                   [res](std::function<void(Result)> resolve,
+                                         std::function<void(std::string)> reject) {
+                                     resolve(res);
+                                   });
+                             });
+                     func::catchAsync(Chained,
+                                      [dispatch, rejected](std::string err) {
+                                        dispatch(rejected(FString(
+                                            UTF8_TO_TCHAR(err.c_str()))));
+                                      });
+                     return Chained;
+                   }();
     };
   };
 

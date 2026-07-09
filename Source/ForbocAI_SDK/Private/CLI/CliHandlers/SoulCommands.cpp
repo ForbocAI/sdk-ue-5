@@ -57,6 +57,20 @@ HandlerResult HandleSoul(rtk::EnhancedStore<FStoreState> &Store,
                         Souls.Num());
                  return just(Result::Success("Souls listed"));
                }()
+         : CommandKey == TEXT("soul_chat")
+             ? (Args.Num() < 2
+                    ? just(Result::Failure(
+                          "Usage: soul_chat <npcId> <message>"))
+                    : [&]() -> HandlerResult {
+                        UE_LOG(LogTemp, Display, TEXT("> You: %s"),
+                               *Args[1]);
+                        FAgentResponse Resp =
+                            Ops::ProcessNpc(Store, Args[0], Args[1]);
+                        UE_LOG(LogTemp, Display, TEXT("> NPC: %s"),
+                               *Resp.Dialogue);
+                        return just(
+                            Result::Success("Soul chat turn complete"));
+                      }())
          : CommandKey == TEXT("soul_verify")
              ? (Args.Num() < 1
                     ? just(Result::Failure(

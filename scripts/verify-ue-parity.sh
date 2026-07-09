@@ -9,9 +9,10 @@
 #   1. UE conformance (check-ue-conformance.sh)
 #   2. FP conformance (check-ue-fp-conformance.sh)
 #   3. Thin-wrapper guardrails (check-thin-wrapper-guardrails.sh)
-#   4. Test-game executor-boundary guard (check-test-game-executor-boundary.sh)
-#   5. Product boundary audit (check-product-boundary.sh)
-#   6. API contract parity (check-api-contract-parity.py)
+#   4. CLI command parity (check-cli-command-parity.py)
+#   5. Test-game executor-boundary guard (check-test-game-executor-boundary.sh)
+#   6. Product boundary audit (check-product-boundary.sh)
+#   7. API contract parity (check-api-contract-parity.py)
 #
 # Exit codes:
 #   0 = all checks passed
@@ -34,6 +35,7 @@ UE_CONFORMANCE_STATUS="skipped"
 FP_CONFORMANCE_STATUS="skipped"
 THIN_WRAPPER_STATUS="skipped"
 TEST_GAME_BOUNDARY_STATUS="skipped"
+CLI_COMMAND_PARITY_STATUS="skipped"
 PRODUCT_BOUNDARY_STATUS="skipped"
 CONTRACT_PARITY_STATUS="skipped"
 HANDLER_CLASSIFICATION_STATUS="skipped"
@@ -165,7 +167,11 @@ run_check "FP Conformance (no loops, no classes, no mutation)" \
 run_check "Thin-Wrapper Guardrails (command surface rules)" \
   "$SCRIPT_DIR/check-thin-wrapper-guardrails.sh" THIN_WRAPPER_STATUS
 
-# ── Phase 3b: Test-game executor boundary ──
+# ── Phase 3b: CLI command parity ──
+run_check "CLI Command Parity (UE mirrors TS Node matrix)" \
+  "$SCRIPT_DIR/check-cli-command-parity.py" CLI_COMMAND_PARITY_STATUS
+
+# ── Phase 3c: Test-game executor boundary ──
 run_check "Test-game executor boundary (no TestGameLib.h, no shadow executor)" \
   "$SCRIPT_DIR/check-test-game-executor-boundary.sh" TEST_GAME_BOUNDARY_STATUS
 
