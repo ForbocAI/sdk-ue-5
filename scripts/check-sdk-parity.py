@@ -2,9 +2,9 @@
 """Audit TS SDK <-> UE SDK parity and keep the SDK map generated section current.
 
 The strict checks here are for invariants that must already match, such as the
-Node CLI command key matrix. Broader file/function drift is reported into the
-generated inventory so the rename/parity backlog stays visible while UE moves
-incrementally toward the TS SDK shape.
+Node CLI command key matrix. Broader folder/file/function drift is reported into
+the generated inventory so the rename/parity backlog stays visible while UE
+moves incrementally toward the TS SDK shape.
 """
 
 from __future__ import annotations
@@ -169,20 +169,10 @@ MANUAL_FILE_MIRRORS: dict[str, tuple[str, tuple[str, ...], str]] = {
         ("Source/ForbocAI_SDK/Public/Protocol/ProtocolThunks.h",),
         "UE dispatch table and handlers live together.",
     ),
-    "packages/core/src/protocolHandlers/prompts.ts": (
-        "Gap",
-        (),
-        "Prompt construction is not a UE parity target while NPC inference is API-hosted.",
-    ),
     "packages/core/src/protocolHandlers/types.ts": (
         "Analog",
         ("Source/ForbocAI_SDK/Public/Protocol/ProtocolTypes.h",),
         "",
-    ),
-    "packages/core/src/protocolHandlers/utils.ts": (
-        "Analog",
-        ("Source/ForbocAI_SDK/Public/Protocol/ProtocolThunks.h", "Source/ForbocAI_SDK/Public/API/APICodecs.h"),
-        "UE protocol utilities are embedded in thunks/codecs.",
     ),
     "packages/core/src/protocolLogger.ts": ("Analog", ("Source/ForbocAI_SDK/Public/RuntimeStore.h",), ""),
     "packages/core/src/runtimeRegistry.ts": (
@@ -196,11 +186,6 @@ MANUAL_FILE_MIRRORS: dict[str, tuple[str, tuple[str, ...], str]] = {
         "Soul slice and async thunks are split in UE.",
     ),
     "packages/core/src/store.ts": ("Exact", ("Source/ForbocAI_SDK/Public/RuntimeStore.h",), ""),
-    "packages/core/src/stream.ts": (
-        "Gap",
-        (),
-        "TS stream utility remains; UE local Cortex streaming is retired from the parity baseline.",
-    ),
     "packages/core/src/thunks.ts": (
         "Analog",
         (
@@ -324,6 +309,87 @@ TEST_GAME_SLICE_FILES = {
     "packages/test-game/src/features/terminal/slices/uiSlice.ts",
 }
 
+MANUAL_FOLDER_MIRRORS: dict[str, tuple[str, tuple[str, ...], str]] = {
+    "packages/core/src": (
+        "Analog",
+        ("Source/ForbocAI_SDK/Public", "Source/ForbocAI_SDK/Private"),
+        "UE splits TS core source into Unreal public/private module folders.",
+    ),
+    "packages/core/src/api": (
+        "Exact",
+        ("Source/ForbocAI_SDK/Public/API", "Source/ForbocAI_SDK/Private/API"),
+        "UE keeps API declarations and implementation under matching API folders.",
+    ),
+    "packages/core/src/api/endpoints": (
+        "Analog",
+        ("Source/ForbocAI_SDK/Public/API",),
+        "TS endpoint folders collapse into shared UE API endpoint/codecs headers.",
+    ),
+    "packages/core/src/handlers": (
+        "Analog",
+        ("Source/ForbocAI_SDK/Public/Core",),
+        "TS generic handlers map to UE thunk detail helpers.",
+    ),
+    "packages/core/src/protocolHandlers": (
+        "Analog",
+        ("Source/ForbocAI_SDK/Public/Protocol",),
+        "TS protocol handler files map to UE Protocol thunk/type headers.",
+    ),
+    "packages/core/src/types": (
+        "Analog",
+        (
+            "Source/ForbocAI_SDK/Public",
+            "Source/ForbocAI_SDK/Public/Bridge",
+            "Source/ForbocAI_SDK/Public/Ghost",
+            "Source/ForbocAI_SDK/Public/Memory",
+            "Source/ForbocAI_SDK/Public/NPC",
+            "Source/ForbocAI_SDK/Public/Protocol",
+            "Source/ForbocAI_SDK/Public/Soul",
+        ),
+        "UE distributes TS shared/domain types into reflected domain headers.",
+    ),
+    "packages/core/src/utils": (
+        "Analog",
+        ("Source/ForbocAI_SDK/Public/Core",),
+        "TS utility modules map to UE core FP/RTK helper headers.",
+    ),
+    "packages/node/src": (
+        "Analog",
+        ("Source/ForbocAI_SDK/Public", "Source/ForbocAI_SDK/Private", "scripts"),
+        "UE implements Node runtime and CLI responsibilities through module headers, commandlets, and wrapper scripts.",
+    ),
+    "packages/node/src/cli": (
+        "Analog",
+        ("Source/ForbocAI_SDK/Public/CLI", "Source/ForbocAI_SDK/Private/CLI", "scripts"),
+        "UE CLI is commandlet-backed with wrapper scripts.",
+    ),
+    "packages/node/src/cli/commands": (
+        "Analog",
+        ("Source/ForbocAI_SDK/Private/CLI/CliHandlers",),
+        "TS command files map to UE CLI handler implementations.",
+    ),
+    "packages/node/src/cli/ops": (
+        "Analog",
+        ("Source/ForbocAI_SDK/Public/CLI",),
+        "TS CLI ops map to UE CLI operation headers.",
+    ),
+    "packages/test-game/src": (
+        "Analog",
+        ("Source/ForbocAI_SDK/Public/TestGame", "Source/ForbocAI_SDK/Private"),
+        "UE test-game harness lives under TestGame headers plus commandlet wiring.",
+    ),
+    "packages/test-game/src/cli": (
+        "Analog",
+        ("Source/ForbocAI_SDK/Private", "Source/ForbocAI_SDK/Public/TestGame"),
+        "UE routes test-game CLI execution through the main commandlet.",
+    ),
+    "packages/test-game/src/lib": (
+        "Analog",
+        ("Source/ForbocAI_SDK/Public/TestGame",),
+        "TS test-game library helpers map to UE TestGame headers.",
+    ),
+}
+
 MANUAL_SYMBOL_MIRRORS: dict[str, tuple[str, tuple[str, ...], str]] = {
     "api": ("Analog", ("ForbocAiApi",), "TS RTK Query api maps to UE rtk::Api instance."),
     "listenerMiddleware": ("Analog", ("createNpcRemovalListener",), "UE listener is specialized to NPC removal cleanup."),
@@ -358,6 +424,14 @@ class Symbol:
 class FileMirror:
     ts_file: str
     ue_files: tuple[str, ...]
+    status: str
+    notes: str
+
+
+@dataclass(frozen=True)
+class FolderMirror:
+    ts_folder: str
+    ue_folders: tuple[str, ...]
     status: str
     notes: str
 
@@ -464,6 +538,52 @@ def iter_ue_files(root: Path) -> list[Path]:
     return sorted(source_files, key=lambda path: relative(path, root))
 
 
+def source_root_for_ts_path(path: str) -> str | None:
+    return next(
+        (
+            source_root.as_posix()
+            for _, source_root in TS_SOURCE_ROOTS
+            if path == source_root.as_posix() or path.startswith(f"{source_root.as_posix()}/")
+        ),
+        None,
+    )
+
+
+def iter_ts_folders(ts_files: list[Path], ts_root: Path) -> list[str]:
+    folders: set[str] = set()
+    for path in ts_files:
+        rel = relative(path, ts_root)
+        source_root = source_root_for_ts_path(rel)
+        if not source_root:
+            continue
+
+        parent = Path(rel).parent
+        while True:
+            folder = parent.as_posix()
+            if folder == "." or not (folder == source_root or folder.startswith(f"{source_root}/")):
+                break
+            folders.add(folder)
+            if folder == source_root:
+                break
+            parent = parent.parent
+
+    return sorted(folders)
+
+
+def iter_ue_folders(ue_files: list[Path], ue_root: Path) -> list[str]:
+    folders: set[str] = set()
+    for path in ue_files:
+        parent = Path(relative(path, ue_root)).parent
+        while True:
+            folder = parent.as_posix()
+            if folder == ".":
+                break
+            folders.add(folder)
+            parent = parent.parent
+
+    return sorted(folders)
+
+
 def normalize_name(name: str) -> str:
     stripped = re.sub(r"^(F|E|U|I)(?=[A-Z])", "", name)
     return re.sub(r"[^a-z0-9]", "", stripped.lower())
@@ -471,6 +591,10 @@ def normalize_name(name: str) -> str:
 
 def stem_key(path: str) -> str:
     return normalize_name(Path(path).stem)
+
+
+def folder_key(path: str) -> str:
+    return normalize_name(Path(path).name)
 
 
 def extract_ts_node_keys(path: Path) -> list[str]:
@@ -628,6 +752,47 @@ def build_file_mirrors(ts_files: list[Path], ts_root: Path, ue_files: list[Path]
     return mirrors
 
 
+def build_folder_mirrors(
+    ts_folders: list[str],
+    ue_folders: list[str],
+    file_mirrors: list[FileMirror],
+) -> list[FolderMirror]:
+    ue_by_key: dict[str, list[str]] = {}
+    for folder in ue_folders:
+        ue_by_key.setdefault(folder_key(folder), []).append(folder)
+
+    mirrors: list[FolderMirror] = []
+    for folder in ts_folders:
+        manual = MANUAL_FOLDER_MIRRORS.get(folder)
+        if manual:
+            status, candidates, notes = manual
+            mirrors.append(FolderMirror(folder, candidates, status, notes))
+            continue
+
+        exact_candidates = tuple(sorted(ue_by_key.get(folder_key(folder), [])))
+        if exact_candidates:
+            mirrors.append(FolderMirror(folder, exact_candidates, "Exact", ""))
+            continue
+
+        derived_candidates = tuple(sorted({
+            Path(ue_file).parent.as_posix()
+            for mirror in file_mirrors
+            if mirror.ts_file.startswith(f"{folder}/")
+            for ue_file in mirror.ue_files
+            if Path(ue_file).parent.as_posix() != "."
+        }))
+        mirrors.append(
+            FolderMirror(
+                folder,
+                derived_candidates,
+                "Analog" if derived_candidates else "Gap",
+                "Derived from descendant file mirrors." if derived_candidates else "No UE source folder with a matching normalized name is known yet.",
+            )
+        )
+
+    return mirrors
+
+
 def symbol_index(symbols: list[Symbol]) -> dict[str, list[Symbol]]:
     index: dict[str, list[Symbol]] = {}
     for symbol in symbols:
@@ -668,6 +833,10 @@ def build_symbol_mirrors(ts_symbols: list[Symbol], ue_symbols: list[Symbol]) -> 
 
 def used_ue_files(file_mirrors: list[FileMirror]) -> set[str]:
     return {ue_file for mirror in file_mirrors for ue_file in mirror.ue_files}
+
+
+def used_ue_folders(folder_mirrors: list[FolderMirror]) -> set[str]:
+    return {ue_folder for mirror in folder_mirrors for ue_folder in mirror.ue_folders}
 
 
 def used_ue_symbols(symbol_mirrors: list[SymbolMirror]) -> set[tuple[str, str]]:
@@ -746,6 +915,24 @@ def grouped_file_mirrors(file_mirrors: list[FileMirror]) -> list[tuple[str, list
     ]
 
 
+def grouped_folder_mirrors(folder_mirrors: list[FolderMirror]) -> list[tuple[str, list[FolderMirror]]]:
+    packages = sorted(
+        {package_for_ts_file(mirror.ts_folder) for mirror in folder_mirrors},
+        key=package_order,
+    )
+    return [
+        (
+            package,
+            [
+                mirror
+                for mirror in folder_mirrors
+                if package_for_ts_file(mirror.ts_folder) == package
+            ],
+        )
+        for package in packages
+    ]
+
+
 def grouped_symbol_mirrors(symbol_mirrors: list[SymbolMirror]) -> list[tuple[str, list[SymbolMirror]]]:
     packages = sorted(
         {package_for_ts_file(mirror.ts_symbol.file) for mirror in symbol_mirrors},
@@ -771,6 +958,13 @@ def file_mirror_rows(file_mirrors: list[FileMirror]) -> list[tuple[str, ...]]:
     ]
 
 
+def folder_mirror_rows(folder_mirrors: list[FolderMirror]) -> list[tuple[str, ...]]:
+    return [
+        (md_code(mirror.ts_folder), format_list(mirror.ue_folders), mirror.status, md(mirror.notes))
+        for mirror in folder_mirrors
+    ]
+
+
 def symbol_mirror_rows(symbol_mirrors: list[SymbolMirror]) -> list[tuple[str, ...]]:
     return [
         (
@@ -784,11 +978,13 @@ def symbol_mirror_rows(symbol_mirrors: list[SymbolMirror]) -> list[tuple[str, ..
 
 
 def package_summary_rows(
+    folder_mirrors: list[FolderMirror],
     file_mirrors: list[FileMirror],
     symbol_mirrors: list[SymbolMirror],
 ) -> list[tuple[str, ...]]:
     packages = sorted(
         {
+            *{package_for_ts_file(mirror.ts_folder) for mirror in folder_mirrors},
             *{package_for_ts_file(mirror.ts_file) for mirror in file_mirrors},
             *{package_for_ts_file(mirror.ts_symbol.file) for mirror in symbol_mirrors},
         },
@@ -796,6 +992,7 @@ def package_summary_rows(
     )
     rows: list[tuple[str, ...]] = []
     for package in packages:
+        folders = [mirror for mirror in folder_mirrors if package_for_ts_file(mirror.ts_folder) == package]
         files = [mirror for mirror in file_mirrors if package_for_ts_file(mirror.ts_file) == package]
         symbols = [
             mirror
@@ -805,6 +1002,10 @@ def package_summary_rows(
         rows.append(
             (
                 package_label(package),
+                str(len(folders)),
+                str(sum(1 for mirror in folders if mirror.status == "Exact")),
+                str(sum(1 for mirror in folders if mirror.status == "Analog")),
+                str(sum(1 for mirror in folders if mirror.status == "Gap")),
                 str(len(files)),
                 str(sum(1 for mirror in files if mirror.status == "Exact")),
                 str(sum(1 for mirror in files if mirror.status == "Analog")),
@@ -821,6 +1022,9 @@ def package_summary_rows(
 def build_generated_section(
     ts_root: Path,
     ue_root: Path,
+    ts_folders: list[str],
+    ue_folders: list[str],
+    folder_mirrors: list[FolderMirror],
     ts_files: list[Path],
     ue_files: list[Path],
     file_mirrors: list[FileMirror],
@@ -831,12 +1035,17 @@ def build_generated_section(
     ue_keys: list[str],
 ) -> str:
     generated_on = date.today().isoformat()
+    folder_gaps = [mirror for mirror in folder_mirrors if mirror.status == "Gap"]
+    analog_folders = [mirror for mirror in folder_mirrors if mirror.status == "Analog"]
+    exact_folders = [mirror for mirror in folder_mirrors if mirror.status == "Exact"]
     file_gaps = [mirror for mirror in file_mirrors if mirror.status == "Gap"]
     analog_files = [mirror for mirror in file_mirrors if mirror.status == "Analog"]
     exact_files = [mirror for mirror in file_mirrors if mirror.status == "Exact"]
     symbol_gaps = [mirror for mirror in symbol_mirrors if mirror.status == "Gap"]
     analog_symbols = [mirror for mirror in symbol_mirrors if mirror.status == "Analog"]
     exact_symbols = [mirror for mirror in symbol_mirrors if mirror.status == "Exact"]
+    used_folders = used_ue_folders(folder_mirrors)
+    ue_only_folders = [folder for folder in ue_folders if folder not in used_folders]
     used_files = used_ue_files(file_mirrors)
     ue_only_files = [relative(path, ue_root) for path in ue_files if relative(path, ue_root) not in used_files]
     used_symbols = used_ue_symbols(symbol_mirrors)
@@ -859,6 +1068,12 @@ def build_generated_section(
         *table(
             ("Metric", "Count"),
             [
+                ("TS source folders scanned", str(len(ts_folders))),
+                ("UE source folders scanned", str(len(ue_folders))),
+                ("TS folders with exact UE mirror", str(len(exact_folders))),
+                ("TS folders with analog UE mirror", str(len(analog_folders))),
+                ("TS folders with no UE mirror yet", str(len(folder_gaps))),
+                ("UE-only folders", str(len(ue_only_folders))),
                 ("TS source files scanned", str(len(ts_files))),
                 ("UE source files scanned", str(len(ue_files))),
                 ("TS files with exact UE mirror", str(len(exact_files))),
@@ -876,15 +1091,20 @@ def build_generated_section(
         "",
         f"- TS root: `{ts_root}`",
         f"- UE root: `{ue_root}`",
-        "- `Exact` means the normalized file or symbol name already mirrors.",
+        "- `Exact` means the normalized folder, file, or symbol name already mirrors.",
         "- `Analog` means the responsibility mirrors but the path/name shape still differs.",
         "- `Gap` means the TS item has no UE mirror recorded yet.",
+        "- Function names are included in the generated symbol mirrors.",
         "",
         "### Generated Package Coverage",
         "",
         *table(
             (
                 "Area",
+                "TS folders",
+                "Folder exact",
+                "Folder analog",
+                "Folder gaps",
                 "TS files",
                 "File exact",
                 "File analog",
@@ -894,12 +1114,39 @@ def build_generated_section(
                 "Symbol analog",
                 "Symbol gaps",
             ),
-            package_summary_rows(file_mirrors, symbol_mirrors),
+            package_summary_rows(folder_mirrors, file_mirrors, symbol_mirrors),
+        ),
+        "",
+        "### Generated Folder Mirrors",
+        "",
+    ]
+
+    for package, mirrors in grouped_folder_mirrors(folder_mirrors):
+        lines.extend(
+            [
+                f"#### {package_label(package)} Folder Mirrors",
+                "",
+                *table(
+                    ("TypeScript folder", "UE folder(s)", "Status", "Notes"),
+                    folder_mirror_rows(mirrors),
+                ),
+                "",
+            ]
+        )
+
+    lines.extend(
+        [
+        "### Generated UE-Only Folders",
+        "",
+        *table(
+            ("UE folder", "Notes"),
+            [(md_code(path), "No TS source folder currently maps to this UE folder.") for path in ue_only_folders],
         ),
         "",
         "### Generated File Mirrors",
         "",
-    ]
+        ]
+    )
 
     for package, mirrors in grouped_file_mirrors(file_mirrors):
         lines.extend(
@@ -1051,7 +1298,10 @@ def main() -> int:
 
     ts_files = iter_ts_files(ts_root)
     ue_files = iter_ue_files(ue_root)
+    ts_folders = iter_ts_folders(ts_files, ts_root)
+    ue_folders = iter_ue_folders(ue_files, ue_root)
     file_mirrors = build_file_mirrors(ts_files, ts_root, ue_files, ue_root)
+    folder_mirrors = build_folder_mirrors(ts_folders, ue_folders, file_mirrors)
 
     ts_symbols = [
         symbol
@@ -1068,6 +1318,9 @@ def main() -> int:
     section = build_generated_section(
         ts_root,
         ue_root,
+        ts_folders,
+        ue_folders,
+        folder_mirrors,
         ts_files,
         ue_files,
         file_mirrors,
@@ -1078,8 +1331,12 @@ def main() -> int:
         ue_keys,
     )
 
+    folder_gap_count = sum(1 for mirror in folder_mirrors if mirror.status == "Gap")
     file_gap_count = sum(1 for mirror in file_mirrors if mirror.status == "Gap")
     symbol_gap_count = sum(1 for mirror in symbol_mirrors if mirror.status == "Gap")
+    print(f"[info] TS source folders scanned: {len(ts_folders)}")
+    print(f"[info] UE source folders scanned: {len(ue_folders)}")
+    print(f"[info] TS folders without recorded UE mirror: {folder_gap_count}")
     print(f"[info] TS source files scanned: {len(ts_files)}")
     print(f"[info] UE source files scanned: {len(ue_files)}")
     print(f"[info] TS files without recorded UE mirror: {file_gap_count}")
