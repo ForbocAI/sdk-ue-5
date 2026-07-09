@@ -113,10 +113,10 @@ void EnsureParentDirectory(const FString &Path) {
 /**
  * User Story: As a developer, I need CleanupSmokeDatabase to fulfill its role in the module.
  */
-void CleanupSmokeDatabase(rtk::EnhancedStore<FStoreState> &Store,
+void CleanupSmokeDatabase(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &DatabasePath) {
   try {
-    Ops::ClearNodeMemory(Store);
+    Ops::clearNodeMemory(Store);
   } catch (const std::exception &) {
   }
   IFileManager::Get().Delete(*DatabasePath, false, true, true);
@@ -125,7 +125,7 @@ void CleanupSmokeDatabase(rtk::EnhancedStore<FStoreState> &Store,
 /**
  * User Story: As a developer, I need CleanupSmokeDatabaseIfNeeded to fulfill its role in the module.
  */
-void CleanupSmokeDatabaseIfNeeded(rtk::EnhancedStore<FStoreState> &Store,
+void CleanupSmokeDatabaseIfNeeded(rtk::EnhancedStore<FRuntimeState> &Store,
                                   const FString &DatabasePath,
                                   bool bShouldCleanup) {
   bShouldCleanup
@@ -156,7 +156,7 @@ FString FindSubdirWithPrefix(const FString &Dir, const FString &Prefix) {
   return FindHelper::apply(Dirs, Dir, Prefix, 0);
 }
 
-Result RunRuntimeSmokeCheck(rtk::EnhancedStore<FStoreState> &Store,
+Result RunRuntimeSmokeCheck(rtk::EnhancedStore<FRuntimeState> &Store,
                             const TArray<FString> &Args) {
   IPlatformFile &PF = FPlatformFileManager::Get().GetPlatformFile();
   const FRuntimeCheckOptions Options = RuntimeCheckOptions(Args);
@@ -188,7 +188,7 @@ Result RunRuntimeSmokeCheck(rtk::EnhancedStore<FStoreState> &Store,
         "setup_runtime_check cannot verify memory storage while --skip-vector is set")
     : [&]() -> Result {
       try {
-        Ops::InitNodeMemory(Store, DatabasePath);
+        Ops::initNodeMemory(Store, DatabasePath);
         return !PF.FileExists(*DatabasePath)
           ? Result::Failure("Node memory database was not created on disk")
           : [&]() -> Result {
@@ -202,9 +202,9 @@ Result RunRuntimeSmokeCheck(rtk::EnhancedStore<FStoreState> &Store,
                 /* Memory block */
                 const Result MemoryResult = !Options.bSkipMemory
                   ? [&]() -> Result {
-                      Ops::StoreNodeMemory(Store, SmokeText, 0.95f);
+                      Ops::storeNodeMemory(Store, SmokeText, 0.95f);
                       const TArray<FMemoryItem> Recalled =
-                          Ops::RecallNodeMemory(Store, SmokeText, 5, 0.0f);
+                          Ops::recallNodeMemory(Store, SmokeText, 5, 0.0f);
                       return !ContainsRecalledTextRecursive(Recalled, SmokeText, 0)
                         ? Result::Failure(
                             "Stored smoke memory was not recalled from the local vector store")
@@ -422,7 +422,7 @@ Result VerifyThirdParty() {
  * User Story: As setup flows, I need one dependency installer so sqlite-vss
  * assets can be downloaded and arranged predictably.
  */
-Result SetupThirdPartyDeps(rtk::EnhancedStore<FStoreState> &Store,
+Result SetupThirdPartyDeps(rtk::EnhancedStore<FRuntimeState> &Store,
                            const TArray<FString> &Args) {
   const FString PluginDir =
       FPaths::ProjectPluginsDir() / TEXT("ForbocAI_SDK");
@@ -462,7 +462,7 @@ Result SetupThirdPartyDeps(rtk::EnhancedStore<FStoreState> &Store,
           UE_LOG(LogTemp, Display, TEXT("  [download] %s"),
                  *FPaths::GetCleanFilename(Dest));
           try {
-            Ops::WaitForResult(Native::File::DownloadBinary(Url, Dest), 120.0);
+            Ops::waitForResult(Native::File::DownloadBinary(Url, Dest), 120.0);
             ++DownloadCount;
             return true;
           } catch (const std::exception &E) {
@@ -644,7 +644,7 @@ Result SetupThirdPartyDeps(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As CLI users, I need setup commands dispatched through one
  * handler so verification, install, and build flows share parsing logic.
  */
-HandlerResult HandleSetup(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleSetup(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
                           const TArray<FString> &Args) {
   using func::just;

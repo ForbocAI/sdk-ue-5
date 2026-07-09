@@ -49,9 +49,9 @@ bool FDirectiveHappyPathTest::RunTest(const FString &Parameters) {
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
   FDirectiveResponse DirResponse;
-  DirResponse.MemoryRecall.Query = TEXT("goblin encounters");
-  DirResponse.MemoryRecall.Limit = 5;
-  DirResponse.MemoryRecall.Threshold = 0.6f;
+  DirResponse.recallMemory.Query = TEXT("goblin encounters");
+  DirResponse.recallMemory.Limit = 5;
+  DirResponse.recallMemory.Threshold = 0.6f;
 
   State = DirSlice.Reducer(
       State,

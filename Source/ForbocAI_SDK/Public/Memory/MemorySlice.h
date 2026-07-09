@@ -220,7 +220,7 @@ inline AnyAction MemoryRecallFailed(const FString &Error) {
  * User Story: As cleanup flows, I need a clear action so memory state can be
  * reset before switching NPC context or rerunning tests.
  */
-inline AnyAction MemoryClear() { return MemoryClearActionCreator()(); }
+inline AnyAction clearMemory() { return MemoryClearActionCreator()(); }
 
 } // namespace Actions
 

@@ -17,7 +17,7 @@
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
 
-struct FStoreState;
+struct FRuntimeState;
 
 namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
 typedef func::Maybe<FString> FForbocAISDKPublicAPIAPISliceHOptionalDomainId;
@@ -35,7 +35,7 @@ struct FAPIState {
   FAPIState() : Status(TEXT("idle")) {}
 };
 
-extern rtk::Api<FStoreState> ForbocAiApi;
+extern rtk::Api<FRuntimeState> ForbocAiApi;
 
 } // namespace APISlice
 

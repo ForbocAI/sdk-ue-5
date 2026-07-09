@@ -22,7 +22,7 @@ public:
    */
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|System")
-  static FString CheckApiStatus();
+  static FString checkApiStatus();
 
   /**
    * ---- NPC ----
@@ -30,14 +30,14 @@ public:
    */
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|NPC")
-  static FString CreateNpc(const FString &Persona);
+  static FString createNpc(const FString &Persona);
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|NPC")
-  static FString ProcessNpc(const FString &NpcId, const FString &Text);
+  static FString processNpc(const FString &NpcId, const FString &Text);
 
   /**
    * Sends a chat message to an NPC and returns the dialogue response.
-   * Convenience wrapper around ProcessNpc for conversational use.
+   * Convenience wrapper around processNpc for conversational use.
    * @param NpcId  The NPC to chat with.
    * @param Message  The player's message.
    * @return The NPC's dialogue response.
@@ -56,10 +56,10 @@ public:
    */
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Memory")
-  static void MemoryStore(const FString &NpcId, const FString &Observation);
+  static void storeMemory(const FString &NpcId, const FString &Observation);
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Memory")
-  static void MemoryClear(const FString &NpcId);
+  static void clearMemory(const FString &NpcId);
 
   /**
    * ---- Ghost ----
@@ -67,10 +67,10 @@ public:
    */
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Ghost")
-  static FString GhostRun(const FString &TestSuite, int32 Duration = 300);
+  static FString startGhost(const FString &TestSuite, int32 Duration = 300);
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Ghost")
-  static FString GhostStop(const FString &SessionId);
+  static FString stopGhost(const FString &SessionId);
 
   /**
    * ---- Soul ----
@@ -78,13 +78,13 @@ public:
    */
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Soul")
-  static FString ExportSoul(const FString &NpcId);
+  static FString exportSoul(const FString &NpcId);
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Soul")
-  static FString ImportSoul(const FString &TxId);
+  static FString importSoul(const FString &TxId);
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Soul")
-  static bool VerifySoul(const FString &TxId);
+  static bool verifySoul(const FString &TxId);
 
   /**
    * ---- Bridge ----
@@ -100,8 +100,8 @@ public:
    */
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Config")
-  static void ConfigSet(const FString &Key, const FString &Value);
+  static void setConfigValue(const FString &Key, const FString &Value);
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Config")
-  static FString ConfigGet(const FString &Key);
+  static FString getConfigValue(const FString &Key);
 };

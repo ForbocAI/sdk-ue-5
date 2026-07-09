@@ -12,7 +12,7 @@
 #include "NPC/NPCSlice.h"
 #include "Soul/SoulSlice.h"
 
-struct FStoreState {
+struct FRuntimeState {
   NPCSlice::FNPCSliceState NPCs;
   MemorySlice::FMemorySliceState Memory;
   DirectiveSlice::FDirectiveSliceState Directives;
@@ -122,7 +122,7 @@ inline const rtk::Slice<APISlice::FAPIState> &GetAPISlice() {
  * by SDK reducers and must not be overwritten.
  */
 using ExtraReducerFn =
-    std::function<FStoreState(const FStoreState &, const rtk::AnyAction &)>;
+    std::function<FRuntimeState(const FRuntimeState &, const rtk::AnyAction &)>;
 
 namespace StoreInternal {
 
@@ -197,8 +197,8 @@ inline void AppendDeltaIfChanged(TArray<FString> &Changes, const FString &Label,
          void());
 }
 
-inline FString DescribeStateDelta(const FStoreState &Before,
-                                  const FStoreState &After) {
+inline FString DescribeStateDelta(const FRuntimeState &Before,
+                                  const FRuntimeState &After) {
   TArray<FString> Changes;
   AppendDeltaIfChanged(Changes, TEXT("NPCs"), SummarizeNPCState(Before.NPCs),
                        SummarizeNPCState(After.NPCs));
@@ -231,9 +231,9 @@ inline FString DescribeStateDelta(const FStoreState &Before,
  * User Story: As root store reduction, I need SDK and game reducers composed
  * together so one dispatch updates all registered state.
  */
-inline FStoreState StoreReducer(const FStoreState &State,
+inline FRuntimeState StoreReducer(const FRuntimeState &State,
                                 const rtk::AnyAction &Action) {
-  FStoreState Next = State;
+  FRuntimeState Next = State;
   Next.NPCs = StoreInternal::GetNPCSlice().Reducer(State.NPCs, Action);
   Next.Memory = StoreInternal::GetMemorySlice().Reducer(State.Memory, Action);
   Next.Directives =
@@ -247,9 +247,9 @@ inline FStoreState StoreReducer(const FStoreState &State,
    * G8: Run extra reducers (game slices) — recursive application.
    * User Story: As a maintainer, I need this implementation note so I can understand which milestone behavior the surrounding code is preserving.
    */
-  return [&]() -> FStoreState {
+  return [&]() -> FRuntimeState {
     struct ApplyReducers {
-      static FStoreState apply(FStoreState S, const rtk::AnyAction &A,
+      static FRuntimeState apply(FRuntimeState S, const rtk::AnyAction &A,
                                const std::vector<ExtraReducerFn> &Rs,
                                size_t Index) {
         return Index >= Rs.size() ? S
@@ -266,8 +266,8 @@ inline FStoreState StoreReducer(const FStoreState &State,
  * User Story: As NPC teardown, I need dependent slices cleaned up
  * automatically so removed NPCs do not leave stale state behind.
  */
-inline rtk::Middleware<FStoreState> createNpcRemovalListener() {
-  return [](const rtk::MiddlewareApi<FStoreState> &Api)
+inline rtk::Middleware<FRuntimeState> createNpcRemovalListener() {
+  return [](const rtk::MiddlewareApi<FRuntimeState> &Api)
              -> std::function<rtk::Dispatcher(rtk::Dispatcher)> {
     return [Api](rtk::Dispatcher Next) -> rtk::Dispatcher {
       return [Api, Next](const rtk::AnyAction &Action) -> rtk::AnyAction {
@@ -291,7 +291,7 @@ inline rtk::Middleware<FStoreState> createNpcRemovalListener() {
                            NPCSlice::Actions::ClearBlock(RemovedNpcId.value)),
                        RemovedNpcId.value == ActiveNpcIdBefore
                            ? (Api.dispatch(
-                                  MemorySlice::Actions::MemoryClear()),
+                                  MemorySlice::Actions::clearMemory()),
                               void())
                            : void(),
                        void())
@@ -305,16 +305,16 @@ inline rtk::Middleware<FStoreState> createNpcRemovalListener() {
   };
 }
 
-inline rtk::Middleware<FStoreState> createReduxLoggerMiddleware() {
-  return [](const rtk::MiddlewareApi<FStoreState> &Api)
+inline rtk::Middleware<FRuntimeState> createProtocolLoggerMiddleware() {
+  return [](const rtk::MiddlewareApi<FRuntimeState> &Api)
              -> std::function<rtk::Dispatcher(rtk::Dispatcher)> {
     return [Api](rtk::Dispatcher Next) -> rtk::Dispatcher {
       return [Api, Next](const rtk::AnyAction &Action) -> rtk::AnyAction {
-        const FStoreState Before = Api.getState();
+        const FRuntimeState Before = Api.getState();
         const rtk::AnyAction Result = Next(Action);
         const FString Delta = StoreInternal::DescribeStateDelta(Before, Api.getState());
-        UE_LOG(LogForbocAIRedux, Display,
-               TEXT("[ForbocAI][Redux] action=%s payload=%s delta=%s"),
+        UE_LOG(LogForbocAIProtocol, Display,
+               TEXT("[ForbocAI][Protocol] action=%s payload=%s delta=%s"),
                *Action.Type, *Action.describePayload(), *Delta);
         return Result;
       };
@@ -329,8 +329,8 @@ inline rtk::Middleware<FStoreState> createReduxLoggerMiddleware() {
  * Game slices call this to mount their reducers alongside SDK slices.
  *
  * Example:
- *   addExtraReducer([](const FStoreState &S, const rtk::AnyAction &A) {
- *       FStoreState Next = S;
+ *   addExtraReducer([](const FRuntimeState &S, const rtk::AnyAction &A) {
+ *       FRuntimeState Next = S;
  *       if (A.Type == TEXT("game/setScore")) {
  *           Next.Extra.Add(TEXT("score"), A.Type);
  *       }
@@ -346,13 +346,13 @@ inline void addExtraReducer(const ExtraReducerFn &Reducer) {
  * User Story: As runtime bootstrap, I need a configurable store factory so
  * tests and games can start from custom state and middleware.
  */
-inline rtk::EnhancedStore<FStoreState>
-createRuntimeStore(func::Maybe<FStoreState> PreloadedState =
-                       func::nothing<FStoreState>(),
-                   std::vector<rtk::Middleware<FStoreState>> ExtraMiddlewares =
+inline rtk::EnhancedStore<FRuntimeState>
+createRuntimeStore(func::Maybe<FRuntimeState> PreloadedState =
+                       func::nothing<FRuntimeState>(),
+                   std::vector<rtk::Middleware<FRuntimeState>> ExtraMiddlewares =
                        {}) {
-  std::vector<rtk::Middleware<FStoreState>> Middlewares;
-  Middlewares.push_back(createReduxLoggerMiddleware());
+  std::vector<rtk::Middleware<FRuntimeState>> Middlewares;
+  Middlewares.push_back(createProtocolLoggerMiddleware());
   Middlewares.push_back(createNpcRemovalListener());
 
   /**
@@ -360,8 +360,8 @@ createRuntimeStore(func::Maybe<FStoreState> PreloadedState =
    * User Story: As a maintainer, I need this implementation note so I can understand which milestone behavior the surrounding code is preserving.
    */
   struct AppendMiddlewares {
-    static void apply(std::vector<rtk::Middleware<FStoreState>> &Target,
-                      const std::vector<rtk::Middleware<FStoreState>> &Source,
+    static void apply(std::vector<rtk::Middleware<FRuntimeState>> &Target,
+                      const std::vector<rtk::Middleware<FRuntimeState>> &Source,
                       size_t Index) {
       Index < Source.size()
           ? (Target.push_back(Source[Index]),
@@ -371,9 +371,9 @@ createRuntimeStore(func::Maybe<FStoreState> PreloadedState =
   };
   AppendMiddlewares::apply(Middlewares, ExtraMiddlewares, 0);
 
-  return rtk::configureStore<FStoreState>(
+  return rtk::configureStore<FRuntimeState>(
       &StoreReducer,
-      PreloadedState.hasValue ? PreloadedState.value : FStoreState(),
+      PreloadedState.hasValue ? PreloadedState.value : FRuntimeState(),
       Middlewares);
 }
 
@@ -382,7 +382,7 @@ createRuntimeStore(func::Maybe<FStoreState> PreloadedState =
  * User Story: As shared runtime access, I need a singleton store so Blueprint,
  * CLI, and subsystem helpers all dispatch through the same state container.
  */
-inline rtk::EnhancedStore<FStoreState> store() {
-  static rtk::EnhancedStore<FStoreState> GlobalStore = createRuntimeStore();
+inline rtk::EnhancedStore<FRuntimeState> store() {
+  static rtk::EnhancedStore<FRuntimeState> GlobalStore = createRuntimeStore();
   return GlobalStore;
 }

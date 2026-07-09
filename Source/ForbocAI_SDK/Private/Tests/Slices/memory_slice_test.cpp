@@ -162,7 +162,7 @@ bool FMemorySliceRecallFailTest::RunTest(const FString &Parameters) {
 }
 
 /**
- * Test: MemoryClear resets to initial state
+ * Test: clearMemory resets to initial state
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMemorySliceClearTest,
@@ -183,7 +183,7 @@ bool FMemorySliceClearTest::RunTest(const FString &Parameters) {
   State = MemSlice.Reducer(State, MemorySlice::Actions::MemoryStoreSuccess(Item));
   TestEqual("One memory before clear", SelectAllMemories(State).Num(), 1);
 
-  State = MemSlice.Reducer(State, MemorySlice::Actions::MemoryClear());
+  State = MemSlice.Reducer(State, MemorySlice::Actions::clearMemory());
   TestEqual("No memories after clear", SelectAllMemories(State).Num(), 0);
   TestEqual("StorageStatus reset", State.StorageStatus,
             FString(TEXT("idle")));

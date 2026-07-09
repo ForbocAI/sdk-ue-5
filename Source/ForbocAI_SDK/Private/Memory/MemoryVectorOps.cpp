@@ -25,7 +25,7 @@ VectorSearch(void *Handle, const FString &Query, int32 Limit) {
                      TArray<FMemoryItem>()}
                : [&]() -> MemoryTypes::MemoryStoreRecallResult {
                    const MemoryTypes::MemoryStoreEmbeddingResult
-                       EmbeddingResult = GenerateEmbedding(Handle, Query);
+                       EmbeddingResult = generateEmbedding(Handle, Query);
                    return EmbeddingResult.isLeft
                               ? MemoryTypes::MemoryStoreRecallResult{
                                     true, EmbeddingResult.left,
@@ -41,7 +41,7 @@ VectorSearch(void *Handle, const FString &Query, int32 Limit) {
   }
 }
 
-MemoryTypes::MemoryStoreEmbeddingResult GenerateEmbedding(void *Handle,
+MemoryTypes::MemoryStoreEmbeddingResult generateEmbedding(void *Handle,
                                                           const FString &Text) {
   return MemoryTypes::MemoryStoreEmbeddingResult{
       true, TEXT("Local embedding generation moved to API or opt-in plugins"),

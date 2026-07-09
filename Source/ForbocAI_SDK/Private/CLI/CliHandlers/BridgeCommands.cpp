@@ -6,7 +6,7 @@
 namespace CLIOps {
 namespace Handlers {
 
-HandlerResult HandleBridge(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleBridge(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
                           const TArray<FString> &Args) {
   using func::just;
@@ -21,7 +21,7 @@ HandlerResult HandleBridge(rtk::EnhancedStore<FStoreState> &Store,
                         Action.PayloadJson = Args[0];
                         FBridgeValidationContext Context;
                         FValidationResult VResult =
-                            Ops::ValidateBridge(Store, Action, Context);
+                            Ops::validateBridgePayload(Store, Action, Context);
                         UE_LOG(LogTemp, Display,
                                TEXT("Validation: %s"),
                                VResult.bValid ? TEXT("PASS")
@@ -31,7 +31,7 @@ HandlerResult HandleBridge(rtk::EnhancedStore<FStoreState> &Store,
                       }())
          : CommandKey == TEXT("bridge_rules")
              ? [&]() -> HandlerResult {
-                 TArray<FBridgeRule> Rules = Ops::BridgeRules(Store);
+                 TArray<FBridgeRule> Rules = Ops::getBridgeRules(Store);
                  UE_LOG(LogTemp, Display,
                         TEXT("Found %d bridge rules"), Rules.Num());
                  return just(
@@ -43,7 +43,7 @@ HandlerResult HandleBridge(rtk::EnhancedStore<FStoreState> &Store,
                           "Usage: bridge_preset <presetName>"))
                     : [&]() -> HandlerResult {
                         FDirectiveRuleSet Preset =
-                            Ops::BridgePreset(Store, Args[0]);
+                            Ops::loadBridgePreset(Store, Args[0]);
                         UE_LOG(LogTemp, Display,
                                TEXT("Loaded preset: %s"), *Preset.Id);
                         return just(Result::Success(
@@ -52,7 +52,7 @@ HandlerResult HandleBridge(rtk::EnhancedStore<FStoreState> &Store,
          : CommandKey == TEXT("rules_list")
              ? [&]() -> HandlerResult {
                  TArray<FDirectiveRuleSet> Rulesets =
-                     Ops::RulesList(Store);
+                     Ops::listRulesets(Store);
                  UE_LOG(LogTemp, Display,
                         TEXT("Found %d rulesets"), Rulesets.Num());
                  return just(
@@ -61,7 +61,7 @@ HandlerResult HandleBridge(rtk::EnhancedStore<FStoreState> &Store,
          : CommandKey == TEXT("rules_presets")
              ? [&]() -> HandlerResult {
                  TArray<FString> Presets =
-                     Ops::RulesPresets(Store);
+                     Ops::listRulePresets(Store);
                  UE_LOG(LogTemp, Display,
                         TEXT("Found %d presets"), Presets.Num());
                  return just(
@@ -75,7 +75,7 @@ HandlerResult HandleBridge(rtk::EnhancedStore<FStoreState> &Store,
                         FDirectiveRuleSet Ruleset;
                         Ruleset.Id = Args[0];
                         FDirectiveRuleSet Registered =
-                            Ops::RulesRegister(Store, Ruleset);
+                            Ops::registerRuleset(Store, Ruleset);
                         UE_LOG(LogTemp, Display,
                                TEXT("Registered ruleset: %s"),
                                *Registered.Id);
@@ -86,7 +86,7 @@ HandlerResult HandleBridge(rtk::EnhancedStore<FStoreState> &Store,
              ? (Args.Num() < 1
                     ? just(Result::Failure(
                           "Usage: rules_delete <rulesetId>"))
-                    : (Ops::RulesDelete(Store, Args[0]),
+                    : (Ops::deleteRuleset(Store, Args[0]),
                        just(Result::Success("Ruleset deleted"))))
              : nothing<Result>();
 }

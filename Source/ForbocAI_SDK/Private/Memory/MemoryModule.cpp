@@ -119,7 +119,7 @@ MemoryOps::Store(const FMemoryStore &Store, const FString &Text,
                      FDateTime::Now().ToUnixTimestamp();
 
                  auto RuntimeStore =
-                     MakeShared<rtk::EnhancedStore<FStoreState>>(
+                     MakeShared<rtk::EnhancedStore<FRuntimeState>>(
                          store());
 
                  /**
@@ -130,7 +130,7 @@ MemoryOps::Store(const FMemoryStore &Store, const FString &Text,
                      [RuntimeStore](const rtk::AnyAction &a) {
                        return RuntimeStore->dispatch(a);
                      },
-                     [RuntimeStore]() -> const FStoreState & {
+                     [RuntimeStore]() -> const FRuntimeState & {
                        return RuntimeStore->getState();
                      });
 
@@ -185,7 +185,7 @@ MemoryOps::Recall(const FMemoryStore &Store, const FString &Query,
                          TPromise<MemoryTypes::MemoryStoreRecallResult>>();
 
                  auto RuntimeStore =
-                     MakeShared<rtk::EnhancedStore<FStoreState>>(
+                     MakeShared<rtk::EnhancedStore<FRuntimeState>>(
                          store());
                  FMemoryRecallRequest RecallRequest;
                  RecallRequest.Query = Query;
@@ -201,7 +201,7 @@ MemoryOps::Recall(const FMemoryStore &Store, const FString &Query,
                      [RuntimeStore](const rtk::AnyAction &a) {
                        return RuntimeStore->dispatch(a);
                      },
-                     [RuntimeStore]() -> const FStoreState & {
+                     [RuntimeStore]() -> const FRuntimeState & {
                        return RuntimeStore->getState();
                      });
 
@@ -230,7 +230,7 @@ MemoryOps::Recall(const FMemoryStore &Store, const FString &Query,
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 TFuture<MemoryTypes::MemoryStoreEmbeddingResult>
-MemoryOps::GenerateEmbedding(const FMemoryStore &Store, const FString &Text) {
+MemoryOps::generateEmbedding(const FMemoryStore &Store, const FString &Text) {
   return !Store.bInitialized
              ? [&]() -> TFuture<MemoryTypes::MemoryStoreEmbeddingResult> {
                  TPromise<MemoryTypes::MemoryStoreEmbeddingResult> Promise;
@@ -244,7 +244,7 @@ MemoryOps::GenerateEmbedding(const FMemoryStore &Store, const FString &Text) {
                    [Store,
                     Text]() -> MemoryTypes::MemoryStoreEmbeddingResult {
                      try {
-                       return MemoryInternal::SQLiteVSS::GenerateEmbedding(
+                       return MemoryInternal::SQLiteVSS::generateEmbedding(
                            Store.DatabaseHandle, Text);
                      } catch (const std::exception &e) {
                        return MemoryTypes::make_left(FString(e.what()),

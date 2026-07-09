@@ -15,10 +15,10 @@ namespace rtk {
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
-inline ThunkAction<FGhostRunResponse, FStoreState>
+inline ThunkAction<FGhostRunResponse, FRuntimeState>
 startGhostThunk(const FGhostConfig &Config) {
   return [Config](std::function<AnyAction(const AnyAction &)> Dispatch,
-                  std::function<const FStoreState &()> GetState)
+                  std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FGhostRunResponse> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -34,10 +34,10 @@ startGhostThunk(const FGhostConfig &Config) {
   };
 }
 
-inline ThunkAction<FGhostStatusResponse, FStoreState>
+inline ThunkAction<FGhostStatusResponse, FRuntimeState>
 getGhostStatusThunk(const FString &SessionId) {
   return [SessionId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                     std::function<const FStoreState &()> GetState)
+                     std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FGhostStatusResponse> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -48,16 +48,16 @@ getGhostStatusThunk(const FString &SessionId) {
         [Dispatch](const FGhostStatusResponse &Response) {
           Dispatch(GhostSlice::Actions::GhostSessionProgress(
               Response.GhostSessionId.IsEmpty() ? TEXT("") : Response.GhostSessionId,
-              Response.GhostStatus, Response.GhostProgress));
+              Response.getGhostStatus, Response.GhostProgress));
           return detail::ResolveAsync(Response);
         });
   };
 }
 
-inline ThunkAction<FGhostResultsResponse, FStoreState>
+inline ThunkAction<FGhostResultsResponse, FRuntimeState>
 getGhostResultsThunk(const FString &SessionId) {
   return [SessionId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                     std::function<const FStoreState &()> GetState)
+                     std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FGhostResultsResponse> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -114,10 +114,10 @@ getGhostResultsThunk(const FString &SessionId) {
   };
 }
 
-inline ThunkAction<FGhostStopResponse, FStoreState>
+inline ThunkAction<FGhostStopResponse, FRuntimeState>
 stopGhostThunk(const FString &SessionId) {
   return [SessionId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                     std::function<const FStoreState &()> GetState)
+                     std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FGhostStopResponse> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -148,13 +148,13 @@ stopGhostThunk(const FString &SessionId) {
  * Local ghost execution (no API). Defined in GhostModule.cpp (uses GhostInternal).
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
-ThunkAction<FGhostTestResult, FStoreState>
+ThunkAction<FGhostTestResult, FRuntimeState>
 runLocalGhostTestThunk(const FAgent &Agent, const FString &Scenario);
 
-inline ThunkAction<TArray<FGhostHistoryEntry>, FStoreState>
+inline ThunkAction<TArray<FGhostHistoryEntry>, FRuntimeState>
 getGhostHistoryThunk(int32 Limit = 10) {
   return [Limit](std::function<AnyAction(const AnyAction &)> Dispatch,
-                 std::function<const FStoreState &()> GetState)
+                 std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<TArray<FGhostHistoryEntry>> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());

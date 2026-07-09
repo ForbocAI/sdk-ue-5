@@ -27,13 +27,13 @@ namespace rtk {
  * User Story: As bridge validation flows, I need a local thunk so actions can
  * be validated and reflected in slice state without remote calls.
  */
-inline ThunkAction<FValidationResult, FStoreState>
+inline ThunkAction<FValidationResult, FRuntimeState>
 localValidateBridgeThunk(const FAgentAction &Action,
                          const TArray<FValidationRule> &Rules,
                          const FBridgeRuleContext &Context) {
   return [Action, Rules, Context](
              std::function<AnyAction(const AnyAction &)> Dispatch,
-             std::function<const FStoreState &()> GetState)
+             std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FValidationResult> {
     Dispatch(BridgeSlice::Actions::BridgeValidationPending());
 
@@ -55,13 +55,13 @@ localValidateBridgeThunk(const FAgentAction &Action,
  * User Story: As remote bridge validation, I need a thunk that checks API
  * prerequisites and stores the resulting validation outcome.
  */
-inline ThunkAction<FValidationResult, FStoreState>
+inline ThunkAction<FValidationResult, FRuntimeState>
 validateBridgeThunk(const FAgentAction &Action,
                     const FBridgeValidationContext &Context,
                     const FString &NpcId = TEXT("")) {
   return [Action, Context, NpcId](
              std::function<AnyAction(const AnyAction &)> Dispatch,
-             std::function<const FStoreState &()> GetState)
+             std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FValidationResult> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -89,10 +89,10 @@ validateBridgeThunk(const FAgentAction &Action,
  * User Story: As bridge preset selection, I need a thunk that fetches preset
  * rules and stores them as active rules for the current runtime.
  */
-inline ThunkAction<FDirectiveRuleSet, FStoreState>
+inline ThunkAction<FDirectiveRuleSet, FRuntimeState>
 loadBridgePresetThunk(const FString &PresetName) {
   return [PresetName](std::function<AnyAction(const AnyAction &)> Dispatch,
-                      std::function<const FStoreState &()> GetState)
+                      std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FDirectiveRuleSet> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -117,9 +117,9 @@ loadBridgePresetThunk(const FString &PresetName) {
  * User Story: As bridge rule inspection, I need a thunk that loads rule
  * metadata so tools can display server-provided validation rules.
  */
-inline ThunkAction<TArray<FBridgeRule>, FStoreState> getBridgeRulesThunk() {
+inline ThunkAction<TArray<FBridgeRule>, FRuntimeState> getBridgeRulesThunk() {
   return [](std::function<AnyAction(const AnyAction &)> Dispatch,
-            std::function<const FStoreState &()> GetState)
+            std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<TArray<FBridgeRule>> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -134,9 +134,9 @@ inline ThunkAction<TArray<FBridgeRule>, FStoreState> getBridgeRulesThunk() {
  * User Story: As bridge ruleset management, I need a thunk that refreshes the
  * ruleset catalog so the slice reflects current server state.
  */
-inline ThunkAction<TArray<FDirectiveRuleSet>, FStoreState> listRulesetsThunk() {
+inline ThunkAction<TArray<FDirectiveRuleSet>, FRuntimeState> listRulesetsThunk() {
   return [](std::function<AnyAction(const AnyAction &)> Dispatch,
-            std::function<const FStoreState &()> GetState)
+            std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<TArray<FDirectiveRuleSet>> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -158,9 +158,9 @@ inline ThunkAction<TArray<FDirectiveRuleSet>, FStoreState> listRulesetsThunk() {
  * User Story: As preset pickers, I need a thunk that fetches preset ids so the
  * UI can offer the current list of server-defined presets.
  */
-inline ThunkAction<TArray<FString>, FStoreState> listRulePresetsThunk() {
+inline ThunkAction<TArray<FString>, FRuntimeState> listRulePresetsThunk() {
   return [](std::function<AnyAction(const AnyAction &)> Dispatch,
-            std::function<const FStoreState &()> GetState)
+            std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<TArray<FString>> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -181,10 +181,10 @@ inline ThunkAction<TArray<FString>, FStoreState> listRulePresetsThunk() {
  * User Story: As bridge ruleset editing, I need a thunk that persists a ruleset
  * and refreshes local state with the saved server version.
  */
-inline ThunkAction<FDirectiveRuleSet, FStoreState>
+inline ThunkAction<FDirectiveRuleSet, FRuntimeState>
 registerRulesetThunk(const FDirectiveRuleSet &Ruleset) {
   return [Ruleset](std::function<AnyAction(const AnyAction &)> Dispatch,
-                   std::function<const FStoreState &()> GetState)
+                   std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FDirectiveRuleSet> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -217,10 +217,10 @@ registerRulesetThunk(const FDirectiveRuleSet &Ruleset) {
  * User Story: As bridge ruleset maintenance, I need a thunk that removes a
  * ruleset remotely and updates the local cache to match.
  */
-inline ThunkAction<rtk::FEmptyPayload, FStoreState>
+inline ThunkAction<rtk::FEmptyPayload, FRuntimeState>
 deleteRulesetThunk(const FString &RulesetId) {
   return [RulesetId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                     std::function<const FStoreState &()> GetState)
+                     std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<rtk::FEmptyPayload> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());

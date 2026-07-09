@@ -15,7 +15,7 @@
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
-namespace BridgeRules {
+namespace getBridgeRules {
 
 FValidationResult ValidateMovement(const FAgentAction &Action,
                                    const FBridgeRuleContext &Context) {
@@ -34,7 +34,7 @@ FValidationResult ValidateAttack(const FAgentAction &Action,
              : TypeFactory::Valid(TEXT("Target specified"));
 }
 
-} // namespace BridgeRules
+} // namespace getBridgeRules
 
 namespace BridgeHelpers {
 BridgeTypes::ValidationPipeline<FAgentAction, FString>
@@ -100,7 +100,7 @@ FValidationResult BridgeOps::Validate(const FAgentAction &Action,
                                       const TArray<FValidationRule> &Rules,
                                       const FBridgeRuleContext &Context) {
   auto Store = store();
-  return Ops::WaitForResult(
+  return Ops::waitForResult(
       Store.dispatch(rtk::localValidateBridgeThunk(Action, Rules, Context)));
 }
 
@@ -109,11 +109,11 @@ TArray<FValidationRule> BridgeOps::CreateRPGRules() {
 
   Rules.Add(
       BridgeFactory::CreateRule(TEXT("move-val"), TEXT("Movement Validation"),
-                                {TEXT("MOVE")}, BridgeRules::ValidateMovement));
+                                {TEXT("MOVE")}, getBridgeRules::ValidateMovement));
 
   Rules.Add(
       BridgeFactory::CreateRule(TEXT("attack-val"), TEXT("Attack Validation"),
-                                {TEXT("ATTACK")}, BridgeRules::ValidateAttack));
+                                {TEXT("ATTACK")}, getBridgeRules::ValidateAttack));
 
   return Rules;
 }

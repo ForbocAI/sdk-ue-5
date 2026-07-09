@@ -8,8 +8,8 @@ namespace {
  * User Story: As blueprint utility calls, I need one shared store so
  * convenience functions reflect the same runtime state across blueprint nodes.
  */
-rtk::EnhancedStore<FStoreState> &GetBPStore() {
-  static rtk::EnhancedStore<FStoreState> Store = store();
+rtk::EnhancedStore<FRuntimeState> &GetBPStore() {
+  static rtk::EnhancedStore<FRuntimeState> Store = store();
   return Store;
 }
 } // namespace
@@ -19,8 +19,8 @@ rtk::EnhancedStore<FStoreState> &GetBPStore() {
  * User Story: As blueprint status panels, I need the API health string so
  * designers can inspect connectivity without writing C++.
  */
-FString UForbocAIBlueprintLibrary::CheckApiStatus() {
-  FApiStatusResponse Resp = Ops::CheckApiStatus(GetBPStore());
+FString UForbocAIBlueprintLibrary::checkApiStatus() {
+  FApiStatusResponse Resp = Ops::checkApiStatus(GetBPStore());
   return Resp.Status;
 }
 
@@ -29,8 +29,8 @@ FString UForbocAIBlueprintLibrary::CheckApiStatus() {
  * User Story: As blueprint setup flows, I need a node that creates NPCs and
  * returns ids so designers can spawn runtime agents without C++.
  */
-FString UForbocAIBlueprintLibrary::CreateNpc(const FString &Persona) {
-  FNPCInternalState Npc = Ops::CreateNpc(GetBPStore(), Persona);
+FString UForbocAIBlueprintLibrary::createNpc(const FString &Persona) {
+  FNPCInternalState Npc = Ops::createNpc(GetBPStore(), Persona);
   return Npc.Id;
 }
 
@@ -39,9 +39,9 @@ FString UForbocAIBlueprintLibrary::CreateNpc(const FString &Persona) {
  * User Story: As blueprint interaction flows, I need dialogue-only processing
  * so designers can wire NPC text responses into UI quickly.
  */
-FString UForbocAIBlueprintLibrary::ProcessNpc(const FString &NpcId,
+FString UForbocAIBlueprintLibrary::processNpc(const FString &NpcId,
                                                const FString &Text) {
-  FAgentResponse Resp = Ops::ProcessNpc(GetBPStore(), NpcId, Text);
+  FAgentResponse Resp = Ops::processNpc(GetBPStore(), NpcId, Text);
   return Resp.Dialogue;
 }
 
@@ -52,7 +52,7 @@ FString UForbocAIBlueprintLibrary::ProcessNpc(const FString &NpcId,
  */
 FString UForbocAIBlueprintLibrary::ChatNpc(const FString &NpcId,
                                             const FString &Message) {
-  FAgentResponse Resp = Ops::ProcessNpc(GetBPStore(), NpcId, Message);
+  FAgentResponse Resp = Ops::processNpc(GetBPStore(), NpcId, Message);
   return Resp.Dialogue;
 }
 
@@ -62,7 +62,7 @@ FString UForbocAIBlueprintLibrary::ChatNpc(const FString &NpcId,
  * exists so graphs can branch safely before issuing commands.
  */
 bool UForbocAIBlueprintLibrary::HasActiveNpc() {
-  func::Maybe<FNPCInternalState> Active = Ops::GetActiveNpc(GetBPStore());
+  func::Maybe<FNPCInternalState> Active = Ops::getActiveNpc(GetBPStore());
   return Active.hasValue;
 }
 
@@ -71,9 +71,9 @@ bool UForbocAIBlueprintLibrary::HasActiveNpc() {
  * User Story: As blueprint memory flows, I need a node that stores
  * observations so designers can persist events without custom C++ glue.
  */
-void UForbocAIBlueprintLibrary::MemoryStore(const FString &NpcId,
+void UForbocAIBlueprintLibrary::storeMemory(const FString &NpcId,
                                              const FString &Observation) {
-  Ops::MemoryStore(GetBPStore(), NpcId, Observation);
+  Ops::storeMemory(GetBPStore(), NpcId, Observation);
 }
 
 /**
@@ -81,8 +81,8 @@ void UForbocAIBlueprintLibrary::MemoryStore(const FString &NpcId,
  * User Story: As blueprint reset flows, I need a node that clears memories so
  * tests and scripted resets can start from a clean slate.
  */
-void UForbocAIBlueprintLibrary::MemoryClear(const FString &NpcId) {
-  Ops::MemoryClear(GetBPStore(), NpcId);
+void UForbocAIBlueprintLibrary::clearMemory(const FString &NpcId) {
+  Ops::clearMemory(GetBPStore(), NpcId);
 }
 
 /**
@@ -90,9 +90,9 @@ void UForbocAIBlueprintLibrary::MemoryClear(const FString &NpcId) {
  * User Story: As blueprint automation flows, I need a node that launches ghost
  * runs so designers can trigger runtime tests from gameplay tools.
  */
-FString UForbocAIBlueprintLibrary::GhostRun(const FString &TestSuite,
+FString UForbocAIBlueprintLibrary::startGhost(const FString &TestSuite,
                                              int32 Duration) {
-  FGhostRunResponse Resp = Ops::GhostRun(GetBPStore(), TestSuite, Duration);
+  FGhostRunResponse Resp = Ops::startGhost(GetBPStore(), TestSuite, Duration);
   return Resp.SessionId;
 }
 
@@ -101,8 +101,8 @@ FString UForbocAIBlueprintLibrary::GhostRun(const FString &TestSuite,
  * User Story: As blueprint automation flows, I need a node that stops ghost
  * runs so long-running tests can be cancelled from gameplay tools.
  */
-FString UForbocAIBlueprintLibrary::GhostStop(const FString &SessionId) {
-  FGhostStopResponse Resp = Ops::GhostStop(GetBPStore(), SessionId);
+FString UForbocAIBlueprintLibrary::stopGhost(const FString &SessionId) {
+  FGhostStopResponse Resp = Ops::stopGhost(GetBPStore(), SessionId);
   return Resp.StopStatus;
 }
 
@@ -111,8 +111,8 @@ FString UForbocAIBlueprintLibrary::GhostStop(const FString &SessionId) {
  * User Story: As blueprint soul-export flows, I need a node that exports souls
  * so designers can persist NPC snapshots without custom code.
  */
-FString UForbocAIBlueprintLibrary::ExportSoul(const FString &NpcId) {
-  FSoulExportResult Result = Ops::ExportSoul(GetBPStore(), NpcId);
+FString UForbocAIBlueprintLibrary::exportSoul(const FString &NpcId) {
+  FSoulExportResult Result = Ops::exportSoul(GetBPStore(), NpcId);
   return Result.TxId;
 }
 
@@ -121,8 +121,8 @@ FString UForbocAIBlueprintLibrary::ExportSoul(const FString &NpcId) {
  * User Story: As blueprint soul-import flows, I need a node that imports souls
  * so designers can restore NPC data from transactions directly.
  */
-FString UForbocAIBlueprintLibrary::ImportSoul(const FString &TxId) {
-  FSoul Soul = Ops::ImportSoul(GetBPStore(), TxId);
+FString UForbocAIBlueprintLibrary::importSoul(const FString &TxId) {
+  FSoul Soul = Ops::importSoul(GetBPStore(), TxId);
   return Soul.Id;
 }
 
@@ -131,8 +131,8 @@ FString UForbocAIBlueprintLibrary::ImportSoul(const FString &TxId) {
  * User Story: As blueprint verification flows, I need a node that validates
  * soul transactions so trust checks can be built without C++.
  */
-bool UForbocAIBlueprintLibrary::VerifySoul(const FString &TxId) {
-  FSoulVerifyResult Result = Ops::VerifySoul(GetBPStore(), TxId);
+bool UForbocAIBlueprintLibrary::verifySoul(const FString &TxId) {
+  FSoulVerifyResult Result = Ops::verifySoul(GetBPStore(), TxId);
   return Result.bValid;
 }
 
@@ -145,7 +145,7 @@ bool UForbocAIBlueprintLibrary::ValidateBridgeAction(const FString &ActionJson) 
   FAgentAction Action;
   Action.PayloadJson = ActionJson;
   FBridgeValidationContext Context;
-  FValidationResult Result = Ops::ValidateBridge(GetBPStore(), Action, Context);
+  FValidationResult Result = Ops::validateBridgePayload(GetBPStore(), Action, Context);
   return Result.bValid;
 }
 
@@ -154,9 +154,9 @@ bool UForbocAIBlueprintLibrary::ValidateBridgeAction(const FString &ActionJson) 
  * User Story: As blueprint config tools, I need a node that persists settings
  * so designers can update runtime config without editing files manually.
  */
-void UForbocAIBlueprintLibrary::ConfigSet(const FString &Key,
+void UForbocAIBlueprintLibrary::setConfigValue(const FString &Key,
                                            const FString &Value) {
-  Ops::ConfigSet(Key, Value);
+  Ops::setConfigValue(Key, Value);
 }
 
 /**
@@ -164,6 +164,6 @@ void UForbocAIBlueprintLibrary::ConfigSet(const FString &Key,
  * User Story: As blueprint config tools, I need a node that reads settings so
  * designers can inspect runtime config without C++ helpers.
  */
-FString UForbocAIBlueprintLibrary::ConfigGet(const FString &Key) {
-  return Ops::ConfigGet(Key);
+FString UForbocAIBlueprintLibrary::getConfigValue(const FString &Key) {
+  return Ops::getConfigValue(Key);
 }

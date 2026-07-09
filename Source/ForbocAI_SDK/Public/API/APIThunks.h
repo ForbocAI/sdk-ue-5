@@ -12,9 +12,9 @@ namespace rtk {
  * User Story: As runtime health checks, I need a lightweight doctor thunk so
  * callers can verify API availability through the store contract.
  */
-inline ThunkAction<FApiStatusResponse, FStoreState> doctorThunk() {
+inline ThunkAction<FApiStatusResponse, FRuntimeState> doctorThunk() {
   return [](std::function<AnyAction(const AnyAction &)> Dispatch,
-            std::function<const FStoreState &()> GetState)
+            std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FApiStatusResponse> {
     return APISlice::Endpoints::getApiStatus()(Dispatch, GetState);
   };
@@ -25,7 +25,7 @@ inline ThunkAction<FApiStatusResponse, FStoreState> doctorThunk() {
  * User Story: As callers using clearer naming, I need a semantic alias so
  * health checks can be invoked without duplicating implementation.
  */
-inline ThunkAction<FApiStatusResponse, FStoreState> checkApiStatusThunk() {
+inline ThunkAction<FApiStatusResponse, FRuntimeState> checkApiStatusThunk() {
   return doctorThunk();
 }
 

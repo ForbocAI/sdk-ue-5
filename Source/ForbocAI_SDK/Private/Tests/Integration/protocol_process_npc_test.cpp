@@ -41,7 +41,7 @@ struct FProcessNPCTestState {
   bool bSuccess = false;
   FString Error;
   FAgentResponse Response;
-  TSharedPtr<rtk::EnhancedStore<FStoreState>> Store;
+  TSharedPtr<rtk::EnhancedStore<FRuntimeState>> Store;
 };
 
 struct FProcessNPCParams {
@@ -65,7 +65,7 @@ bool FProcessNPCWaitComplete::Update() {
 
   if (!State->Store.IsValid()) {
     const TSharedPtr<FProcessNPCTestState> SharedState = State;
-    State->Store = MakeShared<rtk::EnhancedStore<FStoreState>>(createRuntimeStore());
+    State->Store = MakeShared<rtk::EnhancedStore<FRuntimeState>>(createRuntimeStore());
     State->Store->dispatch(rtk::processNPC(
         Params.NpcId, Params.Input, FString(TEXT("{") TEXT("}")), Params.Persona, FAgentState(),
         rtk::LocalProtocolRuntime()))
@@ -134,7 +134,7 @@ bool FProcessNPCLiveFinalizeValidTest::RunTest(const FString &Parameters) {
           return;
         }
 
-        FStoreState StoreState = State->Store->getState();
+        FRuntimeState StoreState = State->Store->getState();
         auto Run = DirectiveSlice::SelectDirectiveById(
             StoreState.Directives,
             DirectiveSlice::SelectActiveDirectiveId(StoreState.Directives));
@@ -206,7 +206,7 @@ bool FProcessNPCLiveFinalizeInvalidTest::RunTest(const FString &Parameters) {
           return;
         }
 
-        FStoreState StoreState = State->Store->getState();
+        FRuntimeState StoreState = State->Store->getState();
         auto Npc =
             NPCSlice::SelectNPCById(StoreState.NPCs, TEXT("npc_block_1"));
         TestTrue("NPC exists", Npc.hasValue);
@@ -256,7 +256,7 @@ bool FProcessNPCDirectiveLifecycleTest::RunTest(const FString &Parameters) {
           return;
         }
 
-        FStoreState StoreState = State->Store->getState();
+        FRuntimeState StoreState = State->Store->getState();
         FString ActiveId =
             DirectiveSlice::SelectActiveDirectiveId(StoreState.Directives);
         TestFalse("Active directive set", ActiveId.IsEmpty());

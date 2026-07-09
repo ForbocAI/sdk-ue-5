@@ -77,7 +77,7 @@ bool FDirectiveReceivedNonExistentTest::RunTest(const FString &Parameters) {
   FDirectiveSliceState State;
 
   FDirectiveResponse Response;
-  Response.MemoryRecall.Query = TEXT("lost context");
+  Response.recallMemory.Query = TEXT("lost context");
 
   State = DirSlice.Reducer(
       State,

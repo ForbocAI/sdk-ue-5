@@ -17,7 +17,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FStoreNPCCreationTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FStoreNPCCreationTest::RunTest(const FString &Parameters) {
-  FStoreState State;
+  FRuntimeState State;
 
   FNPCInternalState Info;
   Info.Id = TEXT("int_npc_1");
@@ -57,7 +57,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> Store = createRuntimeStore();
+  EnhancedStore<FRuntimeState> Store = createRuntimeStore();
 
   /**
    * Create NPC
@@ -173,7 +173,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FStoreRemoveNonActiveTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> Store = createRuntimeStore();
+  EnhancedStore<FRuntimeState> Store = createRuntimeStore();
 
   /**
    * Create two NPCs
@@ -228,14 +228,14 @@ bool FStoreRemoveNonActiveTest::RunTest(const FString &Parameters) {
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FStoreReduxLoggerSummaryTest,
-    "ForbocAI.Integration.Store.ReduxLoggerSummary",
+    FRuntimeProtocolLoggerSummaryTest,
+    "ForbocAI.Integration.Store.ProtocolLoggerSummary",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
-bool FStoreReduxLoggerSummaryTest::RunTest(const FString &Parameters) {
+bool FRuntimeProtocolLoggerSummaryTest::RunTest(const FString &Parameters) {
   (void)Parameters;
 
   const rtk::AnyAction SetActiveAction =
@@ -243,8 +243,8 @@ bool FStoreReduxLoggerSummaryTest::RunTest(const FString &Parameters) {
   TestEqual("String payloads are preserved for logger output",
             SetActiveAction.describePayload(), FString(TEXT("logger_npc")));
 
-  FStoreState Before;
-  FStoreState After = StoreReducer(Before, SetActiveAction);
+  FRuntimeState Before;
+  FRuntimeState After = StoreReducer(Before, SetActiveAction);
   const FString Delta = StoreInternal::DescribeStateDelta(Before, After);
 
   TestTrue("Delta includes NPC slice summary", Delta.Contains(TEXT("NPCs{")));

@@ -15,10 +15,10 @@
 void UForbocAISubsystem::Initialize(FSubsystemCollectionBase &Collection) {
   Super::Initialize(Collection);
 
-  std::vector<rtk::Middleware<FStoreState>> Middlewares;
+  std::vector<rtk::Middleware<FRuntimeState>> Middlewares;
   Middlewares.push_back(createNpcRemovalListener());
 
-  Middlewares.push_back([this](const rtk::MiddlewareApi<FStoreState> &Api)
+  Middlewares.push_back([this](const rtk::MiddlewareApi<FRuntimeState> &Api)
                             -> std::function<rtk::Dispatcher(rtk::Dispatcher)> {
     return [this](rtk::Dispatcher Next) -> rtk::Dispatcher {
       return [this, Next](const rtk::AnyAction &Action) {
@@ -28,8 +28,8 @@ void UForbocAISubsystem::Initialize(FSubsystemCollectionBase &Collection) {
     };
   });
 
-  Store = MakeShared<rtk::EnhancedStore<FStoreState>>(
-      rtk::configureStore<FStoreState>(&StoreReducer, FStoreState(),
+  Store = MakeShared<rtk::EnhancedStore<FRuntimeState>>(
+      rtk::configureStore<FRuntimeState>(&StoreReducer, FRuntimeState(),
                                        Middlewares));
 }
 
@@ -88,7 +88,7 @@ void UForbocAISubsystem::ProcessNPC(FString NpcId, FString Input) {
  * User Story: As gameplay soul-export flows, I need subsystem-triggered export
  * events so game code can react when a soul has been published.
  */
-void UForbocAISubsystem::ExportSoul(FString AgentId) {
+void UForbocAISubsystem::exportSoul(FString AgentId) {
   !Store.IsValid()
       ? void()
       : (void)Store->dispatch(rtk::exportSoulThunk(AgentId))
@@ -162,7 +162,7 @@ bool UForbocAISubsystem::GetLastBridgeValidation(
     FValidationResult &OutResult) const {
   return !Store.IsValid() ? false
                           : [this, &OutResult]() -> bool {
-    const FStoreState State = Store->getState();
+    const FRuntimeState State = Store->getState();
     return State.Bridge.bHasLastValidation
                ? (OutResult = State.Bridge.LastValidation, true)
                : false;
@@ -177,7 +177,7 @@ bool UForbocAISubsystem::GetLastBridgeValidation(
 bool UForbocAISubsystem::GetLastImportedSoul(FSoul &OutSoul) const {
   return !Store.IsValid() ? false
                           : [this, &OutSoul]() -> bool {
-    const FStoreState State = Store->getState();
+    const FRuntimeState State = Store->getState();
     return State.Soul.bHasLastImport
                ? (OutSoul = State.Soul.LastImport, true)
                : false;

@@ -192,7 +192,7 @@ struct FNPCInstruction {
   FString Signature;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  TArray<FMemoryStoreInstruction> MemoryStore;
+  TArray<FMemoryStoreInstruction> storeMemory;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FAgentState StateTransform;

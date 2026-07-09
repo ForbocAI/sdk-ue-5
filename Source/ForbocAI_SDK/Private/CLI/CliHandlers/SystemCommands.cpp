@@ -7,7 +7,7 @@
 namespace CLIOps {
 namespace Handlers {
 
-HandlerResult HandleSystem(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleSystem(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
                           const TArray<FString> &Args) {
   (void)Args;
@@ -22,7 +22,7 @@ HandlerResult HandleSystem(rtk::EnhancedStore<FStoreState> &Store,
                }()
          : CommandKey == TEXT("status")
              ? [&]() -> HandlerResult {
-                 FApiStatusResponse Status = Ops::CheckApiStatus(Store);
+                 FApiStatusResponse Status = Ops::checkApiStatus(Store);
                  UE_LOG(LogTemp, Display, TEXT("API: %s"), *Status.Status);
                  return just(Result::Success("Status checked"));
                }()
@@ -37,7 +37,7 @@ HandlerResult HandleSystem(rtk::EnhancedStore<FStoreState> &Store,
                         SDKConfig::GetApiKey().IsEmpty()
                             ? TEXT("(not set)")
                             : TEXT("********"));
-                 FApiStatusResponse Status = Ops::CheckApiStatus(Store);
+                 FApiStatusResponse Status = Ops::checkApiStatus(Store);
                  UE_LOG(LogTemp, Display, TEXT("API Status: %s (v%s)"),
                         *Status.Status, *Status.Version);
                  return just(Result::Success("Doctor check completed"));

@@ -6,7 +6,7 @@
 namespace CLIOps {
 namespace Handlers {
 
-HandlerResult HandleSoul(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleSoul(rtk::EnhancedStore<FRuntimeState> &Store,
                         const FString &CommandKey,
                         const TArray<FString> &Args) {
   using func::just;
@@ -17,7 +17,7 @@ HandlerResult HandleSoul(rtk::EnhancedStore<FStoreState> &Store,
                     ? just(Result::Failure("Usage: soul_export <npcId>"))
                     : [&]() -> HandlerResult {
                         FSoulExportResult Exported =
-                            Ops::ExportSoul(Store, Args[0]);
+                            Ops::exportSoul(Store, Args[0]);
                         UE_LOG(LogTemp, Display,
                                TEXT("Soul exported: %s"), *Exported.TxId);
                         return just(
@@ -28,7 +28,7 @@ HandlerResult HandleSoul(rtk::EnhancedStore<FStoreState> &Store,
                     ? just(Result::Failure("Usage: soul_import <txId>"))
                     : [&]() -> HandlerResult {
                         FSoul Imported =
-                            Ops::ImportSoul(Store, Args[0]);
+                            Ops::importSoul(Store, Args[0]);
                         UE_LOG(LogTemp, Display,
                                TEXT("Soul imported: %s"), *Imported.Id);
                         return just(
@@ -40,7 +40,7 @@ HandlerResult HandleSoul(rtk::EnhancedStore<FStoreState> &Store,
                           "Usage: soul_import_npc <txId>"))
                     : [&]() -> HandlerResult {
                         FImportedNpc Npc =
-                            Ops::ImportNpcFromSoul(Store, Args[0]);
+                            Ops::importNpcFromSoul(Store, Args[0]);
                         UE_LOG(LogTemp, Display,
                                TEXT("NPC imported from soul: %s"),
                                *Npc.NpcId);
@@ -52,7 +52,7 @@ HandlerResult HandleSoul(rtk::EnhancedStore<FStoreState> &Store,
                  int32 Limit =
                      Args.Num() > 0 ? FCString::Atoi(*Args[0]) : 50;
                  TArray<FSoulListItem> Souls =
-                     Ops::ListSouls(Store, Limit);
+                     Ops::listSouls(Store, Limit);
                  UE_LOG(LogTemp, Display, TEXT("Found %d souls"),
                         Souls.Num());
                  return just(Result::Success("Souls listed"));
@@ -65,7 +65,7 @@ HandlerResult HandleSoul(rtk::EnhancedStore<FStoreState> &Store,
                         UE_LOG(LogTemp, Display, TEXT("> You: %s"),
                                *Args[1]);
                         FAgentResponse Resp =
-                            Ops::ProcessNpc(Store, Args[0], Args[1]);
+                            Ops::processNpc(Store, Args[0], Args[1]);
                         UE_LOG(LogTemp, Display, TEXT("> NPC: %s"),
                                *Resp.Dialogue);
                         return just(
@@ -77,7 +77,7 @@ HandlerResult HandleSoul(rtk::EnhancedStore<FStoreState> &Store,
                           "Usage: soul_verify <txId>"))
                     : [&]() -> HandlerResult {
                         FSoulVerifyResult Verified =
-                            Ops::VerifySoul(Store, Args[0]);
+                            Ops::verifySoul(Store, Args[0]);
                         UE_LOG(LogTemp, Display,
                                TEXT("Soul verification: %s"),
                                Verified.bValid ? TEXT("VALID")

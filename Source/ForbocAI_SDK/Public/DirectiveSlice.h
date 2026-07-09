@@ -248,11 +248,11 @@ inline Slice<FDirectiveSliceState> CreateDirectiveSlice() {
                                 [Payload](const FDirectiveRun &Existing) {
                                   FDirectiveRun Updated = Existing;
                                   Updated.MemoryRecallQuery =
-                                      Payload.Response.MemoryRecall.Query;
+                                      Payload.Response.recallMemory.Query;
                                   Updated.MemoryRecallLimit =
-                                      Payload.Response.MemoryRecall.Limit;
+                                      Payload.Response.recallMemory.Limit;
                                   Updated.MemoryRecallThreshold =
-                                      Payload.Response.MemoryRecall.Threshold;
+                                      Payload.Response.recallMemory.Threshold;
                                   return Updated;
                                 });
                             return Next;

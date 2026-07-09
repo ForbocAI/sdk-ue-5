@@ -26,9 +26,9 @@
 namespace rtk {
 
 struct FProtocolRuntime {
-  std::function<ThunkAction<FMemoryItem, FStoreState>(const FMemoryItem &)>
+  std::function<ThunkAction<FMemoryItem, FRuntimeState>(const FMemoryItem &)>
       StoreMemory;
-  std::function<ThunkAction<TArray<FMemoryItem>, FStoreState>(
+  std::function<ThunkAction<TArray<FMemoryItem>, FRuntimeState>(
       const FMemoryRecallRequest &)>
       RecallMemory;
 
@@ -95,7 +95,7 @@ inline func::AsyncResult<rtk::FEmptyPayload>
 PersistMemoryInstructions(const TArray<FMemoryStoreInstruction> &Instructions,
                           int32 Index, const FProtocolRuntime &Runtime,
                           std::function<AnyAction(const AnyAction &)> Dispatch,
-                          std::function<const FStoreState &()> GetState);
+                          std::function<const FRuntimeState &()> GetState);
 
 func::AsyncResult<FAgentResponse>
 RunProtocolTurn(const FString &NpcId, const FString &Input,
@@ -103,7 +103,7 @@ RunProtocolTurn(const FString &NpcId, const FString &Input,
                 const FString &LastResult, bool bHasLastResult,
                 int32 Turn, const FProtocolRuntime &Runtime,
                 std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<const FStoreState &()> GetState);
+                std::function<const FRuntimeState &()> GetState);
 
 /**
  * Handles the IdentifyActor protocol instruction by serializing actor info
@@ -117,7 +117,7 @@ HandleIdentifyActor(const FNPCProcessResponse &Response,
                     const FString &RunId, int32 Turn,
                     const FProtocolRuntime &Runtime,
                     std::function<AnyAction(const AnyAction &)> Dispatch,
-                    std::function<const FStoreState &()> GetState) {
+                    std::function<const FRuntimeState &()> GetState) {
   FNPCActorInfo Actor;
   Actor.NpcId = NpcId;
   Actor.Persona = Response.Tape.Persona;
@@ -140,7 +140,7 @@ HandleQueryVector(const FNPCProcessResponse &Response,
                   const FString &RunId, int32 Turn,
                   const FProtocolRuntime &Runtime,
                   std::function<AnyAction(const AnyAction &)> Dispatch,
-                  std::function<const FStoreState &()> GetState) {
+                  std::function<const FRuntimeState &()> GetState) {
   return !Runtime.HasMemory()
              ? (Dispatch(DirectiveSlice::Actions::DirectiveRunFailed(
                     RunId,
@@ -151,7 +151,7 @@ HandleQueryVector(const FNPCProcessResponse &Response,
                          "is configured")))
              : [&]() -> func::AsyncResult<FAgentResponse> {
     FDirectiveResponse Directive;
-    Directive.MemoryRecall = TypeFactory::MemoryRecallInstruction(
+    Directive.recallMemory = TypeFactory::MemoryRecallInstruction(
         Instruction.Query, Instruction.Limit, Instruction.Threshold);
     Dispatch(
         DirectiveSlice::Actions::DirectiveReceived(RunId, Directive));
@@ -194,7 +194,7 @@ HandleDecision(const FNPCProcessResponse &Response,
                const FString &RunId, int32 Turn,
                const FProtocolRuntime &Runtime,
                std::function<AnyAction(const AnyAction &)> Dispatch,
-               std::function<const FStoreState &()> GetState) {
+               std::function<const FRuntimeState &()> GetState) {
   FNPCProcessTape NextTape = Response.Tape;
   
   const FString ObsLower = Response.Tape.Observation.ToLower();
@@ -274,7 +274,7 @@ HandleReasoning(const FNPCProcessResponse &Response,
                 const FString &RunId, int32 Turn,
                 const FProtocolRuntime &Runtime,
                 std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<const FStoreState &()> GetState) {
+                std::function<const FRuntimeState &()> GetState) {
   FNPCProcessTape NextTape = Response.Tape;
   NextTape.bReasoningCompleted = true;
 
@@ -296,11 +296,11 @@ HandleFinalize(const FNPCInstruction &Instruction,
                const FString &RunId,
                const FProtocolRuntime &Runtime,
                std::function<AnyAction(const AnyAction &)> Dispatch,
-               std::function<const FStoreState &()> GetState) {
+               std::function<const FRuntimeState &()> GetState) {
   FVerdictResponse Verdict;
   Verdict.bValid = Instruction.bValid;
   Verdict.Signature = Instruction.Signature;
-  Verdict.MemoryStore = Instruction.MemoryStore;
+  Verdict.storeMemory = Instruction.storeMemory;
   Verdict.StateDelta = Instruction.StateTransform;
   Verdict.Dialogue = Instruction.Dialogue;
   Verdict.bHasAction = Instruction.bHasAction;
@@ -314,7 +314,7 @@ HandleFinalize(const FNPCInstruction &Instruction,
                                : Instruction.Dialogue)),
                 ResolveAsync(BuildAgentResponse(Instruction)))
              : func::AsyncChain::then<rtk::FEmptyPayload, FAgentResponse>(
-                   PersistMemoryInstructions(Instruction.MemoryStore, 0,
+                   PersistMemoryInstructions(Instruction.storeMemory, 0,
                                              Runtime, Dispatch, GetState),
                    [NpcId, Input, Instruction, Dispatch,
                     GetState](const rtk::FEmptyPayload &) {
@@ -342,7 +342,7 @@ RunProtocolTurn(const FString &NpcId, const FString &Input,
                 const FString &LastResult, bool bHasLastResult,
                 int32 Turn, const FProtocolRuntime &Runtime,
                 std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<const FStoreState &()> GetState) {
+                std::function<const FRuntimeState &()> GetState) {
   return Turn >= 12
              ? (Dispatch(DirectiveSlice::Actions::DirectiveRunFailed(
                     RunId, TEXT("Max turns exceeded"))),
@@ -407,7 +407,7 @@ inline func::AsyncResult<rtk::FEmptyPayload>
 PersistMemoryInstructions(const TArray<FMemoryStoreInstruction> &Instructions,
                           int32 Index, const FProtocolRuntime &Runtime,
                           std::function<AnyAction(const AnyAction &)> Dispatch,
-                          std::function<const FStoreState &()> GetState) {
+                          std::function<const FRuntimeState &()> GetState) {
   return Index >= Instructions.Num()
              ? ResolveAsync(rtk::FEmptyPayload{})
          : !Runtime.StoreMemory
@@ -432,7 +432,7 @@ PersistMemoryInstructions(const TArray<FMemoryStoreInstruction> &Instructions,
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
-inline ThunkAction<FAgentResponse, FStoreState>
+inline ThunkAction<FAgentResponse, FRuntimeState>
 processNPC(const FString &NpcId, const FString &Input = TEXT(""),
            const FString &ContextJson = TEXT("{}"),
            const FString &Persona = TEXT(""),
@@ -440,7 +440,7 @@ processNPC(const FString &NpcId, const FString &Input = TEXT(""),
            const FProtocolRuntime &Runtime = FProtocolRuntime()) {
   return [NpcId, Input, ContextJson, Persona, InitialState, Runtime](
              std::function<AnyAction(const AnyAction &)> Dispatch,
-             std::function<const FStoreState &()> GetState)
+             std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FAgentResponse> {
     const auto ExistingNpc = NPCSlice::SelectNPCById(GetState().NPCs, NpcId);
     const bool bHasExplicitState =

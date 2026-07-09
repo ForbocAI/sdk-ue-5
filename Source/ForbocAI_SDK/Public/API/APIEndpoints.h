@@ -6,9 +6,9 @@ namespace APISlice {
 
 namespace Endpoints {
 
-// C++11 type alias — all endpoint factories return ThunkAction<Result, FStoreState>.
+// C++11 type alias — all endpoint factories return ThunkAction<Result, FRuntimeState>.
 template <typename T>
-using Thunk = rtk::ThunkAction<T, FStoreState>;
+using Thunk = rtk::ThunkAction<T, FRuntimeState>;
 
 /**
  * Builds the endpoint thunk that fetches the NPC collection.

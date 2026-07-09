@@ -100,7 +100,7 @@ Recall(const FMemoryStore &Store, const FString &Query, int32 Limit = -1);
  * @return The vector embedding.
  */
 FORBOCAI_SDK_API TFuture<MemoryTypes::MemoryStoreEmbeddingResult>
-GenerateEmbedding(const FMemoryStore &Store, const FString &Text);
+generateEmbedding(const FMemoryStore &Store, const FString &Text);
 
 /**
  * Gets the current memory statistics.

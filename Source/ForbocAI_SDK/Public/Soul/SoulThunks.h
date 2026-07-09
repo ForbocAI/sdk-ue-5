@@ -17,10 +17,10 @@ namespace rtk {
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
-inline ThunkAction<FSoulExportResult, FStoreState>
+inline ThunkAction<FSoulExportResult, FRuntimeState>
 exportSoulThunk(const FString &NpcId) {
   return [NpcId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                 std::function<const FStoreState &()> GetState)
+                 std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FSoulExportResult> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -81,10 +81,10 @@ exportSoulThunk(const FString &NpcId) {
   };
 }
 
-inline ThunkAction<FSoulExportResult, FStoreState>
+inline ThunkAction<FSoulExportResult, FRuntimeState>
 exportSoulThunk(const FSoul &Soul) {
   return [Soul](std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<const FStoreState &()> GetState)
+                std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FSoulExportResult> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -141,10 +141,10 @@ exportSoulThunk(const FSoul &Soul) {
   };
 }
 
-inline ThunkAction<FSoul, FStoreState>
+inline ThunkAction<FSoul, FRuntimeState>
 importSoulThunk(const FString &TxId) {
   return [TxId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<const FStoreState &()> GetState)
+                std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FSoul> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -194,10 +194,10 @@ importSoulThunk(const FString &TxId) {
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
-inline ThunkAction<FSoul, FStoreState>
+inline ThunkAction<FSoul, FRuntimeState>
 localExportSoulThunk(const FString &NpcId = TEXT("")) {
   return [NpcId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                 std::function<const FStoreState &()> GetState)
+                 std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FSoul> {
     const FString TargetNpcId =
         NpcId.IsEmpty() ? NPCSlice::SelectActiveNpcId(GetState().NPCs) : NpcId;
@@ -217,10 +217,10 @@ localExportSoulThunk(const FString &NpcId = TEXT("")) {
  * Mirrors TS localImportSoulThunk in soulSlice.ts.
  * User Story: As an SDK integrator, I need this type or module note so I can understand the role of the surrounding API surface quickly.
  */
-inline ThunkAction<FSoul, FStoreState>
+inline ThunkAction<FSoul, FRuntimeState>
 localImportSoulThunk(const FSoul &Soul) {
   return [Soul](std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<const FStoreState &()> GetState)
+                std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FSoul> {
     return Soul.Id.IsEmpty()
         ? detail::RejectAsync<FSoul>(TEXT("Soul ID is required"))
@@ -236,10 +236,10 @@ localImportSoulThunk(const FSoul &Soul) {
   };
 }
 
-inline ThunkAction<FSoulExportResult, FStoreState>
+inline ThunkAction<FSoulExportResult, FRuntimeState>
 remoteExportSoulThunk(const FString &NpcId = TEXT("")) {
   return [NpcId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                 std::function<const FStoreState &()> GetState)
+                 std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FSoulExportResult> {
     const FString TargetNpcId =
         NpcId.IsEmpty() ? NPCSlice::SelectActiveNpcId(GetState().NPCs) : NpcId;
@@ -247,15 +247,15 @@ remoteExportSoulThunk(const FString &NpcId = TEXT("")) {
   };
 }
 
-inline ThunkAction<FSoul, FStoreState>
+inline ThunkAction<FSoul, FRuntimeState>
 importSoulFromArweaveThunk(const FString &TxId) {
   return importSoulThunk(TxId);
 }
 
-inline ThunkAction<TArray<FSoulListItem>, FStoreState>
+inline ThunkAction<TArray<FSoulListItem>, FRuntimeState>
 getSoulListThunk(int32 Limit = 50) {
   return [Limit](std::function<AnyAction(const AnyAction &)> Dispatch,
-                 std::function<const FStoreState &()> GetState)
+                 std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<TArray<FSoulListItem>> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -270,10 +270,10 @@ getSoulListThunk(int32 Limit = 50) {
   };
 }
 
-inline ThunkAction<FSoulVerifyResult, FStoreState>
+inline ThunkAction<FSoulVerifyResult, FRuntimeState>
 verifySoulThunk(const FString &TxId) {
   return [TxId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<const FStoreState &()> GetState)
+                std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FSoulVerifyResult> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
@@ -283,10 +283,10 @@ verifySoulThunk(const FString &TxId) {
   };
 }
 
-inline ThunkAction<FImportedNpc, FStoreState>
+inline ThunkAction<FImportedNpc, FRuntimeState>
 importNpcFromSoulThunk(const FString &TxId) {
   return [TxId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<const FStoreState &()> GetState)
+                std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FImportedNpc> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());

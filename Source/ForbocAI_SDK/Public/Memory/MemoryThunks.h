@@ -12,10 +12,10 @@ namespace rtk {
  * Forward declarations
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
-inline ThunkAction<FMemoryItem, FStoreState>
+inline ThunkAction<FMemoryItem, FRuntimeState>
 nodeMemoryStoreThunk(const FMemoryItem &Item);
 
-inline ThunkAction<TArray<FMemoryItem>, FStoreState>
+inline ThunkAction<TArray<FMemoryItem>, FRuntimeState>
 nodeMemoryRecallThunk(const FMemoryRecallRequest &Request);
 
 /**
@@ -23,10 +23,10 @@ nodeMemoryRecallThunk(const FMemoryRecallRequest &Request);
  * vector storage cannot escape the intended infrastructure directory. (From TS)
  */
 
-inline ThunkAction<rtk::FEmptyPayload, FStoreState>
+inline ThunkAction<rtk::FEmptyPayload, FRuntimeState>
 initNodeMemoryThunk(const FString &DatabasePath = TEXT("")) {
   return [DatabasePath](std::function<AnyAction(const AnyAction &)> Dispatch,
-                        std::function<const FStoreState &()> GetState)
+                        std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<rtk::FEmptyPayload> {
     return func::AsyncResult<rtk::FEmptyPayload>::create(
         [DatabasePath](std::function<void(rtk::FEmptyPayload)> Resolve,
@@ -54,10 +54,10 @@ initNodeMemoryThunk(const FString &DatabasePath = TEXT("")) {
   };
 }
 
-inline ThunkAction<FMemoryItem, FStoreState>
+inline ThunkAction<FMemoryItem, FRuntimeState>
 nodeMemoryStoreThunk(const FMemoryItem &Item) {
   return [Item](std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<const FStoreState &()> GetState)
+                std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FMemoryItem> {
     Dispatch(MemorySlice::Actions::MemoryStoreStart());
 
@@ -104,10 +104,10 @@ nodeMemoryStoreThunk(const FMemoryItem &Item) {
   };
 }
 
-inline ThunkAction<TArray<FMemoryItem>, FStoreState>
+inline ThunkAction<TArray<FMemoryItem>, FRuntimeState>
 nodeMemoryRecallThunk(const FMemoryRecallRequest &Request) {
   return [Request](std::function<AnyAction(const AnyAction &)> Dispatch,
-                   std::function<const FStoreState &()> GetState)
+                   std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<TArray<FMemoryItem>> {
     Dispatch(MemorySlice::Actions::MemoryRecallStart());
 
@@ -158,7 +158,7 @@ nodeMemoryRecallThunk(const FMemoryRecallRequest &Request) {
  * Convenience wrappers
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
-inline ThunkAction<FMemoryItem, FStoreState>
+inline ThunkAction<FMemoryItem, FRuntimeState>
 storeNodeMemoryThunk(const FString &Text,
                      const FString &Type = TEXT("observation"),
                      float Importance = 0.5f) {
@@ -169,7 +169,7 @@ storeNodeMemoryThunk(const FString &Text,
   return nodeMemoryStoreThunk(detail::MakeMemoryItem(Instruction));
 }
 
-inline ThunkAction<TArray<FMemoryItem>, FStoreState>
+inline ThunkAction<TArray<FMemoryItem>, FRuntimeState>
 recallNodeMemoryThunk(const FString &Query, int32 Limit = 10,
                       float Threshold = 0.7f) {
   FMemoryRecallRequest Request;
@@ -179,9 +179,9 @@ recallNodeMemoryThunk(const FString &Query, int32 Limit = 10,
   return nodeMemoryRecallThunk(Request);
 }
 
-inline ThunkAction<rtk::FEmptyPayload, FStoreState> clearNodeMemoryThunk() {
+inline ThunkAction<rtk::FEmptyPayload, FRuntimeState> clearNodeMemoryThunk() {
   return [](std::function<AnyAction(const AnyAction &)> Dispatch,
-            std::function<const FStoreState &()> GetState)
+            std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<rtk::FEmptyPayload> {
     return func::AsyncResult<rtk::FEmptyPayload>::create(
         [Dispatch](std::function<void(rtk::FEmptyPayload)> Resolve,
@@ -199,7 +199,7 @@ inline ThunkAction<rtk::FEmptyPayload, FStoreState> clearNodeMemoryThunk() {
             detail::NodeMemoryPathStorage() = detail::DefaultNodeMemoryPath();
 
             AsyncTask(ENamedThreads::GameThread, [Dispatch, Resolve]() {
-              Dispatch(MemorySlice::Actions::MemoryClear());
+              Dispatch(MemorySlice::Actions::clearMemory());
               Resolve(rtk::FEmptyPayload{});
             });
           });
@@ -212,12 +212,12 @@ inline ThunkAction<rtk::FEmptyPayload, FStoreState> clearNodeMemoryThunk() {
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
-inline ThunkAction<rtk::FEmptyPayload, FStoreState>
+inline ThunkAction<rtk::FEmptyPayload, FRuntimeState>
 storeMemoryRemoteThunk(const FString &NpcId, const FString &Observation,
                        float Importance = 0.8f) {
   return [NpcId, Observation,
           Importance](std::function<AnyAction(const AnyAction &)> Dispatch,
-                      std::function<const FStoreState &()> GetState)
+                      std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<rtk::FEmptyPayload> {
     return APISlice::Endpoints::postMemoryStore(
         NpcId, TypeFactory::RemoteMemoryStoreRequest(Observation, Importance))(
@@ -225,10 +225,10 @@ storeMemoryRemoteThunk(const FString &NpcId, const FString &Observation,
   };
 }
 
-inline ThunkAction<TArray<FMemoryItem>, FStoreState>
+inline ThunkAction<TArray<FMemoryItem>, FRuntimeState>
 listMemoryRemoteThunk(const FString &NpcId) {
   return [NpcId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                 std::function<const FStoreState &()> GetState)
+                 std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<TArray<FMemoryItem>> {
     return func::AsyncChain::then<TArray<FMemoryItem>, TArray<FMemoryItem>>(
         APISlice::Endpoints::getMemoryList(NpcId)(Dispatch, GetState),
@@ -239,12 +239,12 @@ listMemoryRemoteThunk(const FString &NpcId) {
   };
 }
 
-inline ThunkAction<TArray<FMemoryItem>, FStoreState>
+inline ThunkAction<TArray<FMemoryItem>, FRuntimeState>
 recallMemoryRemoteThunk(const FString &NpcId, const FString &Query,
                         float Similarity = 0.0f) {
   return [NpcId, Query,
           Similarity](std::function<AnyAction(const AnyAction &)> Dispatch,
-                      std::function<const FStoreState &()> GetState)
+                      std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<TArray<FMemoryItem>> {
     Dispatch(MemorySlice::Actions::MemoryRecallStart());
     return func::AsyncChain::then<TArray<FMemoryItem>, TArray<FMemoryItem>>(
@@ -262,15 +262,15 @@ recallMemoryRemoteThunk(const FString &NpcId, const FString &Query,
   };
 }
 
-inline ThunkAction<rtk::FEmptyPayload, FStoreState>
+inline ThunkAction<rtk::FEmptyPayload, FRuntimeState>
 clearMemoryRemoteThunk(const FString &NpcId) {
   return [NpcId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                 std::function<const FStoreState &()> GetState)
+                 std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<rtk::FEmptyPayload> {
     return func::AsyncChain::then<rtk::FEmptyPayload, rtk::FEmptyPayload>(
         APISlice::Endpoints::deleteMemoryClear(NpcId)(Dispatch, GetState),
         [Dispatch](const rtk::FEmptyPayload &Payload) {
-          Dispatch(MemorySlice::Actions::MemoryClear());
+          Dispatch(MemorySlice::Actions::clearMemory());
           return detail::ResolveAsync(Payload);
         });
   };

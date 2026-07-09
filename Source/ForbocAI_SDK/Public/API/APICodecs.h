@@ -13,13 +13,13 @@
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
 
-struct FStoreState;
+struct FRuntimeState;
 
 namespace APISlice {
 
 using namespace rtk;
 
-extern rtk::Api<FStoreState> ForbocAiApi;
+extern rtk::Api<FRuntimeState> ForbocAiApi;
 
 namespace Detail {
 
@@ -264,7 +264,7 @@ inline FString ToJsonString(const TSharedRef<FJsonObject> &Object) {
  * integration, tags, and request builders stay consistent across endpoints.
  */
 template <typename Arg, typename Result>
-inline ThunkAction<Result, FStoreState> MakeEndpoint(
+inline ThunkAction<Result, FRuntimeState> MakeEndpoint(
     const FString &EndpointName, const Arg &ArgValue,
     std::function<func::AsyncResult<func::HttpResult<Result>>(const Arg &)>
         RequestBuilder,
@@ -285,7 +285,7 @@ inline ThunkAction<Result, FStoreState> MakeEndpoint(
  * can reuse the same store integration path.
  */
 template <typename Result>
-inline ThunkAction<Result, FStoreState>
+inline ThunkAction<Result, FRuntimeState>
 MakeGet(const FString &EndpointName, const FString &Url,
         const TArray<FApiEndpointTag> &Tags = TArray<FApiEndpointTag>()) {
   return MakeEndpoint<rtk::FEmptyPayload, Result>(
@@ -302,7 +302,7 @@ MakeGet(const FString &EndpointName, const FString &Url,
  * request payloads can be serialized and dispatched uniformly.
  */
 template <typename Request, typename Result>
-inline ThunkAction<Result, FStoreState> MakePost(
+inline ThunkAction<Result, FRuntimeState> MakePost(
     const FString &EndpointName, const FString &Url,
     const Request &RequestValue,
     const TArray<FApiEndpointTag> &Invalidates = TArray<FApiEndpointTag>()) {
@@ -321,7 +321,7 @@ inline ThunkAction<Result, FStoreState> MakePost(
  * removal flows share the same dispatch and invalidation behavior.
  */
 template <typename Result>
-inline ThunkAction<Result, FStoreState> MakeDelete(
+inline ThunkAction<Result, FRuntimeState> MakeDelete(
     const FString &EndpointName, const FString &Url,
     const TArray<FApiEndpointTag> &Invalidates = TArray<FApiEndpointTag>()) {
   return MakeEndpoint<rtk::FEmptyPayload, Result>(
@@ -376,7 +376,7 @@ DecodeHttpResult(func::AsyncResult<func::HttpResult<FString>> RawResult,
  * so endpoints can bypass generic struct serialization when needed.
  */
 template <typename Request, typename Result>
-inline ThunkAction<Result, FStoreState> MakePostWithCodec(
+inline ThunkAction<Result, FRuntimeState> MakePostWithCodec(
     const FString &EndpointName, const FString &Url,
     const Request &RequestValue,
     std::function<FString(const Request &)> Encoder,
@@ -399,7 +399,7 @@ inline ThunkAction<Result, FStoreState> MakePostWithCodec(
  * so complex JSON responses can still use the common endpoint pipeline.
  */
 template <typename Result>
-inline ThunkAction<Result, FStoreState> MakeGetWithCodec(
+inline ThunkAction<Result, FRuntimeState> MakeGetWithCodec(
     const FString &EndpointName, const FString &Url,
     std::function<bool(const FString &, Result &)> Decoder,
     const TArray<FApiEndpointTag> &Tags = TArray<FApiEndpointTag>()) {
@@ -419,7 +419,7 @@ inline ThunkAction<Result, FStoreState> MakeGetWithCodec(
  * directly so already-shaped payloads can be posted without double encoding.
  */
 template <typename Result>
-inline ThunkAction<Result, FStoreState>
+inline ThunkAction<Result, FRuntimeState>
 MakePostRawWithCodec(const FString &EndpointName, const FString &Url,
                      const FString &PayloadJson,
                      std::function<bool(const FString &, Result &)> Decoder) {
@@ -685,12 +685,12 @@ inline bool DecodeInstructionObject(const TSharedPtr<FJsonObject> &Object,
                                            TEXT("memoryStore"),
                                            MemoryValues) &&
                                        MemoryValues)
-                                          ? (Instruction.MemoryStore.Empty(
+                                          ? (Instruction.storeMemory.Empty(
                                                  MemoryValues->Num()),
                                              detail::
                                                  ExtractMemoryStoreInstructionsRecursive(
                                                      *MemoryValues,
-                                                     Instruction.MemoryStore,
+                                                     Instruction.storeMemory,
                                                      0),
                                              void())
                                           : void();
@@ -751,16 +751,16 @@ inline bool DecodeDirectiveResponse(const FString &Json,
                  const TSharedPtr<FJsonObject> Recall =
                      Root->GetObjectField(TEXT("memoryRecall"));
                  return (
-                     Response.MemoryRecall.Query =
+                     Response.recallMemory.Query =
                          Recall->GetStringField(TEXT("query")),
-                     Response.MemoryRecall.Limit =
+                     Response.recallMemory.Limit =
                          JsonInterop::detail::TryGetNumberAs<int32>(
                              Recall, TEXT("limit"),
-                             Response.MemoryRecall.Limit),
-                     Response.MemoryRecall.Threshold =
+                             Response.recallMemory.Limit),
+                     Response.recallMemory.Threshold =
                          JsonInterop::detail::TryGetNumberAs<float>(
                              Recall, TEXT("threshold"),
-                             Response.MemoryRecall.Threshold),
+                             Response.recallMemory.Threshold),
                      true);
                }();
 }
@@ -845,9 +845,9 @@ inline bool DecodeVerdictResponse(const FString &Json,
                   const TArray<TSharedPtr<FJsonValue>> *MemoryValues = nullptr;
                   (Root->TryGetArrayField(TEXT("memoryStore"), MemoryValues) &&
                    MemoryValues)
-                      ? (Response.MemoryStore.Empty(MemoryValues->Num()),
+                      ? (Response.storeMemory.Empty(MemoryValues->Num()),
                          detail::ExtractMemoryStoreInstructionsRecursive(
-                             *MemoryValues, Response.MemoryStore, 0),
+                             *MemoryValues, Response.storeMemory, 0),
                          void())
                       : void();
                 }(),
@@ -1311,7 +1311,7 @@ inline bool DecodeGhostStatusResponse(const FString &Json,
              ? false
              : (Response.GhostSessionId =
                     Root->GetStringField(TEXT("ghostSessionId")),
-                Response.GhostStatus =
+                Response.getGhostStatus =
                     Root->GetStringField(TEXT("ghostStatus")),
                 Response.GhostProgress =
                     JsonInterop::detail::TryGetNumberAs<float>(

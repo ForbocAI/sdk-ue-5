@@ -26,7 +26,7 @@ using HandlerResult = func::Maybe<Result>;
  * User Story: As CLI users, I need system commands routed together so runtime
  * health and version checks are dispatched through one handler.
  */
-HandlerResult HandleSystem(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleSystem(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
                           const TArray<FString> &Args);
 
@@ -35,7 +35,7 @@ HandlerResult HandleSystem(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As CLI users, I need NPC commands grouped under one handler so
  * agent creation, updates, and chat share consistent routing.
  */
-HandlerResult HandleNpc(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleNpc(rtk::EnhancedStore<FRuntimeState> &Store,
                        const FString &CommandKey,
                        const TArray<FString> &Args);
 
@@ -44,7 +44,7 @@ HandlerResult HandleNpc(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As CLI users, I need memory commands routed together so store,
  * recall, and clear operations share consistent parsing.
  */
-HandlerResult HandleMemory(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleMemory(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
                           const TArray<FString> &Args);
 
@@ -53,7 +53,7 @@ HandlerResult HandleMemory(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As CLI users, I need ghost commands grouped so run control and
  * history lookups share one command handler.
  */
-HandlerResult HandleGhost(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleGhost(rtk::EnhancedStore<FRuntimeState> &Store,
                          const FString &CommandKey,
                          const TArray<FString> &Args);
 
@@ -62,7 +62,7 @@ HandlerResult HandleGhost(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As CLI users, I need bridge commands grouped so validation and
  * ruleset management share consistent dispatch logic.
  */
-HandlerResult HandleBridge(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleBridge(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
                           const TArray<FString> &Args);
 
@@ -71,7 +71,7 @@ HandlerResult HandleBridge(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As CLI users, I need soul commands grouped so lifecycle actions
  * on souls share one routing surface.
  */
-HandlerResult HandleSoul(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleSoul(rtk::EnhancedStore<FRuntimeState> &Store,
                         const FString &CommandKey,
                         const TArray<FString> &Args);
 
@@ -80,7 +80,7 @@ HandlerResult HandleSoul(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As CLI users, I need config commands grouped so reads and writes
  * of SDK configuration use one handler.
  */
-HandlerResult HandleConfig(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleConfig(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
                           const TArray<FString> &Args);
 
@@ -89,7 +89,7 @@ HandlerResult HandleConfig(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As CLI users, I need vector initialization routed separately so
  * local infrastructure setup has a focused handler.
  */
-HandlerResult HandleVector(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleVector(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
                           const TArray<FString> &Args);
 
@@ -98,7 +98,7 @@ HandlerResult HandleVector(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As CLI users, I need setup commands grouped so dependency checks
  * and installation flows share one dispatch path.
  */
-HandlerResult HandleSetup(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleSetup(rtk::EnhancedStore<FRuntimeState> &Store,
                          const FString &CommandKey,
                          const TArray<FString> &Args);
 

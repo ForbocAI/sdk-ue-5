@@ -6,7 +6,7 @@
 namespace CLIOps {
 namespace Handlers {
 
-HandlerResult HandleVector(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleVector(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
                           const TArray<FString> &Args) {
   (void)Args;
@@ -14,7 +14,7 @@ HandlerResult HandleVector(rtk::EnhancedStore<FStoreState> &Store,
   using func::nothing;
 
   return CommandKey == TEXT("vector_init")
-             ? (Ops::InitVector(Store),
+             ? (Ops::initVector(Store),
                 just(Result::Success("Vector initialized")))
              : nothing<Result>();
 }

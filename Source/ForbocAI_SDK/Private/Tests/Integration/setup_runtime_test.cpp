@@ -57,7 +57,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FSetupRuntimeSmokeDatabaseTest::RunTest(const FString &Parameters) {
-  rtk::EnhancedStore<FStoreState> Store = createRuntimeStore();
+  rtk::EnhancedStore<FRuntimeState> Store = createRuntimeStore();
   const FString DatabasePath = FPaths::Combine(
       FPaths::ProjectSavedDir(), TEXT("ForbocAI"), TEXT("runtime-smoke-test"),
       FString::Printf(TEXT("runtime-smoke-%s.db"),

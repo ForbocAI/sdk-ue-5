@@ -138,7 +138,7 @@ AgentOps::Process(const FAgent &Agent, const FString &Input,
       [Agent, Input, Context](std::function<void(FAgentResponse)> resolve,
                               std::function<void(std::string)> reject) {
         SDKConfig::SetApiConfig(Agent.ApiUrl, SDKConfig::GetApiKey());
-        auto Store = MakeShared<rtk::EnhancedStore<FStoreState>>(createRuntimeStore());
+        auto Store = MakeShared<rtk::EnhancedStore<FRuntimeState>>(createRuntimeStore());
 
         Store->dispatch(rtk::processNPC(Agent.Id, Input,
                                         SerializeContextMap(Context),

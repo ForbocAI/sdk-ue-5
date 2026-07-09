@@ -66,7 +66,7 @@ public:
    * point so runtime code can publish an NPC soul.
    */
   UFUNCTION(BlueprintCallable, Category = "Forboc AI|Soul")
-  void ExportSoul(FString AgentId);
+  void exportSoul(FString AgentId);
 
   /**
    * Gets the current state of an NPC.
@@ -164,7 +164,7 @@ private:
    * The underlying functional Redux store.
    * User Story: As an SDK integrator, I need this type or module note so I can understand the role of the surrounding API surface quickly.
    */
-  TSharedPtr<rtk::EnhancedStore<FStoreState>> Store;
+  TSharedPtr<rtk::EnhancedStore<FRuntimeState>> Store;
 
   /**
    * Handles store actions emitted through listener middleware.

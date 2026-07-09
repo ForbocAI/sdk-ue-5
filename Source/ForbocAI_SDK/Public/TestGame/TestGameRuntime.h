@@ -54,7 +54,7 @@ inline bool HasStatusJsonField(const FString &Body) {
 inline bool CheckRuntimeConnectivity(
     const FString &Url = TEXT("http://localhost:8080/status")) {
   try {
-    const func::HttpResult<FString> Result = Ops::WaitForResult(
+    const func::HttpResult<FString> Result = Ops::waitForResult(
         func::AsyncHttp::Get<FString>(Url), 1.5);
     return Result.bSuccess && Result.ResponseCode == 200 &&
            detail::HasStatusJsonField(Result.data);

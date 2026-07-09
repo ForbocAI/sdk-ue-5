@@ -9,7 +9,7 @@
 namespace CLIOps {
 namespace Handlers {
 
-HandlerResult HandleMemory(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleMemory(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
                           const TArray<FString> &Args) {
   using func::just;
@@ -21,7 +21,7 @@ HandlerResult HandleMemory(rtk::EnhancedStore<FStoreState> &Store,
                           "Usage: memory_list <npcId>"))
                     : [&]() -> HandlerResult {
                         TArray<FMemoryItem> Items =
-                            Ops::MemoryList(Store, Args[0]);
+                            Ops::listMemory(Store, Args[0]);
                         UE_LOG(LogTemp, Display,
                                TEXT("Found %d memories"), Items.Num());
                         return just(
@@ -33,7 +33,7 @@ HandlerResult HandleMemory(rtk::EnhancedStore<FStoreState> &Store,
                           "Usage: memory_recall <npcId> <query>"))
                     : [&]() -> HandlerResult {
                         TArray<FMemoryItem> Items =
-                            Ops::MemoryRecall(Store, Args[0], Args[1]);
+                            Ops::recallMemory(Store, Args[0], Args[1]);
                         UE_LOG(LogTemp, Display,
                                TEXT("Recalled %d memories"),
                                Items.Num());
@@ -44,13 +44,13 @@ HandlerResult HandleMemory(rtk::EnhancedStore<FStoreState> &Store,
              ? (Args.Num() < 2
                     ? just(Result::Failure(
                           "Usage: memory_store <npcId> <observation>"))
-                    : (Ops::MemoryStore(Store, Args[0], Args[1]),
+                    : (Ops::storeMemory(Store, Args[0], Args[1]),
                        just(Result::Success("Memory stored"))))
          : CommandKey == TEXT("memory_clear")
              ? (Args.Num() < 1
                     ? just(Result::Failure(
                           "Usage: memory_clear <npcId>"))
-                    : (Ops::MemoryClear(Store, Args[0]),
+                    : (Ops::clearMemory(Store, Args[0]),
                        just(Result::Success("Memory cleared"))))
          : CommandKey == TEXT("memory_export")
              ? (Args.Num() < 1
@@ -58,7 +58,7 @@ HandlerResult HandleMemory(rtk::EnhancedStore<FStoreState> &Store,
                           "Usage: memory_export <npcId>"))
                     : [&]() -> HandlerResult {
                         TArray<FMemoryItem> Items =
-                            Ops::MemoryList(Store, Args[0]);
+                            Ops::listMemory(Store, Args[0]);
                         TSharedRef<FJsonObject> Root =
                             MakeShared<FJsonObject>();
                         TArray<TSharedPtr<FJsonValue>> JsonItems;

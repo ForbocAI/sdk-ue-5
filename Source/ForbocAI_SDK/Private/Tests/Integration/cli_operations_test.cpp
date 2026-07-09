@@ -10,43 +10,43 @@
 #include "RuntimeConfig.h"
 #include "RuntimeStore.h"
 
-// @covers:cliOp:BridgePreset
-// @covers:cliOp:BridgeRules
-// @covers:cliOp:CheckApiStatus
-// @covers:cliOp:ClearNodeMemory
-// @covers:cliOp:ConfigGet
-// @covers:cliOp:ConfigSet
-// @covers:cliOp:CreateNpc
-// @covers:cliOp:ExportSoul
-// @covers:cliOp:GenerateEmbedding
-// @covers:cliOp:GetActiveNpc
-// @covers:cliOp:GhostHistory
-// @covers:cliOp:GhostResults
-// @covers:cliOp:GhostRun
-// @covers:cliOp:GhostStatus
-// @covers:cliOp:GhostStop
-// @covers:cliOp:ImportNpcFromSoul
-// @covers:cliOp:ImportSoul
-// @covers:cliOp:InitNodeMemory
-// @covers:cliOp:InitVector
-// @covers:cliOp:ListNpcs
-// @covers:cliOp:ListSouls
-// @covers:cliOp:LocalExportSoul
-// @covers:cliOp:MemoryClear
-// @covers:cliOp:MemoryList
-// @covers:cliOp:MemoryRecall
-// @covers:cliOp:MemoryStore
-// @covers:cliOp:ProcessNpc
-// @covers:cliOp:RecallNodeMemory
-// @covers:cliOp:RulesDelete
-// @covers:cliOp:RulesList
-// @covers:cliOp:RulesPresets
-// @covers:cliOp:RulesRegister
+// @covers:cliOp:loadBridgePreset
+// @covers:cliOp:getBridgeRules
+// @covers:cliOp:checkApiStatus
+// @covers:cliOp:clearNodeMemory
+// @covers:cliOp:getConfigValue
+// @covers:cliOp:setConfigValue
+// @covers:cliOp:createNpc
+// @covers:cliOp:exportSoul
+// @covers:cliOp:generateEmbedding
+// @covers:cliOp:getActiveNpc
+// @covers:cliOp:getGhostHistory
+// @covers:cliOp:getGhostResults
+// @covers:cliOp:startGhost
+// @covers:cliOp:getGhostStatus
+// @covers:cliOp:stopGhost
+// @covers:cliOp:importNpcFromSoul
+// @covers:cliOp:importSoul
+// @covers:cliOp:initNodeMemory
+// @covers:cliOp:initVector
+// @covers:cliOp:listNpcs
+// @covers:cliOp:listSouls
+// @covers:cliOp:localExportSoul
+// @covers:cliOp:clearMemory
+// @covers:cliOp:listMemory
+// @covers:cliOp:recallMemory
+// @covers:cliOp:storeMemory
+// @covers:cliOp:processNpc
+// @covers:cliOp:recallNodeMemory
+// @covers:cliOp:deleteRuleset
+// @covers:cliOp:listRulesets
+// @covers:cliOp:listRulePresets
+// @covers:cliOp:registerRuleset
 // @covers:cliOp:RuntimeConfig
-// @covers:cliOp:StoreNodeMemory
-// @covers:cliOp:UpdateNpc
-// @covers:cliOp:ValidateBridge
-// @covers:cliOp:VerifySoul
+// @covers:cliOp:storeNodeMemory
+// @covers:cliOp:updateNpc
+// @covers:cliOp:validateBridgePayload
+// @covers:cliOp:verifySoul
 // @covers:cli:bridge_preset
 // @covers:cli:bridge_rules
 // @covers:cli:bridge_validate
@@ -90,26 +90,26 @@
 using namespace rtk;
 
 /**
- * Test: Ops::CreateNpc creates NPC and updates store
+ * Test: Ops::createNpc creates NPC and updates store
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsCreateNpcTest,
-                                 "ForbocAI.Integration.Ops.CreateNpc",
+                                 "ForbocAI.Integration.Ops.createNpc",
                                  EAutomationTestFlags_ApplicationContextMask |
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FOpsCreateNpcTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> Store = createRuntimeStore();
+  EnhancedStore<FRuntimeState> Store = createRuntimeStore();
 
-  FNPCInternalState Result = Ops::CreateNpc(Store, TEXT("A loyal guard"));
+  FNPCInternalState Result = Ops::createNpc(Store, TEXT("A loyal guard"));
 
   TestFalse("NPC Id not empty", Result.Id.IsEmpty());
   TestEqual("Persona matches", Result.Persona,
             FString(TEXT("A loyal guard")));
 
-  func::Maybe<FNPCInternalState> Active = Ops::GetActiveNpc(Store);
+  func::Maybe<FNPCInternalState> Active = Ops::getActiveNpc(Store);
   TestTrue("Active NPC exists", Active.hasValue);
   if (Active.hasValue) {
     TestEqual("Active NPC Id matches created", Active.value.Id, Result.Id);
@@ -121,7 +121,7 @@ bool FOpsCreateNpcTest::RunTest(const FString &Parameters) {
 }
 
 /**
- * Test: Ops::GetActiveNpc returns nothing on empty store
+ * Test: Ops::getActiveNpc returns nothing on empty store
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsGetActiveEmptyTest,
@@ -132,43 +132,43 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsGetActiveEmptyTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FOpsGetActiveEmptyTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> Store = createRuntimeStore();
+  EnhancedStore<FRuntimeState> Store = createRuntimeStore();
 
-  func::Maybe<FNPCInternalState> Active = Ops::GetActiveNpc(Store);
+  func::Maybe<FNPCInternalState> Active = Ops::getActiveNpc(Store);
   TestFalse("No active NPC on fresh store", Active.hasValue);
 
   return true;
 }
 
 /**
- * Test: Ops::ListNpcs returns all created NPCs
+ * Test: Ops::listNpcs returns all created NPCs
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsListNpcsTest,
-                                 "ForbocAI.Integration.Ops.ListNpcs",
+                                 "ForbocAI.Integration.Ops.listNpcs",
                                  EAutomationTestFlags_ApplicationContextMask |
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FOpsListNpcsTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> Store = createRuntimeStore();
+  EnhancedStore<FRuntimeState> Store = createRuntimeStore();
 
-  TArray<FNPCInternalState> Empty = Ops::ListNpcs(Store);
+  TArray<FNPCInternalState> Empty = Ops::listNpcs(Store);
   TestEqual("Empty list initially", Empty.Num(), 0);
 
-  Ops::CreateNpc(Store, TEXT("Guard"));
-  Ops::CreateNpc(Store, TEXT("Merchant"));
-  Ops::CreateNpc(Store, TEXT("Thief"));
+  Ops::createNpc(Store, TEXT("Guard"));
+  Ops::createNpc(Store, TEXT("Merchant"));
+  Ops::createNpc(Store, TEXT("Thief"));
 
-  TArray<FNPCInternalState> All = Ops::ListNpcs(Store);
+  TArray<FNPCInternalState> All = Ops::listNpcs(Store);
   TestEqual("Three NPCs listed", All.Num(), 3);
 
   return true;
 }
 
 /**
- * Test: Ops::ConfigGet / ConfigSet
+ * Test: Ops::getConfigValue / setConfigValue
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsConfigTest,
@@ -201,21 +201,21 @@ bool FOpsConfigTest::RunTest(const FString &Parameters) {
   TestEqual("Resolved runtime API URL honors env or localhost default",
             SDKConfig::GetApiUrl(), ExpectedApiUrl);
   TestTrue("Unset persisted apiUrl is empty",
-           Ops::ConfigGet(TEXT("apiUrl")).IsEmpty());
+           Ops::getConfigValue(TEXT("apiUrl")).IsEmpty());
 
-  FString Version = Ops::ConfigGet(TEXT("version"));
+  FString Version = Ops::getConfigValue(TEXT("version"));
   TestFalse("Version not empty", Version.IsEmpty());
 
-  Ops::ConfigSet(TEXT("apiUrl"), TEXT("https://test.forboc.ai"));
-  FString Url = Ops::ConfigGet(TEXT("apiUrl"));
+  Ops::setConfigValue(TEXT("apiUrl"), TEXT("https://test.forboc.ai"));
+  FString Url = Ops::getConfigValue(TEXT("apiUrl"));
   TestEqual("ApiUrl roundtrip", Url,
             FString(TEXT("https://test.forboc.ai")));
 
-  Ops::ConfigSet(TEXT("apiKey"), TEXT("sk_test_roundtrip"));
-  FString Key = Ops::ConfigGet(TEXT("apiKey"));
+  Ops::setConfigValue(TEXT("apiKey"), TEXT("sk_test_roundtrip"));
+  FString Key = Ops::getConfigValue(TEXT("apiKey"));
   TestEqual("ApiKey roundtrip", Key, FString(TEXT("sk_test_roundtrip")));
 
-  FString Unknown = Ops::ConfigGet(TEXT("nonexistent"));
+  FString Unknown = Ops::getConfigValue(TEXT("nonexistent"));
   TestTrue("Unknown key returns empty", Unknown.IsEmpty());
 
   FString PersistedConfig;
@@ -238,7 +238,7 @@ bool FOpsConfigTest::RunTest(const FString &Parameters) {
 }
 
 /**
- * Test: Ops::CreateNpc then remove via store dispatch
+ * Test: Ops::createNpc then remove via store dispatch
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -250,18 +250,18 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FOpsCreateAndRemoveTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> Store = createRuntimeStore();
+  EnhancedStore<FRuntimeState> Store = createRuntimeStore();
 
-  FNPCInternalState Npc = Ops::CreateNpc(Store, TEXT("Ephemeral"));
+  FNPCInternalState Npc = Ops::createNpc(Store, TEXT("Ephemeral"));
   FString NpcId = Npc.Id;
 
-  TestEqual("One NPC exists", Ops::ListNpcs(Store).Num(), 1);
+  TestEqual("One NPC exists", Ops::listNpcs(Store).Num(), 1);
 
   Store.dispatch(NPCSlice::Actions::RemoveNPC(NpcId));
 
-  TestEqual("Zero NPCs after removal", Ops::ListNpcs(Store).Num(), 0);
+  TestEqual("Zero NPCs after removal", Ops::listNpcs(Store).Num(), 0);
 
-  func::Maybe<FNPCInternalState> Active = Ops::GetActiveNpc(Store);
+  func::Maybe<FNPCInternalState> Active = Ops::getActiveNpc(Store);
   TestFalse("No active NPC after removal", Active.hasValue);
 
   return true;

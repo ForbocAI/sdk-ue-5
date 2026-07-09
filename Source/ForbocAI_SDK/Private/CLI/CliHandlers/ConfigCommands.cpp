@@ -6,7 +6,7 @@
 namespace CLIOps {
 namespace Handlers {
 
-HandlerResult HandleConfig(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleConfig(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
                           const TArray<FString> &Args) {
   (void)Store;
@@ -16,13 +16,13 @@ HandlerResult HandleConfig(rtk::EnhancedStore<FStoreState> &Store,
   return CommandKey == TEXT("config_set")
              ? (Args.Num() < 2
                     ? just(Result::Failure("Usage: config_set <key> <value>"))
-                    : (Ops::ConfigSet(Args[0], Args[1]),
+                    : (Ops::setConfigValue(Args[0], Args[1]),
                        just(Result::Success("Config updated"))))
          : CommandKey == TEXT("config_get")
              ? (Args.Num() < 1
                     ? just(Result::Failure("Usage: config_get <key>"))
                     : [&]() -> HandlerResult {
-                        FString Value = Ops::ConfigGet(Args[0]);
+                        FString Value = Ops::getConfigValue(Args[0]);
                         UE_LOG(LogTemp, Display, TEXT("%s = %s"), *Args[0],
                                *Value);
                         return just(Result::Success("Config retrieved"));
@@ -38,7 +38,7 @@ HandlerResult HandleConfig(rtk::EnhancedStore<FStoreState> &Store,
                      Idx >= Keys.Num()
                          ? void()
                          : ([&]() {
-                              const FString Val = Ops::ConfigGet(Keys[Idx]);
+                              const FString Val = Ops::getConfigValue(Keys[Idx]);
                               const bool bMask =
                                   Keys[Idx].Contains(TEXT("key"),
                                                      ESearchCase::IgnoreCase) ||

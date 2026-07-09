@@ -73,9 +73,9 @@ bool FDirectiveSliceDirectiveReceivedTest::RunTest(const FString &Parameters) {
           TEXT("dir_recv"), TEXT("npc_b"), TEXT("Where is the key?")));
 
   FDirectiveResponse Response;
-  Response.MemoryRecall.Query = TEXT("key location");
-  Response.MemoryRecall.Limit = 5;
-  Response.MemoryRecall.Threshold = 0.8f;
+  Response.recallMemory.Query = TEXT("key location");
+  Response.recallMemory.Limit = 5;
+  Response.recallMemory.Threshold = 0.8f;
 
   State = DirSlice.Reducer(
       State, DirectiveSlice::Actions::DirectiveReceived(TEXT("dir_recv"),

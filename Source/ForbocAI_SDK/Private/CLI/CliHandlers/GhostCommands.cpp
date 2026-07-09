@@ -6,7 +6,7 @@
 namespace CLIOps {
 namespace Handlers {
 
-HandlerResult HandleGhost(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleGhost(rtk::EnhancedStore<FRuntimeState> &Store,
                          const FString &CommandKey,
                          const TArray<FString> &Args) {
   using func::just;
@@ -19,7 +19,7 @@ HandlerResult HandleGhost(rtk::EnhancedStore<FStoreState> &Store,
                  int32 Duration =
                      Args.Num() > 1 ? FCString::Atoi(*Args[1]) : 300;
                  FGhostRunResponse Resp =
-                     Ops::GhostRun(Store, Suite, Duration);
+                     Ops::startGhost(Store, Suite, Duration);
                  UE_LOG(LogTemp, Display,
                         TEXT("Ghost session started: %s"), *Resp.SessionId);
                  return just(Result::Success("Ghost run started"));
@@ -30,9 +30,9 @@ HandlerResult HandleGhost(rtk::EnhancedStore<FStoreState> &Store,
                           "Usage: ghost_status <sessionId>"))
                     : [&]() -> HandlerResult {
                         FGhostStatusResponse Resp =
-                            Ops::GhostStatus(Store, Args[0]);
+                            Ops::getGhostStatus(Store, Args[0]);
                         UE_LOG(LogTemp, Display, TEXT("Ghost status: %s"),
-                               *Resp.GhostStatus);
+                               *Resp.getGhostStatus);
                         return just(
                             Result::Success("Ghost status retrieved"));
                       }())
@@ -41,7 +41,7 @@ HandlerResult HandleGhost(rtk::EnhancedStore<FStoreState> &Store,
                     ? just(Result::Failure(
                           "Usage: ghost_results <sessionId>"))
                     : [&]() -> HandlerResult {
-                        Ops::GhostResults(Store, Args[0]);
+                        Ops::getGhostResults(Store, Args[0]);
                         UE_LOG(LogTemp, Display,
                                TEXT("Ghost results retrieved"));
                         return just(Result::Success(
@@ -53,7 +53,7 @@ HandlerResult HandleGhost(rtk::EnhancedStore<FStoreState> &Store,
                           "Usage: ghost_stop <sessionId>"))
                     : [&]() -> HandlerResult {
                         FGhostStopResponse Resp =
-                            Ops::GhostStop(Store, Args[0]);
+                            Ops::stopGhost(Store, Args[0]);
                         UE_LOG(LogTemp, Display,
                                TEXT("Ghost stopped: %s"), *Resp.StopStatus);
                         return just(Result::Success("Ghost stopped"));
@@ -63,7 +63,7 @@ HandlerResult HandleGhost(rtk::EnhancedStore<FStoreState> &Store,
                  int32 Limit =
                      Args.Num() > 0 ? FCString::Atoi(*Args[0]) : 10;
                  TArray<FGhostHistoryEntry> History =
-                     Ops::GhostHistory(Store, Limit);
+                     Ops::getGhostHistory(Store, Limit);
                  UE_LOG(LogTemp, Display,
                         TEXT("Ghost history: %d entries"), History.Num());
                  return just(

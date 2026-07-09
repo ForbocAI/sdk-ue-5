@@ -183,7 +183,7 @@ struct FGhostStatusResponse {
   FString GhostSessionId;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  FString GhostStatus;
+  FString getGhostStatus;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
   float GhostProgress;

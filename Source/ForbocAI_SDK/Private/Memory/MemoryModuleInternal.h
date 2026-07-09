@@ -105,7 +105,7 @@ VectorSearch(void *Handle, const FString &Query, int32 Limit);
  * User Story: As sqlite-vss indexing, I need embeddings generated so memories
  * and queries can participate in vector search.
  */
-MemoryTypes::MemoryStoreEmbeddingResult GenerateEmbedding(void *Handle,
+MemoryTypes::MemoryStoreEmbeddingResult generateEmbedding(void *Handle,
                                                           const FString &Text);
 } // namespace SQLiteVSS
 

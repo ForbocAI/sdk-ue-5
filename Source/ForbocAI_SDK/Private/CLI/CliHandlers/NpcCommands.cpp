@@ -6,7 +6,7 @@
 namespace CLIOps {
 namespace Handlers {
 
-HandlerResult HandleNpc(rtk::EnhancedStore<FStoreState> &Store,
+HandlerResult HandleNpc(rtk::EnhancedStore<FRuntimeState> &Store,
                        const FString &CommandKey,
                        const TArray<FString> &Args) {
   using func::just;
@@ -18,14 +18,14 @@ HandlerResult HandleNpc(rtk::EnhancedStore<FStoreState> &Store,
                  // the API renders all slots as <unset>.
                  FString Persona =
                      Args.Num() > 0 ? Args[0] : TEXT("");
-                 FNPCInternalState Npc = Ops::CreateNpc(Store, Persona);
+                 FNPCInternalState Npc = Ops::createNpc(Store, Persona);
                  UE_LOG(LogTemp, Display, TEXT("Created NPC: %s"),
                         *Npc.Id);
                  return just(Result::Success("NPC created"));
                }()
          : CommandKey == TEXT("npc_list")
              ? [&]() -> HandlerResult {
-                 TArray<FNPCInternalState> Npcs = Ops::ListNpcs(Store);
+                 TArray<FNPCInternalState> Npcs = Ops::listNpcs(Store);
                  UE_LOG(LogTemp, Display, TEXT("Found %d NPCs"),
                         Npcs.Num());
                  struct LogNpcs {
@@ -49,7 +49,7 @@ HandlerResult HandleNpc(rtk::EnhancedStore<FStoreState> &Store,
                           "Usage: npc_process <npcId> <text>"))
                     : [&]() -> HandlerResult {
                         FAgentResponse Resp =
-                            Ops::ProcessNpc(Store, Args[0], Args[1]);
+                            Ops::processNpc(Store, Args[0], Args[1]);
                         UE_LOG(LogTemp, Display, TEXT("Verdict: %s"),
                                *Resp.Dialogue);
                         return just(
@@ -58,7 +58,7 @@ HandlerResult HandleNpc(rtk::EnhancedStore<FStoreState> &Store,
          : CommandKey == TEXT("npc_active")
              ? [&]() -> HandlerResult {
                  func::Maybe<FNPCInternalState> Active =
-                     Ops::GetActiveNpc(Store);
+                     Ops::getActiveNpc(Store);
                  Active.hasValue
                      ? [&]() {
                          UE_LOG(LogTemp, Display,
@@ -76,7 +76,7 @@ HandlerResult HandleNpc(rtk::EnhancedStore<FStoreState> &Store,
          : CommandKey == TEXT("npc_state")
              ? [&]() -> HandlerResult {
                  func::Maybe<FNPCInternalState> Active =
-                     Ops::GetActiveNpc(Store);
+                     Ops::getActiveNpc(Store);
                  return !Active.hasValue
                      ? [&]() -> HandlerResult {
                          UE_LOG(LogTemp, Display,
@@ -111,7 +111,7 @@ HandlerResult HandleNpc(rtk::EnhancedStore<FStoreState> &Store,
                                 : FString::Printf(
                                       TEXT("{\"Mood\":\"%s\"}"),
                                       *Args[1]);
-                        Ops::UpdateNpc(Store, Args[0], Delta);
+                        Ops::updateNpc(Store, Args[0], Delta);
                         UE_LOG(LogTemp, Display,
                                TEXT("NPC %s updated"), *Args[0]);
                         return just(
@@ -123,7 +123,7 @@ HandlerResult HandleNpc(rtk::EnhancedStore<FStoreState> &Store,
                           "Usage: npc_import <txId>"))
                     : [&]() -> HandlerResult {
                         FImportedNpc Npc =
-                            Ops::ImportNpcFromSoul(Store, Args[0]);
+                            Ops::importNpcFromSoul(Store, Args[0]);
                         UE_LOG(LogTemp, Display,
                                TEXT("NPC imported from soul: %s"),
                                *Npc.NpcId);
@@ -138,7 +138,7 @@ HandlerResult HandleNpc(rtk::EnhancedStore<FStoreState> &Store,
                         UE_LOG(LogTemp, Display, TEXT("> You: %s"),
                                *Args[1]);
                         FAgentResponse Resp =
-                            Ops::ProcessNpc(Store, Args[0], Args[1]);
+                            Ops::processNpc(Store, Args[0], Args[1]);
                         UE_LOG(LogTemp, Display, TEXT("> NPC: %s"),
                                *Resp.Dialogue);
                         !Resp.Action.Type.IsEmpty()

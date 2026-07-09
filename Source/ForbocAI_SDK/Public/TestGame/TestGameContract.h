@@ -70,14 +70,14 @@ inline ECommandGroup ParseCommandGroup(const FString &GroupStr) {
   return GroupStr == TEXT("status")         ? ECommandGroup::Status
        : GroupStr == TEXT("npc_lifecycle")  ? ECommandGroup::NpcLifecycle
        : GroupStr == TEXT("npc_process_chat") ? ECommandGroup::NpcProcessChat
-       : GroupStr == TEXT("memory_list")    ? ECommandGroup::MemoryList
-       : GroupStr == TEXT("memory_recall")  ? ECommandGroup::MemoryRecall
-       : GroupStr == TEXT("memory_store")   ? ECommandGroup::MemoryStore
-       : GroupStr == TEXT("memory_clear")   ? ECommandGroup::MemoryClear
+       : GroupStr == TEXT("memory_list")    ? ECommandGroup::listMemory
+       : GroupStr == TEXT("memory_recall")  ? ECommandGroup::recallMemory
+       : GroupStr == TEXT("memory_store")   ? ECommandGroup::storeMemory
+       : GroupStr == TEXT("memory_clear")   ? ECommandGroup::clearMemory
        : GroupStr == TEXT("memory_export")  ? ECommandGroup::MemoryExport
-       : GroupStr == TEXT("bridge_rules")   ? ECommandGroup::BridgeRules
+       : GroupStr == TEXT("bridge_rules")   ? ECommandGroup::getBridgeRules
        : GroupStr == TEXT("bridge_validate") ? ECommandGroup::BridgeValidate
-       : GroupStr == TEXT("bridge_preset")  ? ECommandGroup::BridgePreset
+       : GroupStr == TEXT("bridge_preset")  ? ECommandGroup::loadBridgePreset
        : GroupStr == TEXT("soul_export")    ? ECommandGroup::SoulExport
        : GroupStr == TEXT("soul_import")    ? ECommandGroup::SoulImport
        : GroupStr == TEXT("soul_list")      ? ECommandGroup::SoulList
@@ -295,7 +295,7 @@ inline FContractResponse FetchContract(
         FString::Printf(TEXT("%s/test-game/contract"), *ApiUrl);
 
     const func::HttpResult<FString> Result =
-        Ops::WaitForResult(func::AsyncHttp::Get<FString>(Url), 5.0);
+        Ops::waitForResult(func::AsyncHttp::Get<FString>(Url), 5.0);
 
     return (Result.bSuccess && Result.ResponseCode == 200)
                ? ParseContractJson(Result.data)

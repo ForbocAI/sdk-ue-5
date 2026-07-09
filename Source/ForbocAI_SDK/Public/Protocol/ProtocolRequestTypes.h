@@ -164,7 +164,7 @@ struct FDirectiveResponse {
   GENERATED_BODY()
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FMemoryRecallInstruction MemoryRecall;
+  FMemoryRecallInstruction recallMemory;
 };
 
 USTRUCT(BlueprintType)
@@ -220,7 +220,7 @@ struct FVerdictResponse {
   FString Signature;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  TArray<FMemoryStoreInstruction> MemoryStore;
+  TArray<FMemoryStoreInstruction> storeMemory;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FAgentState StateDelta;

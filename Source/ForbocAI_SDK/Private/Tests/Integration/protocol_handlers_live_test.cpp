@@ -49,7 +49,7 @@ struct FProcessLiveTestState {
   FString Error;
   FNPCProcessTape Tape;
   int32 Step = 0;
-  TSharedPtr<rtk::EnhancedStore<FStoreState>> Store;
+  TSharedPtr<rtk::EnhancedStore<FRuntimeState>> Store;
 };
 
 DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
@@ -62,14 +62,14 @@ bool FProcessLiveStepWait::Update() {
 
   if (State->Step == 0) {
       State->Step = 1;
-      State->Store = MakeShared<rtk::EnhancedStore<FStoreState>>(createRuntimeStore());
+      State->Store = MakeShared<rtk::EnhancedStore<FRuntimeState>>(createRuntimeStore());
       
       FNPCProcessRequest Req;
       Req.Tape = FNPCProcessTape();
       Req.Tape.Observation = TEXT("test observation");
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
-      auto GetState = [this]() -> const FStoreState & { return State->Store->getState(); };
+      auto GetState = [this]() -> const FRuntimeState & { return State->Store->getState(); };
       
       APISlice::Endpoints::postNpcProcess(TEXT("live_npc_1"), Req)(Dispatch, GetState)
           .then([this](const FNPCProcessResponse &R) {
@@ -106,7 +106,7 @@ bool FProcessLiveStepWait::Update() {
       Req.bHasLastResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
-      auto GetState = [this]() -> const FStoreState & { return State->Store->getState(); };
+      auto GetState = [this]() -> const FRuntimeState & { return State->Store->getState(); };
       
       APISlice::Endpoints::postNpcProcess(TEXT("live_npc_1"), Req)(Dispatch, GetState)
           .then([this](const FNPCProcessResponse &R) {
@@ -140,7 +140,7 @@ bool FProcessLiveStepWait::Update() {
       Req.bHasLastResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
-      auto GetState = [this]() -> const FStoreState & { return State->Store->getState(); };
+      auto GetState = [this]() -> const FRuntimeState & { return State->Store->getState(); };
       
       APISlice::Endpoints::postNpcProcess(TEXT("live_npc_1"), Req)(Dispatch, GetState)
           .then([this](const FNPCProcessResponse &R) {
@@ -177,7 +177,7 @@ bool FProcessLiveStepWait::Update() {
       Req.bHasLastResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
-      auto GetState = [this]() -> const FStoreState & { return State->Store->getState(); };
+      auto GetState = [this]() -> const FRuntimeState & { return State->Store->getState(); };
       
       APISlice::Endpoints::postNpcProcess(TEXT("live_npc_1"), Req)(Dispatch, GetState)
           .then([this](const FNPCProcessResponse &R) {
@@ -220,7 +220,7 @@ bool FProcessLiveStepWait::Update() {
       Req.bHasLastResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
-      auto GetState = [this]() -> const FStoreState & { return State->Store->getState(); };
+      auto GetState = [this]() -> const FRuntimeState & { return State->Store->getState(); };
       
       APISlice::Endpoints::postNpcProcess(TEXT("live_npc_1"), Req)(Dispatch, GetState)
           .then([this](const FNPCProcessResponse &R) {

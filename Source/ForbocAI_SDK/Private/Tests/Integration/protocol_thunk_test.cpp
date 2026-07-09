@@ -69,7 +69,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProtocolStoreWiringTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> TestStore = createRuntimeStore();
+  EnhancedStore<FRuntimeState> TestStore = createRuntimeStore();
 
   /**
    * Create NPC
@@ -85,7 +85,7 @@ bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
    * Verify NPC exists
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  FStoreState State = TestStore.getState();
+  FRuntimeState State = TestStore.getState();
   func::Maybe<FNPCInternalState> Found =
       NPCSlice::SelectNPCById(State.NPCs, TEXT("ag_test1"));
   TestTrue("NPC found in store", Found.hasValue);
@@ -195,7 +195,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProtocolDirectiveLifecycleTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FProtocolDirectiveLifecycleTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> TestStore = createRuntimeStore();
+  EnhancedStore<FRuntimeState> TestStore = createRuntimeStore();
 
   /**
    * Set up NPC
@@ -214,7 +214,7 @@ bool FProtocolDirectiveLifecycleTest::RunTest(const FString &Parameters) {
   TestStore.dispatch(DirectiveSlice::Actions::DirectiveRunStarted(
       TEXT("run_1"), TEXT("ag_dir_test"), TEXT("Player attacks goblin")));
 
-  FStoreState State = TestStore.getState();
+  FRuntimeState State = TestStore.getState();
   TestEqual("Active directive", State.Directives.ActiveDirectiveId,
             FString(TEXT("run_1")));
 
@@ -232,9 +232,9 @@ bool FProtocolDirectiveLifecycleTest::RunTest(const FString &Parameters) {
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
   FDirectiveResponse DirResponse;
-  DirResponse.MemoryRecall.Query = TEXT("goblin encounter");
-  DirResponse.MemoryRecall.Limit = 5;
-  DirResponse.MemoryRecall.Threshold = 0.7f;
+  DirResponse.recallMemory.Query = TEXT("goblin encounter");
+  DirResponse.recallMemory.Limit = 5;
+  DirResponse.recallMemory.Threshold = 0.7f;
   TestStore.dispatch(
       DirectiveSlice::Actions::DirectiveReceived(TEXT("run_1"), DirResponse));
 
@@ -278,14 +278,14 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProtocolMemoryLifecycleTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FProtocolMemoryLifecycleTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> TestStore = createRuntimeStore();
+  EnhancedStore<FRuntimeState> TestStore = createRuntimeStore();
 
   /**
    * Store start
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
   TestStore.dispatch(MemorySlice::Actions::MemoryStoreStart());
-  FStoreState State = TestStore.getState();
+  FRuntimeState State = TestStore.getState();
   TestEqual("Store status storing", State.Memory.StorageStatus,
             FString(TEXT("storing")));
 
@@ -361,7 +361,7 @@ bool FProtocolMemoryLifecycleTest::RunTest(const FString &Parameters) {
    * Clear
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  TestStore.dispatch(MemorySlice::Actions::MemoryClear());
+  TestStore.dispatch(MemorySlice::Actions::clearMemory());
   State = TestStore.getState();
   TestEqual("Memories cleared",
             MemorySlice::SelectAllMemories(State.Memory).Num(), 0);
@@ -381,7 +381,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProtocolNpcRemovalCascadeTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FProtocolNpcRemovalCascadeTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> TestStore = createRuntimeStore();
+  EnhancedStore<FRuntimeState> TestStore = createRuntimeStore();
 
   /**
    * Create NPC and directive
@@ -394,7 +394,7 @@ bool FProtocolNpcRemovalCascadeTest::RunTest(const FString &Parameters) {
   TestStore.dispatch(DirectiveSlice::Actions::DirectiveRunStarted(
       TEXT("dir_cascade"), TEXT("ag_cascade"), TEXT("obs")));
 
-  FStoreState State = TestStore.getState();
+  FRuntimeState State = TestStore.getState();
   TestTrue("NPC exists",
            NPCSlice::SelectNPCById(State.NPCs, TEXT("ag_cascade")).hasValue);
   TestTrue("Directive exists",
@@ -433,7 +433,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProtocolMultiNpcTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FProtocolMultiNpcTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FStoreState> TestStore = createRuntimeStore();
+  EnhancedStore<FRuntimeState> TestStore = createRuntimeStore();
 
   FNPCInternalState Npc1;
   Npc1.Id = TEXT("ag_m1");
@@ -446,7 +446,7 @@ bool FProtocolMultiNpcTest::RunTest(const FString &Parameters) {
   TestStore.dispatch(NPCSlice::Actions::SetNPCInfo(Npc2));
   TestStore.dispatch(NPCSlice::Actions::SetActiveNPC(TEXT("ag_m1")));
 
-  FStoreState State = TestStore.getState();
+  FRuntimeState State = TestStore.getState();
   TestEqual("Two NPCs", NPCSlice::SelectAllNPCs(State.NPCs).Num(), 2);
   TestEqual("Active is m1", NPCSlice::SelectActiveNpcId(State.NPCs),
             FString(TEXT("ag_m1")));

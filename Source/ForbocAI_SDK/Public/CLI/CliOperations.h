@@ -28,7 +28,7 @@ namespace Ops {
  * Allows async thunks to be used in synchronous CLI context.
  */
 template <typename T>
-T WaitForResult(func::AsyncResult<T> &&Async, double TimeoutSeconds = 15.0) {
+T waitForResult(func::AsyncResult<T> &&Async, double TimeoutSeconds = 15.0) {
   bool bCompleted = false;
   T Result{};
   FString Error;
@@ -77,7 +77,7 @@ struct FRuntimeConfig {
  * User Story: As CLI config consumers, I need resolved runtime credentials so
  * commands can show or reuse the active endpoint configuration.
  */
-inline FRuntimeConfig RuntimeConfig() {
+inline FRuntimeConfig runtimeConfig() {
   FRuntimeConfig Cfg;
   Cfg.ApiUrl = SDKConfig::GetApiUrl();
   Cfg.ApiKey = SDKConfig::GetApiKey();
@@ -89,8 +89,8 @@ inline FRuntimeConfig RuntimeConfig() {
  * User Story: As CLI health checks, I need API status routed through the store
  * so command output matches runtime behavior.
  */
-inline FApiStatusResponse CheckApiStatus(rtk::EnhancedStore<FStoreState> &Store) {
-  return WaitForResult(Store.dispatch(rtk::checkApiStatusThunk()));
+inline FApiStatusResponse checkApiStatus(rtk::EnhancedStore<FRuntimeState> &Store) {
+  return waitForResult(Store.dispatch(rtk::checkApiStatusThunk()));
 }
 
 /**
@@ -98,7 +98,7 @@ inline FApiStatusResponse CheckApiStatus(rtk::EnhancedStore<FStoreState> &Store)
  * User Story: As CLI NPC setup flows, I need a one-call creation helper so new
  * NPCs enter runtime state without duplicating slice wiring.
  */
-inline FNPCInternalState CreateNpc(rtk::EnhancedStore<FStoreState> &Store,
+inline FNPCInternalState createNpc(rtk::EnhancedStore<FRuntimeState> &Store,
                                    const FString &Persona) {
   FString Id = NPCId::GenerateNPCId();
   FNPCInternalState Info;
@@ -116,7 +116,7 @@ inline FNPCInternalState CreateNpc(rtk::EnhancedStore<FStoreState> &Store,
  * store so follow-up commands can target the current actor.
  */
 inline func::Maybe<FNPCInternalState>
-GetActiveNpc(rtk::EnhancedStore<FStoreState> &Store) {
+getActiveNpc(rtk::EnhancedStore<FRuntimeState> &Store) {
   return NPCSlice::SelectActiveNPC(Store.getState().NPCs);
 }
 
@@ -126,7 +126,7 @@ GetActiveNpc(rtk::EnhancedStore<FStoreState> &Store) {
  * manual state edits stay aligned with reducer behavior.
  */
 inline func::Maybe<FNPCInternalState>
-UpdateNpc(rtk::EnhancedStore<FStoreState> &Store, const FString &NpcId,
+updateNpc(rtk::EnhancedStore<FRuntimeState> &Store, const FString &NpcId,
           const FAgentState &Delta) {
   Store.dispatch(NPCSlice::Actions::UpdateNPCState(NpcId, Delta));
   return NPCSlice::SelectNPCById(Store.getState().NPCs, NpcId);
@@ -137,9 +137,9 @@ UpdateNpc(rtk::EnhancedStore<FStoreState> &Store, const FString &NpcId,
  * User Story: As CLI interaction flows, I need one helper to drive a protocol
  * turn so local NPC chat and action generation stay testable from the shell.
  */
-inline FAgentResponse ProcessNpc(rtk::EnhancedStore<FStoreState> &Store,
+inline FAgentResponse processNpc(rtk::EnhancedStore<FRuntimeState> &Store,
                                  const FString &NpcId, const FString &Text) {
-  return WaitForResult(
+  return waitForResult(
       Store.dispatch(rtk::processNPC(NpcId, Text, TEXT("{}"), TEXT(""),
                                      FAgentState(),
                                      rtk::LocalProtocolRuntime())));
@@ -151,7 +151,7 @@ inline FAgentResponse ProcessNpc(rtk::EnhancedStore<FStoreState> &Store,
  * operators can inspect current runtime state.
  */
 inline TArray<FNPCInternalState>
-ListNpcs(rtk::EnhancedStore<FStoreState> &Store) {
+listNpcs(rtk::EnhancedStore<FRuntimeState> &Store) {
   return NPCSlice::SelectAllNPCs(Store.getState().NPCs);
 }
 
@@ -160,9 +160,9 @@ ListNpcs(rtk::EnhancedStore<FStoreState> &Store) {
  * User Story: As CLI memory inspection, I need remote memories fetched through
  * the thunk layer so API-backed memory output matches runtime behavior.
  */
-inline TArray<FMemoryItem> MemoryList(rtk::EnhancedStore<FStoreState> &Store,
+inline TArray<FMemoryItem> listMemory(rtk::EnhancedStore<FRuntimeState> &Store,
                                       const FString &NpcId) {
-  return WaitForResult(Store.dispatch(rtk::listMemoryRemoteThunk(NpcId)));
+  return waitForResult(Store.dispatch(rtk::listMemoryRemoteThunk(NpcId)));
 }
 
 /**
@@ -170,12 +170,12 @@ inline TArray<FMemoryItem> MemoryList(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As CLI recall workflows, I need query-based memory recall with a
  * local limit so terminal output stays readable without changing API results.
  */
-inline TArray<FMemoryItem> MemoryRecall(rtk::EnhancedStore<FStoreState> &Store,
+inline TArray<FMemoryItem> recallMemory(rtk::EnhancedStore<FRuntimeState> &Store,
                                         const FString &NpcId,
                                         const FString &Query,
                                         int32 Limit = 10,
                                         float Threshold = 0.7f) {
-  TArray<FMemoryItem> Results = WaitForResult(
+  TArray<FMemoryItem> Results = waitForResult(
       Store.dispatch(rtk::recallMemoryRemoteThunk(NpcId, Query, Threshold)));
   (Limit >= 0 && Results.Num() > Limit)
       ? (Results.SetNum(Limit), void())
@@ -188,11 +188,11 @@ inline TArray<FMemoryItem> MemoryRecall(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As CLI memory capture flows, I need a helper that routes
  * observations through the remote memory thunk so persistence stays consistent.
  */
-inline rtk::FEmptyPayload MemoryStore(rtk::EnhancedStore<FStoreState> &Store,
+inline rtk::FEmptyPayload storeMemory(rtk::EnhancedStore<FRuntimeState> &Store,
                                       const FString &NpcId,
                                       const FString &Observation,
                                       float Importance = 0.8f) {
-  return WaitForResult(
+  return waitForResult(
       Store.dispatch(rtk::storeMemoryRemoteThunk(NpcId, Observation, Importance)));
 }
 
@@ -201,9 +201,9 @@ inline rtk::FEmptyPayload MemoryStore(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As CLI cleanup flows, I need one helper to clear remote memory
  * so reset operations go through the same thunk contract as runtime code.
  */
-inline rtk::FEmptyPayload MemoryClear(rtk::EnhancedStore<FStoreState> &Store,
+inline rtk::FEmptyPayload clearMemory(rtk::EnhancedStore<FRuntimeState> &Store,
                                       const FString &NpcId) {
-  return WaitForResult(Store.dispatch(rtk::clearMemoryRemoteThunk(NpcId)));
+  return waitForResult(Store.dispatch(rtk::clearMemoryRemoteThunk(NpcId)));
 }
 
 /**
@@ -211,9 +211,9 @@ inline rtk::FEmptyPayload MemoryClear(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As local-memory setup flows, I need one CLI helper to bootstrap
  * the database so shell workflows can prepare native memory state quickly.
  */
-inline rtk::FEmptyPayload InitNodeMemory(rtk::EnhancedStore<FStoreState> &Store,
+inline rtk::FEmptyPayload initNodeMemory(rtk::EnhancedStore<FRuntimeState> &Store,
                                           const FString &DatabasePath = TEXT("")) {
-  return WaitForResult(Store.dispatch(rtk::initNodeMemoryThunk(DatabasePath)));
+  return waitForResult(Store.dispatch(rtk::initNodeMemoryThunk(DatabasePath)));
 }
 
 /**
@@ -221,10 +221,10 @@ inline rtk::FEmptyPayload InitNodeMemory(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As local-memory CLI flows, I need one helper to persist an
  * observation so native memory behavior can be exercised from the terminal.
  */
-inline FMemoryItem StoreNodeMemory(rtk::EnhancedStore<FStoreState> &Store,
+inline FMemoryItem storeNodeMemory(rtk::EnhancedStore<FRuntimeState> &Store,
                                    const FString &Text,
                                    float Importance = 0.8f) {
-  return WaitForResult(
+  return waitForResult(
       Store.dispatch(
           rtk::storeNodeMemoryThunk(Text, TEXT("observation"), Importance)));
 }
@@ -235,9 +235,9 @@ inline FMemoryItem StoreNodeMemory(rtk::EnhancedStore<FStoreState> &Store,
  * through the native thunk so semantic search matches runtime behavior.
  */
 inline TArray<FMemoryItem>
-RecallNodeMemory(rtk::EnhancedStore<FStoreState> &Store, const FString &Query,
+recallNodeMemory(rtk::EnhancedStore<FRuntimeState> &Store, const FString &Query,
                  int32 Limit = 10, float Threshold = 0.7f) {
-  return WaitForResult(
+  return waitForResult(
       Store.dispatch(rtk::recallNodeMemoryThunk(Query, Limit, Threshold)));
 }
 
@@ -247,8 +247,8 @@ RecallNodeMemory(rtk::EnhancedStore<FStoreState> &Store, const FString &Query,
  * native memory store so test runs can start from a clean slate.
  */
 inline rtk::FEmptyPayload
-ClearNodeMemory(rtk::EnhancedStore<FStoreState> &Store) {
-  return WaitForResult(Store.dispatch(rtk::clearNodeMemoryThunk()));
+clearNodeMemory(rtk::EnhancedStore<FRuntimeState> &Store) {
+  return waitForResult(Store.dispatch(rtk::clearNodeMemoryThunk()));
 }
 
 /**
@@ -256,13 +256,13 @@ ClearNodeMemory(rtk::EnhancedStore<FStoreState> &Store) {
  * User Story: As ghost-test CLI flows, I need one helper to launch a run so
  * automated test sessions can be started from the terminal.
  */
-inline FGhostRunResponse GhostRun(rtk::EnhancedStore<FStoreState> &Store,
+inline FGhostRunResponse startGhost(rtk::EnhancedStore<FRuntimeState> &Store,
                                   const FString &TestSuite,
                                   int32 Duration = 300) {
   FGhostConfig Config;
   Config.TestSuite = TestSuite;
   Config.Duration = Duration;
-  return WaitForResult(Store.dispatch(rtk::startGhostThunk(Config)));
+  return waitForResult(Store.dispatch(rtk::startGhostThunk(Config)));
 }
 
 /**
@@ -271,8 +271,8 @@ inline FGhostRunResponse GhostRun(rtk::EnhancedStore<FStoreState> &Store,
  * progress without reimplementing session lookups.
  */
 inline FGhostStatusResponse
-GhostStatus(rtk::EnhancedStore<FStoreState> &Store, const FString &SessionId) {
-  return WaitForResult(Store.dispatch(rtk::getGhostStatusThunk(SessionId)));
+getGhostStatus(rtk::EnhancedStore<FRuntimeState> &Store, const FString &SessionId) {
+  return waitForResult(Store.dispatch(rtk::getGhostStatusThunk(SessionId)));
 }
 
 /**
@@ -281,8 +281,8 @@ GhostStatus(rtk::EnhancedStore<FStoreState> &Store, const FString &SessionId) {
  * thunk layer so terminal reporting matches runtime semantics.
  */
 inline FGhostResultsResponse
-GhostResults(rtk::EnhancedStore<FStoreState> &Store, const FString &SessionId) {
-  return WaitForResult(Store.dispatch(rtk::getGhostResultsThunk(SessionId)));
+getGhostResults(rtk::EnhancedStore<FRuntimeState> &Store, const FString &SessionId) {
+  return waitForResult(Store.dispatch(rtk::getGhostResultsThunk(SessionId)));
 }
 
 /**
@@ -290,9 +290,9 @@ GhostResults(rtk::EnhancedStore<FStoreState> &Store, const FString &SessionId) {
  * User Story: As ghost-test CLI flows, I need one helper to stop a run so long
  * sessions can be cancelled without bespoke HTTP handling.
  */
-inline FGhostStopResponse GhostStop(rtk::EnhancedStore<FStoreState> &Store,
+inline FGhostStopResponse stopGhost(rtk::EnhancedStore<FRuntimeState> &Store,
                                     const FString &SessionId) {
-  return WaitForResult(Store.dispatch(rtk::stopGhostThunk(SessionId)));
+  return waitForResult(Store.dispatch(rtk::stopGhostThunk(SessionId)));
 }
 
 /**
@@ -301,8 +301,8 @@ inline FGhostStopResponse GhostStop(rtk::EnhancedStore<FStoreState> &Store,
  * runs can be inspected or compared from the terminal.
  */
 inline TArray<FGhostHistoryEntry>
-GhostHistory(rtk::EnhancedStore<FStoreState> &Store, int32 Limit = 10) {
-  return WaitForResult(Store.dispatch(rtk::getGhostHistoryThunk(Limit)));
+getGhostHistory(rtk::EnhancedStore<FRuntimeState> &Store, int32 Limit = 10) {
+  return waitForResult(Store.dispatch(rtk::getGhostHistoryThunk(Limit)));
 }
 
 /**
@@ -311,10 +311,10 @@ GhostHistory(rtk::EnhancedStore<FStoreState> &Store, int32 Limit = 10) {
  * action so shell tooling reuses the same rule engine as runtime code.
  */
 inline FValidationResult
-ValidateBridge(rtk::EnhancedStore<FStoreState> &Store,
+validateBridgePayload(rtk::EnhancedStore<FRuntimeState> &Store,
                const FAgentAction &Action,
                const FBridgeValidationContext &Context) {
-  return WaitForResult(
+  return waitForResult(
       Store.dispatch(rtk::validateBridgeThunk(Action, Context)));
 }
 
@@ -324,8 +324,8 @@ ValidateBridge(rtk::EnhancedStore<FStoreState> &Store,
  * operators can inspect validation logic from the terminal.
  */
 inline TArray<FBridgeRule>
-BridgeRules(rtk::EnhancedStore<FStoreState> &Store) {
-  return WaitForResult(Store.dispatch(rtk::getBridgeRulesThunk()));
+getBridgeRules(rtk::EnhancedStore<FRuntimeState> &Store) {
+  return waitForResult(Store.dispatch(rtk::getBridgeRulesThunk()));
 }
 
 /**
@@ -333,9 +333,9 @@ BridgeRules(rtk::EnhancedStore<FStoreState> &Store) {
  * User Story: As bridge-preset CLI flows, I need one helper to resolve a named
  * preset so shell tooling can preview or apply preset rules.
  */
-inline FDirectiveRuleSet BridgePreset(rtk::EnhancedStore<FStoreState> &Store,
+inline FDirectiveRuleSet loadBridgePreset(rtk::EnhancedStore<FRuntimeState> &Store,
                                       const FString &PresetName) {
-  return WaitForResult(
+  return waitForResult(
       Store.dispatch(rtk::loadBridgePresetThunk(PresetName)));
 }
 
@@ -345,8 +345,8 @@ inline FDirectiveRuleSet BridgePreset(rtk::EnhancedStore<FStoreState> &Store,
  * inspect or manage available rule definitions.
  */
 inline TArray<FDirectiveRuleSet>
-RulesList(rtk::EnhancedStore<FStoreState> &Store) {
-  return WaitForResult(Store.dispatch(rtk::listRulesetsThunk()));
+listRulesets(rtk::EnhancedStore<FRuntimeState> &Store) {
+  return waitForResult(Store.dispatch(rtk::listRulesetsThunk()));
 }
 
 /**
@@ -354,8 +354,8 @@ RulesList(rtk::EnhancedStore<FStoreState> &Store) {
  * User Story: As bridge-rules CLI flows, I need preset ids so terminal users
  * can discover the presets available for loading.
  */
-inline TArray<FString> RulesPresets(rtk::EnhancedStore<FStoreState> &Store) {
-  return WaitForResult(Store.dispatch(rtk::listRulePresetsThunk()));
+inline TArray<FString> listRulePresets(rtk::EnhancedStore<FRuntimeState> &Store) {
+  return waitForResult(Store.dispatch(rtk::listRulePresetsThunk()));
 }
 
 /**
@@ -364,9 +364,9 @@ inline TArray<FString> RulesPresets(rtk::EnhancedStore<FStoreState> &Store) {
  * so rule management stays aligned with runtime APIs.
  */
 inline FDirectiveRuleSet
-RulesRegister(rtk::EnhancedStore<FStoreState> &Store,
+registerRuleset(rtk::EnhancedStore<FRuntimeState> &Store,
               const FDirectiveRuleSet &Ruleset) {
-  return WaitForResult(Store.dispatch(rtk::registerRulesetThunk(Ruleset)));
+  return waitForResult(Store.dispatch(rtk::registerRulesetThunk(Ruleset)));
 }
 
 /**
@@ -374,9 +374,9 @@ RulesRegister(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As bridge-rules CLI flows, I need one helper to remove rulesets
  * so cleanup uses the same thunk contract as the runtime.
  */
-inline rtk::FEmptyPayload RulesDelete(rtk::EnhancedStore<FStoreState> &Store,
+inline rtk::FEmptyPayload deleteRuleset(rtk::EnhancedStore<FRuntimeState> &Store,
                                       const FString &RulesetId) {
-  return WaitForResult(Store.dispatch(rtk::deleteRulesetThunk(RulesetId)));
+  return waitForResult(Store.dispatch(rtk::deleteRulesetThunk(RulesetId)));
 }
 
 /**
@@ -384,9 +384,9 @@ inline rtk::FEmptyPayload RulesDelete(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As soul-export CLI flows, I need one helper to export an NPC so
  * remote soul publishing can be triggered from the terminal.
  */
-inline FSoulExportResult ExportSoul(rtk::EnhancedStore<FStoreState> &Store,
+inline FSoulExportResult exportSoul(rtk::EnhancedStore<FRuntimeState> &Store,
                                     const FString &NpcId) {
-  return WaitForResult(Store.dispatch(rtk::remoteExportSoulThunk(NpcId)));
+  return waitForResult(Store.dispatch(rtk::remoteExportSoulThunk(NpcId)));
 }
 
 /**
@@ -394,9 +394,9 @@ inline FSoulExportResult ExportSoul(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As soul-import CLI flows, I need one helper to import a remote
  * soul so terminal workflows can restore NPC state from transactions.
  */
-inline FSoul ImportSoul(rtk::EnhancedStore<FStoreState> &Store,
+inline FSoul importSoul(rtk::EnhancedStore<FRuntimeState> &Store,
                         const FString &TxId) {
-  return WaitForResult(
+  return waitForResult(
       Store.dispatch(rtk::importSoulFromArweaveThunk(TxId)));
 }
 
@@ -405,9 +405,9 @@ inline FSoul ImportSoul(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As soul-import CLI flows, I need one helper to materialize an
  * NPC from a soul so recovery workflows stay simple in the shell.
  */
-inline FImportedNpc ImportNpcFromSoul(rtk::EnhancedStore<FStoreState> &Store,
+inline FImportedNpc importNpcFromSoul(rtk::EnhancedStore<FRuntimeState> &Store,
                                       const FString &TxId) {
-  return WaitForResult(Store.dispatch(rtk::importNpcFromSoulThunk(TxId)));
+  return waitForResult(Store.dispatch(rtk::importNpcFromSoulThunk(TxId)));
 }
 
 /**
@@ -415,9 +415,9 @@ inline FImportedNpc ImportNpcFromSoul(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As soul-browsing CLI flows, I need discoverable soul metadata so
  * terminal users can inspect available remote souls.
  */
-inline TArray<FSoulListItem> ListSouls(rtk::EnhancedStore<FStoreState> &Store,
+inline TArray<FSoulListItem> listSouls(rtk::EnhancedStore<FRuntimeState> &Store,
                                        int32 Limit = 50) {
-  return WaitForResult(Store.dispatch(rtk::getSoulListThunk(Limit)));
+  return waitForResult(Store.dispatch(rtk::getSoulListThunk(Limit)));
 }
 
 /**
@@ -425,9 +425,9 @@ inline TArray<FSoulListItem> ListSouls(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As soul-verification CLI flows, I need one helper to validate a
  * transaction so trust checks reuse the runtime verification thunk.
  */
-inline FSoulVerifyResult VerifySoul(rtk::EnhancedStore<FStoreState> &Store,
+inline FSoulVerifyResult verifySoul(rtk::EnhancedStore<FRuntimeState> &Store,
                                     const FString &TxId) {
-  return WaitForResult(Store.dispatch(rtk::verifySoulThunk(TxId)));
+  return waitForResult(Store.dispatch(rtk::verifySoulThunk(TxId)));
 }
 
 /**
@@ -435,9 +435,9 @@ inline FSoulVerifyResult VerifySoul(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As local-soul CLI flows, I need one helper to export without
  * upload so shell workflows can inspect soul payloads locally.
  */
-inline FSoul LocalExportSoul(rtk::EnhancedStore<FStoreState> &Store,
+inline FSoul localExportSoul(rtk::EnhancedStore<FRuntimeState> &Store,
                               const FString &NpcId = TEXT("")) {
-  return WaitForResult(Store.dispatch(rtk::localExportSoulThunk(NpcId)));
+  return waitForResult(Store.dispatch(rtk::localExportSoulThunk(NpcId)));
 }
 
 /**
@@ -445,7 +445,7 @@ inline FSoul LocalExportSoul(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As vector-runtime CLI flows, I need one helper to initialize the
  * embedder so local vector features can be prepared from the terminal.
  */
-inline rtk::FEmptyPayload InitVector(rtk::EnhancedStore<FStoreState> &Store) {
+inline rtk::FEmptyPayload initVector(rtk::EnhancedStore<FRuntimeState> &Store) {
   return rtk::FEmptyPayload{};
 }
 
@@ -454,7 +454,7 @@ inline rtk::FEmptyPayload InitVector(rtk::EnhancedStore<FStoreState> &Store) {
  * User Story: As vector-runtime CLI flows, I need one helper to generate
  * embeddings so shell tooling can exercise local vectorization directly.
  */
-inline TArray<float> GenerateEmbedding(rtk::EnhancedStore<FStoreState> &Store,
+inline TArray<float> generateEmbedding(rtk::EnhancedStore<FRuntimeState> &Store,
                                        const FString &Text) {
   return TArray<float>();
 }
@@ -464,7 +464,7 @@ inline TArray<float> GenerateEmbedding(rtk::EnhancedStore<FStoreState> &Store,
  * User Story: As CLI config management, I need one helper to persist settings
  * so shell commands can update SDK config without manual file edits.
  */
-inline void ConfigSet(const FString &Key, const FString &Value) {
+inline void setConfigValue(const FString &Key, const FString &Value) {
   SDKConfig::SetConfigValue(Key, Value);
 }
 
@@ -473,7 +473,7 @@ inline void ConfigSet(const FString &Key, const FString &Value) {
  * User Story: As CLI config management, I need one helper to read settings so
  * shell commands can inspect active SDK config values consistently.
  */
-inline FString ConfigGet(const FString &Key) {
+inline FString getConfigValue(const FString &Key) {
   return SDKConfig::GetConfigValue(Key);
 }
 

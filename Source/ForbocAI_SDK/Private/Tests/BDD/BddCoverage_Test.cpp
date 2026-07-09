@@ -109,7 +109,7 @@ void FBddCoverageSpec::Define() {
           FRegexMatcher FnMatcher(FnPattern, NsContent);
           while (FnMatcher.FindNext()) {
               FString Name = FnMatcher.GetCaptureGroup(1);
-              if (Name != TEXT("Wait") && Name != TEXT("WaitForResult")) {
+              if (Name != TEXT("Wait") && Name != TEXT("waitForResult")) {
                   ExpectedCliOps.Add(Name);
               }
           }

@@ -8,8 +8,8 @@ namespace CLIOps {
 
 namespace {
 
-rtk::EnhancedStore<FStoreState> &GetStore() {
-  static rtk::EnhancedStore<FStoreState> Store = store();
+rtk::EnhancedStore<FRuntimeState> &GetStore() {
+  static rtk::EnhancedStore<FRuntimeState> Store = store();
   return Store;
 }
 
@@ -19,11 +19,11 @@ func::TestResult<void> DispatchCommand(const FString &CommandKey,
                                        const TArray<FString> &Args) {
   using Result = func::TestResult<void>;
   using namespace Handlers;
-  using Handler = std::function<HandlerResult(rtk::EnhancedStore<FStoreState> &,
+  using Handler = std::function<HandlerResult(rtk::EnhancedStore<FRuntimeState> &,
                                               const FString &,
                                               const TArray<FString> &)>;
 
-  rtk::EnhancedStore<FStoreState> &Store = GetStore();
+  rtk::EnhancedStore<FRuntimeState> &Store = GetStore();
 
   /**
    * Phase 3.4: Handler chain — first match wins
@@ -37,7 +37,7 @@ func::TestResult<void> DispatchCommand(const FString &CommandKey,
   struct DispatchRecursive {
     static func::TestResult<void>
     apply(const std::vector<Handler> &Hs, size_t Index,
-          rtk::EnhancedStore<FStoreState> &Store, const FString &Key,
+          rtk::EnhancedStore<FRuntimeState> &Store, const FString &Key,
           const TArray<FString> &Args) {
       return Index >= Hs.size()
                  ? Result::Failure(TCHAR_TO_UTF8(
