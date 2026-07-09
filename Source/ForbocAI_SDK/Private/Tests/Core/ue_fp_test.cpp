@@ -299,6 +299,94 @@ bool FFunctionalCookbookMaybeEitherTest::RunTest(const FString &Parameters) {
 }
 
 /**
+ * Test: TypeScript functional-core name parity
+ * User Story: As SDK users moving between TS and UE, I need the public FP names
+ * to read the same while preserving the UE implementations underneath them.
+ */
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FFunctionalCoreTsNameParityTest,
+    "ForbocAI.Core.FunctionalCore.TSNameParity",
+    EAutomationTestFlags_ApplicationContextMask |
+        EAutomationTestFlags::EngineFilter)
+/**
+ * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ */
+bool FFunctionalCoreTsNameParityTest::RunTest(const FString &Parameters) {
+  auto present = func::just(5);
+  auto missing = func::nothing<int>();
+
+  TestTrue("isJust mirrors TS", func::isJust(present));
+  TestFalse("isJust rejects missing values", func::isJust(missing));
+  TestTrue("isNothing mirrors TS", func::isNothing(missing));
+  TestEqual("orElse mirrors TS", func::orElse(missing, 9), 9);
+  TestEqual("requireJust mirrors TS", func::requireJust(present, "missing"), 5);
+
+  int raw = 11;
+  auto pointerValue = func::fromNullable(&raw);
+  TestTrue("fromNullable pointer returns Just", func::isJust(pointerValue));
+  TestEqual("fromNullable pointer value", pointerValue.value, 11);
+
+  auto flaggedValue = func::fromNullable(std::string("ready"), true);
+  TestTrue("fromNullable value flag returns Just", func::isJust(flaggedValue));
+  TestEqual("fromNullable value flag content", flaggedValue.value,
+            std::string("ready"));
+
+  auto flaggedMissing = func::fromNullable(std::string(""), false);
+  TestTrue("fromNullable false flag returns Nothing",
+           func::isNothing(flaggedMissing));
+
+  auto failure = func::left<std::string, int>(std::string("bad"));
+  auto success = func::right<std::string, int>(3);
+  TestTrue("isLeft mirrors TS", func::isLeft(failure));
+  TestFalse("isRight rejects Left", func::isRight(failure));
+  TestTrue("isRight mirrors TS", func::isRight(success));
+
+  auto mapped = func::efmap<std::string, int>(
+      success, [](int value) { return value + 2; });
+  TestTrue("efmap keeps Right", func::isRight(mapped));
+  TestEqual("efmap maps right payload", mapped.right, 5);
+
+  func::Predicate<int> isEven = [](const int &value) {
+    return value % 2 == 0;
+  };
+  auto predicateCase = func::testCase<int, std::string>(
+      6, isEven, [](const int &) { return std::string("even"); });
+  TestTrue("testCase predicate returns Just", func::isJust(predicateCase));
+  TestEqual("testCase predicate payload", predicateCase.value,
+            std::string("even"));
+
+  auto literalCase = func::testCase<int, std::string>(
+      4, 4, [](const int &) { return std::string("literal"); });
+  TestTrue("testCase literal returns Just", func::isJust(literalCase));
+
+  auto wildcardCase = func::testCase<int, std::string>(
+      9, func::_, [](const int &value) {
+        return std::string("got ") + std::to_string(value);
+      });
+  TestTrue("testCase wildcard returns Just", func::isJust(wildcardCase));
+  TestEqual("testCase wildcard payload", wildcardCase.value,
+            std::string("got 9"));
+
+  std::vector<func::MatchCase<int, std::string>> cases;
+  cases.push_back(func::when<int, std::string>(
+      func::equals<int>(2), [](const int &) { return std::string("two"); }));
+  cases.push_back(func::when<int, std::string>(
+      func::wildcard<int>(),
+      [](const int &) { return std::string("fallback"); }));
+
+  auto matched = func::multiMatch<int, std::string>(2, cases);
+  TestTrue("multiMatch returns Just", func::isJust(matched));
+  TestEqual("multiMatch exact payload", matched.value, std::string("two"));
+
+  auto fallback = func::multiMatch<int, std::string>(7, cases);
+  TestTrue("multiMatch wildcard returns Just", func::isJust(fallback));
+  TestEqual("multiMatch fallback payload", fallback.value,
+            std::string("fallback"));
+
+  return true;
+}
+
+/**
  * Test: multi_match — predicate matching
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */

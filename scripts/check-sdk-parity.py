@@ -295,6 +295,16 @@ def strip_comments(text: str) -> str:
     return re.sub(r"//.*", "", without_block)
 
 
+def strip_leading_template_declaration(line: str) -> str:
+    """Remove simple leading C++ template declarations before symbol matching."""
+    previous = None
+    stripped = line.strip()
+    while previous != stripped:
+        previous = stripped
+        stripped = re.sub(r"^template\s*<[^<>]*>\s*", "", stripped).strip()
+    return stripped
+
+
 def split_names(body: str) -> list[str]:
     names: list[str] = []
     for raw in body.split(","):
@@ -348,35 +358,52 @@ def extract_ue_symbols(path: Path, root: Path) -> list[Symbol]:
         indent = len(line) - len(line.lstrip(" "))
         if indent > 2:
             continue
-        stripped = line.strip()
+        stripped = strip_leading_template_declaration(line)
         if not stripped or stripped.startswith("#") or stripped.startswith("template"):
             continue
 
         type_match = re.match(r"(?:USTRUCT\([^)]*\)\s*)?(?:struct|class)\s+(?:FORBOCAI_SDK_API\s+)?([A-Za-z_][A-Za-z0-9_]*)", stripped)
         enum_match = re.match(r"enum\s+class\s+([A-Za-z_][A-Za-z0-9_]*)", stripped)
+        using_match = re.match(r"using\s+([A-Za-z_][A-Za-z0-9_]*)\s*=", stripped)
+        typedef_match = re.match(r"typedef\s+.+?\s+([A-Za-z_][A-Za-z0-9_]*)\s*;", stripped)
         if type_match:
             symbols.append(Symbol(type_match.group(1), "type", rel))
             continue
         if enum_match:
             symbols.append(Symbol(enum_match.group(1), "enum", rel))
             continue
+        if using_match:
+            symbols.append(Symbol(using_match.group(1), "type", rel))
+            continue
+        if typedef_match:
+            symbols.append(Symbol(typedef_match.group(1), "type", rel))
+            continue
 
         next_stripped = ""
         if "(" not in stripped and index + 1 < len(lines):
             next_line = lines[index + 1]
             next_indent = len(next_line) - len(next_line.lstrip(" "))
-            next_stripped = next_line.strip() if next_indent <= 2 else ""
+            next_stripped = strip_leading_template_declaration(next_line) if next_indent <= 2 else ""
         declaration = f"{stripped} {next_stripped}".strip()
 
         function_match = re.match(
             r"(?:FORBOCAI_SDK_API\s+)?(?:virtual\s+)?(?:static\s+)?(?:inline\s+)?"
-            r"(?:[A-Za-z_][A-Za-z0-9_:<>*&,\s]+\s+)+([A-Za-z_][A-Za-z0-9_]*)\s*\(",
+            r"(?:[A-Za-z_][A-Za-z0-9_:<>*&,\s]*\s+)+([A-Za-z_][A-Za-z0-9_]*)\s*\(",
             declaration,
         )
         if function_match:
             name = function_match.group(1)
             if name not in {"if", "for", "while", "switch", "return"}:
                 symbols.append(Symbol(name, "function", rel))
+            continue
+
+        value_match = re.match(
+            r"(?:FORBOCAI_SDK_API\s+)?(?:static\s+)?(?:constexpr\s+)?(?:const\s+)?(?:inline\s+)?"
+            r"(?:[A-Za-z_][A-Za-z0-9_:<>*&,\s]*\s+)+([A-Za-z_][A-Za-z0-9_]*)\s*(?:=|;|\{)",
+            declaration,
+        )
+        if indent == 0 and value_match:
+            symbols.append(Symbol(value_match.group(1), "const", rel))
 
     return sorted({f"{symbol.name}:{symbol.kind}:{symbol.file}": symbol for symbol in symbols}.values(), key=lambda item: (item.file, item.name))
 

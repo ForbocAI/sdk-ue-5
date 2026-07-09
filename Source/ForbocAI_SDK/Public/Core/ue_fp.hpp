@@ -151,6 +151,12 @@ template <typename T> bool is_nothing(const Maybe<T> &m) {
   return !m.hasValue;
 }
 
+template <typename T> bool isJust(const Maybe<T> &m) { return is_just(m); }
+
+template <typename T> bool isNothing(const Maybe<T> &m) {
+  return is_nothing(m);
+}
+
 /**
  * @brief Keeps a Maybe value only when it satisfies a predicate.
  *
@@ -289,6 +295,14 @@ template <typename E, typename T> Either<E, T> left(E e) {
  */
 template <typename E, typename T> Either<E, T> right(T v) {
   return make_right<E, T>(std::move(v));
+}
+
+template <typename E, typename T> bool isLeft(const Either<E, T> &e) {
+  return e.isLeft;
+}
+
+template <typename E, typename T> bool isRight(const Either<E, T> &e) {
+  return !e.isLeft;
 }
 
 /**
@@ -1641,6 +1655,11 @@ auto either_map(const Either<E, T> &e, Func f)
   return fmap(e, f);
 }
 
+template <typename E, typename T, typename Func>
+auto efmap(const Either<E, T> &e, Func f) -> Either<E, decltype(f(e.right))> {
+  return fmap(e, f);
+}
+
 /**
  * @brief Chains an Either-producing function from a successful Either.
  *
@@ -1684,6 +1703,10 @@ auto either_map_left(const Either<E, T> &e, Func f)
  */
 template <typename T> T or_else(const Maybe<T> &m, const T &def) {
   return m.hasValue ? m.value : def;
+}
+
+template <typename T> T orElse(const Maybe<T> &m, const T &def) {
+  return or_else(m, def);
 }
 
 template <typename T, typename DefaultFactory>
@@ -3163,6 +3186,12 @@ template <typename T, typename R> struct MatchCase {
   std::function<R(const T &)> handler;
 };
 
+template <typename T> using Predicate = std::function<bool(const T &)>;
+
+struct WildcardSentinel {};
+
+static const WildcardSentinel _ = WildcardSentinel();
+
 namespace detail {
 template <typename T, typename R>
 Maybe<R> multiMatchRecursive(const T &Value,
@@ -3229,6 +3258,24 @@ template <typename T> std::function<bool(const T &)> equals(T expected) {
   return [expected](const T &value) { return value == expected; };
 }
 
+template <typename T, typename R>
+Maybe<R> testCase(const T &value, std::function<bool(const T &)> predicate,
+                  std::function<R(const T &)> handler) {
+  return predicate(value) ? just(handler(value)) : nothing<R>();
+}
+
+template <typename T, typename R>
+Maybe<R> testCase(const T &value, const T &expected,
+                  std::function<R(const T &)> handler) {
+  return value == expected ? just(handler(value)) : nothing<R>();
+}
+
+template <typename T, typename R>
+Maybe<R> testCase(const T &value, WildcardSentinel,
+                  std::function<R(const T &)> handler) {
+  return just(handler(value));
+}
+
 /**
  * @brief Evaluates match cases in order and returns the first successful result.
  *
@@ -3256,6 +3303,18 @@ template <typename T, typename R>
 Maybe<R> multi_match_maybe(const T &value,
                            const std::vector<MatchCase<T, R>> &cases) {
   return multi_match<T, R>(value, cases);
+}
+
+template <typename T, typename R>
+Maybe<R> multiMatch(const T &value,
+                    const std::vector<MatchCase<T, R>> &cases) {
+  return multi_match<T, R>(value, cases);
+}
+
+template <typename T, typename R, typename FWildcard>
+R multiMatch(const T &value, const std::vector<MatchCase<T, R>> &cases,
+             FWildcard wildcard) {
+  return multi_match<T, R>(value, cases, wildcard);
 }
 
 template <typename Arg, typename Result> struct Bounce {
@@ -3337,6 +3396,14 @@ template <typename T> Maybe<T> from_nullable_value(T value, bool valid) {
   return valid ? just(std::move(value)) : nothing<T>();
 }
 
+template <typename T> Maybe<T> fromNullable(const T *ptr) {
+  return from_nullable(ptr);
+}
+
+template <typename T> Maybe<T> fromNullable(T value, bool valid) {
+  return from_nullable_value(std::move(value), valid);
+}
+
 /**
  * @brief Extracts a Maybe value or aborts the current boundary with an error message.
  *
@@ -3350,6 +3417,11 @@ template <typename T> Maybe<T> from_nullable_value(T value, bool valid) {
 template <typename T>
 T require_just(const Maybe<T> &m, const std::string &errorMsg) {
   return m.hasValue ? m.value : detail::failWithMessage<T>(errorMsg);
+}
+
+template <typename T>
+T requireJust(const Maybe<T> &m, const std::string &errorMsg) {
+  return require_just(m, errorMsg);
 }
 
 } // namespace func
