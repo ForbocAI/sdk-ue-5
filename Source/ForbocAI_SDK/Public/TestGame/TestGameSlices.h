@@ -64,11 +64,30 @@ inline rtk::ActionCreator<FMoveNPCPayload> MoveNPCActionCreator() {
   return C;
 }
 
-struct FPatchNPCPayload {
-  FString Id;
+struct FPatchNPCChanges {
+  FString Name;
+  bool bHasName;
+  FString Faction;
+  bool bHasFaction;
+  int32 Hp;
+  bool bHasHp;
   int32 Suspicion;
   bool bHasSuspicion;
-  FPatchNPCPayload() : Suspicion(0), bHasSuspicion(false) {}
+  TArray<FString> Inventory;
+  bool bHasInventory;
+  TArray<FString> KnownSecrets;
+  bool bHasKnownSecrets;
+  FPosition Position;
+  bool bHasPosition;
+  FPatchNPCChanges()
+      : bHasName(false), bHasFaction(false), Hp(0), bHasHp(false),
+        Suspicion(0), bHasSuspicion(false), bHasInventory(false),
+        bHasKnownSecrets(false), bHasPosition(false) {}
+};
+
+struct FPatchNPCPayload {
+  FString Id;
+  FPatchNPCChanges Patch;
 };
 
 /**
@@ -82,12 +101,17 @@ inline rtk::ActionCreator<FPatchNPCPayload> PatchNPCActionCreator() {
   return C;
 }
 
-struct FApplyVerdictPayload {
-  FString Id;
-  FString ActionType;
+struct FNpcVerdictAction {
+  FString Type;
   FPosition TargetHex;
-  int32 SuspicionDelta;
-  FApplyVerdictPayload() : SuspicionDelta(0) {}
+  bool bHasTargetHex;
+  FNpcVerdictAction() : bHasTargetHex(false) {}
+};
+
+struct FApplyNpcVerdictPayload {
+  FString Id;
+  FNpcVerdictAction Action;
+  FPatchNPCChanges StateDelta;
 };
 
 /**
@@ -95,9 +119,9 @@ struct FApplyVerdictPayload {
  * User Story: As CLI output replay, I need a reusable verdict action creator
  * so parsed actions can update NPC state through the store.
  */
-inline rtk::ActionCreator<FApplyVerdictPayload>
+inline rtk::ActionCreator<FApplyNpcVerdictPayload>
 ApplyNpcVerdictActionCreator() {
-  static auto C = rtk::createAction<FApplyVerdictPayload>(
+  static auto C = rtk::createAction<FApplyNpcVerdictPayload>(
       TEXT("testgame/npcs/applyNpcVerdict"));
   return C;
 }
@@ -131,11 +155,30 @@ inline rtk::AnyAction PatchNPC(const FPatchNPCPayload &P) {
  * User Story: As CLI transcript replay, I need verdict actions so parsed
  * output can drive NPC movement and suspicion changes.
  */
-inline rtk::AnyAction ApplyNpcVerdict(const FApplyVerdictPayload &P) {
+inline rtk::AnyAction ApplyNpcVerdict(const FApplyNpcVerdictPayload &P) {
   return ApplyNpcVerdictActionCreator()(P);
 }
 
 } // namespace NPCsActions
+
+namespace NPCsSelectors {
+inline TArray<FGameNPC> SelectAllNpcs(const FNPCsSliceState &S) {
+  return GetNPCAdapter().getSelectors().selectAll(S.Entities);
+}
+inline func::Maybe<FGameNPC> SelectNpcById(const FNPCsSliceState &S,
+                                           const FString &Id) {
+  return GetNPCAdapter().getSelectors().selectById(S.Entities, Id);
+}
+inline rtk::EntityState<FGameNPC> SelectNpcEntities(const FNPCsSliceState &S) {
+  return S.Entities;
+}
+inline TArray<FString> SelectNpcIds(const FNPCsSliceState &S) {
+  return GetNPCAdapter().getSelectors().selectIds(S.Entities);
+}
+inline int32 SelectNpcTotal(const FNPCsSliceState &S) {
+  return GetNPCAdapter().getSelectors().selectTotal(S.Entities);
+}
+} // namespace NPCsSelectors
 
 /**
  * Builds the NPC slice for the test game.
@@ -178,26 +221,64 @@ inline rtk::Slice<FNPCsSliceState> CreateNPCsSlice() {
                       Next.Entities, A.PayloadValue.Id,
                       [&A](const FGameNPC &Existing) {
                         FGameNPC Updated = Existing;
-                        Updated.Suspicion = A.PayloadValue.bHasSuspicion
-                            ? A.PayloadValue.Suspicion
+                        Updated.Name = A.PayloadValue.Patch.bHasName
+                                           ? A.PayloadValue.Patch.Name
+                                           : Updated.Name;
+                        Updated.Faction = A.PayloadValue.Patch.bHasFaction
+                                              ? A.PayloadValue.Patch.Faction
+                                              : Updated.Faction;
+                        Updated.Hp = A.PayloadValue.Patch.bHasHp
+                                         ? A.PayloadValue.Patch.Hp
+                                         : Updated.Hp;
+                        Updated.Suspicion = A.PayloadValue.Patch.bHasSuspicion
+                            ? A.PayloadValue.Patch.Suspicion
                             : Updated.Suspicion;
+                        Updated.Inventory = A.PayloadValue.Patch.bHasInventory
+                                                ? A.PayloadValue.Patch.Inventory
+                                                : Updated.Inventory;
+                        Updated.KnownSecrets = A.PayloadValue.Patch.bHasKnownSecrets
+                                                   ? A.PayloadValue.Patch.KnownSecrets
+                                                   : Updated.KnownSecrets;
+                        Updated.Position = A.PayloadValue.Patch.bHasPosition
+                                               ? A.PayloadValue.Patch.Position
+                                               : Updated.Position;
                         return Updated;
                       });
                   return Next;
                 });
     Builder.addCase(NPCsActions::ApplyNpcVerdictActionCreator(),
       [](const FNPCsSliceState &S,
-                   const rtk::Action<NPCsActions::FApplyVerdictPayload> &A)
+                   const rtk::Action<NPCsActions::FApplyNpcVerdictPayload> &A)
                     -> FNPCsSliceState {
                   FNPCsSliceState Next = S;
                   const auto &P = A.PayloadValue;
                   Next.Entities = GetNPCAdapter().updateOne(
                       Next.Entities, P.Id, [&P](const FGameNPC &Existing) {
                         FGameNPC Updated = Existing;
-                        Updated.Suspicion += P.SuspicionDelta;
-                        Updated.Position = P.ActionType == TEXT("MOVE")
-                            ? P.TargetHex
-                            : Updated.Position;
+                        Updated.Name = P.StateDelta.bHasName
+                                           ? P.StateDelta.Name
+                                           : Updated.Name;
+                        Updated.Faction = P.StateDelta.bHasFaction
+                                              ? P.StateDelta.Faction
+                                              : Updated.Faction;
+                        Updated.Hp = P.StateDelta.bHasHp
+                                         ? P.StateDelta.Hp
+                                         : Updated.Hp;
+                        Updated.Suspicion = P.StateDelta.bHasSuspicion
+                                                ? P.StateDelta.Suspicion
+                                                : Updated.Suspicion;
+                        Updated.Inventory = P.StateDelta.bHasInventory
+                                                ? P.StateDelta.Inventory
+                                                : Updated.Inventory;
+                        Updated.KnownSecrets = P.StateDelta.bHasKnownSecrets
+                                                   ? P.StateDelta.KnownSecrets
+                                                   : Updated.KnownSecrets;
+                        Updated.Position =
+                            P.Action.Type == TEXT("MOVE") && P.Action.bHasTargetHex
+                                ? P.Action.TargetHex
+                                : (P.StateDelta.bHasPosition
+                                       ? P.StateDelta.Position
+                                       : Updated.Position);
                         return Updated;
                       });
                   return Next;
@@ -394,6 +475,14 @@ inline rtk::AnyAction SetBlocked(const TArray<FPosition> &B) {
 
 } // namespace GridActions
 
+namespace GridSelectors {
+inline int32 SelectGridWidth(const FGridState &S) { return S.Width; }
+inline int32 SelectGridHeight(const FGridState &S) { return S.Height; }
+inline TArray<FPosition> SelectGridBlocked(const FGridState &S) {
+  return S.Blocked;
+}
+} // namespace GridSelectors
+
 /**
  * Builds the grid slice for the test game.
  * User Story: As test-game store setup, I need a grid slice factory so map
@@ -468,6 +557,15 @@ inline rtk::AnyAction BumpAlert(int32 Delta) {
 }
 
 } // namespace StealthActions
+
+namespace StealthSelectors {
+inline bool SelectStealthDoorOpen(const FStealthState &S) {
+  return S.bDoorOpen;
+}
+inline int32 SelectStealthAlertLevel(const FStealthState &S) {
+  return S.AlertLevel;
+}
+} // namespace StealthSelectors
 
 /**
  * Builds the stealth slice for the test game.
@@ -566,6 +664,16 @@ inline rtk::AnyAction ClearSocialState() {
 }
 
 } // namespace SocialActions
+
+namespace SocialSelectors {
+inline FString SelectSocialActiveDialogue(const FSocialState &S) {
+  return S.ActiveDialogue;
+}
+inline func::Maybe<FTradeOffer> SelectSocialActiveTrade(const FSocialState &S) {
+  return S.bHasActiveTrade ? func::just<FTradeOffer>(S.ActiveTrade)
+                           : func::nothing<FTradeOffer>();
+}
+} // namespace SocialSelectors
 
 /**
  * Builds the social slice for the test game.
@@ -787,6 +895,49 @@ inline rtk::AnyAction ClearMemoryForNpc(const FString &NpcId) {
 
 } // namespace GameMemoryActions
 
+namespace GameMemorySelectors {
+inline TArray<FMemoryRecord>
+SelectAllMemories(const FGameMemorySliceState &S) {
+  return GetGameMemoryAdapter().getSelectors().selectAll(S.Entities);
+}
+inline func::Maybe<FMemoryRecord>
+SelectMemoryById(const FGameMemorySliceState &S, const FString &Id) {
+  return GetGameMemoryAdapter().getSelectors().selectById(S.Entities, Id);
+}
+inline rtk::EntityState<FMemoryRecord>
+SelectMemoryEntities(const FGameMemorySliceState &S) {
+  return S.Entities;
+}
+inline TArray<FString> SelectMemoryIds(const FGameMemorySliceState &S) {
+  return GetGameMemoryAdapter().getSelectors().selectIds(S.Entities);
+}
+inline int32 SelectMemoryTotal(const FGameMemorySliceState &S) {
+  return GetGameMemoryAdapter().getSelectors().selectTotal(S.Entities);
+}
+inline TArray<FMemoryRecord>
+SelectMemoriesByNpcId(const FGameMemorySliceState &S, const FString &NpcId) {
+  struct CollectByNpc {
+    static void apply(
+        const TArray<FMemoryRecord> &Records,
+        const FString &TargetNpcId,
+        TArray<FMemoryRecord> &Out,
+        int32 Index) {
+      Index >= Records.Num()
+          ? void()
+          : (Records[Index].NpcId == TargetNpcId
+                 ? (Out.Add(Records[Index]), void())
+                 : void(),
+             apply(Records, TargetNpcId, Out, Index + 1), void());
+    }
+  };
+  TArray<FMemoryRecord> Records =
+      GetGameMemoryAdapter().getSelectors().selectAll(S.Entities);
+  TArray<FMemoryRecord> Results;
+  CollectByNpc::apply(Records, NpcId, Results, 0);
+  return Results;
+}
+} // namespace GameMemorySelectors
+
 /**
  * Builds the game-specific memory slice.
  * User Story: As test-game store setup, I need a memory slice factory so local
@@ -868,6 +1019,18 @@ inline rtk::AnyAction SetOwnerInventory(const FSetOwnerInventoryPayload &P) {
 
 } // namespace InventoryActions
 
+namespace InventorySelectors {
+inline TMap<FString, TArray<FString>>
+SelectInventoryByOwner(const FInventoryState &S) {
+  return S.ByOwner;
+}
+inline TArray<FString> SelectOwnerInventory(const FInventoryState &S,
+                                            const FString &OwnerId) {
+  const TArray<FString> *Items = S.ByOwner.Find(OwnerId);
+  return Items == nullptr ? TArray<FString>() : *Items;
+}
+} // namespace InventorySelectors
+
 /**
  * Builds the inventory slice for the test game.
  * User Story: As test-game store setup, I need an inventory slice factory so
@@ -942,6 +1105,22 @@ inline rtk::AnyAction MarkSoulImported(const FString &TxId) {
 }
 
 } // namespace GameSoulActions
+
+namespace GameSoulSelectors {
+inline TMap<FString, FString>
+SelectSoulExportsByNpc(const FSoulTrackingState &S) {
+  return S.ExportsByNpc;
+}
+inline TArray<FString> SelectImportedSoulTxIds(const FSoulTrackingState &S) {
+  return S.ImportedSoulTxIds;
+}
+inline func::Maybe<FString> SelectSoulExportTxId(
+    const FSoulTrackingState &S, const FString &NpcId) {
+  const FString *TxId = S.ExportsByNpc.Find(NpcId);
+  return TxId == nullptr ? func::nothing<FString>()
+                         : func::just<FString>(*TxId);
+}
+} // namespace GameSoulSelectors
 
 /**
  * Builds the game-specific soul tracking slice.
@@ -1019,6 +1198,13 @@ inline rtk::AnyAction AddMessage(const FString &Msg) {
 }
 
 } // namespace UIActions
+
+namespace UISelectors {
+inline EPlayMode SelectUiMode(const FUIState &S) { return S.Mode; }
+inline TArray<FString> SelectUiMessages(const FUIState &S) {
+  return S.Messages;
+}
+} // namespace UISelectors
 
 /**
  * Builds the UI slice for the test game.
@@ -1104,6 +1290,13 @@ inline rtk::AnyAction ResetTranscript() {
 }
 
 } // namespace TranscriptActions
+
+namespace TranscriptSelectors {
+inline TArray<FTranscriptEntry>
+SelectTranscriptEntries(const FTranscriptState &S) {
+  return S.Entries;
+}
+} // namespace TranscriptSelectors
 
 /**
  * Builds the transcript slice for the test game.
@@ -1249,6 +1442,12 @@ inline rtk::Slice<FScenarioSliceState> CreateScenarioSlice() {
   });
 }
 
+namespace ScenarioSelectors {
+inline TArray<FScenarioStep> SelectScenarioSteps(const FScenarioSliceState &S) {
+  return S.Steps;
+}
+} // namespace ScenarioSelectors
+
 /**
  * Returns the command groups that have not been covered yet.
  * User Story: As harness reporting, I need the missing group list so the final
@@ -1274,5 +1473,15 @@ SelectMissingGroups(const TMap<ECommandGroup, bool> &Covered, const TArray<EComm
   CollectMissing::apply(Covered, Groups, Missing, 0);
   return Missing;
 }
+
+namespace HarnessSelectors {
+inline TMap<ECommandGroup, bool> SelectHarnessCovered(const FHarnessState &S) {
+  return S.Covered;
+}
+inline TArray<ECommandGroup> SelectHarnessMissingGroups(
+    const FHarnessState &S, const TArray<ECommandGroup> &Groups) {
+  return SelectMissingGroups(S.Covered, Groups);
+}
+} // namespace HarnessSelectors
 
 } // namespace TestGame

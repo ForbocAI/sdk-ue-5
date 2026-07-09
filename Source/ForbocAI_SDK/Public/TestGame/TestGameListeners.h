@@ -78,7 +78,7 @@ inline rtk::Middleware<FTestGameState> createGameListenerMiddleware() {
                                        TEXT("Verdict applied to %s "
                                             "(action: %s)"),
                                        *MaybeNpc.value.Name,
-                                       *Payload.value.ActionType))),
+                                       *Payload.value.Action.Type))),
                                void())
                             : void();
                       }()

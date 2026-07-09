@@ -145,8 +145,8 @@ inline void ApplyScenarioInitialState(
 
           NPCsActions::FPatchNPCPayload Patch;
           Patch.Id = TEXT("miller");
-          Patch.Suspicion = 75;
-          Patch.bHasSuspicion = true;
+          Patch.Patch.Suspicion = 75;
+          Patch.Patch.bHasSuspicion = true;
           Store.dispatch(NPCsActions::PatchNPC(Patch));
         }()
       : (void)0;
@@ -209,11 +209,14 @@ inline void ApplyVerdictIfValid(
                   FString NpcId = ExtractNpcIdFromCommand(Cmd.Command);
                   !NpcId.IsEmpty()
                       ? [&]() {
-                          NPCsActions::FApplyVerdictPayload VP;
+                          NPCsActions::FApplyNpcVerdictPayload VP;
                           VP.Id = NpcId;
-                          VP.ActionType = Verdict.ActionType;
-                          VP.TargetHex = Verdict.TargetHex;
-                          VP.SuspicionDelta = Verdict.SuspicionDelta;
+                          VP.Action.Type = Verdict.ActionType;
+                          VP.Action.TargetHex = Verdict.TargetHex;
+                          VP.Action.bHasTargetHex = true;
+                          VP.StateDelta.Suspicion = Verdict.SuspicionDelta;
+                          VP.StateDelta.bHasSuspicion =
+                              Verdict.SuspicionDelta != 0;
                           Store.dispatch(NPCsActions::ApplyNpcVerdict(VP));
                         }()
                       : (void)0;
