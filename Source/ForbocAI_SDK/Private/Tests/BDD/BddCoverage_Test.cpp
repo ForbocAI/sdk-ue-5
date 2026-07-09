@@ -85,7 +85,7 @@ void FBddCoverageSpec::Define() {
 
       // 1. Expected API
       TSet<FString> ExpectedApi;
-      FString ApiEndpointsContent = ReadFile(FPaths::Combine(SourceDir, TEXT("Public/Features/API/APIEndpoints.h")));
+      FString ApiEndpointsContent = ReadFile(FPaths::Combine(SourceDir, TEXT("Public/Features/API/Endpoints/EndpointsThunks.h")));
       ExtractRegexMatches(ApiEndpointsContent, TEXT("inline\\s+Thunk<[^>]+>\\s+(\\w+)\\s*\\("), 1, ExpectedApi);
       CheckCoverage(TEXT("api"), ExpectedApi);
       

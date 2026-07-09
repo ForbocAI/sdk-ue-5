@@ -34,14 +34,15 @@ from check_fp import (
     PROJECT_ROOT,
     SOURCE_ROOT,
 )
+from ue_targets import ue_targets
 
 
-SOURCE_ROOTS = (
+SDK_SOURCE_CANDIDATES = (
     PROJECT_ROOT / "Source" / "ForbocAI_SDK",
     SOURCE_ROOT / "ForbocAI_SDK",
     SOURCE_ROOT,
 )
-SDK_SOURCE_ROOT = next((root for root in SOURCE_ROOTS if root.exists()), SOURCE_ROOTS[0])
+SDK_SOURCE_ROOT = next((root for root in SDK_SOURCE_CANDIDATES if root.exists()), SDK_SOURCE_CANDIDATES[0])
 PACKAGES_ROOT = PROJECT_ROOT / "packages"
 PUBLIC_ROOT = SDK_SOURCE_ROOT / "Public"
 PRIVATE_ROOT = SDK_SOURCE_ROOT / "Private"
@@ -222,9 +223,24 @@ def iter_files(root: Path, suffixes: set[str] = SOURCE_SUFFIXES) -> list[Path]:
     )
 
 
+def ue_authored_source_roots() -> list[Path]:
+    roots: list[Path] = []
+    for target in ue_targets():
+        if target.label == "sdk":
+            module_root = target.root / "Source" / "ForbocAI_SDK"
+            roots.append(module_root if module_root.exists() else target.root / "Source")
+        elif target.label == "sdk-cli":
+            module_root = target.root / "Source" / "ForbocAI_TestGame_CLI"
+            roots.append(module_root if module_root.exists() else target.root / "Source")
+        else:
+            roots.append(target.root / "Source")
+    return sorted(dict.fromkeys(root for root in roots if root.exists()))
+
+
 def authored_source_roots() -> list[Path]:
-    if SDK_SOURCE_ROOT.exists():
-        return [SDK_SOURCE_ROOT]
+    ue_roots = ue_authored_source_roots()
+    if ue_roots:
+        return ue_roots
     if PACKAGES_ROOT.exists():
         return sorted(path for path in PACKAGES_ROOT.glob("*/src") if path.is_dir())
     return [SOURCE_ROOT] if SOURCE_ROOT.exists() else []
@@ -236,10 +252,8 @@ def authored_source_files() -> list[Path]:
 
 
 def public_header_files() -> list[Path]:
-    if PUBLIC_ROOT.exists():
-        roots = (PUBLIC_ROOT,)
-    else:
-        roots = tuple(root for root in (SOURCE_ROOT,) if root.exists())
+    public_roots = tuple(root / "Public" for root in authored_source_roots() if (root / "Public").exists())
+    roots = public_roots or tuple(root for root in (SOURCE_ROOT,) if root.exists())
     return [
         path
         for root in roots
@@ -254,6 +268,18 @@ def command_surface_files() -> list[Path]:
         files.append(COMMANDLET_FILE)
     if CLI_ROOT.exists():
         files.extend(path for path in iter_files(CLI_ROOT, CPP_SUFFIXES) if path.suffix in {".h", ".hpp", ".cpp"})
+    for root in authored_source_roots():
+        for candidate in (
+            root / "Private" / "Commandlet.cpp",
+            root / "Private" / "CLI",
+            root / "Public" / "CLI",
+            root / "Public" / "TestGame" / "TestGameCommandSurface.h",
+            root / "Public" / "TestGame" / "CommandSurface",
+        ):
+            if candidate.is_file() and candidate.suffix in CPP_SUFFIXES:
+                files.append(candidate)
+            elif candidate.is_dir():
+                files.extend(path for path in iter_files(candidate, CPP_SUFFIXES) if path.suffix in {".h", ".hpp", ".cpp"})
     if PACKAGES_ROOT.exists():
         files.extend(
             path
@@ -265,22 +291,15 @@ def command_surface_files() -> list[Path]:
     return sorted(dict.fromkeys(files))
 
 
-def mock_scan_files(runtime_root: Path | None) -> list[Path]:
+def mock_scan_files() -> list[Path]:
     files: list[Path] = []
-    if PUBLIC_ROOT.exists():
-        files.extend(iter_files(PUBLIC_ROOT, CPP_SUFFIXES))
+    roots = authored_source_roots()
+    if roots:
+        files.extend(path for root in roots for path in iter_files(root, SOURCE_SUFFIXES) if not has_part(path, {"ThirdParty", "__pycache__"}))
     elif SOURCE_ROOT.exists():
         files.extend(path for path in iter_files(SOURCE_ROOT, SOURCE_SUFFIXES) if not has_part(path, {"ThirdParty", "__pycache__"}))
     elif PACKAGES_ROOT.exists():
         files.extend(authored_source_files())
-
-    if runtime_root is not None:
-        runtime_source = runtime_root / "Source"
-        runtime_tests = runtime_source / "Tests"
-        if runtime_tests.exists():
-            files.extend(iter_files(runtime_tests, SOURCE_SUFFIXES))
-        if runtime_source.exists():
-            files.extend(path for path in iter_files(runtime_source, SOURCE_SUFFIXES) if "Tests" not in path.parts)
     return sorted(dict.fromkeys(files))
 
 
@@ -400,9 +419,9 @@ def scan_command_http() -> list[Finding]:
     return findings
 
 
-def scan_mock_references(runtime_root: Path | None) -> list[Finding]:
+def scan_mock_references() -> list[Finding]:
     findings: list[Finding] = []
-    for path in mock_scan_files(runtime_root):
+    for path in mock_scan_files():
         findings.extend(_scan_pattern(
             path,
             MOCK_RE,
@@ -511,14 +530,14 @@ def scan_fp_core_surface() -> list[Finding]:
     return findings
 
 
-def find_findings(runtime_root: Path | None = None) -> list[Finding]:
+def find_findings() -> list[Finding]:
     findings: list[Finding] = []
     findings.extend(scan_control_flow())
     findings.extend(scan_class_declarations())
     findings.extend(scan_public_mutable())
     findings.extend(scan_command_sizes())
     findings.extend(scan_command_http())
-    findings.extend(scan_mock_references(runtime_root))
+    findings.extend(scan_mock_references())
     findings.extend(scan_accumulation_mutation())
     findings.extend(scan_nullish_checks())
     findings.extend(scan_fp_substrate_adoption())
@@ -551,7 +570,6 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--format", choices=("text", "json", "sarif"), default="text")
     parser.add_argument("--explain", nargs="?", const="", metavar="RULE-ID")
-    parser.add_argument("--runtime-root", type=Path, help="Optional runtime/demo project root to include in mock scans.")
     return parser.parse_args()
 
 
@@ -561,8 +579,7 @@ def main() -> int:
         print(explain(args.explain or None))
         return 0
 
-    runtime_root = args.runtime_root.resolve() if args.runtime_root else None
-    findings = find_findings(runtime_root)
+    findings = find_findings()
     guard = "FP source conformance guard"
     if args.format == "json":
         print(format_json(findings, PROJECT_ROOT))

@@ -27,29 +27,13 @@ fi
 
 PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SDK_TESTS="$PLUGIN_ROOT/Source/ForbocAI_SDK/Private/Tests"
-
-RUNTIME_ROOT=""
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --runtime-root)
-      RUNTIME_ROOT="$2"
-      shift 2
-      ;;
-    *)
-      shift
-      ;;
-  esac
-done
-
-if [ -n "$RUNTIME_ROOT" ]; then
-  RUNTIME_TESTS="$RUNTIME_ROOT/Source/Tests"
-else
-  RUNTIME_TESTS="$PLUGIN_ROOT/../../Source/Tests"
-fi
+SDK_CLI_TESTS="$PLUGIN_ROOT/test-game-cli/Source/ForbocAI_TestGame_CLI/Private/Tests"
+DEMO_TESTS="$PLUGIN_ROOT/../demo-ue-5/Source/Tests"
 
 TEST_DIRS=()
 [ -d "$SDK_TESTS" ] && TEST_DIRS+=("$SDK_TESTS")
-[ -d "$RUNTIME_TESTS" ] && TEST_DIRS+=("$RUNTIME_TESTS")
+[ -d "$SDK_CLI_TESTS" ] && TEST_DIRS+=("$SDK_CLI_TESTS")
+[ -d "$DEMO_TESTS" ] && TEST_DIRS+=("$DEMO_TESTS")
 
 if [ ${#TEST_DIRS[@]} -eq 0 ]; then
   echo "No test directories found to scan."

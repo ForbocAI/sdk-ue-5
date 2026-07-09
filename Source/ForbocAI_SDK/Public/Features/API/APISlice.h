@@ -40,7 +40,7 @@ extern rtk::Api<FRuntimeState> ForbocAiApi;
 } // namespace APISlice
 
 #include "API/APICodecs.h"
-#include "APIEndpoints.h"
+#include "Endpoints/EndpointsThunks.h"
 
 namespace APISlice {
 

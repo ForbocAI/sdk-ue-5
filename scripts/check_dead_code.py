@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""UE SDK/demo dead-code and dead-data guard.
+"""UE target dead-code and dead-data guard.
 
-This SDK-owned guard scans either the UE SDK plugin root or a UE runtime/demo
-project root. It fails on orphan authored headers and orphan authored data:
+This SDK-owned guard scans the UE SDK, SDK CLI/test-game target, and sibling UE
+demo when present. It fails on orphan authored headers and orphan authored data:
 
 * DEAD-SRC-001: an authored header (.h/.hpp) no other source file includes.
   Reflection headers, module entry headers, and automation tests are entry
@@ -24,6 +24,8 @@ from pathlib import Path
 import re
 import sys
 from typing import Iterable
+
+from ue_targets import ue_targets
 
 
 DEFAULT_PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -175,46 +177,45 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=__doc__,
         epilog=(
-            "This guard scans the selected project Source/Content/scripts trees; "
+            "This guard scans each discovered UE target Source/Content/scripts tree; "
             "path-narrowing arguments are intentionally unsupported."
         ),
-    )
-    parser.add_argument(
-        "--root",
-        "--runtime-root",
-        dest="root",
-        type=Path,
-        default=DEFAULT_PROJECT_ROOT,
-        help="UE SDK plugin or UE runtime/demo project root to scan.",
     )
     return parser.parse_args()
 
 
 def main() -> int:
-    project_root = resolve_root(parse_args().root)
-    headers = orphan_headers(project_root)
-    data = orphan_data(project_root)
-    total = len(headers) + len(data)
+    parse_args()
+    total = 0
+    for target in ue_targets():
+        project_root = resolve_root(target.root)
+        headers = orphan_headers(project_root)
+        data = orphan_data(project_root)
+        count = len(headers) + len(data)
+        total += count
 
-    if total == 0:
-        print(f"Dead-code guard passed for {project_root}. No orphan headers or data files.")
-        return 0
+        if count == 0:
+            print(f"Dead-code guard passed for {target.label} ({project_root}). No orphan headers or data files.")
+            continue
 
-    print(
-        f"Dead-code guard failed for {project_root}: "
-        f"{total} orphan file(s) ({len(headers)} header(s), {len(data)} data file(s))."
-    )
-    for path in headers:
-        print(f"{rel(project_root, path)}: DEAD-SRC-001 orphan header -- no other file #includes it; delete it or wire it in.")
-    for path in data:
-        print(f"{rel(project_root, path)}: DEAD-DATA-001 orphan data -- referenced by no Source/Content/script; delete it or reference it.")
-    print("")
-    print(
-        "An orphan file is stale dead code/data. Confirm it is truly used by "
-        "reflection, config, or dynamically built paths and wire that path into "
-        "the source tree; otherwise delete it."
-    )
-    return 1
+        print(
+            f"Dead-code guard failed for {target.label} ({project_root}): "
+            f"{count} orphan file(s) ({len(headers)} header(s), {len(data)} data file(s))."
+        )
+        for path in headers:
+            print(f"{rel(project_root, path)}: DEAD-SRC-001 orphan header -- no other file #includes it; delete it or wire it in.")
+        for path in data:
+            print(f"{rel(project_root, path)}: DEAD-DATA-001 orphan data -- referenced by no Source/Content/script; delete it or reference it.")
+        print("")
+
+    if total:
+        print(
+            "An orphan file is stale dead code/data. Confirm it is truly used by "
+            "reflection, config, or dynamically built paths and wire that path into "
+            "the source tree; otherwise delete it."
+        )
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

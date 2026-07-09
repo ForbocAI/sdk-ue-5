@@ -464,7 +464,7 @@ PersistMemoryInstructions(const TArray<FMemoryStoreInstruction> &Instructions,
                    TEXT("API returned memoryStore instructions, but no memory "
                         "engine is configured"))
              : func::AsyncChain::then<FMemoryItem, rtk::FEmptyPayload>(
-                   Runtime.StoreMemory(MakeMemoryItem(Instructions[Index]))(
+                   Runtime.storeMemory(MakeMemoryItem(Instructions[Index]))(
                        Dispatch, GetState),
                    [Instructions, Index, Runtime, Dispatch,
                     GetState](const FMemoryItem &Stored) {

@@ -39,9 +39,13 @@ from check_ecs import (
     rel,
     PROJECT_ROOT,
 )
+from ue_targets import ue_targets
 
 
 CONTENT_DATA_ROOT = PROJECT_ROOT / "Content" / "Data"
+CONTENT_DATA_ROOTS = tuple(
+    path for path in (target.root / "Content" / "Data" for target in ue_targets()) if path.exists()
+) or tuple(path for path in (CONTENT_DATA_ROOT,) if path.exists())
 LARGE_JSON_LINE_COUNT = 500
 WIDE_SECTION_COUNT = 4
 INSTANCE_CATALOG_ATOM = "level"
@@ -124,11 +128,16 @@ def _finding(path: Path, rule: Rule, detail: str) -> Finding:
 
 # --- Path shape ------------------------------------------------------------
 
+def content_data_root_for(path: Path) -> Path | None:
+    return next((root for root in CONTENT_DATA_ROOTS if path.is_relative_to(root)), None)
+
+
 def path_tokens(path: Path) -> list[str]:
-    if not path.is_relative_to(CONTENT_DATA_ROOT):
+    root = content_data_root_for(path)
+    if root is None:
         return []
     tokens: list[str] = []
-    for part in path.relative_to(CONTENT_DATA_ROOT).with_suffix("").parts:
+    for part in path.relative_to(root).with_suffix("").parts:
         tokens.extend(token for token in normalize(part).split("_") if token)
     return tokens
 
@@ -136,18 +145,20 @@ def path_tokens(path: Path) -> list[str]:
 def infer_location_roots(files: list[Path]) -> frozenset[str]:
     roots: set[str] = set()
     for path in files:
-        if not path.is_relative_to(CONTENT_DATA_ROOT):
+        root = content_data_root_for(path)
+        if root is None:
             continue
-        parts = path.relative_to(CONTENT_DATA_ROOT).parts
+        parts = path.relative_to(root).parts
         if len(parts) >= 3 and parts[1] == INSTANCE_CATALOG_ATOM:
             roots.add(parts[0])
     return frozenset(roots)
 
 
 def catalog_instance_expected(path: Path, location_roots: frozenset[str]) -> Path | None:
-    if not path.is_relative_to(CONTENT_DATA_ROOT):
+    root = content_data_root_for(path)
+    if root is None:
         return None
-    parts = path.relative_to(CONTENT_DATA_ROOT).parts
+    parts = path.relative_to(root).parts
     if len(parts) < 2:
         return None
     instance, *rest = parts
@@ -157,7 +168,7 @@ def catalog_instance_expected(path: Path, location_roots: frozenset[str]) -> Pat
         rest = rest[1:]
     if not rest:
         return None
-    return CONTENT_DATA_ROOT / pluralize(INSTANCE_CATALOG_ATOM) / instance / Path(*rest)
+    return root / pluralize(INSTANCE_CATALOG_ATOM) / instance / Path(*rest)
 
 
 def leaf_split(path: Path) -> Path | None:
@@ -207,7 +218,7 @@ def catalog_order_finding(path: Path, location_roots: frozenset[str]) -> Finding
 
 
 def compound_leaf_finding(path: Path, location_roots: frozenset[str]) -> Finding | None:
-    if not path.is_relative_to(CONTENT_DATA_ROOT):
+    if content_data_root_for(path) is None:
         return None
     ordered = catalog_instance_expected(path, location_roots) or path
     expected = leaf_split(ordered)
@@ -217,7 +228,7 @@ def compound_leaf_finding(path: Path, location_roots: frozenset[str]) -> Finding
 
 
 def root_rewrap_finding(path: Path, value: object, location_roots: frozenset[str]) -> Finding | None:
-    if not path.is_relative_to(CONTENT_DATA_ROOT):
+    if content_data_root_for(path) is None:
         return None
     if not isinstance(value, dict) or len(value) != 1 or is_json_path_manifest(value):
         return None
@@ -239,7 +250,7 @@ def root_rewrap_finding(path: Path, value: object, location_roots: frozenset[str
 
 
 def wide_sections_finding(path: Path, value: object, location_roots: frozenset[str]) -> Finding | None:
-    if not path.is_relative_to(CONTENT_DATA_ROOT):
+    if content_data_root_for(path) is None:
         return None
     if not isinstance(value, dict) or is_json_path_manifest(value):
         return None
@@ -252,9 +263,10 @@ def wide_sections_finding(path: Path, value: object, location_roots: frozenset[s
 
 
 def location_bag_finding(path: Path, value: object, location_roots: frozenset[str]) -> Finding | None:
-    if not path.is_relative_to(CONTENT_DATA_ROOT):
+    root = content_data_root_for(path)
+    if root is None:
         return None
-    parts = path.relative_to(CONTENT_DATA_ROOT).parts
+    parts = path.relative_to(root).parts
     if len(parts) < 2 or parts[0] not in location_roots:
         return None
     if not isinstance(value, dict) or len(value) != 1:
@@ -266,7 +278,7 @@ def location_bag_finding(path: Path, value: object, location_roots: frozenset[st
 
 
 def large_split_finding(path: Path, value: object, location_roots: frozenset[str]) -> Finding | None:
-    if not path.is_relative_to(CONTENT_DATA_ROOT) or line_count(path) < LARGE_JSON_LINE_COUNT:
+    if content_data_root_for(path) is None or line_count(path) < LARGE_JSON_LINE_COUNT:
         return None
     if not isinstance(value, dict) or is_json_path_manifest(value):
         return None
@@ -287,7 +299,7 @@ def large_split_finding(path: Path, value: object, location_roots: frozenset[str
 def section_folder_finding(path: Path, value: object) -> Finding | None:
     """A file inside a folder named for an ECS section must not declare a
     different ECS section at its top level."""
-    if not path.is_relative_to(CONTENT_DATA_ROOT) or not isinstance(value, dict):
+    if content_data_root_for(path) is None or not isinstance(value, dict):
         return None
     if is_json_path_manifest(value):
         return None
@@ -326,7 +338,7 @@ def load_json(path: Path) -> tuple[object, str | None]:
 
 
 def find_findings() -> list[Finding]:
-    files = iter_files([CONTENT_DATA_ROOT], {".json"})
+    files = iter_files(list(CONTENT_DATA_ROOTS), {".json"})
     location_roots = infer_location_roots(files)
     findings: list[Finding] = []
     for path in files:

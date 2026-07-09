@@ -25,8 +25,8 @@ inline FString MemoryItemIdSelector(const FMemoryItem &Item) { return Item.Id; }
  * User Story: As memory reducers and selectors, I need one shared adapter so
  * entity operations stay consistent across the slice.
  */
-inline EntityAdapter<FMemoryItem> GetMemoryAdapter() {
-  return createEntityAdapter<FMemoryItem>(&MemoryItemIdSelector);
+inline rtk::EntityAdapter<FMemoryItem> GetMemoryAdapter() {
+  return rtk::createEntityAdapter<FMemoryItem>(&MemoryItemIdSelector);
 }
 
 } // namespace MemorySlice

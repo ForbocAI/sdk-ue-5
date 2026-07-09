@@ -20,6 +20,20 @@ def read_text(relative: str) -> str:
     return (PLUGIN_ROOT / relative).read_text(encoding="utf-8")
 
 
+def read_existing(relative_paths: list[str]) -> str:
+    chunks: list[str] = []
+    missing: list[str] = []
+    for relative_path in relative_paths:
+        path = PLUGIN_ROOT / relative_path
+        if path.exists():
+            chunks.append(path.read_text(encoding="utf-8"))
+        else:
+            missing.append(relative_path)
+    if missing and not chunks:
+        raise FileNotFoundError(", ".join(missing))
+    return "\n".join(chunks)
+
+
 def get_contract_data() -> dict:
     api_url = os.environ.get("FORBOCAI_API_URL")
     if api_url:
@@ -132,10 +146,20 @@ def parse_transcript_fields(header: str) -> set[str]:
 
 def validate_ue_sources(contract: dict) -> list[str]:
     failures: list[str] = []
-    contract_header = read_text("Source/ForbocAI_SDK/Public/TestGame/TestGameContract.h")
-    types_header = read_text("Source/ForbocAI_SDK/Public/TestGame/Features/TestGameTypes.h")
-    command_surface = read_text("Source/ForbocAI_SDK/Public/TestGame/TestGameCommandSurface.h")
-    orchestrator = read_text("Source/ForbocAI_SDK/Public/TestGame/TestGameOrchestrator.h")
+    test_game_root = "test-game-cli/Source/ForbocAI_TestGame_CLI/Public/TestGame"
+    contract_header = read_text(f"{test_game_root}/TestGameContract.h")
+    types_header = read_text(f"{test_game_root}/Features/Systems/Harness/HarnessTypes.h")
+    command_surface = read_existing(
+        [
+            f"{test_game_root}/TestGameCommandSurface.h",
+            f"{test_game_root}/CommandSurface/Alias.h",
+            f"{test_game_root}/CommandSurface/Execute.h",
+            f"{test_game_root}/CommandSurface/Scenario.h",
+            f"{test_game_root}/CommandSurface/Tokens.h",
+            f"{test_game_root}/CommandSurface/Types.h",
+        ]
+    )
+    orchestrator = read_text(f"{test_game_root}/TestGameOrchestrator.h")
 
     required_groups = set(contract.get("requiredCommandGroups") or [])
     mapped_groups = parse_cpp_command_group_mappings(contract_header)

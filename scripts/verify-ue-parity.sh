@@ -11,11 +11,13 @@
 #   3. Thin-wrapper guardrails (check-thin-wrapper-guardrails.sh)
 #   4. SDK parity inventory and CLI command parity (check-sdk-parity.py)
 #   5. Redux/RTK boundary discipline (check_redux.py)
-#   6. Line-count discipline (check_line_count.py)
-#   7. Dead-code/data guard (check_dead_code.py)
-#   8. Test-game executor-boundary guard (check-test-game-executor-boundary.sh)
-#   9. Product boundary audit (check-product-boundary.sh)
-#   10. API contract parity (check-api-contract-parity.py)
+#   6. Source/data literal discipline (check_source_for_data.py)
+#   7. ECS domain/data discipline (ecs/domain_boundaries.py, ecs/data_naming.py)
+#   8. Line-count discipline (check_line_count.py)
+#   9. Dead-code/data guard (check_dead_code.py)
+#   10. Test-game executor-boundary guard (check-test-game-executor-boundary.sh)
+#   11. Product boundary audit (check-product-boundary.sh)
+#   12. API contract parity (check-api-contract-parity.py)
 #
 # Exit codes:
 #   0 = all checks passed
@@ -32,7 +34,6 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 QUICK_MODE=0
-RUNTIME_ROOT=""
 SKIPPED=0
 UE_CONFORMANCE_STATUS="skipped"
 FP_CONFORMANCE_STATUS="skipped"
@@ -40,6 +41,9 @@ THIN_WRAPPER_STATUS="skipped"
 TEST_GAME_BOUNDARY_STATUS="skipped"
 SDK_PARITY_STATUS="skipped"
 REDUX_RTK_STATUS="skipped"
+SOURCE_DATA_STATUS="skipped"
+ECS_DOMAIN_STATUS="skipped"
+ECS_DATA_STATUS="skipped"
 LINE_COUNT_STATUS="skipped"
 DEAD_CODE_STATUS="skipped"
 PRODUCT_BOUNDARY_STATUS="skipped"
@@ -53,10 +57,6 @@ while [[ $# -gt 0 ]]; do
     --quick)
       QUICK_MODE=1
       shift
-      ;;
-    --runtime-root)
-      RUNTIME_ROOT="$2"
-      shift 2
       ;;
     *)
       shift
@@ -88,12 +88,9 @@ run_check() {
   echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
   if [ -f "$script" ]; then
-    local args=()
-    [ -n "$RUNTIME_ROOT" ] && args+=("--runtime-root" "$RUNTIME_ROOT")
-
     if case "$script" in
-      *.py) python3 "$script" "${args[@]}" 2>&1 ;;
-      *) bash "$script" "${args[@]}" 2>&1 ;;
+      *.py) python3 "$script" 2>&1 ;;
+      *) bash "$script" 2>&1 ;;
     esac; then
       echo -e "${GREEN}✓ $name — PASSED${NC}"
       check_status="passed"
@@ -181,14 +178,25 @@ run_check "SDK Parity (core/node/test-game inventory and CLI keys)" \
 run_check "Redux/RTK Boundary Discipline (UE SDK Features + Views)" \
   "$SCRIPT_DIR/check_redux.py" REDUX_RTK_STATUS
 
-# ── Phase 3d: File size and dead-code discipline ──
+# ── Phase 3d: Source/data literal discipline ──
+run_check "Source/Data Literal Discipline (UE targets)" \
+  "$SCRIPT_DIR/check_source_for_data.py" SOURCE_DATA_STATUS
+
+# ── Phase 3e: ECS domain/data discipline ──
+run_check "ECS Domain Boundary Discipline (UE targets)" \
+  "$SCRIPT_DIR/ecs/domain_boundaries.py" ECS_DOMAIN_STATUS
+
+run_check "ECS Authored Data Naming (UE targets)" \
+  "$SCRIPT_DIR/ecs/data_naming.py" ECS_DATA_STATUS
+
+# ── Phase 3f: File size and dead-code discipline ──
 run_check "Line-count discipline (Source/Content authored files)" \
   "$SCRIPT_DIR/check_line_count.py" LINE_COUNT_STATUS
 
 run_check "Dead-code/data guard (orphan authored files)" \
   "$SCRIPT_DIR/check_dead_code.py" DEAD_CODE_STATUS
 
-# ── Phase 3e: Test-game executor boundary ──
+# ── Phase 3g: Test-game executor boundary ──
 run_check "Test-game executor boundary (no TestGameLib.h, no shadow executor)" \
   "$SCRIPT_DIR/check-test-game-executor-boundary.sh" TEST_GAME_BOUNDARY_STATUS
 
@@ -279,6 +287,9 @@ echo "  [$(mark_for_status "$FP_CONFORMANCE_STATUS")] FP conformance (immutabili
 echo "  [$(mark_for_status "$THIN_WRAPPER_STATUS")] Thin-wrapper guardrails"
 echo "  [$(mark_for_status "$SDK_PARITY_STATUS")] SDK parity inventory and CLI keys"
 echo "  [$(mark_for_status "$REDUX_RTK_STATUS")] Redux/RTK guidance"
+echo "  [$(mark_for_status "$SOURCE_DATA_STATUS")] Source/data literal discipline"
+echo "  [$(mark_for_status "$ECS_DOMAIN_STATUS")] ECS domain boundaries"
+echo "  [$(mark_for_status "$ECS_DATA_STATUS")] ECS authored-data naming"
 echo "  [$(mark_for_status "$LINE_COUNT_STATUS")] Line-count discipline"
 echo "  [$(mark_for_status "$DEAD_CODE_STATUS")] Dead-code/data guard"
 echo "  [$(mark_for_status "$TEST_GAME_BOUNDARY_STATUS")] Test-game executor boundary"

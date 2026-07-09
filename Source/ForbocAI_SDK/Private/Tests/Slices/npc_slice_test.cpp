@@ -2,7 +2,7 @@
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
 #include "Features/NPC/NPCSlice.h"
-#include "Features/NPC/NPCSliceActions.h"
+#include "Features/NPC/Events/EventsActions.h"
 
 using namespace rtk;
 using namespace NPCSlice;

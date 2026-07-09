@@ -3,6 +3,8 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SRC="$ROOT/Source/ForbocAI_SDK"
+SDK_CLI_SRC="$ROOT/test-game-cli/Source/ForbocAI_TestGame_CLI"
+DEMO_SRC="$ROOT/../demo-ue-5/Source"
 STATUS=0
 
 # Hard dependency: without ripgrep every rule below silently produces no
@@ -17,11 +19,27 @@ normalize_crlf() {
   tr -d '\r'
 }
 
+existing_dirs() {
+  local dirs=()
+  local dir
+  for dir in "$@"; do
+    [ -d "$dir" ] && dirs+=("$dir")
+  done
+  printf '%s\n' "${dirs[@]}"
+}
+
+mapfile -t FIRST_PARTY_ROOTS < <(existing_dirs \
+  "$SRC/Public" "$SRC/Private" \
+  "$SDK_CLI_SRC/Public" "$SDK_CLI_SRC/Private" \
+  "$DEMO_SRC")
+mapfile -t PRIVATE_ROOTS < <(existing_dirs "$SRC/Private" "$SDK_CLI_SRC/Private" "$DEMO_SRC")
+mapfile -t PUBLIC_ROOTS < <(existing_dirs "$SRC/Public" "$SDK_CLI_SRC/Public" "$DEMO_SRC")
+
 echo "[check] UE SDK conformance guardrails"
 
 # 1a) No C++17 features in first-party source (excluding ThirdParty).
 C17_HITS="$(rg -n 'if constexpr|std::is_same_v|std::decay_t|std::optional|std::variant|std::any' \
-  "$SRC/Public" "$SRC/Private" \
+  "${FIRST_PARTY_ROOTS[@]}" \
   --glob '!**/Tests/**' \
   2>/dev/null | normalize_crlf || true)"
 if [ -n "$C17_HITS" ]; then
@@ -34,7 +52,7 @@ fi
 
 # 1b) No C++14 auto return type deduction in first-party source.
 C14_AUTO="$(rg -n 'inline auto [A-Za-z]' \
-  "$SRC/Public" "$SRC/Private" \
+  "${FIRST_PARTY_ROOTS[@]}" \
   --glob '!**/Tests/**' \
   --glob '!**/ThirdParty/**' \
   2>/dev/null | normalize_crlf || true)"
@@ -48,7 +66,7 @@ fi
 
 # 2) No raw new/delete in first-party runtime code (excluding Tests, ThirdParty).
 RAW_NEW="$(rg -n '\bnew [A-Z]|\bdelete [A-Za-z]' \
-  "$SRC/Private" \
+  "${PRIVATE_ROOTS[@]}" \
   --glob '!**/Tests/**' \
   --glob '!**/Native/SqliteAmalgamation.c' \
   2>/dev/null | normalize_crlf || true)"
@@ -66,7 +84,7 @@ fi
 #      BridgeModule.cpp  — lazy HTTP wrapper for bridge rules
 #      NativeStorage.cpp — binary file download for native deps
 DIRECT_HTTP="$(rg -n 'FHttpModule::Get\(\)\.CreateRequest\(\)' \
-  "$SRC/Public" "$SRC/Private" \
+  "${FIRST_PARTY_ROOTS[@]}" \
   --glob '!**/Core/AsyncHttp.h' \
   --glob '!**/Core/ThunkDetail.h' \
   --glob '!**/Bridge/BridgeModule.cpp' \
@@ -110,7 +128,7 @@ fi
 #    The retired TestGame/TestGameLib.h scenario command runner was removed
 #    in favor of TestGame::CommandSurface — no test-game exemption remains.
 DIRECT_PROC="$(rg -n 'FPlatformProcess::CreateProc' \
-  "$SRC/Public" "$SRC/Private" \
+  "${FIRST_PARTY_ROOTS[@]}" \
   --glob '!**/CLI/**' \
   --glob '!**/Tests/**' \
   2>/dev/null | normalize_crlf || true)"
@@ -124,7 +142,7 @@ fi
 
 # 6) ThirdParty isolation — no direct ThirdParty includes in public headers.
 THIRDPARTY_LEAK="$(rg -n '#include.*ThirdParty' \
-  "$SRC/Public" \
+  "${PUBLIC_ROOTS[@]}" \
   2>/dev/null | normalize_crlf || true)"
 if [ -n "$THIRDPARTY_LEAK" ]; then
   echo "[fail] ThirdParty headers included directly in public headers:"
@@ -137,8 +155,7 @@ fi
 # 7) No imperative branching (if/for/while/switch) in first-party non-test code.
 #    Excludes: Tests/, comments, ThirdParty/, SqliteAmalgamation.c
 IMPERATIVE_HITS="$(rg -n '\b(if|for|while|switch)\s*\(' \
-  "$SRC/Public" "$SRC/Private" \
-  --glob '!**/TestGame/**' \
+  "${FIRST_PARTY_ROOTS[@]}" \
   --glob '!**/RuntimeConfig.h' \
   --glob '!**/Commandlet.cpp' \
   --glob '!**/Tests/**' \

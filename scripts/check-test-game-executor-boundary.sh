@@ -14,7 +14,7 @@
 # Rules enforced:
 #   1. No file may include the retired `TestGame/TestGameLib.h` header.
 #   2. No file may reintroduce `TestGameLib.h` (the file itself).
-#   3. Integration tests under `Source/ForbocAI_SDK/Private/Tests/` must
+#   3. Integration tests under the SDK and UE test-game modules must
 #      not name a function `ExecuteForbocAICommand` or shadow the
 #      canonical command surface with an alternate executor symbol.
 #
@@ -39,6 +39,7 @@ fi
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SRC="$ROOT/Source/ForbocAI_SDK"
+TEST_GAME_SRC="$ROOT/test-game-cli/Source/ForbocAI_TestGame_CLI"
 STATUS=0
 
 normalize_crlf() {
@@ -49,7 +50,7 @@ echo "[check] Test-game executor boundary guard"
 
 # 1) No #include of the retired TestGameLib.h header.
 LIB_INCLUDES="$(rg -n '#include[[:space:]]+"[^"]*TestGame/TestGameLib\.h"' \
-  "$SRC/Public" "$SRC/Private" \
+  "$SRC/Public" "$SRC/Private" "$TEST_GAME_SRC/Public" "$TEST_GAME_SRC/Private" \
   2>/dev/null | normalize_crlf || true)"
 if [ -n "$LIB_INCLUDES" ]; then
   echo "[fail] Files still include the retired TestGame/TestGameLib.h:"
@@ -63,7 +64,7 @@ else
 fi
 
 # 2) The retired header itself must not be re-added.
-if [ -f "$SRC/Public/TestGame/TestGameLib.h" ]; then
+if [ -f "$SRC/Public/TestGame/TestGameLib.h" ] || [ -f "$TEST_GAME_SRC/Public/TestGame/TestGameLib.h" ]; then
   echo "[fail] TestGame/TestGameLib.h has been re-added. The retired" >&2
   echo "       in-process executor surface is retired — split helpers" >&2
   echo "       into TestGameRuntime.h / Views/Terminal/TerminalView.h instead." >&2
@@ -73,10 +74,12 @@ else
 fi
 
 # 3) Integration tests must not reintroduce an executor symbol.
-TEST_DIR="$SRC/Private/Tests"
-if [ -d "$TEST_DIR" ]; then
+TEST_DIRS=()
+[ -d "$SRC/Private/Tests" ] && TEST_DIRS+=("$SRC/Private/Tests")
+[ -d "$TEST_GAME_SRC/Private/Tests" ] && TEST_DIRS+=("$TEST_GAME_SRC/Private/Tests")
+if [ "${#TEST_DIRS[@]}" -gt 0 ]; then
   EXEC_DECLS="$(rg -n '\b(ExecuteForbocAICommand|FCommandExecutor)\b' \
-    "$TEST_DIR" \
+    "${TEST_DIRS[@]}" \
     2>/dev/null | normalize_crlf || true)"
   if [ -n "$EXEC_DECLS" ]; then
     echo "[fail] Integration tests reference a retired test-game executor entrypoint:"

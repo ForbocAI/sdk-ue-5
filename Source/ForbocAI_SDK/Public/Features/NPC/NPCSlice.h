@@ -7,7 +7,7 @@
 #include "Core/rtk.hpp"
 #include "Core/ue_fp.hpp"
 #include "CoreMinimal.h"
-#include "Features/NPC/NPCSliceActions.h"
+#include "Features/NPC/Events/EventsActions.h"
 #include "NPC/NPCTypes.h"
 #include "Types.h"
 

@@ -4,7 +4,6 @@
 #include "Core/ue_fp.hpp"
 #include "Misc/Parse.h"
 #include "RuntimeConfig.h"
-#include "TestGame/TestGameOrchestrator.h"
 
 namespace {
 
@@ -432,18 +431,6 @@ TArray<FString> BuildCommandArgs(const FString &Command,
                   }),
 
               /**
-               * ---- Test Game ----
-               * User Story: As test-game CLI entrypoints, I need one optional
-               * mode arg so the harness can run through the same commandlet
-               * validation surface as the rest of the CLI.
-               */
-              func::when<FString, TArray<FString>>(
-                  func::equals<FString>(TEXT("test_game")),
-                  [&Params](const FString &) {
-                    return BuildParams(Params, {TEXT("Mode=")});
-                  }),
-
-              /**
                * ---- Setup ----
                * User Story: As setup command routing, I need commandlet params converted
                * into setup flags so the commandlet path matches the direct CLI surface.
@@ -475,17 +462,6 @@ TArray<FString> BuildCommandArgs(const FString &Command,
                   }),
           }),
       TArray<FString>());
-}
-
-func::Maybe<TestGame::EPlayMode>
-ParseTestGameMode(const TArray<FString> &Args) {
-  return Args.Num() == 0
-             ? func::just(TestGame::EPlayMode::Autoplay)
-             : Args[0].Equals(TEXT("autoplay"), ESearchCase::IgnoreCase)
-                   ? func::just(TestGame::EPlayMode::Autoplay)
-                   : Args[0].Equals(TEXT("manual"), ESearchCase::IgnoreCase)
-                         ? func::just(TestGame::EPlayMode::Manual)
-                         : func::nothing<TestGame::EPlayMode>();
 }
 
 } // namespace
@@ -593,22 +569,6 @@ UForbocAICommandlet::createCommandPipeline(const FString &Command,
             [&RejectFString](const FString &Err) { RejectFString(Err); },
             [this, &Command, &Args, &Resolve,
              &RejectFString, &Reject](const FString &) {
-              if (Command == TEXT("test_game")) {
-                const func::Maybe<TestGame::EPlayMode> Mode =
-                    ParseTestGameMode(Args);
-                if (!Mode.hasValue) {
-                  RejectFString(
-                      TEXT("Invalid test_game mode. Use manual or autoplay."));
-                  return;
-                }
-
-                const TestGame::FGameRunResult Result =
-                    TestGame::RunGame(Mode.value);
-                Result.bComplete ? Resolve()
-                                 : RejectFString(Result.Summary);
-                return;
-              }
-
               const CommandResult Result = executeCommand(Command, Args);
               const FString ResultMessage =
                   Result.message.empty()

@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Reject authored UE SDK/demo files over the 300-line ceiling.
+"""Reject authored UE target files over the 300-line ceiling.
 
-This guard is SDK-owned and can scan either the UE SDK plugin root or a UE
-runtime/demo project root:
+This guard is SDK-owned and scans the UE SDK, SDK CLI/test-game target, and
+sibling UE demo when present:
 
   python3 scripts/check_line_count.py
-  python3 scripts/check_line_count.py --root ../demo-ue-5
 
 Line counts intentionally match the project line-count documentation rule:
 authored Source and Content text files are checked, generated/build folders are
@@ -17,6 +16,8 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 import sys
+
+from ue_targets import ue_targets
 
 
 DEFAULT_PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -110,34 +111,33 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=__doc__,
         epilog=(
-            "This guard scans the selected project Source/Content trees; "
+            "This guard scans each discovered UE target Source/Content tree; "
             "path-narrowing arguments are intentionally unsupported."
         ),
-    )
-    parser.add_argument(
-        "--root",
-        "--runtime-root",
-        dest="root",
-        type=Path,
-        default=DEFAULT_PROJECT_ROOT,
-        help="UE SDK plugin or UE runtime/demo project root to scan.",
     )
     return parser.parse_args()
 
 
 def main() -> int:
-    project_root = resolve_root(parse_args().root)
-    over = find_over_limit(project_root)
-    if not over:
-        print(f"Line-count guard passed for {project_root}. No Source/Content file exceeds {MAX_LINES} lines.")
-        return 0
+    parse_args()
+    targets = ue_targets()
+    failures = 0
+    for target in targets:
+        project_root = resolve_root(target.root)
+        over = find_over_limit(project_root)
+        if not over:
+            print(f"Line-count guard passed for {target.label} ({project_root}). No Source/Content file exceeds {MAX_LINES} lines.")
+            continue
 
-    print(f"Line-count guard failed for {project_root}: {len(over)} file(s) over {MAX_LINES} lines.")
-    for count, path in over:
-        print(f"{display(project_root, path)}: {count} lines, over the {MAX_LINES}-line limit; split into subdomains")
-    print("")
-    print(GUIDANCE)
-    return 1
+        failures += len(over)
+        print(f"Line-count guard failed for {target.label} ({project_root}): {len(over)} file(s) over {MAX_LINES} lines.")
+        for count, path in over:
+            print(f"{display(project_root, path)}: {count} lines, over the {MAX_LINES}-line limit; split into subdomains")
+        print("")
+    if failures:
+        print(GUIDANCE)
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

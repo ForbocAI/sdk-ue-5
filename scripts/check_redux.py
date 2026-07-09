@@ -29,6 +29,7 @@ import sys
 REDUX_DIR = Path(__file__).resolve().parent / "redux"
 sys.path.insert(0, str(REDUX_DIR))
 PROJECT_ROOT = Path(os.environ.get("FORBOCAI_REDUX_PROJECT_ROOT", Path(__file__).resolve().parents[1])).resolve()
+from ue_targets import ue_targets
 
 
 def default_scan_roots(project_root: Path) -> list[Path]:
@@ -37,9 +38,35 @@ def default_scan_roots(project_root: Path) -> list[Path]:
         project_root / "Source" / "Views",
         project_root / "Source" / "ForbocAI_SDK" / "Public" / "Features",
         project_root / "Source" / "ForbocAI_SDK" / "Private" / "Features",
-        project_root / "Source" / "ForbocAI_SDK" / "Public" / "TestGame" / "Features",
-        project_root / "Source" / "ForbocAI_SDK" / "Public" / "TestGame" / "Views",
+        project_root / "test-game-cli" / "Source" / "ForbocAI_TestGame_CLI" / "Public" / "TestGame" / "Features",
+        project_root / "test-game-cli" / "Source" / "ForbocAI_TestGame_CLI" / "Public" / "TestGame" / "Views",
     ]
+
+
+def discovered_target_scan_roots(project_root: Path) -> list[tuple[str, Path, list[Path]]]:
+    targets: list[tuple[str, Path, list[Path]]] = []
+    for target in ue_targets():
+        if target.label == "sdk":
+            roots = [
+                target.root / "Source" / "ForbocAI_SDK" / "Public" / "Features",
+                target.root / "Source" / "ForbocAI_SDK" / "Private" / "Features",
+            ]
+        elif target.label == "sdk-cli":
+            roots = [
+                target.root / "Source" / "ForbocAI_TestGame_CLI" / "Public" / "TestGame" / "Features",
+                target.root / "Source" / "ForbocAI_TestGame_CLI" / "Public" / "TestGame" / "Views",
+            ]
+        else:
+            roots = [
+                target.root / "Source" / "Features",
+                target.root / "Source" / "Views",
+            ]
+        existing = [root for root in roots if root.exists()]
+        if existing:
+            targets.append((target.label, target.root, existing))
+    if targets:
+        return targets
+    return [("project", project_root, [root for root in default_scan_roots(project_root) if root.exists()])]
 
 
 def configured_scan_roots(project_root: Path) -> list[Path]:
@@ -462,11 +489,10 @@ def check_import_graph(units: list[SourceUnit]) -> list[Finding]:
 
 # --- Runner ----------------------------------------------------------------
 
-def run(guard_name: str = "RTK boundary guard", fmt: str = "text") -> int:
-    project_root = PROJECT_ROOT
+def collect_findings(project_root: Path, scan_roots: list[Path]) -> list[Finding]:
     plugins = discover_role_plugins()
 
-    units = [build_unit(path, project_root) for path in iter_source_files(SCAN_ROOTS)]
+    units = [build_unit(path, project_root) for path in iter_source_files(scan_roots)]
 
     findings: list[Finding] = []
     for unit in units:
@@ -475,6 +501,12 @@ def run(guard_name: str = "RTK boundary guard", fmt: str = "text") -> int:
     findings += check_store_boundary(project_root)
     findings += check_multiple_api_roots(units)
     findings += check_import_graph(units)
+    return findings
+
+
+def run(guard_name: str = "RTK boundary guard", fmt: str = "text") -> int:
+    project_root = PROJECT_ROOT
+    findings = collect_findings(project_root, SCAN_ROOTS)
 
     if fmt == "json":
         print(format_json(findings, project_root))
@@ -488,6 +520,34 @@ def run(guard_name: str = "RTK boundary guard", fmt: str = "text") -> int:
         print(format_text(findings, project_root, guard_name))
     else:
         print(f"{guard_name} passed.")
+
+    return 1 if findings else 0
+
+
+def run_discovered(fmt: str = "text") -> int:
+    target_results: list[tuple[str, Path, list[Finding]]] = []
+    for label, root, scan_roots in discovered_target_scan_roots(PROJECT_ROOT):
+        target_results.append((label, root, collect_findings(root, scan_roots)))
+
+    findings = [finding for _, _, target_findings in target_results for finding in target_findings]
+    guard = "RTK boundary guard"
+    if fmt == "json":
+        print(format_json(findings, PROJECT_ROOT))
+        if findings:
+            print(format_summary(findings, guard), file=sys.stderr)
+    elif fmt == "sarif":
+        print(format_sarif(findings, PROJECT_ROOT, guard))
+        if findings:
+            print(format_summary(findings, guard), file=sys.stderr)
+    elif findings:
+        for label, root, target_findings in target_results:
+            if not target_findings:
+                print(f"{guard} passed for {label} ({root}).")
+                continue
+            print(format_text(target_findings, root, f"{guard} [{label}]"))
+    else:
+        labels = ", ".join(label for label, _, _ in target_results)
+        print(f"{guard} passed for {labels}.")
 
     return 1 if findings else 0
 
@@ -523,6 +583,8 @@ def main() -> int:
     if args.explain is not None:
         print(explain(args.explain or None))
         return 0
+    if not args.project_root and not args.scan_root and not os.environ.get("FORBOCAI_REDUX_SCAN_ROOTS"):
+        return run_discovered(fmt=args.format)
     return run(fmt=args.format)
 
 

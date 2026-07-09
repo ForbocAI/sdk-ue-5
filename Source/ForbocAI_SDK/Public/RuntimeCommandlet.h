@@ -4,7 +4,6 @@
 #include "CoreMinimal.h"
 #include "Commandlets/Commandlet.h"
 #include "Core/ue_fp.hpp"
-#include "TestGame/TestGameCommandSurface.h"
 #include "RuntimeCommandlet.generated.h"
 
 namespace CLITypes {
@@ -31,7 +30,6 @@ using func::make_right;
  *   soul_export -Id="..."
  *   config_set -Key="..." -Value="..."
  *   config_get -Key="..."
- *   test_game -Mode=autoplay
  */
 UCLASS()
 class UForbocAICommandlet : public UCommandlet {

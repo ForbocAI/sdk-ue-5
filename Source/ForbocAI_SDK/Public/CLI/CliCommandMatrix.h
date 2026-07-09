@@ -71,7 +71,6 @@ inline const TArray<FString> &UeOnlyCommandKeys() {
       TEXT("setup_deps"),
       TEXT("setup_verify"),
       TEXT("setup_runtime_check"),
-      TEXT("test_game"),
   };
   return Keys;
 }

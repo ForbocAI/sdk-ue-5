@@ -54,11 +54,56 @@ from check_ecs import (
     rel,
     PROJECT_ROOT,
 )
+from ue_targets import ue_targets
 
 
 SOURCE_FEATURES_ROOT = PROJECT_ROOT / "Source" / "Features"
 SOURCE_VIEWS_ROOT = PROJECT_ROOT / "Source" / "Views"
 CONTENT_DATA_ROOT = PROJECT_ROOT / "Content" / "Data"
+
+
+def _existing(paths: list[Path]) -> tuple[Path, ...]:
+    return tuple(path for path in paths if path.exists())
+
+
+def _target_feature_roots() -> tuple[Path, ...]:
+    roots: list[Path] = []
+    for target in ue_targets():
+        if target.label == "sdk":
+            roots.extend(
+                [
+                    target.root / "Source" / "ForbocAI_SDK" / "Public" / "Features",
+                    target.root / "Source" / "ForbocAI_SDK" / "Private" / "Features",
+                ]
+            )
+        elif target.label == "sdk-cli":
+            roots.append(target.root / "Source" / "ForbocAI_TestGame_CLI" / "Public" / "TestGame" / "Features")
+        else:
+            roots.append(target.root / "Source" / "Features")
+    return _existing(roots) or _existing([SOURCE_FEATURES_ROOT])
+
+
+def _target_view_roots() -> tuple[Path, ...]:
+    roots: list[Path] = []
+    for target in ue_targets():
+        if target.label == "sdk-cli":
+            roots.append(target.root / "Source" / "ForbocAI_TestGame_CLI" / "Public" / "TestGame" / "Views")
+        elif target.label == "demo":
+            roots.append(target.root / "Source" / "Views")
+    return _existing(roots) or _existing([SOURCE_VIEWS_ROOT])
+
+
+def _target_data_roots() -> tuple[Path, ...]:
+    return _existing([target.root / "Content" / "Data" for target in ue_targets()]) or _existing([CONTENT_DATA_ROOT])
+
+
+SOURCE_FEATURES_ROOTS = _target_feature_roots()
+SOURCE_VIEWS_ROOTS = _target_view_roots()
+CONTENT_DATA_ROOTS = _target_data_roots()
+
+
+def _root_for(path: Path, roots: tuple[Path, ...]) -> Path | None:
+    return next((root for root in roots if path.is_relative_to(root)), None)
 
 SOURCE_SUFFIXES = {".cpp", ".h", ".hpp"}
 SOURCE_FRAGMENT_SUFFIXES = {".inl", ".inc", ".ipp"}
@@ -254,14 +299,20 @@ def _split_source_role(tokens: list[str]) -> tuple[list[str], list[str]]:
 
 
 def _source_ancestor_tokens(path: Path) -> set[str]:
+    root = _root_for(path, SOURCE_FEATURES_ROOTS)
+    if root is None:
+        return set()
     tokens: list[str] = []
-    for part in path.relative_to(SOURCE_FEATURES_ROOT).parent.parts:
+    for part in path.relative_to(root).parent.parts:
         tokens.extend(folder_tokens(part))
     return set(normalized_tokens(tokens))
 
 
 def _source_stems(path: Path, role_tokens: list[str]) -> list[str]:
-    parts = path.relative_to(SOURCE_FEATURES_ROOT).parent.parts
+    root = _root_for(path, SOURCE_FEATURES_ROOTS)
+    if root is None:
+        return []
+    parts = path.relative_to(root).parent.parts
     return [
         "".join(
             token
@@ -314,11 +365,18 @@ def _role_name_context(
 
 
 def source_role_context(paths: list[Path]) -> RoleNameContext:
-    return _role_name_context(paths, SOURCE_FEATURES_ROOT, CANONICAL_SOURCE_ROLES, _source_stems)
+    contexts = [
+        _role_name_context(paths, root, CANONICAL_SOURCE_ROLES, _source_stems)
+        for root in SOURCE_FEATURES_ROOTS
+    ]
+    merged: dict[Path, str] = {}
+    for context in contexts:
+        merged.update(context.expected_stem_by_path)
+    return RoleNameContext(merged)
 
 
 def source_finding(path: Path, context: RoleNameContext | None = None) -> Finding | None:
-    if path.suffix not in SOURCE_SUFFIXES or not path.is_relative_to(SOURCE_FEATURES_ROOT):
+    if path.suffix not in SOURCE_SUFFIXES or _root_for(path, SOURCE_FEATURES_ROOTS) is None:
         return None
     tokens = camel_tokens(path.stem)
     prefix_tokens, role_tokens = _split_source_role(tokens)
@@ -343,9 +401,10 @@ def _view_subject_tokens(path: Path) -> list[str]:
 
 
 def _view_stems(path: Path) -> list[str]:
-    if path.parent == SOURCE_VIEWS_ROOT:
+    root = _root_for(path, SOURCE_VIEWS_ROOTS)
+    if root is None or path.parent == root:
         return []
-    parts = path.relative_to(SOURCE_VIEWS_ROOT).parent.parts
+    parts = path.relative_to(root).parent.parts
     return [
         "".join(
             token
@@ -358,19 +417,26 @@ def _view_stems(path: Path) -> list[str]:
 
 
 def view_role_context(paths: list[Path]) -> RoleNameContext:
-    return _role_name_context(
-        paths,
-        SOURCE_VIEWS_ROOT,
-        (("View",),),
-        lambda path, _role_tokens: _view_stems(path),
-    )
+    contexts = [
+        _role_name_context(
+            paths,
+            root,
+            (("View",),),
+            lambda path, _role_tokens: _view_stems(path),
+        )
+        for root in SOURCE_VIEWS_ROOTS
+    ]
+    merged: dict[Path, str] = {}
+    for context in contexts:
+        merged.update(context.expected_stem_by_path)
+    return RoleNameContext(merged)
 
 
 def view_qualifier_tokens(paths: list[Path]) -> set[str]:
     counts: Counter[str] = Counter()
     seen: set[str] = set()
     for path in paths:
-        if path.suffix not in SOURCE_SUFFIXES or not path.is_relative_to(SOURCE_VIEWS_ROOT):
+        if path.suffix not in SOURCE_SUFFIXES or _root_for(path, SOURCE_VIEWS_ROOTS) is None:
             continue
         if path.stem in seen:
             continue
@@ -385,7 +451,8 @@ def view_finding(
     qualifiers: set[str],
     context: RoleNameContext | None = None,
 ) -> Finding | None:
-    if path.suffix not in SOURCE_SUFFIXES or not path.is_relative_to(SOURCE_VIEWS_ROOT):
+    root = _root_for(path, SOURCE_VIEWS_ROOTS)
+    if path.suffix not in SOURCE_SUFFIXES or root is None:
         return None
     expected_stem = (
         context.expected_stem_by_path.get(path)
@@ -400,7 +467,7 @@ def view_finding(
     subject = [t for t in _view_subject_tokens(path) if normalize_token(t) not in qualifiers]
     if not subject:
         return None
-    expected_parent = SOURCE_VIEWS_ROOT
+    expected_parent = root
     for token in subject:
         expected_parent /= token
     expected = expected_parent / ("View" + path.suffix)
@@ -416,16 +483,20 @@ class DataContext:
 
 
 def _data_root_for(path: Path) -> Path | None:
-    if path.parent == CONTENT_DATA_ROOT:
-        return CONTENT_DATA_ROOT
-    source_root = CONTENT_DATA_ROOT / "Source"
+    data_root = _root_for(path, CONTENT_DATA_ROOTS)
+    if data_root is None:
+        return None
+    if path.parent == data_root:
+        return data_root
+    source_root = data_root / "Source"
     return source_root if path.parent == source_root else None
 
 
 def _data_names(paths: list[Path]) -> list[tuple[Path, Path, tuple[str, ...]]]:
     names = []
     for path in paths:
-        if path.suffix != ".json" or not path.is_relative_to(CONTENT_DATA_ROOT):
+        data_root = _root_for(path, CONTENT_DATA_ROOTS)
+        if path.suffix != ".json" or data_root is None:
             continue
         root = _data_root_for(path)
         if root is None:
@@ -545,11 +616,7 @@ def folder_redundancy_findings(paths: list[Path]) -> list[Finding]:
 
 
 def _source_or_view_root(path: Path) -> Path | None:
-    if path.is_relative_to(SOURCE_FEATURES_ROOT):
-        return SOURCE_FEATURES_ROOT
-    if path.is_relative_to(SOURCE_VIEWS_ROOT):
-        return SOURCE_VIEWS_ROOT
-    return None
+    return _root_for(path, SOURCE_FEATURES_ROOTS) or _root_for(path, SOURCE_VIEWS_ROOTS)
 
 
 def _source_or_view_folder_parts(path: Path) -> tuple[Path, tuple[str, ...]] | None:
@@ -642,7 +709,7 @@ def folder_domain_findings(paths: list[Path]) -> list[Finding]:
 # --- Runner ----------------------------------------------------------------
 
 def find_findings() -> list[Finding]:
-    candidates = iter_files([SOURCE_FEATURES_ROOT, SOURCE_VIEWS_ROOT, CONTENT_DATA_ROOT])
+    candidates = iter_files([*SOURCE_FEATURES_ROOTS, *SOURCE_VIEWS_ROOTS, *CONTENT_DATA_ROOTS])
     source_context = source_role_context(candidates)
     view_context = view_role_context(candidates)
     qualifiers = view_qualifier_tokens(candidates)

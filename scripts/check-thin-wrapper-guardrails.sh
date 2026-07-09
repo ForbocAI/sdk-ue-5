@@ -25,12 +25,18 @@ fi
 
 PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="$PLUGIN_ROOT/Source/ForbocAI_SDK"
+TEST_GAME_SRC="$PLUGIN_ROOT/test-game-cli/Source/ForbocAI_TestGame_CLI"
 
 # Directories to check (command surfaces only)
 COMMAND_SURFACES=(
   "$SRC/Public/CLI/CLIModule.h"
   "$SRC/Public/CLI/CliHandlers.h"
-  "$SRC/Public/TestGame/TestGameCommandSurface.h"
+  "$TEST_GAME_SRC/Public/TestGame/TestGameCommandSurface.h"
+  "$TEST_GAME_SRC/Public/TestGame/CommandSurface/Alias.h"
+  "$TEST_GAME_SRC/Public/TestGame/CommandSurface/Execute.h"
+  "$TEST_GAME_SRC/Public/TestGame/CommandSurface/Scenario.h"
+  "$TEST_GAME_SRC/Public/TestGame/CommandSurface/Tokens.h"
+  "$TEST_GAME_SRC/Public/TestGame/CommandSurface/Types.h"
 )
 
 VIOLATIONS=0

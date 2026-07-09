@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # check-product-boundary.sh
-# Audits the UE SDK for game-specific terminology outside the test-game namespace.
+# Audits the UE SDK for game-specific terminology outside the separate test-game module.
 #
-# The SDK should be game-agnostic. Only the test-game harness (Public/TestGame/*)
-# should contain scenario-specific language.
+# The SDK module should be game-agnostic. Scenario-specific language belongs in
+# the separate test-game-cli/Source/ForbocAI_TestGame_CLI module.
 #
 # This script checks all non-TestGame headers for:
 #   1. Game-domain framing (gameplay, game logic, combat system, etc.)
@@ -27,41 +27,25 @@ fi
 PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="$PLUGIN_ROOT/Source/ForbocAI_SDK"
 PUBLIC="$SRC/Public"
-
-RUNTIME_ROOT=""
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --runtime-root)
-      RUNTIME_ROOT="$2"
-      shift 2
-      ;;
-    *)
-      shift
-      ;;
-  esac
-done
-
-if [ -n "$RUNTIME_ROOT" ]; then
-  RUNTIME_SRC="$RUNTIME_ROOT/Source"
-else
-  RUNTIME_SRC="$PLUGIN_ROOT/../../Source"
-fi
+PRIVATE="$SRC/Private"
 
 SRC_DIRS=("$PUBLIC")
-[ -d "$RUNTIME_SRC" ] && SRC_DIRS+=("$RUNTIME_SRC")
+[ -d "$PRIVATE" ] && SRC_DIRS+=("$PRIVATE")
 
 VIOLATIONS=0
 
 echo "=== Product Boundary Audit ==="
-echo "Checking non-TestGame surfaces for game-specific terminology..."
+echo "Checking SDK surfaces for game-specific terminology..."
 echo ""
 
-# Define excluded paths (test-game harness is allowed to be scenario-rich)
+# Define excluded paths. Test-game harness code is separate from the SDK module,
+# but keep the glob so a reintroduced embedded TestGame folder is still ignored
+# by terminology rules and caught by the dedicated boundary checks.
 EXCLUDE_DIRS="--glob=!**/TestGame/**"
 EXCLUDE_TESTS="--glob=!**/Tests/**"
 
 # ── Rule 1: No game-domain framing in generic headers ──
-echo "[Rule 1] No game-domain framing outside TestGame/..."
+echo "[Rule 1] No game-domain framing in the SDK module..."
 GAME_TERMS="gameplay|game logic|game rules|game engine|combat system|RPG system|inventory system|quest system|leveling|skill tree|character class"
 HITS=$(rg -ci "$GAME_TERMS" "${SRC_DIRS[@]}" $EXCLUDE_DIRS $EXCLUDE_TESTS 2>/dev/null || true)
 if [ -n "$HITS" ]; then
@@ -69,12 +53,12 @@ if [ -n "$HITS" ]; then
   rg -ni "$GAME_TERMS" "${SRC_DIRS[@]}" $EXCLUDE_DIRS $EXCLUDE_TESTS 2>/dev/null || true
   VIOLATIONS=$((VIOLATIONS + 1))
 else
-  echo "  ✓ No game-domain framing in generic surfaces."
+  echo "  ✓ No game-domain framing in SDK surfaces."
 fi
 echo ""
 
 # ── Rule 2: No scenario-specific references in generic headers ──
-echo "[Rule 2] No scenario-specific references outside TestGame/..."
+echo "[Rule 2] No scenario-specific references in the SDK module..."
 SCENARIO_TERMS="doomguard|miller|stealth-door|social-miller|escape-realtime|persistence-recovery|Scout"
 HITS=$(rg -ci "$SCENARIO_TERMS" "${SRC_DIRS[@]}" $EXCLUDE_DIRS $EXCLUDE_TESTS 2>/dev/null || true)
 if [ -n "$HITS" ]; then
@@ -82,7 +66,7 @@ if [ -n "$HITS" ]; then
   rg -ni "$SCENARIO_TERMS" "${SRC_DIRS[@]}" $EXCLUDE_DIRS $EXCLUDE_TESTS 2>/dev/null || true
   VIOLATIONS=$((VIOLATIONS + 1))
 else
-  echo "  ✓ No scenario-specific references in generic surfaces."
+  echo "  ✓ No scenario-specific references in SDK surfaces."
 fi
 echo ""
 
@@ -119,7 +103,7 @@ done
 echo ""
 
 # ── Rule 5: No ASCII grid rendering outside TestGame ──
-echo "[Rule 5] No rendering helpers outside TestGame/..."
+echo "[Rule 5] No rendering helpers in the SDK module..."
 RENDER_TERMS="RenderGrid|RenderRow|CellAt|RenderLegend|ASCII grid"
 HITS=$(rg -ci "$RENDER_TERMS" "${SRC_DIRS[@]}" $EXCLUDE_DIRS $EXCLUDE_TESTS 2>/dev/null || true)
 if [ -n "$HITS" ]; then
@@ -127,12 +111,12 @@ if [ -n "$HITS" ]; then
   rg -ni "$RENDER_TERMS" "${SRC_DIRS[@]}" $EXCLUDE_DIRS $EXCLUDE_TESTS 2>/dev/null || true
   VIOLATIONS=$((VIOLATIONS + 1))
 else
-  echo "  ✓ No rendering helpers in generic surfaces."
+  echo "  ✓ No rendering helpers in SDK surfaces."
 fi
 echo ""
 
 # ── Rule 6: No transcript/harness types outside TestGame ──
-echo "[Rule 6] No transcript/harness types outside TestGame/..."
+echo "[Rule 6] No transcript/harness types in the SDK module..."
 HARNESS_TERMS="FTranscriptEntry|ETranscriptStatus|FHarnessState|FScenarioSliceState|EEventType"
 HITS=$(rg -ci "$HARNESS_TERMS" "${SRC_DIRS[@]}" $EXCLUDE_DIRS $EXCLUDE_TESTS 2>/dev/null || true)
 if [ -n "$HITS" ]; then
@@ -140,7 +124,7 @@ if [ -n "$HITS" ]; then
   rg -ni "$HARNESS_TERMS" "${SRC_DIRS[@]}" $EXCLUDE_DIRS $EXCLUDE_TESTS 2>/dev/null || true
   VIOLATIONS=$((VIOLATIONS + 1))
 else
-  echo "  ✓ No harness types in generic surfaces."
+  echo "  ✓ No harness types in SDK surfaces."
 fi
 echo ""
 
@@ -160,12 +144,12 @@ echo ""
 # ── Summary ──
 echo "=== Results ==="
 if [ "$VIOLATIONS" -eq 0 ]; then
-  echo "✓ Product boundary is clean. No game-specific terminology outside TestGame/."
+  echo "✓ Product boundary is clean. No game-specific terminology in the SDK module."
   exit 0
 else
   echo "✗ $VIOLATIONS boundary violation(s) found."
   echo "  Generic SDK surfaces should describe: NPC decisioning, thought/context flow,"
   echo "  rule validation, memory, soul/ghost, host-local execution."
-  echo "  Only TestGame/* should contain scenario-specific language."
+  echo "  Scenario-specific language belongs in test-game-cli/Source/ForbocAI_TestGame_CLI."
   exit 1
 fi

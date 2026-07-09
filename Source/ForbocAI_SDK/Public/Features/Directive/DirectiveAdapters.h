@@ -25,8 +25,8 @@ inline FString DirectiveIdSelector(const FDirectiveRun &Run) { return Run.Id; }
  * User Story: As directive reducers and selectors, I need a shared adapter so
  * entity operations stay consistent across the slice.
  */
-inline EntityAdapter<FDirectiveRun> GetDirectiveAdapter() {
-  return createEntityAdapter<FDirectiveRun>(&DirectiveIdSelector);
+inline rtk::EntityAdapter<FDirectiveRun> GetDirectiveAdapter() {
+  return rtk::createEntityAdapter<FDirectiveRun>(&DirectiveIdSelector);
 }
 
 } // namespace DirectiveSlice

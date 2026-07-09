@@ -6,7 +6,7 @@
 
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
-#include "Features/API/APIEndpoints.h"
+#include "Features/API/Endpoints/EndpointsThunks.h"
 #include "Core/JsonInterop.h"
 #include "HAL/PlatformProcess.h"
 #include "Misc/AutomationTest.h"
