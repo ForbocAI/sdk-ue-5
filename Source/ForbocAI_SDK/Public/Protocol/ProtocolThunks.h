@@ -142,7 +142,7 @@ HandleQueryVector(const FNPCProcessResponse &Response,
                   std::function<AnyAction(const AnyAction &)> Dispatch,
                   std::function<const FRuntimeState &()> GetState) {
   return !Runtime.HasMemory()
-             ? (Dispatch(DirectiveSlice::Actions::DirectiveRunFailed(
+             ? (Dispatch(DirectiveSlice::Actions::directiveRunFailed(
                     RunId,
                     TEXT("API requested memory recall, but no memory engine "
                          "is configured"))),
@@ -154,7 +154,7 @@ HandleQueryVector(const FNPCProcessResponse &Response,
     Directive.recallMemory = TypeFactory::MemoryRecallInstruction(
         Instruction.Query, Instruction.Limit, Instruction.Threshold);
     Dispatch(
-        DirectiveSlice::Actions::DirectiveReceived(RunId, Directive));
+        DirectiveSlice::Actions::directiveReceived(RunId, Directive));
 
     FMemoryRecallRequest RecallRequest;
     RecallRequest.Query = Instruction.Query;
@@ -305,7 +305,7 @@ HandleFinalize(const FNPCInstruction &Instruction,
   Verdict.Dialogue = Instruction.Dialogue;
   Verdict.bHasAction = Instruction.bHasAction;
   Verdict.Action = Instruction.Action;
-  Dispatch(DirectiveSlice::Actions::VerdictValidated(RunId, Verdict));
+  Dispatch(DirectiveSlice::Actions::verdictValidated(RunId, Verdict));
 
   return !Instruction.bValid
              ? (Dispatch(NPCSlice::Actions::blockAction(
@@ -344,7 +344,7 @@ RunProtocolTurn(const FString &NpcId, const FString &Input,
                 std::function<AnyAction(const AnyAction &)> Dispatch,
                 std::function<const FRuntimeState &()> GetState) {
   return Turn >= 12
-             ? (Dispatch(DirectiveSlice::Actions::DirectiveRunFailed(
+             ? (Dispatch(DirectiveSlice::Actions::directiveRunFailed(
                     RunId, TEXT("Max turns exceeded"))),
                 RejectAsync<FAgentResponse>(
                     TEXT("Protocol loop exceeded max turns")))
@@ -384,7 +384,7 @@ RunProtocolTurn(const FString &NpcId, const FString &Input,
                             ? HandleFinalize(Instruction, NpcId, Input, RunId,
                                              Runtime, Dispatch, GetState)
                             : (Dispatch(
-                                   DirectiveSlice::Actions::DirectiveRunFailed(
+                                   DirectiveSlice::Actions::directiveRunFailed(
                                        RunId,
                                        FString::Printf(
                                            TEXT("Unsupported protocol "
@@ -397,7 +397,7 @@ RunProtocolTurn(const FString &NpcId, const FString &Input,
                                    static_cast<int32>(Instruction.Type))));
                })
         .catch_([RunId, Dispatch](std::string Error) {
-          Dispatch(DirectiveSlice::Actions::DirectiveRunFailed(
+          Dispatch(DirectiveSlice::Actions::directiveRunFailed(
               RunId, FString(UTF8_TO_TCHAR(Error.c_str()))));
         });
   }();
@@ -472,7 +472,7 @@ processNPC(const FString &NpcId, const FString &Input = TEXT(""),
       const FString RunId = FString::Printf(
           TEXT("%s:%lld"), *NpcId, FDateTime::UtcNow().ToUnixTimestamp());
       Dispatch(
-          DirectiveSlice::Actions::DirectiveRunStarted(RunId, NpcId, Input));
+          DirectiveSlice::Actions::directiveRunStarted(RunId, NpcId, Input));
 
       FNPCProcessTape Tape = TypeFactory::ProcessTape(Input, ContextJson,
                                                       CurrentState,

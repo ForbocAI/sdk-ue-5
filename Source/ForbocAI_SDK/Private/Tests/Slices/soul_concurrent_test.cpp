@@ -19,14 +19,14 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoulConcurrentExportImportTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FSoulConcurrentExportImportTest::RunTest(const FString &Parameters) {
-  Slice<FSoulSliceState> SSlice = CreateSoulSlice();
+  Slice<FSoulSliceState> SSlice = createSoulSlice();
   FSoulSliceState State;
 
   /**
    * Start export
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  State = SSlice.Reducer(State, SoulActions::RemoteExportSoulPending());
+  State = SSlice.Reducer(State, SoulActions::remoteExportSoulPending());
   TestEqual("ExportStatus exporting", State.ExportStatus,
             FString(TEXT("exporting")));
   TestEqual("ImportStatus idle", State.ImportStatus,
@@ -36,7 +36,7 @@ bool FSoulConcurrentExportImportTest::RunTest(const FString &Parameters) {
    * Start import while export is still pending
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  State = SSlice.Reducer(State, SoulActions::ImportSoulPending());
+  State = SSlice.Reducer(State, SoulActions::importSoulPending());
   TestEqual("ExportStatus still exporting", State.ExportStatus,
             FString(TEXT("exporting")));
   TestEqual("ImportStatus importing", State.ImportStatus,
@@ -48,7 +48,7 @@ bool FSoulConcurrentExportImportTest::RunTest(const FString &Parameters) {
    */
   FSoulExportResult ExportResult;
   ExportResult.TxId = TEXT("export_tx_concurrent");
-  State = SSlice.Reducer(State, SoulActions::RemoteExportSoulSuccess(ExportResult));
+  State = SSlice.Reducer(State, SoulActions::remoteExportSoulSuccess(ExportResult));
   TestEqual("ExportStatus success", State.ExportStatus,
             FString(TEXT("success")));
   TestEqual("ImportStatus still importing", State.ImportStatus,
@@ -64,7 +64,7 @@ bool FSoulConcurrentExportImportTest::RunTest(const FString &Parameters) {
   FSoul ImportedSoul;
   ImportedSoul.Id = TEXT("import_soul_concurrent");
   ImportedSoul.Persona = TEXT("Concurrent Test Soul");
-  State = SSlice.Reducer(State, SoulActions::ImportSoulSuccess(ImportedSoul));
+  State = SSlice.Reducer(State, SoulActions::importSoulSuccess(ImportedSoul));
   TestEqual("ExportStatus still success", State.ExportStatus,
             FString(TEXT("success")));
   TestEqual("ImportStatus success", State.ImportStatus,
@@ -88,16 +88,16 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoulExportFailImportSucceedTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FSoulExportFailImportSucceedTest::RunTest(const FString &Parameters) {
-  Slice<FSoulSliceState> SSlice = CreateSoulSlice();
+  Slice<FSoulSliceState> SSlice = createSoulSlice();
   FSoulSliceState State;
 
   /**
    * Export fails
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  State = SSlice.Reducer(State, SoulActions::RemoteExportSoulPending());
+  State = SSlice.Reducer(State, SoulActions::remoteExportSoulPending());
   State = SSlice.Reducer(State,
-                         SoulActions::RemoteExportSoulFailed(TEXT("Arweave down")));
+                         SoulActions::remoteExportSoulFailed(TEXT("Arweave down")));
   TestEqual("ExportStatus failed", State.ExportStatus,
             FString(TEXT("failed")));
   TestEqual("Error set", State.Error, FString(TEXT("Arweave down")));
@@ -106,7 +106,7 @@ bool FSoulExportFailImportSucceedTest::RunTest(const FString &Parameters) {
    * Import starts — should clear the shared error
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  State = SSlice.Reducer(State, SoulActions::ImportSoulPending());
+  State = SSlice.Reducer(State, SoulActions::importSoulPending());
   TestTrue("Error cleared by import pending", State.Error.IsEmpty());
   TestEqual("ExportStatus still failed", State.ExportStatus,
             FString(TEXT("failed")));
@@ -117,7 +117,7 @@ bool FSoulExportFailImportSucceedTest::RunTest(const FString &Parameters) {
    */
   FSoul Soul;
   Soul.Id = TEXT("import_after_fail");
-  State = SSlice.Reducer(State, SoulActions::ImportSoulSuccess(Soul));
+  State = SSlice.Reducer(State, SoulActions::importSoulSuccess(Soul));
   TestEqual("ImportStatus success", State.ImportStatus,
             FString(TEXT("success")));
   TestEqual("ExportStatus still failed", State.ExportStatus,
@@ -138,16 +138,16 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoulImportFailExportSucceedTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FSoulImportFailExportSucceedTest::RunTest(const FString &Parameters) {
-  Slice<FSoulSliceState> SSlice = CreateSoulSlice();
+  Slice<FSoulSliceState> SSlice = createSoulSlice();
   FSoulSliceState State;
 
   /**
    * Import fails
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  State = SSlice.Reducer(State, SoulActions::ImportSoulPending());
+  State = SSlice.Reducer(State, SoulActions::importSoulPending());
   State = SSlice.Reducer(State,
-                         SoulActions::ImportSoulFailed(TEXT("Invalid TxId")));
+                         SoulActions::importSoulFailed(TEXT("Invalid TxId")));
   TestEqual("ImportStatus failed", State.ImportStatus,
             FString(TEXT("failed")));
 
@@ -155,7 +155,7 @@ bool FSoulImportFailExportSucceedTest::RunTest(const FString &Parameters) {
    * Export starts — should clear the shared error
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  State = SSlice.Reducer(State, SoulActions::RemoteExportSoulPending());
+  State = SSlice.Reducer(State, SoulActions::remoteExportSoulPending());
   TestTrue("Error cleared by export pending", State.Error.IsEmpty());
 
   /**
@@ -164,7 +164,7 @@ bool FSoulImportFailExportSucceedTest::RunTest(const FString &Parameters) {
    */
   FSoulExportResult ExportResult;
   ExportResult.TxId = TEXT("export_after_import_fail");
-  State = SSlice.Reducer(State, SoulActions::RemoteExportSoulSuccess(ExportResult));
+  State = SSlice.Reducer(State, SoulActions::remoteExportSoulSuccess(ExportResult));
   TestEqual("ExportStatus success", State.ExportStatus,
             FString(TEXT("success")));
   TestEqual("ImportStatus still failed", State.ImportStatus,
@@ -185,17 +185,17 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoulDoubleExportTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FSoulDoubleExportTest::RunTest(const FString &Parameters) {
-  Slice<FSoulSliceState> SSlice = CreateSoulSlice();
+  Slice<FSoulSliceState> SSlice = createSoulSlice();
   FSoulSliceState State;
 
   /**
    * First export
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  State = SSlice.Reducer(State, SoulActions::RemoteExportSoulPending());
+  State = SSlice.Reducer(State, SoulActions::remoteExportSoulPending());
   FSoulExportResult Result1;
   Result1.TxId = TEXT("tx_first");
-  State = SSlice.Reducer(State, SoulActions::RemoteExportSoulSuccess(Result1));
+  State = SSlice.Reducer(State, SoulActions::remoteExportSoulSuccess(Result1));
   TestEqual("First export TxId", State.LastExport.TxId,
             FString(TEXT("tx_first")));
 
@@ -203,7 +203,7 @@ bool FSoulDoubleExportTest::RunTest(const FString &Parameters) {
    * Second export
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  State = SSlice.Reducer(State, SoulActions::RemoteExportSoulPending());
+  State = SSlice.Reducer(State, SoulActions::remoteExportSoulPending());
   TestEqual("Status back to exporting", State.ExportStatus,
             FString(TEXT("exporting")));
   /**
@@ -214,7 +214,7 @@ bool FSoulDoubleExportTest::RunTest(const FString &Parameters) {
 
   FSoulExportResult Result2;
   Result2.TxId = TEXT("tx_second");
-  State = SSlice.Reducer(State, SoulActions::RemoteExportSoulSuccess(Result2));
+  State = SSlice.Reducer(State, SoulActions::remoteExportSoulSuccess(Result2));
   TestEqual("Second export TxId overwrites", State.LastExport.TxId,
             FString(TEXT("tx_second")));
 
@@ -233,18 +233,18 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoulDoubleImportTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FSoulDoubleImportTest::RunTest(const FString &Parameters) {
-  Slice<FSoulSliceState> SSlice = CreateSoulSlice();
+  Slice<FSoulSliceState> SSlice = createSoulSlice();
   FSoulSliceState State;
 
   /**
    * First import
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  State = SSlice.Reducer(State, SoulActions::ImportSoulPending());
+  State = SSlice.Reducer(State, SoulActions::importSoulPending());
   FSoul Soul1;
   Soul1.Id = TEXT("soul_first");
   Soul1.Persona = TEXT("First Persona");
-  State = SSlice.Reducer(State, SoulActions::ImportSoulSuccess(Soul1));
+  State = SSlice.Reducer(State, SoulActions::importSoulSuccess(Soul1));
   TestEqual("First import id", State.LastImport.Id,
             FString(TEXT("soul_first")));
 
@@ -252,11 +252,11 @@ bool FSoulDoubleImportTest::RunTest(const FString &Parameters) {
    * Second import
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  State = SSlice.Reducer(State, SoulActions::ImportSoulPending());
+  State = SSlice.Reducer(State, SoulActions::importSoulPending());
   FSoul Soul2;
   Soul2.Id = TEXT("soul_second");
   Soul2.Persona = TEXT("Second Persona");
-  State = SSlice.Reducer(State, SoulActions::ImportSoulSuccess(Soul2));
+  State = SSlice.Reducer(State, SoulActions::importSoulSuccess(Soul2));
   TestEqual("Second import overwrites", State.LastImport.Id,
             FString(TEXT("soul_second")));
   TestEqual("Persona updated", State.LastImport.Persona,

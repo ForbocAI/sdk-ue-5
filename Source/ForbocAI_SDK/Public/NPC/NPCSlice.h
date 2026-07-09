@@ -21,7 +21,7 @@ using namespace func;
  * User Story: As NPC runtime setup, I need one slice factory so NPC lifecycle
  * actions update state through a single reducer contract.
  */
-inline Slice<FNPCSliceState> CreateNPCSlice() {
+inline Slice<FNPCSliceState> createNPCSlice() {
   return createSlice<FNPCSliceState>(
       TEXT("npc"), FNPCSliceState(),
       [](ActionReducerMapBuilder<FNPCSliceState> &Builder) {

@@ -18,7 +18,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoulSliceExportTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FSoulSliceExportTest::RunTest(const FString &Parameters) {
-  Slice<FSoulSliceState> SSlice = CreateSoulSlice();
+  Slice<FSoulSliceState> SSlice = createSoulSlice();
   FSoulSliceState State;
 
   /**
@@ -33,7 +33,7 @@ bool FSoulSliceExportTest::RunTest(const FString &Parameters) {
    * Pending
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  State = SSlice.Reducer(State, SoulSlice::Actions::RemoteExportSoulPending());
+  State = SSlice.Reducer(State, SoulSlice::Actions::remoteExportSoulPending());
   TestEqual("ExportStatus exporting", State.ExportStatus,
             FString(TEXT("exporting")));
   TestTrue("Error cleared", State.Error.IsEmpty());
@@ -44,7 +44,7 @@ bool FSoulSliceExportTest::RunTest(const FString &Parameters) {
    */
   FSoulExportResult ExportResult;
   ExportResult.TxId = TEXT("arweave_tx_abc");
-  State = SSlice.Reducer(State, SoulSlice::Actions::RemoteExportSoulSuccess(ExportResult));
+  State = SSlice.Reducer(State, SoulSlice::Actions::remoteExportSoulSuccess(ExportResult));
   TestEqual("ExportStatus success", State.ExportStatus,
             FString(TEXT("success")));
   TestTrue("Has last export", State.bHasLastExport);
@@ -66,12 +66,12 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoulSliceExportFailTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FSoulSliceExportFailTest::RunTest(const FString &Parameters) {
-  Slice<FSoulSliceState> SSlice = CreateSoulSlice();
+  Slice<FSoulSliceState> SSlice = createSoulSlice();
   FSoulSliceState State;
 
-  State = SSlice.Reducer(State, SoulSlice::Actions::RemoteExportSoulPending());
+  State = SSlice.Reducer(State, SoulSlice::Actions::remoteExportSoulPending());
   State = SSlice.Reducer(
-      State, SoulSlice::Actions::RemoteExportSoulFailed(TEXT("Arweave down")));
+      State, SoulSlice::Actions::remoteExportSoulFailed(TEXT("Arweave down")));
 
   TestEqual("ExportStatus failed", State.ExportStatus,
             FString(TEXT("failed")));
@@ -92,7 +92,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoulSliceImportTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FSoulSliceImportTest::RunTest(const FString &Parameters) {
-  Slice<FSoulSliceState> SSlice = CreateSoulSlice();
+  Slice<FSoulSliceState> SSlice = createSoulSlice();
   FSoulSliceState State;
 
   /**
@@ -106,7 +106,7 @@ bool FSoulSliceImportTest::RunTest(const FString &Parameters) {
    * Pending
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  State = SSlice.Reducer(State, SoulSlice::Actions::ImportSoulPending());
+  State = SSlice.Reducer(State, SoulSlice::Actions::importSoulPending());
   TestEqual("ImportStatus importing", State.ImportStatus,
             FString(TEXT("importing")));
 
@@ -117,7 +117,7 @@ bool FSoulSliceImportTest::RunTest(const FString &Parameters) {
   FSoul Soul;
   Soul.Id = TEXT("npc_soul");
   Soul.Persona = TEXT("Wise sage");
-  State = SSlice.Reducer(State, SoulSlice::Actions::ImportSoulSuccess(Soul));
+  State = SSlice.Reducer(State, SoulSlice::Actions::importSoulSuccess(Soul));
   TestEqual("ImportStatus success", State.ImportStatus,
             FString(TEXT("success")));
   TestTrue("Has last import", State.bHasLastImport);
@@ -139,12 +139,12 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoulSliceImportFailTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FSoulSliceImportFailTest::RunTest(const FString &Parameters) {
-  Slice<FSoulSliceState> SSlice = CreateSoulSlice();
+  Slice<FSoulSliceState> SSlice = createSoulSlice();
   FSoulSliceState State;
 
-  State = SSlice.Reducer(State, SoulSlice::Actions::ImportSoulPending());
+  State = SSlice.Reducer(State, SoulSlice::Actions::importSoulPending());
   State = SSlice.Reducer(State,
-                         SoulSlice::Actions::ImportSoulFailed(TEXT("Invalid txId")));
+                         SoulSlice::Actions::importSoulFailed(TEXT("Invalid txId")));
 
   TestEqual("ImportStatus failed", State.ImportStatus,
             FString(TEXT("failed")));
@@ -154,7 +154,7 @@ bool FSoulSliceImportFailTest::RunTest(const FString &Parameters) {
 }
 
 /**
- * Test: SetSoulList and ClearSoulState
+ * Test: setSoulList and clearSoulState
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoulSliceListAndClearTest,
@@ -165,7 +165,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSoulSliceListAndClearTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FSoulSliceListAndClearTest::RunTest(const FString &Parameters) {
-  Slice<FSoulSliceState> SSlice = CreateSoulSlice();
+  Slice<FSoulSliceState> SSlice = createSoulSlice();
   FSoulSliceState State;
 
   TArray<FSoulListItem> SoulList;
@@ -173,7 +173,7 @@ bool FSoulSliceListAndClearTest::RunTest(const FString &Parameters) {
   Item.TxId = TEXT("tx_list_1");
   SoulList.Add(Item);
 
-  State = SSlice.Reducer(State, SoulSlice::Actions::SetSoulList(SoulList));
+  State = SSlice.Reducer(State, SoulSlice::Actions::setSoulList(SoulList));
   TestEqual("AvailableSouls count", State.AvailableSouls.Num(), 1);
   TestEqual("Soul txId", State.AvailableSouls[0].TxId,
             FString(TEXT("tx_list_1")));
@@ -182,7 +182,7 @@ bool FSoulSliceListAndClearTest::RunTest(const FString &Parameters) {
    * Clear resets everything
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  State = SSlice.Reducer(State, SoulSlice::Actions::ClearSoulState());
+  State = SSlice.Reducer(State, SoulSlice::Actions::clearSoulState());
   TestEqual("ExportStatus reset", State.ExportStatus, FString(TEXT("idle")));
   TestEqual("ImportStatus reset", State.ImportStatus, FString(TEXT("idle")));
   TestFalse("No last export", State.bHasLastExport);

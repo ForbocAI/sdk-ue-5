@@ -229,7 +229,7 @@ inline AnyAction memoryClear() { return memoryClearActionCreator()(); }
  * User Story: As memory runtime setup, I need one slice factory so storage and
  * recall actions share a single reducer definition.
  */
-inline Slice<FMemorySliceState> CreateMemorySlice() {
+inline Slice<FMemorySliceState> createMemorySlice() {
   return rtk::createSlice<FMemorySliceState>(
   TEXT("memory"), FMemorySliceState(),
   [](rtk::ActionReducerMapBuilder<FMemorySliceState> &Builder) {

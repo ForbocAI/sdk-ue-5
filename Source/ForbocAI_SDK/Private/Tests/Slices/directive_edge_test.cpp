@@ -19,7 +19,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveRapidFailuresTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveRapidFailuresTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   /**
@@ -30,10 +30,10 @@ bool FDirectiveRapidFailuresTest::RunTest(const FString &Parameters) {
     const FString Id = FString::Printf(TEXT("rapid_%d"), i);
     State = DirSlice.Reducer(
         State,
-        DirectiveSlice::Actions::DirectiveRunStarted(Id, TEXT("npc_stress"),
+        DirectiveSlice::Actions::directiveRunStarted(Id, TEXT("npc_stress"),
                                                      TEXT("obs")));
   }
-  TestEqual("Five directives", SelectAllDirectives(State).Num(), 5);
+  TestEqual("Five directives", selectAllDirectives(State).Num(), 5);
 
   /**
    * Fail them all in rapid succession
@@ -44,7 +44,7 @@ bool FDirectiveRapidFailuresTest::RunTest(const FString &Parameters) {
     const FString Error =
         FString::Printf(TEXT("Timeout after %d ms"), (i + 1) * 1000);
     State = DirSlice.Reducer(
-        State, DirectiveSlice::Actions::DirectiveRunFailed(Id, Error));
+        State, DirectiveSlice::Actions::directiveRunFailed(Id, Error));
   }
 
   /**
@@ -53,7 +53,7 @@ bool FDirectiveRapidFailuresTest::RunTest(const FString &Parameters) {
    */
   for (int32 i = 0; i < 5; ++i) {
     const FString Id = FString::Printf(TEXT("rapid_%d"), i);
-    auto Run = SelectDirectiveById(State, Id);
+    auto Run = selectDirectiveById(State, Id);
     TestTrue(FString::Printf(TEXT("rapid_%d exists"), i), Run.hasValue);
     if (Run.hasValue) {
       TestEqual(FString::Printf(TEXT("rapid_%d failed"), i),
@@ -70,7 +70,7 @@ bool FDirectiveRapidFailuresTest::RunTest(const FString &Parameters) {
 }
 
 /**
- * Test: ContextComposed on already-failed directive is a no-op
+ * Test: contextComposed on already-failed directive is a no-op
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveContextAfterFailTest,
@@ -81,15 +81,15 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveContextAfterFailTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveContextAfterFailTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("cf"), TEXT("npc1"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("cf"), TEXT("npc1"),
                                                    TEXT("obs")));
   State = DirSlice.Reducer(
-      State, DirectiveSlice::Actions::DirectiveRunFailed(
+      State, DirectiveSlice::Actions::directiveRunFailed(
                  TEXT("cf"), TEXT("API timeout")));
 
   /**
@@ -100,17 +100,17 @@ bool FDirectiveContextAfterFailTest::RunTest(const FString &Parameters) {
   Constraints.MaxTokens = 256;
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::ContextComposed(TEXT("cf"), TEXT("Late context"),
+      DirectiveSlice::Actions::contextComposed(TEXT("cf"), TEXT("Late context"),
                                                Constraints));
 
-  auto Run = SelectDirectiveById(State, TEXT("cf"));
+  auto Run = selectDirectiveById(State, TEXT("cf"));
   TestTrue("Run exists", Run.hasValue);
   if (Run.hasValue) {
     /**
      * The reducer still applies the update (entity adapter updateOne works on
      * any existing entity regardless of status). This test documents that
      * behavior — the thunk layer is responsible for not dispatching
-     * ContextComposed after failure.
+     * contextComposed after failure.
      * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
      */
     TestEqual("Status still Failed",
@@ -122,7 +122,7 @@ bool FDirectiveContextAfterFailTest::RunTest(const FString &Parameters) {
 }
 
 /**
- * Test: ClearDirectivesForNpc clears ActiveDirectiveId when active is removed
+ * Test: clearDirectivesForNpc clears ActiveDirectiveId when active is removed
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveClearActiveLostTest,
@@ -133,16 +133,16 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveClearActiveLostTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveClearActiveLostTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("keep"), TEXT("npc_a"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("keep"), TEXT("npc_a"),
                                                    TEXT("obs1")));
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("remove"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("remove"),
                                                    TEXT("npc_b"),
                                                    TEXT("obs2")));
 
@@ -158,17 +158,17 @@ bool FDirectiveClearActiveLostTest::RunTest(const FString &Parameters) {
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
   State = DirSlice.Reducer(
-      State, DirectiveSlice::Actions::ClearDirectivesForNpc(TEXT("npc_b")));
+      State, DirectiveSlice::Actions::clearDirectivesForNpc(TEXT("npc_b")));
 
   TestTrue("ActiveDirectiveId cleared", State.ActiveDirectiveId.IsEmpty());
-  TestEqual("One directive remains", SelectAllDirectives(State).Num(), 1);
-  TestTrue("keep survives", SelectDirectiveById(State, TEXT("keep")).hasValue);
+  TestEqual("One directive remains", selectAllDirectives(State).Num(), 1);
+  TestTrue("keep survives", selectDirectiveById(State, TEXT("keep")).hasValue);
 
   return true;
 }
 
 /**
- * Test: ClearDirectivesForNpc preserves ActiveDirectiveId when active is kept
+ * Test: clearDirectivesForNpc preserves ActiveDirectiveId when active is kept
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveClearActivePreservedTest,
@@ -179,17 +179,17 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveClearActivePreservedTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveClearActivePreservedTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("other"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("other"),
                                                    TEXT("npc_x"),
                                                    TEXT("obs1")));
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("active"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("active"),
                                                    TEXT("npc_y"),
                                                    TEXT("obs2")));
 
@@ -201,11 +201,11 @@ bool FDirectiveClearActivePreservedTest::RunTest(const FString &Parameters) {
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
   State = DirSlice.Reducer(
-      State, DirectiveSlice::Actions::ClearDirectivesForNpc(TEXT("npc_x")));
+      State, DirectiveSlice::Actions::clearDirectivesForNpc(TEXT("npc_x")));
 
   TestEqual("Active preserved", State.ActiveDirectiveId,
             FString(TEXT("active")));
-  TestEqual("One remains", SelectAllDirectives(State).Num(), 1);
+  TestEqual("One remains", selectAllDirectives(State).Num(), 1);
 
   return true;
 }
@@ -222,12 +222,12 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveVerdictDialogueOnlyTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveVerdictDialogueOnlyTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("dg"), TEXT("npc1"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("dg"), TEXT("npc1"),
                                                    TEXT("obs")));
 
   FVerdictResponse Verdict;
@@ -236,9 +236,9 @@ bool FDirectiveVerdictDialogueOnlyTest::RunTest(const FString &Parameters) {
   Verdict.bHasAction = false;
 
   State = DirSlice.Reducer(
-      State, DirectiveSlice::Actions::VerdictValidated(TEXT("dg"), Verdict));
+      State, DirectiveSlice::Actions::verdictValidated(TEXT("dg"), Verdict));
 
-  auto Run = SelectDirectiveById(State, TEXT("dg"));
+  auto Run = selectDirectiveById(State, TEXT("dg"));
   TestTrue("Run exists", Run.hasValue);
   if (Run.hasValue) {
     TestEqual("Status Completed",
@@ -254,7 +254,7 @@ bool FDirectiveVerdictDialogueOnlyTest::RunTest(const FString &Parameters) {
 }
 
 /**
- * Test: SelectActiveDirective returns nothing when no active
+ * Test: selectActiveDirective returns nothing when no active
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveSelectActiveEmptyTest,
@@ -268,8 +268,8 @@ bool FDirectiveSelectActiveEmptyTest::RunTest(const FString &Parameters) {
   FDirectiveSliceState State;
 
   TestTrue("ActiveDirectiveId empty", State.ActiveDirectiveId.IsEmpty());
-  TestFalse("SelectActiveDirective returns nothing",
-            SelectActiveDirective(State).hasValue);
+  TestFalse("selectActiveDirective returns nothing",
+            selectActiveDirective(State).hasValue);
 
   return true;
 }

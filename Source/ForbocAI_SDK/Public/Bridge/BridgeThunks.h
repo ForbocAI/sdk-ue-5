@@ -35,16 +35,16 @@ localValidateBridgeThunk(const FAgentAction &Action,
              std::function<AnyAction(const AnyAction &)> Dispatch,
              std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FValidationResult> {
-    Dispatch(BridgeSlice::Actions::BridgeValidationPending());
+    Dispatch(BridgeSlice::Actions::bridgeValidationPending());
 
     FValidationResult Result =
         BridgeHelpers::RunLocalBridgeValidation(Action, Rules, Context);
 
     Result.bValid
-        ? (Dispatch(BridgeSlice::Actions::BridgeValidationSuccess(Result)),
+        ? (Dispatch(BridgeSlice::Actions::bridgeValidationSuccess(Result)),
            void())
         : (Dispatch(
-               BridgeSlice::Actions::BridgeValidationFailure(Result.Reason)),
+               BridgeSlice::Actions::bridgeValidationFailure(Result.Reason)),
            void());
     return detail::ResolveAsync(Result);
   };
@@ -67,18 +67,18 @@ validateBridgeThunk(const FAgentAction &Action,
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
     return ApiKeyError.hasValue
         ? detail::RejectAsync<FValidationResult>(ApiKeyError.value)
-        : (Dispatch(BridgeSlice::Actions::BridgeValidationPending()),
+        : (Dispatch(BridgeSlice::Actions::bridgeValidationPending()),
            func::AsyncChain::then<FValidationResult, FValidationResult>(
                APISlice::Endpoints::postBridgeValidate(
                    NpcId, TypeFactory::BridgeValidateRequest(Action, Context))(
                    Dispatch, GetState),
                [Dispatch](const FValidationResult &Result) {
                  Dispatch(
-                     BridgeSlice::Actions::BridgeValidationSuccess(Result));
+                     BridgeSlice::Actions::bridgeValidationSuccess(Result));
                  return detail::ResolveAsync(Result);
                })
                .catch_([Dispatch](std::string Error) {
-                 Dispatch(BridgeSlice::Actions::BridgeValidationFailure(
+                 Dispatch(BridgeSlice::Actions::bridgeValidationFailure(
                      FString(UTF8_TO_TCHAR(Error.c_str()))));
                }));
   };
@@ -106,7 +106,7 @@ loadBridgePresetThunk(const FString &PresetName) {
                 ActiveRuleset.Id = ActiveRuleset.Id.IsEmpty()
                                        ? PresetName
                                        : ActiveRuleset.Id;
-                Dispatch(BridgeSlice::Actions::AddActivePreset(ActiveRuleset));
+                Dispatch(BridgeSlice::Actions::addActivePreset(ActiveRuleset));
                 return detail::ResolveAsync(Ruleset);
               });
   };
@@ -147,7 +147,7 @@ inline ThunkAction<TArray<FDirectiveRuleSet>, FRuntimeState> listRulesetsThunk()
               APISlice::Endpoints::getRulesets()(Dispatch, GetState),
               [Dispatch](const TArray<FDirectiveRuleSet> &Rulesets) {
                 Dispatch(
-                    BridgeSlice::Actions::SetAvailableRulesets(Rulesets));
+                    BridgeSlice::Actions::setAvailableRulesets(Rulesets));
                 return detail::ResolveAsync(Rulesets);
               });
   };
@@ -170,7 +170,7 @@ inline ThunkAction<TArray<FString>, FRuntimeState> listRulePresetsThunk() {
               APISlice::Endpoints::getRulePresets()(Dispatch, GetState),
               [Dispatch](const TArray<FString> &PresetIds) {
                 Dispatch(
-                    BridgeSlice::Actions::SetAvailablePresetIds(PresetIds));
+                    BridgeSlice::Actions::setAvailablePresetIds(PresetIds));
                 return detail::ResolveAsync(PresetIds);
               });
   };
@@ -206,7 +206,7 @@ registerRulesetThunk(const FDirectiveRuleSet &Ruleset) {
                   return R;
                 }();
                 Dispatch(
-                    BridgeSlice::Actions::SetAvailableRulesets(Updated));
+                    BridgeSlice::Actions::setAvailableRulesets(Updated));
                 return detail::ResolveAsync(Registered);
               });
   };
@@ -238,7 +238,7 @@ deleteRulesetThunk(const FString &RulesetId) {
                              Ruleset.RulesetId == RulesetId;
                     });
                 Dispatch(
-                    BridgeSlice::Actions::SetAvailableRulesets(Rulesets));
+                    BridgeSlice::Actions::setAvailableRulesets(Rulesets));
                 return detail::ResolveAsync(Payload);
               });
   };

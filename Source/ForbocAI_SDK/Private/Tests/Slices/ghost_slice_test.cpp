@@ -7,7 +7,7 @@ using namespace rtk;
 using namespace GhostSlice;
 
 /**
- * Test: GhostSessionStarted sets session and status
+ * Test: ghostSessionStarted sets session and status
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGhostSliceSessionStartedTest,
@@ -18,13 +18,13 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGhostSliceSessionStartedTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FGhostSliceSessionStartedTest::RunTest(const FString &Parameters) {
-  Slice<FGhostSliceState> GSlice = CreateGhostSlice();
+  Slice<FGhostSliceState> GSlice = createGhostSlice();
   FGhostSliceState State;
 
   TestEqual("Initial status idle", State.Status, FString(TEXT("idle")));
 
   State = GSlice.Reducer(
-      State, GhostSlice::Actions::GhostSessionStarted(TEXT("sess_01"), TEXT("running")));
+      State, GhostSlice::Actions::ghostSessionStarted(TEXT("sess_01"), TEXT("running")));
 
   TestEqual("ActiveSessionId set", State.ActiveSessionId,
             FString(TEXT("sess_01")));
@@ -48,14 +48,14 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGhostSliceProgressTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FGhostSliceProgressTest::RunTest(const FString &Parameters) {
-  Slice<FGhostSliceState> GSlice = CreateGhostSlice();
+  Slice<FGhostSliceState> GSlice = createGhostSlice();
   FGhostSliceState State;
 
   State = GSlice.Reducer(
-      State, GhostSlice::Actions::GhostSessionStarted(TEXT("sess_p"), TEXT("running")));
+      State, GhostSlice::Actions::ghostSessionStarted(TEXT("sess_p"), TEXT("running")));
   State = GSlice.Reducer(
       State,
-      GhostSlice::Actions::GhostSessionProgress(TEXT("sess_p"), TEXT("running"), 0.5f));
+      GhostSlice::Actions::ghostSessionProgress(TEXT("sess_p"), TEXT("running"), 0.5f));
 
   TestEqual("Progress updated to 0.5", State.Progress, 0.5f);
   TestEqual("SessionId preserved", State.ActiveSessionId,
@@ -66,7 +66,7 @@ bool FGhostSliceProgressTest::RunTest(const FString &Parameters) {
 }
 
 /**
- * Test: GhostSessionCompleted sets results
+ * Test: ghostSessionCompleted sets results
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGhostSliceCompletedTest,
@@ -77,11 +77,11 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGhostSliceCompletedTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FGhostSliceCompletedTest::RunTest(const FString &Parameters) {
-  Slice<FGhostSliceState> GSlice = CreateGhostSlice();
+  Slice<FGhostSliceState> GSlice = createGhostSlice();
   FGhostSliceState State;
 
   State = GSlice.Reducer(
-      State, GhostSlice::Actions::GhostSessionStarted(TEXT("sess_c"), TEXT("running")));
+      State, GhostSlice::Actions::ghostSessionStarted(TEXT("sess_c"), TEXT("running")));
 
   FGhostTestReport Report;
   FGhostTestResult Result;
@@ -89,7 +89,7 @@ bool FGhostSliceCompletedTest::RunTest(const FString &Parameters) {
   Result.bPassed = true;
   Report.Results.Add(Result);
 
-  State = GSlice.Reducer(State, GhostSlice::Actions::GhostSessionCompleted(Report));
+  State = GSlice.Reducer(State, GhostSlice::Actions::ghostSessionCompleted(Report));
 
   TestEqual("Status completed", State.Status, FString(TEXT("completed")));
   TestEqual("Progress 1.0", State.Progress, 1.0f);
@@ -101,7 +101,7 @@ bool FGhostSliceCompletedTest::RunTest(const FString &Parameters) {
 }
 
 /**
- * Test: GhostSessionFailed sets error
+ * Test: ghostSessionFailed sets error
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGhostSliceFailedTest,
@@ -112,14 +112,14 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGhostSliceFailedTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FGhostSliceFailedTest::RunTest(const FString &Parameters) {
-  Slice<FGhostSliceState> GSlice = CreateGhostSlice();
+  Slice<FGhostSliceState> GSlice = createGhostSlice();
   FGhostSliceState State;
 
   State = GSlice.Reducer(
-      State, GhostSlice::Actions::GhostSessionStarted(TEXT("sess_f"), TEXT("running")));
+      State, GhostSlice::Actions::ghostSessionStarted(TEXT("sess_f"), TEXT("running")));
   State = GSlice.Reducer(
       State,
-      GhostSlice::Actions::GhostSessionFailed(TEXT("sess_f"), TEXT("Scenario crash")));
+      GhostSlice::Actions::ghostSessionFailed(TEXT("sess_f"), TEXT("Scenario crash")));
 
   TestEqual("Status failed", State.Status, FString(TEXT("failed")));
   TestEqual("Error set", State.Error, FString(TEXT("Scenario crash")));
@@ -131,7 +131,7 @@ bool FGhostSliceFailedTest::RunTest(const FString &Parameters) {
 }
 
 /**
- * Test: GhostHistoryLoaded populates history
+ * Test: ghostHistoryLoaded populates history
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGhostSliceHistoryTest,
@@ -142,7 +142,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGhostSliceHistoryTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FGhostSliceHistoryTest::RunTest(const FString &Parameters) {
-  Slice<FGhostSliceState> GSlice = CreateGhostSlice();
+  Slice<FGhostSliceState> GSlice = createGhostSlice();
   FGhostSliceState State;
 
   TArray<FGhostHistoryEntry> History;
@@ -150,7 +150,7 @@ bool FGhostSliceHistoryTest::RunTest(const FString &Parameters) {
   Entry.SessionId = TEXT("old_sess");
   History.Add(Entry);
 
-  State = GSlice.Reducer(State, GhostSlice::Actions::GhostHistoryLoaded(History));
+  State = GSlice.Reducer(State, GhostSlice::Actions::ghostHistoryLoaded(History));
 
   TestEqual("History count", State.History.Num(), 1);
   TestEqual("History entry sessionId", State.History[0].SessionId,

@@ -44,7 +44,7 @@ extern rtk::Api<FRuntimeState> ForbocAiApi;
 
 namespace APISlice {
 
-inline Slice<FAPIState> CreateAPISlice() {
+inline Slice<FAPIState> createAPISlice() {
   return createSlice<FAPIState>(
       TEXT("forbocApi"), FAPIState(),
       [](ActionReducerMapBuilder<FAPIState> &Builder) {});

@@ -18,7 +18,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMemorySliceStoreTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FMemorySliceStoreTest::RunTest(const FString &Parameters) {
-  Slice<FMemorySliceState> MemSlice = CreateMemorySlice();
+  Slice<FMemorySliceState> MemSlice = createMemorySlice();
   FMemorySliceState State;
 
   /**
@@ -76,7 +76,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMemorySliceStoreFailTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FMemorySliceStoreFailTest::RunTest(const FString &Parameters) {
-  Slice<FMemorySliceState> MemSlice = CreateMemorySlice();
+  Slice<FMemorySliceState> MemSlice = createMemorySlice();
   FMemorySliceState State;
 
   State = MemSlice.Reducer(State, MemorySlice::Actions::memoryStoreStart());
@@ -105,7 +105,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMemorySliceRecallTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FMemorySliceRecallTest::RunTest(const FString &Parameters) {
-  Slice<FMemorySliceState> MemSlice = CreateMemorySlice();
+  Slice<FMemorySliceState> MemSlice = createMemorySlice();
   FMemorySliceState State;
 
   /**
@@ -163,7 +163,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMemorySliceRecallFailTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FMemorySliceRecallFailTest::RunTest(const FString &Parameters) {
-  Slice<FMemorySliceState> MemSlice = CreateMemorySlice();
+  Slice<FMemorySliceState> MemSlice = createMemorySlice();
   FMemorySliceState State;
 
   State = MemSlice.Reducer(State, MemorySlice::Actions::memoryRecallStart());
@@ -191,7 +191,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FMemorySliceClearTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FMemorySliceClearTest::RunTest(const FString &Parameters) {
-  Slice<FMemorySliceState> MemSlice = CreateMemorySlice();
+  Slice<FMemorySliceState> MemSlice = createMemorySlice();
   FMemorySliceState State;
 
   FMemoryItem Item;

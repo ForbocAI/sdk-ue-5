@@ -18,7 +18,7 @@ runLocalGhostTestThunk(const FAgent &Agent, const FString &Scenario) {
     return Scenario.IsEmpty()
                ? detail::RejectAsync<FGhostTestResult>(
                      TCHAR_TO_UTF8(*FString(TEXT("Scenario cannot be empty"))))
-               : (Dispatch(GhostSlice::Actions::GhostSessionStarted(
+               : (Dispatch(GhostSlice::Actions::ghostSessionStarted(
                       Scenario, TEXT("running"))),
                   func::AsyncChain::then<FGhostTestResult, FGhostTestResult>(
         GhostInternal::RunScenarioTest(Agent, Scenario),
@@ -30,11 +30,11 @@ runLocalGhostTestThunk(const FAgent &Agent, const FString &Scenario) {
           Report.FailedTests = Result.bPassed ? 0 : 1;
           Report.SuccessRate = Result.bPassed ? 1.0f : 0.0f;
           Report.Summary = Result.bPassed ? TEXT("Passed") : TEXT("Failed");
-          Dispatch(GhostSlice::Actions::GhostSessionCompleted(Report));
+          Dispatch(GhostSlice::Actions::ghostSessionCompleted(Report));
           return detail::ResolveAsync(Result);
         })
         .catch_([Dispatch, Scenario](std::string Error) {
-          Dispatch(GhostSlice::Actions::GhostSessionFailed(
+          Dispatch(GhostSlice::Actions::ghostSessionFailed(
               Scenario, FString(UTF8_TO_TCHAR(Error.c_str()))));
         }));
   };

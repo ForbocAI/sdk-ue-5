@@ -54,12 +54,12 @@ GhostTypes::GhostTestRunAllResult GhostOps::RunAllTests(const FGhost &Ghost) {
             [resolve](FGhostTestReport FinalReport) {
               auto Store = store();
               Store.dispatch(
-                  GhostSlice::Actions::GhostSessionCompleted(FinalReport));
+                  GhostSlice::Actions::ghostSessionCompleted(FinalReport));
               resolve(FinalReport);
             },
             [reject](std::string Error) {
               auto Store = store();
-              Store.dispatch(GhostSlice::Actions::GhostSessionFailed(
+              Store.dispatch(GhostSlice::Actions::ghostSessionFailed(
                   TEXT("ghost-run"), FString(Error.c_str())));
               reject(Error);
             });

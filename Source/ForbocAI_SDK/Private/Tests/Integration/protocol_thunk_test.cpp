@@ -211,7 +211,7 @@ bool FProtocolDirectiveLifecycleTest::RunTest(const FString &Parameters) {
    * Start directive run
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  TestStore.dispatch(DirectiveSlice::Actions::DirectiveRunStarted(
+  TestStore.dispatch(DirectiveSlice::Actions::directiveRunStarted(
       TEXT("run_1"), TEXT("ag_dir_test"), TEXT("Player attacks goblin")));
 
   FRuntimeState State = TestStore.getState();
@@ -219,7 +219,7 @@ bool FProtocolDirectiveLifecycleTest::RunTest(const FString &Parameters) {
             FString(TEXT("run_1")));
 
   func::Maybe<FDirectiveRun> Run =
-      DirectiveSlice::SelectDirectiveById(State.Directives, TEXT("run_1"));
+      DirectiveSlice::selectDirectiveById(State.Directives, TEXT("run_1"));
   TestTrue("Run exists", Run.hasValue);
   if (Run.hasValue) {
     TestEqual("Run status running",
@@ -236,7 +236,7 @@ bool FProtocolDirectiveLifecycleTest::RunTest(const FString &Parameters) {
   DirResponse.recallMemory.Limit = 5;
   DirResponse.recallMemory.Threshold = 0.7f;
   TestStore.dispatch(
-      DirectiveSlice::Actions::DirectiveReceived(TEXT("run_1"), DirResponse));
+      DirectiveSlice::Actions::directiveReceived(TEXT("run_1"), DirResponse));
 
   /**
    * Simulate verdict
@@ -249,10 +249,10 @@ bool FProtocolDirectiveLifecycleTest::RunTest(const FString &Parameters) {
   Verdict.Action.Type = TEXT("ATTACK");
   Verdict.Action.Target = TEXT("goblin");
   TestStore.dispatch(
-      DirectiveSlice::Actions::VerdictValidated(TEXT("run_1"), Verdict));
+      DirectiveSlice::Actions::verdictValidated(TEXT("run_1"), Verdict));
 
   State = TestStore.getState();
-  Run = DirectiveSlice::SelectDirectiveById(State.Directives, TEXT("run_1"));
+  Run = DirectiveSlice::selectDirectiveById(State.Directives, TEXT("run_1"));
   TestTrue("Run exists after verdict", Run.hasValue);
   if (Run.hasValue) {
     TestEqual("Run completed",
@@ -391,14 +391,14 @@ bool FProtocolNpcRemovalCascadeTest::RunTest(const FString &Parameters) {
   Npc.Id = TEXT("ag_cascade");
   Npc.Persona = TEXT("Cascade test");
   TestStore.dispatch(NPCSlice::Actions::setNPCInfo(Npc));
-  TestStore.dispatch(DirectiveSlice::Actions::DirectiveRunStarted(
+  TestStore.dispatch(DirectiveSlice::Actions::directiveRunStarted(
       TEXT("dir_cascade"), TEXT("ag_cascade"), TEXT("obs")));
 
   FRuntimeState State = TestStore.getState();
   TestTrue("NPC exists",
            NPCSlice::selectNPCById(State.NPCs, TEXT("ag_cascade")).hasValue);
   TestTrue("Directive exists",
-           DirectiveSlice::SelectDirectiveById(State.Directives,
+           DirectiveSlice::selectDirectiveById(State.Directives,
                                                 TEXT("dir_cascade")).hasValue);
 
   /**

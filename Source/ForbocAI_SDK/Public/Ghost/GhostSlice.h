@@ -58,7 +58,7 @@ namespace Actions {
  * so reducers and middleware can reuse the same start contract.
  */
 inline const ActionCreator<FGhostSessionStartedPayload> &
-GhostSessionStartedActionCreator() {
+ghostSessionStartedActionCreator() {
   static const ActionCreator<FGhostSessionStartedPayload> ActionCreator =
       createAction<FGhostSessionStartedPayload>(TEXT("ghost/sessionStarted"));
   return ActionCreator;
@@ -70,7 +70,7 @@ GhostSessionStartedActionCreator() {
  * progress updates stay consistent across dispatch sites.
  */
 inline const ActionCreator<FGhostSessionProgressPayload> &
-GhostSessionProgressActionCreator() {
+ghostSessionProgressActionCreator() {
   static const ActionCreator<FGhostSessionProgressPayload> ActionCreator =
       createAction<FGhostSessionProgressPayload>(TEXT("ghost/sessionProgress"));
   return ActionCreator;
@@ -82,7 +82,7 @@ GhostSessionProgressActionCreator() {
  * so finished runs can be stored with one contract.
  */
 inline const ActionCreator<FGhostTestReport> &
-GhostSessionCompletedActionCreator() {
+ghostSessionCompletedActionCreator() {
   static const ActionCreator<FGhostTestReport> ActionCreator =
       createAction<FGhostTestReport>(TEXT("ghost/sessionCompleted"));
   return ActionCreator;
@@ -94,7 +94,7 @@ GhostSessionCompletedActionCreator() {
  * creator so session errors can be reported consistently.
  */
 inline const ActionCreator<FGhostSessionFailedPayload> &
-GhostSessionFailedActionCreator() {
+ghostSessionFailedActionCreator() {
   static const ActionCreator<FGhostSessionFailedPayload> ActionCreator =
       createAction<FGhostSessionFailedPayload>(TEXT("ghost/sessionFailed"));
   return ActionCreator;
@@ -106,7 +106,7 @@ GhostSessionFailedActionCreator() {
  * runs can be loaded without custom action wiring.
  */
 inline const ActionCreator<TArray<FGhostHistoryEntry>> &
-GhostHistoryLoadedActionCreator() {
+ghostHistoryLoadedActionCreator() {
   static const ActionCreator<TArray<FGhostHistoryEntry>> ActionCreator =
       createAction<TArray<FGhostHistoryEntry>>(TEXT("ghost/historyLoaded"));
   return ActionCreator;
@@ -117,7 +117,7 @@ GhostHistoryLoadedActionCreator() {
  * User Story: As ghost session reset flows, I need one clear action creator so
  * teardown can restore the slice predictably.
  */
-inline const ActionCreatorWithoutPayload &ClearGhostSessionActionCreator() {
+inline const ActionCreatorWithoutPayload &clearGhostSessionActionCreator() {
   static const ActionCreatorWithoutPayload ActionCreator =
       createAction(TEXT("ghost/clearGhostSession"));
   return ActionCreator;
@@ -128,9 +128,9 @@ inline const ActionCreatorWithoutPayload &ClearGhostSessionActionCreator() {
  * User Story: As ghost run startup, I need session metadata captured so the UI
  * and reducers know which run is active.
  */
-inline AnyAction GhostSessionStarted(const FString &SessionId,
+inline AnyAction ghostSessionStarted(const FString &SessionId,
                                      const FString &Status = TEXT("running")) {
-  return GhostSessionStartedActionCreator()(
+  return ghostSessionStartedActionCreator()(
       FGhostSessionStartedPayload{SessionId, Status});
 }
 
@@ -139,13 +139,13 @@ inline AnyAction GhostSessionStarted(const FString &SessionId,
  * User Story: As ghost progress reporting, I need each progress tick recorded
  * so observers can render current status and percentage.
  */
-inline AnyAction GhostSessionProgress(const FString &SessionId,
+inline AnyAction ghostSessionProgress(const FString &SessionId,
                                       const FString &Status, float Progress) {
   FGhostSessionProgressPayload Payload;
   Payload.SessionId = SessionId;
   Payload.Status = Status;
   Payload.Progress = Progress;
-  return GhostSessionProgressActionCreator()(Payload);
+  return ghostSessionProgressActionCreator()(Payload);
 }
 
 /**
@@ -153,8 +153,8 @@ inline AnyAction GhostSessionProgress(const FString &SessionId,
  * User Story: As ghost result consumers, I need the finished report preserved
  * so results can be reviewed after execution.
  */
-inline AnyAction GhostSessionCompleted(const FGhostTestReport &Report) {
-  return GhostSessionCompletedActionCreator()(Report);
+inline AnyAction ghostSessionCompleted(const FGhostTestReport &Report) {
+  return ghostSessionCompletedActionCreator()(Report);
 }
 
 /**
@@ -162,9 +162,9 @@ inline AnyAction GhostSessionCompleted(const FGhostTestReport &Report) {
  * User Story: As ghost error handling, I need failed sessions recorded so the
  * UI can explain why a run stopped.
  */
-inline AnyAction GhostSessionFailed(const FString &SessionId,
+inline AnyAction ghostSessionFailed(const FString &SessionId,
                                     const FString &Error) {
-  return GhostSessionFailedActionCreator()(
+  return ghostSessionFailedActionCreator()(
       FGhostSessionFailedPayload{SessionId, Error});
 }
 
@@ -173,8 +173,8 @@ inline AnyAction GhostSessionFailed(const FString &SessionId,
  * User Story: As history views, I need the latest run history loaded so users
  * can inspect recent ghost sessions.
  */
-inline AnyAction GhostHistoryLoaded(const TArray<FGhostHistoryEntry> &History) {
-  return GhostHistoryLoadedActionCreator()(History);
+inline AnyAction ghostHistoryLoaded(const TArray<FGhostHistoryEntry> &History) {
+  return ghostHistoryLoadedActionCreator()(History);
 }
 
 /**
@@ -182,8 +182,8 @@ inline AnyAction GhostHistoryLoaded(const TArray<FGhostHistoryEntry> &History) {
  * User Story: As cleanup flows, I need ghost state cleared so a new run starts
  * from a known baseline.
  */
-inline AnyAction ClearGhostSession() {
-  return ClearGhostSessionActionCreator()();
+inline AnyAction clearGhostSession() {
+  return clearGhostSessionActionCreator()();
 }
 
 } // namespace Actions
@@ -205,12 +205,12 @@ inline FGhostSliceState ReduceActiveSession(const FGhostSliceState &State,
  * User Story: As ghost runtime setup, I need one slice factory so store
  * creation wires ghost actions and state transitions consistently.
  */
-inline Slice<FGhostSliceState> CreateGhostSlice() {
+inline Slice<FGhostSliceState> createGhostSlice() {
   return rtk::createSlice<FGhostSliceState>(
   TEXT("ghost"),
                                                    FGhostSliceState(),
   [](rtk::ActionReducerMapBuilder<FGhostSliceState> &Builder) {
-    Builder.addCase(Actions::GhostSessionStartedActionCreator(),
+    Builder.addCase(Actions::ghostSessionStartedActionCreator(),
       [](const FGhostSliceState &State,
                              const Action<FGhostSessionStartedPayload> &Action)
                               -> FGhostSliceState {
@@ -223,7 +223,7 @@ inline Slice<FGhostSliceState> CreateGhostSlice() {
                             Next.bHasResults = false;
                             return Next;
                           });
-    Builder.addCase(Actions::GhostSessionProgressActionCreator(),
+    Builder.addCase(Actions::ghostSessionProgressActionCreator(),
       [](const FGhostSliceState &State,
                              const Action<FGhostSessionProgressPayload> &Action)
                               -> FGhostSliceState {
@@ -236,7 +236,7 @@ inline Slice<FGhostSliceState> CreateGhostSlice() {
                                   return Next;
                                 });
                           });
-    Builder.addCase(Actions::GhostSessionCompletedActionCreator(),
+    Builder.addCase(Actions::ghostSessionCompletedActionCreator(),
       [](const FGhostSliceState &State,
                    const Action<FGhostTestReport> &Action) -> FGhostSliceState {
                   FGhostSliceState Next = State;
@@ -247,7 +247,7 @@ inline Slice<FGhostSliceState> CreateGhostSlice() {
                   Next.bLoading = false;
                   return Next;
                 });
-    Builder.addCase(Actions::GhostSessionFailedActionCreator(),
+    Builder.addCase(Actions::ghostSessionFailedActionCreator(),
       [](const FGhostSliceState &State,
                              const Action<FGhostSessionFailedPayload> &Action)
                               -> FGhostSliceState {
@@ -261,7 +261,7 @@ inline Slice<FGhostSliceState> CreateGhostSlice() {
                                   return Next;
                                 });
                           });
-    Builder.addCase(Actions::GhostHistoryLoadedActionCreator(),
+    Builder.addCase(Actions::ghostHistoryLoadedActionCreator(),
       [](const FGhostSliceState &State,
                              const Action<TArray<FGhostHistoryEntry>> &Action)
                               -> FGhostSliceState {
@@ -269,7 +269,7 @@ inline Slice<FGhostSliceState> CreateGhostSlice() {
                             Next.History = Action.PayloadValue;
                             return Next;
                           });
-    Builder.addCase(Actions::ClearGhostSessionActionCreator(),
+    Builder.addCase(Actions::clearGhostSessionActionCreator(),
       [](const FGhostSliceState &State,
                    const Action<rtk::FEmptyPayload> &Action) -> FGhostSliceState {
                   return FGhostSliceState();

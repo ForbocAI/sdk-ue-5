@@ -19,7 +19,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FNPCSliceSetInfoTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FNPCSliceSetInfoTest::RunTest(const FString &Parameters) {
-  Slice<FNPCSliceState> NpcSlice = CreateNPCSlice();
+  Slice<FNPCSliceState> NpcSlice = createNPCSlice();
 
   FNPCSliceState State;
   FNPCInternalState Info;
@@ -69,7 +69,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FNPCSliceRemoveTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FNPCSliceRemoveTest::RunTest(const FString &Parameters) {
-  Slice<FNPCSliceState> NpcSlice = CreateNPCSlice();
+  Slice<FNPCSliceState> NpcSlice = createNPCSlice();
   FNPCSliceState State;
 
   FNPCInternalState Info;
@@ -106,7 +106,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FNPCSliceSelectorsTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FNPCSliceSelectorsTest::RunTest(const FString &Parameters) {
-  Slice<FNPCSliceState> NpcSlice = CreateNPCSlice();
+  Slice<FNPCSliceState> NpcSlice = createNPCSlice();
   FNPCSliceState State;
 
   /**

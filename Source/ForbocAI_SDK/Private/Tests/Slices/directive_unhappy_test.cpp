@@ -19,22 +19,22 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveFailNonExistentTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveFailNonExistentTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunFailed(TEXT("does_not_exist"),
+      DirectiveSlice::Actions::directiveRunFailed(TEXT("does_not_exist"),
                                                   TEXT("phantom error")));
 
-  TestEqual("No directives created", SelectAllDirectives(State).Num(), 0);
+  TestEqual("No directives created", selectAllDirectives(State).Num(), 0);
   TestFalse("Non-existent id still not found",
-            SelectDirectiveById(State, TEXT("does_not_exist")).hasValue);
+            selectDirectiveById(State, TEXT("does_not_exist")).hasValue);
   return true;
 }
 
 /**
- * Test: VerdictValidated on a non-existent directive is a no-op
+ * Test: verdictValidated on a non-existent directive is a no-op
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveVerdictNonExistentTest,
@@ -45,7 +45,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveVerdictNonExistentTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveVerdictNonExistentTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   FVerdictResponse Verdict;
@@ -55,14 +55,14 @@ bool FDirectiveVerdictNonExistentTest::RunTest(const FString &Parameters) {
 
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::VerdictValidated(TEXT("ghost_id"), Verdict));
+      DirectiveSlice::Actions::verdictValidated(TEXT("ghost_id"), Verdict));
 
-  TestEqual("No directives created", SelectAllDirectives(State).Num(), 0);
+  TestEqual("No directives created", selectAllDirectives(State).Num(), 0);
   return true;
 }
 
 /**
- * Test: DirectiveReceived on a non-existent directive is a no-op
+ * Test: directiveReceived on a non-existent directive is a no-op
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveReceivedNonExistentTest,
@@ -73,7 +73,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveReceivedNonExistentTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveReceivedNonExistentTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   FDirectiveResponse Response;
@@ -81,14 +81,14 @@ bool FDirectiveReceivedNonExistentTest::RunTest(const FString &Parameters) {
 
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveReceived(TEXT("missing_id"), Response));
+      DirectiveSlice::Actions::directiveReceived(TEXT("missing_id"), Response));
 
-  TestEqual("No directives created", SelectAllDirectives(State).Num(), 0);
+  TestEqual("No directives created", selectAllDirectives(State).Num(), 0);
   return true;
 }
 
 /**
- * Test: Duplicate DirectiveRunStarted with same ID overwrites
+ * Test: Duplicate directiveRunStarted with same ID overwrites
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveDuplicateStartTest,
@@ -99,19 +99,19 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveDuplicateStartTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveDuplicateStartTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("dup"), TEXT("npc1"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("dup"), TEXT("npc1"),
                                                    TEXT("First")));
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("dup"), TEXT("npc2"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("dup"), TEXT("npc2"),
                                                    TEXT("Second")));
 
-  func::Maybe<FDirectiveRun> Found = SelectDirectiveById(State, TEXT("dup"));
+  func::Maybe<FDirectiveRun> Found = selectDirectiveById(State, TEXT("dup"));
   TestTrue("Directive exists", Found.hasValue);
   if (Found.hasValue) {
     TestEqual("Overwritten NpcId", Found.value.NpcId, FString(TEXT("npc2")));
@@ -137,19 +137,19 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveFailThenRestartTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveFailThenRestartTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("r1"), TEXT("npc_a"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("r1"), TEXT("npc_a"),
                                                    TEXT("Try 1")));
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunFailed(TEXT("r1"),
+      DirectiveSlice::Actions::directiveRunFailed(TEXT("r1"),
                                                   TEXT("Timeout")));
 
-  func::Maybe<FDirectiveRun> Failed = SelectDirectiveById(State, TEXT("r1"));
+  func::Maybe<FDirectiveRun> Failed = selectDirectiveById(State, TEXT("r1"));
   TestTrue("Failed exists", Failed.hasValue);
   if (Failed.hasValue) {
     TestEqual("Status Failed",
@@ -163,10 +163,10 @@ bool FDirectiveFailThenRestartTest::RunTest(const FString &Parameters) {
    */
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("r1"), TEXT("npc_a"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("r1"), TEXT("npc_a"),
                                                    TEXT("Try 2")));
 
-  func::Maybe<FDirectiveRun> Restarted = SelectDirectiveById(State, TEXT("r1"));
+  func::Maybe<FDirectiveRun> Restarted = selectDirectiveById(State, TEXT("r1"));
   TestTrue("Restarted exists", Restarted.hasValue);
   if (Restarted.hasValue) {
     TestEqual("Status Running again",
@@ -181,7 +181,7 @@ bool FDirectiveFailThenRestartTest::RunTest(const FString &Parameters) {
 }
 
 /**
- * Test: ClearDirectivesForNpc with no matching NPCs is a no-op
+ * Test: clearDirectivesForNpc with no matching NPCs is a no-op
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveClearNoMatchTest,
@@ -192,26 +192,26 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveClearNoMatchTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveClearNoMatchTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("d1"), TEXT("npc_a"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("d1"), TEXT("npc_a"),
                                                    TEXT("obs")));
 
   State = DirSlice.Reducer(
-      State, DirectiveSlice::Actions::ClearDirectivesForNpc(
+      State, DirectiveSlice::Actions::clearDirectivesForNpc(
                  TEXT("npc_nonexistent")));
 
-  TestEqual("Original directive remains", SelectAllDirectives(State).Num(), 1);
-  TestTrue("d1 still found", SelectDirectiveById(State, TEXT("d1")).hasValue);
+  TestEqual("Original directive remains", selectAllDirectives(State).Num(), 1);
+  TestTrue("d1 still found", selectDirectiveById(State, TEXT("d1")).hasValue);
 
   return true;
 }
 
 /**
- * Test: VerdictValidated with invalid verdict sets bVerdictValid false
+ * Test: verdictValidated with invalid verdict sets bVerdictValid false
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveInvalidVerdictTest,
@@ -222,12 +222,12 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveInvalidVerdictTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveInvalidVerdictTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("iv"), TEXT("npc1"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("iv"), TEXT("npc1"),
                                                    TEXT("obs")));
 
   FVerdictResponse Verdict;
@@ -238,9 +238,9 @@ bool FDirectiveInvalidVerdictTest::RunTest(const FString &Parameters) {
   Verdict.Action.Target = TEXT("civilian");
 
   State = DirSlice.Reducer(
-      State, DirectiveSlice::Actions::VerdictValidated(TEXT("iv"), Verdict));
+      State, DirectiveSlice::Actions::verdictValidated(TEXT("iv"), Verdict));
 
-  func::Maybe<FDirectiveRun> Found = SelectDirectiveById(State, TEXT("iv"));
+  func::Maybe<FDirectiveRun> Found = selectDirectiveById(State, TEXT("iv"));
   TestTrue("Run exists", Found.hasValue);
   if (Found.hasValue) {
     TestFalse("bVerdictValid is false", Found.value.bVerdictValid);

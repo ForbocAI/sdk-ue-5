@@ -8,7 +8,7 @@ using namespace rtk;
 using namespace DirectiveSlice;
 
 /**
- * Test: DirectiveRunStarted creates run and sets ActiveDirectiveId
+ * Test: directiveRunStarted creates run and sets ActiveDirectiveId
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveSliceRunStartedTest,
@@ -19,19 +19,19 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveSliceRunStartedTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveSliceRunStartedTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(
+      DirectiveSlice::Actions::directiveRunStarted(
           TEXT("dir_1"), TEXT("npc_a"), TEXT("Player said hello")));
 
   TestEqual("ActiveDirectiveId set", State.ActiveDirectiveId,
             FString(TEXT("dir_1")));
 
   func::Maybe<FDirectiveRun> Found =
-      SelectDirectiveById(State, TEXT("dir_1"));
+      selectDirectiveById(State, TEXT("dir_1"));
   TestTrue("Directive run found", Found.hasValue);
   if (Found.hasValue) {
     TestEqual("Run Id", Found.value.Id, FString(TEXT("dir_1")));
@@ -43,8 +43,8 @@ bool FDirectiveSliceRunStartedTest::RunTest(const FString &Parameters) {
               static_cast<int32>(EDirectiveStatus::Running));
   }
 
-  func::Maybe<FDirectiveRun> Active = SelectActiveDirective(State);
-  TestTrue("SelectActiveDirective returns run", Active.hasValue);
+  func::Maybe<FDirectiveRun> Active = selectActiveDirective(State);
+  TestTrue("selectActiveDirective returns run", Active.hasValue);
   if (Active.hasValue) {
     TestEqual("Active run Id", Active.value.Id, FString(TEXT("dir_1")));
   }
@@ -53,23 +53,23 @@ bool FDirectiveSliceRunStartedTest::RunTest(const FString &Parameters) {
 }
 
 /**
- * Test: DirectiveReceived updates run with memory recall
+ * Test: directiveReceived updates run with memory recall
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveSliceDirectiveReceivedTest,
-                                 "ForbocAI.Slices.Directive.DirectiveReceived",
+                                 "ForbocAI.Slices.Directive.directiveReceived",
                                  EAutomationTestFlags_ApplicationContextMask |
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveSliceDirectiveReceivedTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(
+      DirectiveSlice::Actions::directiveRunStarted(
           TEXT("dir_recv"), TEXT("npc_b"), TEXT("Where is the key?")));
 
   FDirectiveResponse Response;
@@ -78,11 +78,11 @@ bool FDirectiveSliceDirectiveReceivedTest::RunTest(const FString &Parameters) {
   Response.recallMemory.Threshold = 0.8f;
 
   State = DirSlice.Reducer(
-      State, DirectiveSlice::Actions::DirectiveReceived(TEXT("dir_recv"),
+      State, DirectiveSlice::Actions::directiveReceived(TEXT("dir_recv"),
                                                         Response));
 
   func::Maybe<FDirectiveRun> Found =
-      SelectDirectiveById(State, TEXT("dir_recv"));
+      selectDirectiveById(State, TEXT("dir_recv"));
   TestTrue("Run still exists", Found.hasValue);
   if (Found.hasValue) {
     TestEqual("MemoryRecallQuery", Found.value.MemoryRecallQuery,
@@ -95,23 +95,23 @@ bool FDirectiveSliceDirectiveReceivedTest::RunTest(const FString &Parameters) {
 }
 
 /**
- * Test: VerdictValidated completes run
+ * Test: verdictValidated completes run
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveSliceVerdictValidatedTest,
-                                 "ForbocAI.Slices.Directive.VerdictValidated",
+                                 "ForbocAI.Slices.Directive.verdictValidated",
                                  EAutomationTestFlags_ApplicationContextMask |
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveSliceVerdictValidatedTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(
+      DirectiveSlice::Actions::directiveRunStarted(
           TEXT("dir_v"), TEXT("npc_c"), TEXT("Greet the player")));
 
   FVerdictResponse Verdict;
@@ -120,10 +120,10 @@ bool FDirectiveSliceVerdictValidatedTest::RunTest(const FString &Parameters) {
   Verdict.bHasAction = false;
 
   State = DirSlice.Reducer(
-      State, DirectiveSlice::Actions::VerdictValidated(TEXT("dir_v"),
+      State, DirectiveSlice::Actions::verdictValidated(TEXT("dir_v"),
                                                        Verdict));
 
-  func::Maybe<FDirectiveRun> Found = SelectDirectiveById(State, TEXT("dir_v"));
+  func::Maybe<FDirectiveRun> Found = selectDirectiveById(State, TEXT("dir_v"));
   TestTrue("Run exists", Found.hasValue);
   if (Found.hasValue) {
     TestEqual("Status Completed",
@@ -138,7 +138,7 @@ bool FDirectiveSliceVerdictValidatedTest::RunTest(const FString &Parameters) {
 }
 
 /**
- * Test: DirectiveRunFailed marks run as failed
+ * Test: directiveRunFailed marks run as failed
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveSliceRunFailedTest,
@@ -149,20 +149,20 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveSliceRunFailedTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveSliceRunFailedTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(
+      DirectiveSlice::Actions::directiveRunStarted(
           TEXT("dir_fail"), TEXT("npc_d"), TEXT("Do something")));
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunFailed(TEXT("dir_fail"),
+      DirectiveSlice::Actions::directiveRunFailed(TEXT("dir_fail"),
                                                   TEXT("API timeout")));
 
   func::Maybe<FDirectiveRun> Found =
-      SelectDirectiveById(State, TEXT("dir_fail"));
+      selectDirectiveById(State, TEXT("dir_fail"));
   TestTrue("Run exists", Found.hasValue);
   if (Found.hasValue) {
     TestEqual("Status Failed",
@@ -175,7 +175,7 @@ bool FDirectiveSliceRunFailedTest::RunTest(const FString &Parameters) {
 }
 
 /**
- * Test: ClearDirectivesForNpc removes runs for given NPC
+ * Test: clearDirectivesForNpc removes runs for given NPC
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveSliceClearForNpcTest,
@@ -186,41 +186,41 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveSliceClearForNpcTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveSliceClearForNpcTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("d1"), TEXT("npc_x"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("d1"), TEXT("npc_x"),
                                                    TEXT("Obs 1")));
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("d2"), TEXT("npc_y"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("d2"), TEXT("npc_y"),
                                                    TEXT("Obs 2")));
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("d3"), TEXT("npc_x"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("d3"), TEXT("npc_x"),
                                                    TEXT("Obs 3")));
 
-  TestEqual("Three directives", SelectAllDirectives(State).Num(), 3);
-  TestEqual("Active is d3", SelectActiveDirectiveId(State),
+  TestEqual("Three directives", selectAllDirectives(State).Num(), 3);
+  TestEqual("Active is d3", selectActiveDirectiveId(State),
             FString(TEXT("d3")));
 
   State = DirSlice.Reducer(
-      State, DirectiveSlice::Actions::ClearDirectivesForNpc(TEXT("npc_x")));
+      State, DirectiveSlice::Actions::clearDirectivesForNpc(TEXT("npc_x")));
 
-  TArray<FDirectiveRun> Remaining = SelectAllDirectives(State);
+  TArray<FDirectiveRun> Remaining = selectAllDirectives(State);
   TestEqual("One directive remains", Remaining.Num(), 1);
   TestEqual("Remaining is d2", Remaining[0].Id, FString(TEXT("d2")));
-  TestEqual("Active cleared (was d3)", SelectActiveDirectiveId(State),
+  TestEqual("Active cleared (was d3)", selectActiveDirectiveId(State),
             FString());
 
   return true;
 }
 
 /**
- * Test: Selectors — SelectDirectiveById, SelectAllDirectives,
- * SelectActiveDirectiveId, SelectActiveDirective
+ * Test: Selectors — selectDirectiveById, selectAllDirectives,
+ * selectActiveDirectiveId, selectActiveDirective
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveSliceSelectorsTest,
@@ -231,7 +231,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveSliceSelectorsTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FDirectiveSliceSelectorsTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = CreateDirectiveSlice();
+  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
   FDirectiveSliceState State;
 
   /**
@@ -239,12 +239,12 @@ bool FDirectiveSliceSelectorsTest::RunTest(const FString &Parameters) {
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
   TestFalse("No active directive on empty",
-            SelectActiveDirective(State).hasValue);
-  TestEqual("SelectActiveDirectiveId empty",
-            SelectActiveDirectiveId(State).IsEmpty(), true);
-  TestEqual("SelectAllDirectives empty", SelectAllDirectives(State).Num(), 0);
-  TestFalse("SelectDirectiveById returns nothing on empty",
-            SelectDirectiveById(State, TEXT("ghost")).hasValue);
+            selectActiveDirective(State).hasValue);
+  TestEqual("selectActiveDirectiveId empty",
+            selectActiveDirectiveId(State).IsEmpty(), true);
+  TestEqual("selectAllDirectives empty", selectAllDirectives(State).Num(), 0);
+  TestFalse("selectDirectiveById returns nothing on empty",
+            selectDirectiveById(State, TEXT("ghost")).hasValue);
 
   /**
    * Add runs
@@ -252,24 +252,24 @@ bool FDirectiveSliceSelectorsTest::RunTest(const FString &Parameters) {
    */
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("sel_1"), TEXT("n1"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("sel_1"), TEXT("n1"),
                                                    TEXT("A")));
   State = DirSlice.Reducer(
       State,
-      DirectiveSlice::Actions::DirectiveRunStarted(TEXT("sel_2"), TEXT("n2"),
+      DirectiveSlice::Actions::directiveRunStarted(TEXT("sel_2"), TEXT("n2"),
                                                    TEXT("B")));
 
-  func::Maybe<FDirectiveRun> Active = SelectActiveDirective(State);
+  func::Maybe<FDirectiveRun> Active = selectActiveDirective(State);
   TestTrue("Active exists", Active.hasValue);
   if (Active.hasValue) {
     TestEqual("Active is sel_2", Active.value.Id, FString(TEXT("sel_2")));
   }
-  TestEqual("SelectActiveDirectiveId sel_2",
-            SelectActiveDirectiveId(State), FString(TEXT("sel_2")));
-  TestEqual("SelectAllDirectives two", SelectAllDirectives(State).Num(), 2);
+  TestEqual("selectActiveDirectiveId sel_2",
+            selectActiveDirectiveId(State), FString(TEXT("sel_2")));
+  TestEqual("selectAllDirectives two", selectAllDirectives(State).Num(), 2);
 
   func::Maybe<FDirectiveRun> Found1 =
-      SelectDirectiveById(State, TEXT("sel_1"));
+      selectDirectiveById(State, TEXT("sel_1"));
   TestTrue("sel_1 found", Found1.hasValue);
   if (Found1.hasValue) {
     TestEqual("sel_1 NpcId", Found1.value.NpcId, FString(TEXT("n1")));

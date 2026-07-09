@@ -31,7 +31,7 @@ exportSoulThunk(const FString &NpcId) {
             return !Npc.hasValue
                 ? detail::RejectAsync<FSoulExportResult>(
                       TEXT("NPC not found"))
-                : (Dispatch(SoulSlice::Actions::RemoteExportSoulPending()),
+                : (Dispatch(SoulSlice::Actions::remoteExportSoulPending()),
                    func::AsyncChain::then<FSoulExportPhase1Response,
                                           FSoulExportResult>(
                        APISlice::Endpoints::postSoulExport(
@@ -68,13 +68,13 @@ exportSoulThunk(const FString &NpcId) {
                                              Response.Soul);
                                      Dispatch(
                                          SoulSlice::Actions::
-                                             RemoteExportSoulSuccess(Result));
+                                             remoteExportSoulSuccess(Result));
                                      return detail::ResolveAsync(Result);
                                    });
                              });
                        })
                        .catch_([Dispatch](std::string Error) {
-                         Dispatch(SoulSlice::Actions::RemoteExportSoulFailed(
+                         Dispatch(SoulSlice::Actions::remoteExportSoulFailed(
                              FString(UTF8_TO_TCHAR(Error.c_str()))));
                        }));
           }();
@@ -93,7 +93,7 @@ exportSoulThunk(const FSoul &Soul) {
         : Soul.Id.IsEmpty()
             ? detail::RejectAsync<FSoulExportResult>(
                   TEXT("Soul ID is required"))
-            : (Dispatch(SoulSlice::Actions::RemoteExportSoulPending()),
+            : (Dispatch(SoulSlice::Actions::remoteExportSoulPending()),
                func::AsyncChain::then<FSoulExportPhase1Response,
                                       FSoulExportResult>(
                    APISlice::Endpoints::postSoulExport(
@@ -129,13 +129,13 @@ exportSoulThunk(const FSoul &Soul) {
                                              : Response.Soul);
                                  Dispatch(
                                      SoulSlice::Actions::
-                                         RemoteExportSoulSuccess(Result));
+                                         remoteExportSoulSuccess(Result));
                                  return detail::ResolveAsync(Result);
                                });
                          });
                    })
                    .catch_([Dispatch](std::string Error) {
-                     Dispatch(SoulSlice::Actions::RemoteExportSoulFailed(
+                     Dispatch(SoulSlice::Actions::remoteExportSoulFailed(
                          FString(UTF8_TO_TCHAR(Error.c_str()))));
                    }));
   };
@@ -150,7 +150,7 @@ importSoulThunk(const FString &TxId) {
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
     return ApiKeyError.hasValue
         ? detail::RejectAsync<FSoul>(ApiKeyError.value)
-        : (Dispatch(SoulSlice::Actions::ImportSoulPending()),
+        : (Dispatch(SoulSlice::Actions::importSoulPending()),
            func::AsyncChain::then<FSoulImportPhase1Response, FSoul>(
                APISlice::Endpoints::postNpcImport(
                    TypeFactory::SoulImportPhase1Request(TxId))(Dispatch,
@@ -176,14 +176,14 @@ importSoulThunk(const FString &TxId) {
                                  TypeFactory::AgentState(
                                      ImportedNpc.DataJson),
                                  TArray<FMemoryItem>());
-                             Dispatch(SoulSlice::Actions::ImportSoulSuccess(
+                             Dispatch(SoulSlice::Actions::importSoulSuccess(
                                  Soul));
                              return detail::ResolveAsync(Soul);
                            });
                      });
                })
                .catch_([Dispatch](std::string Error) {
-                 Dispatch(SoulSlice::Actions::ImportSoulFailed(
+                 Dispatch(SoulSlice::Actions::importSoulFailed(
                      FString(UTF8_TO_TCHAR(Error.c_str()))));
                }));
   };
@@ -213,7 +213,7 @@ localExportSoulThunk(const FString &NpcId = TEXT("")) {
 
 /**
  * Imports a Soul from a local JSON representation (no network).
- * Sets NPC info from the soul data and dispatches ImportSoulSuccess.
+ * Sets NPC info from the soul data and dispatches importSoulSuccess.
  * Mirrors TS localImportSoulThunk in soulSlice.ts.
  * User Story: As an SDK integrator, I need this type or module note so I can understand the role of the surrounding API surface quickly.
  */
@@ -230,7 +230,7 @@ localImportSoulThunk(const FSoul &Soul) {
             Npc.Persona = Soul.Persona;
             Npc.State = Soul.State;
             Dispatch(NPCSlice::Actions::setNPCInfo(Npc));
-            Dispatch(SoulSlice::Actions::ImportSoulSuccess(Soul));
+            Dispatch(SoulSlice::Actions::importSoulSuccess(Soul));
             return detail::ResolveAsync(Soul);
           }();
   };
@@ -264,7 +264,7 @@ getSoulListThunk(int32 Limit = 50) {
         : func::AsyncChain::then<FSoulListResponse, TArray<FSoulListItem>>(
               APISlice::Endpoints::getSouls(Limit)(Dispatch, GetState),
               [Dispatch](const FSoulListResponse &Response) {
-                Dispatch(SoulSlice::Actions::SetSoulList(Response.Souls));
+                Dispatch(SoulSlice::Actions::setSoulList(Response.Souls));
                 return detail::ResolveAsync(Response.Souls);
               });
   };

@@ -89,31 +89,31 @@ bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
    * Add bridge validation
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  Store.dispatch(BridgeSlice::Actions::BridgeValidationPending());
+  Store.dispatch(BridgeSlice::Actions::bridgeValidationPending());
   TestEqual("Bridge validating", Store.getState().Bridge.Status,
             FString(TEXT("validating")));
 
   FDirectiveRuleSet Preset;
   Preset.Id = TEXT("preset_keep");
-  Store.dispatch(BridgeSlice::Actions::AddActivePreset(Preset));
+  Store.dispatch(BridgeSlice::Actions::addActivePreset(Preset));
 
   TArray<FDirectiveRuleSet> Rulesets;
   FDirectiveRuleSet Ruleset;
   Ruleset.Id = TEXT("ruleset_keep");
   Ruleset.RulesetId = TEXT("ruleset_keep");
   Rulesets.Add(Ruleset);
-  Store.dispatch(BridgeSlice::Actions::SetAvailableRulesets(Rulesets));
+  Store.dispatch(BridgeSlice::Actions::setAvailableRulesets(Rulesets));
 
   TArray<FString> PresetIds;
   PresetIds.Add(TEXT("preset_keep"));
-  Store.dispatch(BridgeSlice::Actions::SetAvailablePresetIds(PresetIds));
+  Store.dispatch(BridgeSlice::Actions::setAvailablePresetIds(PresetIds));
 
   /**
    * Start ghost session
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
   Store.dispatch(
-      GhostSlice::Actions::GhostSessionStarted(TEXT("gs_1"), TEXT("running")));
+      GhostSlice::Actions::ghostSessionStarted(TEXT("gs_1"), TEXT("running")));
   TestEqual("Ghost running", Store.getState().Ghost.Status,
             FString(TEXT("running")));
 
@@ -121,7 +121,7 @@ bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
    * Add a directive
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  Store.dispatch(DirectiveSlice::Actions::DirectiveRunStarted(
+  Store.dispatch(DirectiveSlice::Actions::directiveRunStarted(
       TEXT("dir_1"), TEXT("cascade_npc"), TEXT("observe")));
 
   /**

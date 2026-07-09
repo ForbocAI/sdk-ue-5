@@ -40,7 +40,7 @@ namespace StoreInternal {
  */
 inline const rtk::Slice<NPCSlice::FNPCSliceState> &GetNPCSlice() {
   static const func::Lazy<rtk::Slice<NPCSlice::FNPCSliceState>> Slice =
-      func::lazy([]() -> rtk::Slice<NPCSlice::FNPCSliceState> { return NPCSlice::CreateNPCSlice(); });
+      func::lazy([]() -> rtk::Slice<NPCSlice::FNPCSliceState> { return NPCSlice::createNPCSlice(); });
   return func::eval(Slice);
 }
 
@@ -51,7 +51,7 @@ inline const rtk::Slice<NPCSlice::FNPCSliceState> &GetNPCSlice() {
  */
 inline const rtk::Slice<MemorySlice::FMemorySliceState> &GetMemorySlice() {
   static const func::Lazy<rtk::Slice<MemorySlice::FMemorySliceState>> Slice =
-      func::lazy([]() -> rtk::Slice<MemorySlice::FMemorySliceState> { return MemorySlice::CreateMemorySlice(); });
+      func::lazy([]() -> rtk::Slice<MemorySlice::FMemorySliceState> { return MemorySlice::createMemorySlice(); });
   return func::eval(Slice);
 }
 
@@ -63,7 +63,7 @@ inline const rtk::Slice<MemorySlice::FMemorySliceState> &GetMemorySlice() {
 inline const rtk::Slice<DirectiveSlice::FDirectiveSliceState> &
 GetDirectiveSlice() {
   static const func::Lazy<rtk::Slice<DirectiveSlice::FDirectiveSliceState>> Slice =
-      func::lazy([]() -> rtk::Slice<DirectiveSlice::FDirectiveSliceState> { return DirectiveSlice::CreateDirectiveSlice(); });
+      func::lazy([]() -> rtk::Slice<DirectiveSlice::FDirectiveSliceState> { return DirectiveSlice::createDirectiveSlice(); });
   return func::eval(Slice);
 }
 
@@ -74,7 +74,7 @@ GetDirectiveSlice() {
  */
 inline const rtk::Slice<BridgeSlice::FBridgeSliceState> &GetBridgeSlice() {
   static const func::Lazy<rtk::Slice<BridgeSlice::FBridgeSliceState>> Slice =
-      func::lazy([]() -> rtk::Slice<BridgeSlice::FBridgeSliceState> { return BridgeSlice::CreateBridgeSlice(); });
+      func::lazy([]() -> rtk::Slice<BridgeSlice::FBridgeSliceState> { return BridgeSlice::createBridgeSlice(); });
   return func::eval(Slice);
 }
 
@@ -85,7 +85,7 @@ inline const rtk::Slice<BridgeSlice::FBridgeSliceState> &GetBridgeSlice() {
  */
 inline const rtk::Slice<SoulSlice::FSoulSliceState> &GetSoulSlice() {
   static const func::Lazy<rtk::Slice<SoulSlice::FSoulSliceState>> Slice =
-      func::lazy([]() -> rtk::Slice<SoulSlice::FSoulSliceState> { return SoulSlice::CreateSoulSlice(); });
+      func::lazy([]() -> rtk::Slice<SoulSlice::FSoulSliceState> { return SoulSlice::createSoulSlice(); });
   return func::eval(Slice);
 }
 
@@ -96,7 +96,7 @@ inline const rtk::Slice<SoulSlice::FSoulSliceState> &GetSoulSlice() {
  */
 inline const rtk::Slice<GhostSlice::FGhostSliceState> &GetGhostSlice() {
   static const func::Lazy<rtk::Slice<GhostSlice::FGhostSliceState>> Slice =
-      func::lazy([]() -> rtk::Slice<GhostSlice::FGhostSliceState> { return GhostSlice::CreateGhostSlice(); });
+      func::lazy([]() -> rtk::Slice<GhostSlice::FGhostSliceState> { return GhostSlice::createGhostSlice(); });
   return func::eval(Slice);
 }
 
@@ -107,7 +107,7 @@ inline const rtk::Slice<GhostSlice::FGhostSliceState> &GetGhostSlice() {
  */
 inline const rtk::Slice<APISlice::FAPIState> &GetAPISlice() {
   static const func::Lazy<rtk::Slice<APISlice::FAPIState>> Slice =
-      func::lazy([]() -> rtk::Slice<APISlice::FAPIState> { return APISlice::CreateAPISlice(); });
+      func::lazy([]() -> rtk::Slice<APISlice::FAPIState> { return APISlice::createAPISlice(); });
   return func::eval(Slice);
 }
 
@@ -280,13 +280,13 @@ inline rtk::Middleware<FRuntimeState> createNpcRemovalListener() {
                     NPCSlice::Actions::removeNPCActionCreator().extract(Action);
                 RemovedNpcId.hasValue
                     ? (Api.dispatch(
-                           DirectiveSlice::Actions::ClearDirectivesForNpc(
+                           DirectiveSlice::Actions::clearDirectivesForNpc(
                                RemovedNpcId.value)),
                        Api.dispatch(
-                           BridgeSlice::Actions::ClearBridgeValidation()),
+                           BridgeSlice::Actions::clearBridgeValidation()),
                        Api.dispatch(
-                           GhostSlice::Actions::ClearGhostSession()),
-                       Api.dispatch(SoulSlice::Actions::ClearSoulState()),
+                           GhostSlice::Actions::clearGhostSession()),
+                       Api.dispatch(SoulSlice::Actions::clearSoulState()),
                        Api.dispatch(
                            NPCSlice::Actions::clearBlock(RemovedNpcId.value)),
                        RemovedNpcId.value == ActiveNpcIdBefore

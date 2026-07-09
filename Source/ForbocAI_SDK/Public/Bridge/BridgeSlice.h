@@ -37,7 +37,7 @@ namespace Actions {
  * User Story: As bridge validation flows, I need a cached pending action
  * creator so every caller dispatches the same start signal.
  */
-inline const ActionCreatorWithoutPayload &BridgeValidationPendingActionCreator() {
+inline const ActionCreatorWithoutPayload &bridgeValidationPendingActionCreator() {
   static const ActionCreatorWithoutPayload ActionCreator =
       createAction(TEXT("bridge/validationPending"));
   return ActionCreator;
@@ -49,7 +49,7 @@ inline const ActionCreatorWithoutPayload &BridgeValidationPendingActionCreator()
  * creator so validated results enter state through one contract.
  */
 inline const ActionCreator<FValidationResult> &
-BridgeValidationSuccessActionCreator() {
+bridgeValidationSuccessActionCreator() {
   static const ActionCreator<FValidationResult> ActionCreator =
       createAction<FValidationResult>(TEXT("bridge/validationSuccess"));
   return ActionCreator;
@@ -60,7 +60,7 @@ BridgeValidationSuccessActionCreator() {
  * User Story: As bridge validation error handling, I need a cached failure
  * action creator so validation problems are surfaced consistently.
  */
-inline const ActionCreator<FString> &BridgeValidationFailedActionCreator() {
+inline const ActionCreator<FString> &bridgeValidationFailedActionCreator() {
   static const ActionCreator<FString> ActionCreator =
       createAction<FString>(TEXT("bridge/validationFailed"));
   return ActionCreator;
@@ -72,7 +72,7 @@ inline const ActionCreator<FString> &BridgeValidationFailedActionCreator() {
  * active preset lists can be replaced through one reducer contract.
  */
 inline const ActionCreator<TArray<FDirectiveRuleSet>> &
-SetActivePresetsActionCreator() {
+setActivePresetsActionCreator() {
   static const ActionCreator<TArray<FDirectiveRuleSet>> ActionCreator =
       createAction<TArray<FDirectiveRuleSet>>(TEXT("bridge/setActivePresets"));
   return ActionCreator;
@@ -83,7 +83,7 @@ SetActivePresetsActionCreator() {
  * User Story: As bridge preset management, I need a cached action creator so
  * one preset can be appended without rebuilding the full list.
  */
-inline const ActionCreator<FDirectiveRuleSet> &AddActivePresetActionCreator() {
+inline const ActionCreator<FDirectiveRuleSet> &addActivePresetActionCreator() {
   static const ActionCreator<FDirectiveRuleSet> ActionCreator =
       createAction<FDirectiveRuleSet>(TEXT("bridge/addActivePreset"));
   return ActionCreator;
@@ -95,7 +95,7 @@ inline const ActionCreator<FDirectiveRuleSet> &AddActivePresetActionCreator() {
  * so fetched rulesets can replace stale catalog data consistently.
  */
 inline const ActionCreator<TArray<FDirectiveRuleSet>> &
-SetAvailableRulesetsActionCreator() {
+setAvailableRulesetsActionCreator() {
   static const ActionCreator<TArray<FDirectiveRuleSet>> ActionCreator =
       createAction<TArray<FDirectiveRuleSet>>(
           TEXT("bridge/setAvailableRulesets"));
@@ -108,7 +108,7 @@ SetAvailableRulesetsActionCreator() {
  * available preset ids are updated through a shared contract.
  */
 inline const ActionCreator<TArray<FString>> &
-SetAvailablePresetIdsActionCreator() {
+setAvailablePresetIdsActionCreator() {
   static const ActionCreator<TArray<FString>> ActionCreator =
       createAction<TArray<FString>>(TEXT("bridge/setAvailablePresetIds"));
   return ActionCreator;
@@ -119,7 +119,7 @@ SetAvailablePresetIdsActionCreator() {
  * User Story: As bridge cleanup flows, I need a cached clear action creator so
  * stale validation results can be reset predictably.
  */
-inline const ActionCreatorWithoutPayload &ClearBridgeValidationActionCreator() {
+inline const ActionCreatorWithoutPayload &clearBridgeValidationActionCreator() {
   static const ActionCreatorWithoutPayload ActionCreator =
       createAction(TEXT("bridge/clearBridgeValidation"));
   return ActionCreator;
@@ -130,8 +130,8 @@ inline const ActionCreatorWithoutPayload &ClearBridgeValidationActionCreator() {
  * User Story: As bridge status tracking, I need a helper that dispatches the
  * pending action without manual action construction.
  */
-inline AnyAction BridgeValidationPending() {
-  return BridgeValidationPendingActionCreator()();
+inline AnyAction bridgeValidationPending() {
+  return bridgeValidationPendingActionCreator()();
 }
 
 /**
@@ -139,8 +139,8 @@ inline AnyAction BridgeValidationPending() {
  * User Story: As bridge success handling, I need a helper so valid bridge
  * results can be stored with a single call.
  */
-inline AnyAction BridgeValidationSuccess(const FValidationResult &Result) {
-  return BridgeValidationSuccessActionCreator()(Result);
+inline AnyAction bridgeValidationSuccess(const FValidationResult &Result) {
+  return bridgeValidationSuccessActionCreator()(Result);
 }
 
 /**
@@ -148,8 +148,8 @@ inline AnyAction BridgeValidationSuccess(const FValidationResult &Result) {
  * User Story: As bridge error handling, I need a helper so validation failures
  * can be dispatched without hand-assembling payloads.
  */
-inline AnyAction BridgeValidationFailure(const FString &Error) {
-  return BridgeValidationFailedActionCreator()(Error);
+inline AnyAction bridgeValidationFailure(const FString &Error) {
+  return bridgeValidationFailedActionCreator()(Error);
 }
 
 /**
@@ -157,8 +157,8 @@ inline AnyAction BridgeValidationFailure(const FString &Error) {
  * User Story: As preset synchronization, I need a helper so the current active
  * preset list can be refreshed in one dispatch.
  */
-inline AnyAction SetActivePresets(const TArray<FDirectiveRuleSet> &Presets) {
-  return SetActivePresetsActionCreator()(Presets);
+inline AnyAction setActivePresets(const TArray<FDirectiveRuleSet> &Presets) {
+  return setActivePresetsActionCreator()(Presets);
 }
 
 /**
@@ -166,8 +166,8 @@ inline AnyAction SetActivePresets(const TArray<FDirectiveRuleSet> &Presets) {
  * User Story: As preset editing flows, I need a helper so one preset can be
  * added to the active set without custom action wiring.
  */
-inline AnyAction AddActivePreset(const FDirectiveRuleSet &Preset) {
-  return AddActivePresetActionCreator()(Preset);
+inline AnyAction addActivePreset(const FDirectiveRuleSet &Preset) {
+  return addActivePresetActionCreator()(Preset);
 }
 
 /**
@@ -176,8 +176,8 @@ inline AnyAction AddActivePreset(const FDirectiveRuleSet &Preset) {
  * rulesets replace the current catalog through one action.
  */
 inline AnyAction
-SetAvailableRulesets(const TArray<FDirectiveRuleSet> &Rulesets) {
-  return SetAvailableRulesetsActionCreator()(Rulesets);
+setAvailableRulesets(const TArray<FDirectiveRuleSet> &Rulesets) {
+  return setAvailableRulesetsActionCreator()(Rulesets);
 }
 
 /**
@@ -185,8 +185,8 @@ SetAvailableRulesets(const TArray<FDirectiveRuleSet> &Rulesets) {
  * User Story: As preset discovery flows, I need a helper so available preset
  * ids can be refreshed through one action.
  */
-inline AnyAction SetAvailablePresetIds(const TArray<FString> &PresetIds) {
-  return SetAvailablePresetIdsActionCreator()(PresetIds);
+inline AnyAction setAvailablePresetIds(const TArray<FString> &PresetIds) {
+  return setAvailablePresetIdsActionCreator()(PresetIds);
 }
 
 /**
@@ -194,8 +194,8 @@ inline AnyAction SetAvailablePresetIds(const TArray<FString> &PresetIds) {
  * User Story: As bridge cleanup flows, I need a helper so old validation
  * results and errors can be cleared before the next run.
  */
-inline AnyAction ClearBridgeValidation() {
-  return ClearBridgeValidationActionCreator()();
+inline AnyAction clearBridgeValidation() {
+  return clearBridgeValidationActionCreator()();
 }
 
 } // namespace Actions
@@ -205,11 +205,11 @@ inline AnyAction ClearBridgeValidation() {
  * User Story: As bridge runtime setup, I need one slice factory so validation,
  * rulesets, and presets share a single reducer definition.
  */
-inline Slice<FBridgeSliceState> CreateBridgeSlice() {
+inline Slice<FBridgeSliceState> createBridgeSlice() {
   return rtk::createSlice<FBridgeSliceState>(
   TEXT("bridge"), FBridgeSliceState(),
   [](rtk::ActionReducerMapBuilder<FBridgeSliceState> &Builder) {
-    Builder.addCase(Actions::BridgeValidationPendingActionCreator(),
+    Builder.addCase(Actions::bridgeValidationPendingActionCreator(),
       [](const FBridgeSliceState &State,
                    const Action<rtk::FEmptyPayload> &Action) -> FBridgeSliceState {
                   FBridgeSliceState Next = State;
@@ -217,7 +217,7 @@ inline Slice<FBridgeSliceState> CreateBridgeSlice() {
                   Next.Error.Empty();
                   return Next;
                 });
-    Builder.addCase(Actions::BridgeValidationSuccessActionCreator(),
+    Builder.addCase(Actions::bridgeValidationSuccessActionCreator(),
       [](const FBridgeSliceState &State,
                    const Action<FValidationResult> &Action) -> FBridgeSliceState {
                   FBridgeSliceState Next = State;
@@ -226,7 +226,7 @@ inline Slice<FBridgeSliceState> CreateBridgeSlice() {
                   Next.bHasLastValidation = true;
                   return Next;
                 });
-    Builder.addCase(Actions::BridgeValidationFailedActionCreator(),
+    Builder.addCase(Actions::bridgeValidationFailedActionCreator(),
       [](const FBridgeSliceState &State,
                              const Action<FString> &Action) -> FBridgeSliceState {
                             FBridgeSliceState Next = State;
@@ -237,7 +237,7 @@ inline Slice<FBridgeSliceState> CreateBridgeSlice() {
                             Next.bHasLastValidation = true;
                             return Next;
                           });
-    Builder.addCase(Actions::SetActivePresetsActionCreator(),
+    Builder.addCase(Actions::setActivePresetsActionCreator(),
       [](const FBridgeSliceState &State,
                              const Action<TArray<FDirectiveRuleSet>> &Action)
                               -> FBridgeSliceState {
@@ -245,7 +245,7 @@ inline Slice<FBridgeSliceState> CreateBridgeSlice() {
                             Next.ActivePresets = Action.PayloadValue;
                             return Next;
                           });
-    Builder.addCase(Actions::AddActivePresetActionCreator(),
+    Builder.addCase(Actions::addActivePresetActionCreator(),
       [](const FBridgeSliceState &State,
                    const Action<FDirectiveRuleSet> &Action) -> FBridgeSliceState {
                   FBridgeSliceState Next = State;
@@ -263,7 +263,7 @@ inline Slice<FBridgeSliceState> CreateBridgeSlice() {
                               : void(),
                           Next);
                 });
-    Builder.addCase(Actions::SetAvailableRulesetsActionCreator(),
+    Builder.addCase(Actions::setAvailableRulesetsActionCreator(),
       [](const FBridgeSliceState &State,
                              const Action<TArray<FDirectiveRuleSet>> &Action)
                               -> FBridgeSliceState {
@@ -271,14 +271,14 @@ inline Slice<FBridgeSliceState> CreateBridgeSlice() {
                             Next.AvailableRulesets = Action.PayloadValue;
                             return Next;
                           });
-    Builder.addCase(Actions::SetAvailablePresetIdsActionCreator(),
+    Builder.addCase(Actions::setAvailablePresetIdsActionCreator(),
       [](const FBridgeSliceState &State,
                    const Action<TArray<FString>> &Action) -> FBridgeSliceState {
                   FBridgeSliceState Next = State;
                   Next.AvailablePresetIds = Action.PayloadValue;
                   return Next;
                 });
-    Builder.addCase(Actions::ClearBridgeValidationActionCreator(),
+    Builder.addCase(Actions::clearBridgeValidationActionCreator(),
       [](const FBridgeSliceState &State,
                    const Action<rtk::FEmptyPayload> &Action) -> FBridgeSliceState {
                   FBridgeSliceState Next = State;
@@ -289,6 +289,30 @@ inline Slice<FBridgeSliceState> CreateBridgeSlice() {
                   return Next;
                 });
   });
+}
+
+inline FString activePresetId(const FDirectiveRuleSet &Preset) {
+  return Preset.Id.IsEmpty() ? Preset.RulesetId : Preset.Id;
+}
+
+inline func::Maybe<FDirectiveRuleSet>
+selectActivePresetByIdRecursive(const TArray<FDirectiveRuleSet> &Presets,
+                                const FString &Id, int32 Index) {
+  return Index >= Presets.Num()
+             ? func::nothing<FDirectiveRuleSet>()
+             : activePresetId(Presets[Index]) == Id
+                   ? func::just(Presets[Index])
+                   : selectActivePresetByIdRecursive(Presets, Id, Index + 1);
+}
+
+inline TArray<FDirectiveRuleSet>
+selectActivePresets(const FBridgeSliceState &State) {
+  return State.ActivePresets;
+}
+
+inline func::Maybe<FDirectiveRuleSet>
+selectActivePresetById(const FBridgeSliceState &State, const FString &Id) {
+  return selectActivePresetByIdRecursive(State.ActivePresets, Id, 0);
 }
 
 } // namespace BridgeSlice

@@ -39,7 +39,7 @@ namespace Actions {
  * User Story: As soul export orchestration, I need a stable pending action
  * creator so reducers and thunks reuse one export-start contract.
  */
-inline const ActionCreatorWithoutPayload &RemoteExportSoulPendingActionCreator() {
+inline const ActionCreatorWithoutPayload &remoteExportSoulPendingActionCreator() {
   static const ActionCreatorWithoutPayload ActionCreator =
       createAction(TEXT("soul/remoteExportPending"));
   return ActionCreator;
@@ -51,7 +51,7 @@ inline const ActionCreatorWithoutPayload &RemoteExportSoulPendingActionCreator()
  * action creator so export results are stored consistently.
  */
 inline const ActionCreator<FSoulExportResult> &
-RemoteExportSoulSuccessActionCreator() {
+remoteExportSoulSuccessActionCreator() {
   static const ActionCreator<FSoulExportResult> ActionCreator =
       createAction<FSoulExportResult>(TEXT("soul/remoteExportSuccess"));
   return ActionCreator;
@@ -62,7 +62,7 @@ RemoteExportSoulSuccessActionCreator() {
  * User Story: As soul export error handling, I need a reusable failure action
  * creator so errors propagate through one contract.
  */
-inline const ActionCreator<FString> &RemoteExportSoulFailedActionCreator() {
+inline const ActionCreator<FString> &remoteExportSoulFailedActionCreator() {
   static const ActionCreator<FString> ActionCreator =
       createAction<FString>(TEXT("soul/remoteExportFailed"));
   return ActionCreator;
@@ -73,7 +73,7 @@ inline const ActionCreator<FString> &RemoteExportSoulFailedActionCreator() {
  * User Story: As soul import orchestration, I need one pending action creator
  * so reducers can track import startup consistently.
  */
-inline const ActionCreatorWithoutPayload &ImportSoulPendingActionCreator() {
+inline const ActionCreatorWithoutPayload &importSoulPendingActionCreator() {
   static const ActionCreatorWithoutPayload ActionCreator =
       createAction(TEXT("soul/importPending"));
   return ActionCreator;
@@ -84,7 +84,7 @@ inline const ActionCreatorWithoutPayload &ImportSoulPendingActionCreator() {
  * User Story: As soul import flows, I need a reusable success action creator
  * so imported payloads are stored the same way everywhere.
  */
-inline const ActionCreator<FSoul> &ImportSoulSuccessActionCreator() {
+inline const ActionCreator<FSoul> &importSoulSuccessActionCreator() {
   static const ActionCreator<FSoul> ActionCreator =
       createAction<FSoul>(TEXT("soul/importSuccess"));
   return ActionCreator;
@@ -95,7 +95,7 @@ inline const ActionCreator<FSoul> &ImportSoulSuccessActionCreator() {
  * User Story: As soul import error handling, I need a reusable failure action
  * creator so import errors stay consistent across callers.
  */
-inline const ActionCreator<FString> &ImportSoulFailedActionCreator() {
+inline const ActionCreator<FString> &importSoulFailedActionCreator() {
   static const ActionCreator<FString> ActionCreator =
       createAction<FString>(TEXT("soul/importFailed"));
   return ActionCreator;
@@ -106,7 +106,7 @@ inline const ActionCreator<FString> &ImportSoulFailedActionCreator() {
  * User Story: As soul catalog views, I need a stable action creator so remote
  * listings can populate the slice with one contract.
  */
-inline const ActionCreator<TArray<FSoulListItem>> &SetSoulListActionCreator() {
+inline const ActionCreator<TArray<FSoulListItem>> &setSoulListActionCreator() {
   static const ActionCreator<TArray<FSoulListItem>> ActionCreator =
       createAction<TArray<FSoulListItem>>(TEXT("soul/setSoulList"));
   return ActionCreator;
@@ -117,7 +117,7 @@ inline const ActionCreator<TArray<FSoulListItem>> &SetSoulListActionCreator() {
  * User Story: As cleanup flows, I need a dedicated clear action creator so the
  * soul slice can return to defaults predictably.
  */
-inline const ActionCreatorWithoutPayload &ClearSoulStateActionCreator() {
+inline const ActionCreatorWithoutPayload &clearSoulStateActionCreator() {
   static const ActionCreatorWithoutPayload ActionCreator =
       createAction(TEXT("soul/clearSoulState"));
   return ActionCreator;
@@ -128,8 +128,8 @@ inline const ActionCreatorWithoutPayload &ClearSoulStateActionCreator() {
  * User Story: As export status tracking, I need pending state recorded so the
  * UI can show that an export is in flight.
  */
-inline AnyAction RemoteExportSoulPending() {
-  return RemoteExportSoulPendingActionCreator()();
+inline AnyAction remoteExportSoulPending() {
+  return remoteExportSoulPendingActionCreator()();
 }
 
 /**
@@ -137,8 +137,8 @@ inline AnyAction RemoteExportSoulPending() {
  * User Story: As export result consumers, I need the final export metadata
  * saved so downstream flows can use the produced soul reference.
  */
-inline AnyAction RemoteExportSoulSuccess(const FSoulExportResult &Result) {
-  return RemoteExportSoulSuccessActionCreator()(Result);
+inline AnyAction remoteExportSoulSuccess(const FSoulExportResult &Result) {
+  return remoteExportSoulSuccessActionCreator()(Result);
 }
 
 /**
@@ -146,8 +146,8 @@ inline AnyAction RemoteExportSoulSuccess(const FSoulExportResult &Result) {
  * User Story: As export error handling, I need failures captured so callers
  * can explain why an export did not complete.
  */
-inline AnyAction RemoteExportSoulFailed(const FString &Error) {
-  return RemoteExportSoulFailedActionCreator()(Error);
+inline AnyAction remoteExportSoulFailed(const FString &Error) {
+  return remoteExportSoulFailedActionCreator()(Error);
 }
 
 /**
@@ -155,8 +155,8 @@ inline AnyAction RemoteExportSoulFailed(const FString &Error) {
  * User Story: As import status tracking, I need pending state stored so the UI
  * can reflect that a soul import is underway.
  */
-inline AnyAction ImportSoulPending() {
-  return ImportSoulPendingActionCreator()();
+inline AnyAction importSoulPending() {
+  return importSoulPendingActionCreator()();
 }
 
 /**
@@ -164,8 +164,8 @@ inline AnyAction ImportSoulPending() {
  * User Story: As import result consumers, I need the imported soul preserved
  * so later reducers and views can reuse it.
  */
-inline AnyAction ImportSoulSuccess(const FSoul &Soul) {
-  return ImportSoulSuccessActionCreator()(Soul);
+inline AnyAction importSoulSuccess(const FSoul &Soul) {
+  return importSoulSuccessActionCreator()(Soul);
 }
 
 /**
@@ -173,8 +173,8 @@ inline AnyAction ImportSoulSuccess(const FSoul &Soul) {
  * User Story: As import error handling, I need the failure recorded so callers
  * can surface useful feedback to the user.
  */
-inline AnyAction ImportSoulFailed(const FString &Error) {
-  return ImportSoulFailedActionCreator()(Error);
+inline AnyAction importSoulFailed(const FString &Error) {
+  return importSoulFailedActionCreator()(Error);
 }
 
 /**
@@ -182,8 +182,8 @@ inline AnyAction ImportSoulFailed(const FString &Error) {
  * User Story: As soul listing flows, I need the latest list stored so browsing
  * and selection use current remote data.
  */
-inline AnyAction SetSoulList(const TArray<FSoulListItem> &SoulList) {
-  return SetSoulListActionCreator()(SoulList);
+inline AnyAction setSoulList(const TArray<FSoulListItem> &SoulList) {
+  return setSoulListActionCreator()(SoulList);
 }
 
 /**
@@ -191,7 +191,7 @@ inline AnyAction SetSoulList(const TArray<FSoulListItem> &SoulList) {
  * User Story: As cleanup flows, I need soul state cleared so later exports and
  * imports start from a known baseline.
  */
-inline AnyAction ClearSoulState() { return ClearSoulStateActionCreator()(); }
+inline AnyAction clearSoulState() { return clearSoulStateActionCreator()(); }
 
 } // namespace Actions
 
@@ -200,11 +200,11 @@ inline AnyAction ClearSoulState() { return ClearSoulStateActionCreator()(); }
  * User Story: As soul runtime setup, I need one slice factory so export and
  * import actions are wired into the store consistently.
  */
-inline Slice<FSoulSliceState> CreateSoulSlice() {
+inline Slice<FSoulSliceState> createSoulSlice() {
   return rtk::createSlice<FSoulSliceState>(
   TEXT("soul"), FSoulSliceState(),
   [](rtk::ActionReducerMapBuilder<FSoulSliceState> &Builder) {
-    Builder.addCase(Actions::RemoteExportSoulPendingActionCreator(),
+    Builder.addCase(Actions::remoteExportSoulPendingActionCreator(),
       [](const FSoulSliceState &State,
                    const Action<rtk::FEmptyPayload> &Action) -> FSoulSliceState {
                   FSoulSliceState Next = State;
@@ -212,7 +212,7 @@ inline Slice<FSoulSliceState> CreateSoulSlice() {
                   Next.Error.Empty();
                   return Next;
                 });
-    Builder.addCase(Actions::RemoteExportSoulSuccessActionCreator(),
+    Builder.addCase(Actions::remoteExportSoulSuccessActionCreator(),
       [](const FSoulSliceState &State,
                    const Action<FSoulExportResult> &Action) -> FSoulSliceState {
                   FSoulSliceState Next = State;
@@ -221,7 +221,7 @@ inline Slice<FSoulSliceState> CreateSoulSlice() {
                   Next.bHasLastExport = true;
                   return Next;
                 });
-    Builder.addCase(Actions::RemoteExportSoulFailedActionCreator(),
+    Builder.addCase(Actions::remoteExportSoulFailedActionCreator(),
       [](const FSoulSliceState &State,
                              const Action<FString> &Action) -> FSoulSliceState {
                             FSoulSliceState Next = State;
@@ -229,7 +229,7 @@ inline Slice<FSoulSliceState> CreateSoulSlice() {
                             Next.Error = Action.PayloadValue;
                             return Next;
                           });
-    Builder.addCase(Actions::ImportSoulPendingActionCreator(),
+    Builder.addCase(Actions::importSoulPendingActionCreator(),
       [](const FSoulSliceState &State,
                    const Action<rtk::FEmptyPayload> &Action) -> FSoulSliceState {
                   FSoulSliceState Next = State;
@@ -237,7 +237,7 @@ inline Slice<FSoulSliceState> CreateSoulSlice() {
                   Next.Error.Empty();
                   return Next;
                 });
-    Builder.addCase(Actions::ImportSoulSuccessActionCreator(),
+    Builder.addCase(Actions::importSoulSuccessActionCreator(),
       [](const FSoulSliceState &State,
                              const Action<FSoul> &Action) -> FSoulSliceState {
                             FSoulSliceState Next = State;
@@ -246,7 +246,7 @@ inline Slice<FSoulSliceState> CreateSoulSlice() {
                             Next.bHasLastImport = true;
                             return Next;
                           });
-    Builder.addCase(Actions::ImportSoulFailedActionCreator(),
+    Builder.addCase(Actions::importSoulFailedActionCreator(),
       [](const FSoulSliceState &State,
                              const Action<FString> &Action) -> FSoulSliceState {
                             FSoulSliceState Next = State;
@@ -254,14 +254,14 @@ inline Slice<FSoulSliceState> CreateSoulSlice() {
                             Next.Error = Action.PayloadValue;
                             return Next;
                           });
-    Builder.addCase(Actions::SetSoulListActionCreator(),
+    Builder.addCase(Actions::setSoulListActionCreator(),
       [](const FSoulSliceState &State,
                    const Action<TArray<FSoulListItem>> &Action) -> FSoulSliceState {
                   FSoulSliceState Next = State;
                   Next.AvailableSouls = Action.PayloadValue;
                   return Next;
                 });
-    Builder.addCase(Actions::ClearSoulStateActionCreator(),
+    Builder.addCase(Actions::clearSoulStateActionCreator(),
       [](const FSoulSliceState &State,
                    const Action<rtk::FEmptyPayload> &Action) -> FSoulSliceState {
                   return FSoulSliceState();

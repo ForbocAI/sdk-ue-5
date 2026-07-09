@@ -27,7 +27,7 @@ startGhostThunk(const FGhostConfig &Config) {
         : func::AsyncChain::then<FGhostRunResponse, FGhostRunResponse>(
         APISlice::Endpoints::postGhostRun(Config)(Dispatch, GetState),
         [Dispatch](const FGhostRunResponse &Response) {
-          Dispatch(GhostSlice::Actions::GhostSessionStarted(
+          Dispatch(GhostSlice::Actions::ghostSessionStarted(
               Response.SessionId, Response.RunStatus));
           return detail::ResolveAsync(Response);
         });
@@ -46,7 +46,7 @@ getGhostStatusThunk(const FString &SessionId) {
         : func::AsyncChain::then<FGhostStatusResponse, FGhostStatusResponse>(
         APISlice::Endpoints::getGhostStatus(SessionId)(Dispatch, GetState),
         [Dispatch](const FGhostStatusResponse &Response) {
-          Dispatch(GhostSlice::Actions::GhostSessionProgress(
+          Dispatch(GhostSlice::Actions::ghostSessionProgress(
               Response.GhostSessionId.IsEmpty() ? TEXT("") : Response.GhostSessionId,
               Response.getGhostStatus, Response.GhostProgress));
           return detail::ResolveAsync(Response);
@@ -108,7 +108,7 @@ getGhostResultsThunk(const FString &SessionId) {
           };
           AddResults::apply(Response.ResultsTests, Report.Results, 0);
 
-          Dispatch(GhostSlice::Actions::GhostSessionCompleted(Report));
+          Dispatch(GhostSlice::Actions::ghostSessionCompleted(Report));
           return detail::ResolveAsync(Response);
         });
   };
@@ -131,7 +131,7 @@ stopGhostThunk(const FString &SessionId) {
               Response.StopStatus.Equals(TEXT("stopped"),
                                          ESearchCase::IgnoreCase);
           bStopped
-              ? (Dispatch(GhostSlice::Actions::GhostSessionProgress(
+              ? (Dispatch(GhostSlice::Actions::ghostSessionProgress(
                      Response.StopSessionId.IsEmpty() ? SessionId
                                                       : Response.StopSessionId,
                      Response.StopStatus.IsEmpty() ? TEXT("stopped")
@@ -164,7 +164,7 @@ getGhostHistoryThunk(int32 Limit = 10) {
                                   TArray<FGhostHistoryEntry>>(
         APISlice::Endpoints::getGhostHistory(Limit)(Dispatch, GetState),
         [Dispatch](const FGhostHistoryResponse &Response) {
-          Dispatch(GhostSlice::Actions::GhostHistoryLoaded(Response.Sessions));
+          Dispatch(GhostSlice::Actions::ghostHistoryLoaded(Response.Sessions));
           return detail::ResolveAsync(Response.Sessions);
         });
   };

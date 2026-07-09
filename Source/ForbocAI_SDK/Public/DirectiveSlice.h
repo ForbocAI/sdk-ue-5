@@ -77,7 +77,7 @@ namespace Actions {
  * so thunks and reducers share one contract.
  */
 inline const ActionCreator<FDirectiveRunStartedPayload> &
-DirectiveRunStartedActionCreator() {
+directiveRunStartedActionCreator() {
   static const ActionCreator<FDirectiveRunStartedPayload> ActionCreator =
       createAction<FDirectiveRunStartedPayload>(
           TEXT("directive/directiveRunStarted"));
@@ -90,7 +90,7 @@ DirectiveRunStartedActionCreator() {
  * received directive metadata is dispatched consistently.
  */
 inline const ActionCreator<FDirectiveReceivedPayload> &
-DirectiveReceivedActionCreator() {
+directiveReceivedActionCreator() {
   static const ActionCreator<FDirectiveReceivedPayload> ActionCreator =
       createAction<FDirectiveReceivedPayload>(
           TEXT("directive/directiveReceived"));
@@ -103,7 +103,7 @@ DirectiveReceivedActionCreator() {
  * prompt and constraint updates reuse one contract.
  */
 inline const ActionCreator<FContextComposedPayload> &
-ContextComposedActionCreator() {
+contextComposedActionCreator() {
   static const ActionCreator<FContextComposedPayload> ActionCreator =
       createAction<FContextComposedPayload>(TEXT("directive/contextComposed"));
   return ActionCreator;
@@ -115,7 +115,7 @@ ContextComposedActionCreator() {
  * verdict results are dispatched consistently.
  */
 inline const ActionCreator<FVerdictValidatedPayload> &
-VerdictValidatedActionCreator() {
+verdictValidatedActionCreator() {
   static const ActionCreator<FVerdictValidatedPayload> ActionCreator =
       createAction<FVerdictValidatedPayload>(
           TEXT("directive/verdictValidated"));
@@ -128,7 +128,7 @@ VerdictValidatedActionCreator() {
  * creator so broken runs are reported through one contract.
  */
 inline const ActionCreator<FDirectiveRunFailedPayload> &
-DirectiveRunFailedActionCreator() {
+directiveRunFailedActionCreator() {
   static const ActionCreator<FDirectiveRunFailedPayload> ActionCreator =
       createAction<FDirectiveRunFailedPayload>(
           TEXT("directive/directiveRunFailed"));
@@ -140,7 +140,7 @@ DirectiveRunFailedActionCreator() {
  * User Story: As NPC teardown flows, I need a stable clear action creator so
  * directive runs are removed whenever an NPC is deleted.
  */
-inline const ActionCreator<FString> &ClearDirectivesForNpcActionCreator() {
+inline const ActionCreator<FString> &clearDirectivesForNpcActionCreator() {
   static const ActionCreator<FString> ActionCreator =
       createAction<FString>(TEXT("directive/clearDirectivesForNpc"));
   return ActionCreator;
@@ -151,9 +151,9 @@ inline const ActionCreator<FString> &ClearDirectivesForNpcActionCreator() {
  * User Story: As directive startup, I need each run captured so later steps can
  * update the right directive entity.
  */
-inline AnyAction DirectiveRunStarted(const FString &Id, const FString &NpcId,
+inline AnyAction directiveRunStarted(const FString &Id, const FString &NpcId,
                                      const FString &Observation) {
-  return DirectiveRunStartedActionCreator()(
+  return directiveRunStartedActionCreator()(
       FDirectiveRunStartedPayload{Id, NpcId, Observation});
 }
 
@@ -162,9 +162,9 @@ inline AnyAction DirectiveRunStarted(const FString &Id, const FString &NpcId,
  * User Story: As directive processing, I need memory recall metadata stored so
  * later orchestration can use the server response.
  */
-inline AnyAction DirectiveReceived(const FString &Id,
+inline AnyAction directiveReceived(const FString &Id,
                                    const FDirectiveResponse &Response) {
-  return DirectiveReceivedActionCreator()(
+  return directiveReceivedActionCreator()(
       FDirectiveReceivedPayload{Id, Response});
 }
 
@@ -173,9 +173,9 @@ inline AnyAction DirectiveReceived(const FString &Id,
  * User Story: As context composition, I need the prompt and constraints saved
    * so the run captures the API-issued prompt constraints.
  */
-inline AnyAction ContextComposed(const FString &Id, const FString &Prompt,
+inline AnyAction contextComposed(const FString &Id, const FString &Prompt,
                                  const FPromptConstraints &Constraints) {
-  return ContextComposedActionCreator()(
+  return contextComposedActionCreator()(
       FContextComposedPayload{Id, Prompt, Constraints});
 }
 
@@ -184,9 +184,9 @@ inline AnyAction ContextComposed(const FString &Id, const FString &Prompt,
  * User Story: As verdict handling, I need the validated verdict recorded so
  * reducers can mark the run as completed with final output.
  */
-inline AnyAction VerdictValidated(const FString &Id,
+inline AnyAction verdictValidated(const FString &Id,
                                   const FVerdictResponse &Verdict) {
-  return VerdictValidatedActionCreator()(FVerdictValidatedPayload{Id, Verdict});
+  return verdictValidatedActionCreator()(FVerdictValidatedPayload{Id, Verdict});
 }
 
 /**
@@ -194,8 +194,8 @@ inline AnyAction VerdictValidated(const FString &Id,
  * User Story: As directive error handling, I need the failure reason stored so
  * operators can inspect why a run stopped.
  */
-inline AnyAction DirectiveRunFailed(const FString &Id, const FString &Error) {
-  return DirectiveRunFailedActionCreator()(
+inline AnyAction directiveRunFailed(const FString &Id, const FString &Error) {
+  return directiveRunFailedActionCreator()(
       FDirectiveRunFailedPayload{Id, Error});
 }
 
@@ -204,8 +204,8 @@ inline AnyAction DirectiveRunFailed(const FString &Id, const FString &Error) {
  * User Story: As NPC teardown flows, I need directive cleanup dispatched so
  * deleted NPCs do not leave stale run state behind.
  */
-inline AnyAction ClearDirectivesForNpc(const FString &NpcId) {
-  return ClearDirectivesForNpcActionCreator()(NpcId);
+inline AnyAction clearDirectivesForNpc(const FString &NpcId) {
+  return clearDirectivesForNpcActionCreator()(NpcId);
 }
 
 } // namespace Actions
@@ -215,12 +215,12 @@ inline AnyAction ClearDirectivesForNpc(const FString &NpcId) {
  * User Story: As directive runtime setup, I need one slice factory so all
  * directive lifecycle actions share a consistent reducer.
  */
-inline Slice<FDirectiveSliceState> CreateDirectiveSlice() {
+inline Slice<FDirectiveSliceState> createDirectiveSlice() {
   return rtk::createSlice<FDirectiveSliceState>(
   TEXT("directive"),
                                                        FDirectiveSliceState(),
   [](rtk::ActionReducerMapBuilder<FDirectiveSliceState> &Builder) {
-    Builder.addCase(Actions::DirectiveRunStartedActionCreator(),
+    Builder.addCase(Actions::directiveRunStartedActionCreator(),
       [](const FDirectiveSliceState &State,
                              const Action<FDirectiveRunStartedPayload> &Action)
                               -> FDirectiveSliceState {
@@ -236,7 +236,7 @@ inline Slice<FDirectiveSliceState> CreateDirectiveSlice() {
                             Next.ActiveDirectiveId = Run.Id;
                             return Next;
                           });
-    Builder.addCase(Actions::DirectiveReceivedActionCreator(),
+    Builder.addCase(Actions::directiveReceivedActionCreator(),
       [](const FDirectiveSliceState &State,
                              const Action<FDirectiveReceivedPayload> &Action)
                               -> FDirectiveSliceState {
@@ -257,7 +257,7 @@ inline Slice<FDirectiveSliceState> CreateDirectiveSlice() {
                                 });
                             return Next;
                           });
-    Builder.addCase(Actions::ContextComposedActionCreator(),
+    Builder.addCase(Actions::contextComposedActionCreator(),
       [](const FDirectiveSliceState &State,
                              const Action<FContextComposedPayload> &Action)
                               -> FDirectiveSliceState {
@@ -274,7 +274,7 @@ inline Slice<FDirectiveSliceState> CreateDirectiveSlice() {
                                 });
                             return Next;
                           });
-    Builder.addCase(Actions::VerdictValidatedActionCreator(),
+    Builder.addCase(Actions::verdictValidatedActionCreator(),
       [](const FDirectiveSliceState &State,
                    const Action<FVerdictValidatedPayload> &Action)
                     -> FDirectiveSliceState {
@@ -295,7 +295,7 @@ inline Slice<FDirectiveSliceState> CreateDirectiveSlice() {
                       });
                   return Next;
                 });
-    Builder.addCase(Actions::DirectiveRunFailedActionCreator(),
+    Builder.addCase(Actions::directiveRunFailedActionCreator(),
       [](const FDirectiveSliceState &State,
                              const Action<FDirectiveRunFailedPayload> &Action)
                               -> FDirectiveSliceState {
@@ -314,7 +314,7 @@ inline Slice<FDirectiveSliceState> CreateDirectiveSlice() {
                                 });
                             return Next;
                           });
-    Builder.addCase(Actions::ClearDirectivesForNpcActionCreator(),
+    Builder.addCase(Actions::clearDirectivesForNpcActionCreator(),
       [](const FDirectiveSliceState &State,
                    const Action<FString> &Action) -> FDirectiveSliceState {
                   FDirectiveSliceState Next = State;
@@ -351,7 +351,7 @@ inline Slice<FDirectiveSliceState> CreateDirectiveSlice() {
  * User Story: As directive lookups, I need to resolve one run by id so
  * orchestration can update the correct directive entity.
  */
-inline func::Maybe<FDirectiveRun> SelectDirectiveById(
+inline func::Maybe<FDirectiveRun> selectDirectiveById(
     const FDirectiveSliceState &State, const FString &Id) {
   return GetDirectiveAdapter().getSelectors().selectById(State.Entities, Id);
 }
@@ -361,7 +361,7 @@ inline func::Maybe<FDirectiveRun> SelectDirectiveById(
  * User Story: As directive inspection, I need the full run collection so tools
  * and tests can review current directive state.
  */
-inline TArray<FDirectiveRun> SelectAllDirectives(
+inline TArray<FDirectiveRun> selectAllDirectives(
     const FDirectiveSliceState &State) {
   return GetDirectiveAdapter().getSelectors().selectAll(State.Entities);
 }
@@ -371,7 +371,7 @@ inline TArray<FDirectiveRun> SelectAllDirectives(
  * User Story: As directive UI binding, I need the active run id so views can
  * focus on the current directive turn.
  */
-inline FString SelectActiveDirectiveId(const FDirectiveSliceState &State) {
+inline FString selectActiveDirectiveId(const FDirectiveSliceState &State) {
   return State.ActiveDirectiveId;
 }
 
@@ -380,11 +380,11 @@ inline FString SelectActiveDirectiveId(const FDirectiveSliceState &State) {
  * User Story: As directive orchestration, I need the active run resolved so
  * downstream steps can operate on the current directive entity.
  */
-inline func::Maybe<FDirectiveRun> SelectActiveDirective(
+inline func::Maybe<FDirectiveRun> selectActiveDirective(
     const FDirectiveSliceState &State) {
   return State.ActiveDirectiveId.IsEmpty()
       ? func::nothing<FDirectiveRun>()
-      : SelectDirectiveById(State, State.ActiveDirectiveId);
+      : selectDirectiveById(State, State.ActiveDirectiveId);
 }
 
 } // namespace DirectiveSlice

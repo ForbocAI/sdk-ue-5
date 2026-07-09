@@ -135,9 +135,9 @@ bool FProcessNPCLiveFinalizeValidTest::RunTest(const FString &Parameters) {
         }
 
         FRuntimeState StoreState = State->Store->getState();
-        auto Run = DirectiveSlice::SelectDirectiveById(
+        auto Run = DirectiveSlice::selectDirectiveById(
             StoreState.Directives,
-            DirectiveSlice::SelectActiveDirectiveId(StoreState.Directives));
+            DirectiveSlice::selectActiveDirectiveId(StoreState.Directives));
         TestTrue("Directive run exists", Run.hasValue);
         if (Run.hasValue) {
           TestEqual("Run completed",
@@ -258,11 +258,11 @@ bool FProcessNPCDirectiveLifecycleTest::RunTest(const FString &Parameters) {
 
         FRuntimeState StoreState = State->Store->getState();
         FString ActiveId =
-            DirectiveSlice::SelectActiveDirectiveId(StoreState.Directives);
+            DirectiveSlice::selectActiveDirectiveId(StoreState.Directives);
         TestFalse("Active directive set", ActiveId.IsEmpty());
 
         auto Run =
-            DirectiveSlice::SelectDirectiveById(StoreState.Directives, ActiveId);
+            DirectiveSlice::selectDirectiveById(StoreState.Directives, ActiveId);
         TestTrue("Run exists", Run.hasValue);
         if (Run.hasValue) {
           TestEqual("Status completed",

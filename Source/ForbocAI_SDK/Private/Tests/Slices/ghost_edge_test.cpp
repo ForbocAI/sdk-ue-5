@@ -18,11 +18,11 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGhostProgressWrongSessionTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FGhostProgressWrongSessionTest::RunTest(const FString &Parameters) {
-  Slice<FGhostSliceState> GSlice = CreateGhostSlice();
+  Slice<FGhostSliceState> GSlice = createGhostSlice();
   FGhostSliceState State;
 
   State = GSlice.Reducer(
-      State, GhostSlice::Actions::GhostSessionStarted(TEXT("sess_active"),
+      State, GhostSlice::Actions::ghostSessionStarted(TEXT("sess_active"),
                                                       TEXT("running")));
 
   /**
@@ -31,7 +31,7 @@ bool FGhostProgressWrongSessionTest::RunTest(const FString &Parameters) {
    */
   State = GSlice.Reducer(
       State,
-      GhostSlice::Actions::GhostSessionProgress(TEXT("sess_wrong"),
+      GhostSlice::Actions::ghostSessionProgress(TEXT("sess_wrong"),
                                                 TEXT("running"), 0.75f));
 
   TestEqual("Progress unchanged (0.0)", State.Progress, 0.0f);
@@ -53,17 +53,17 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGhostFailedWrongSessionTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FGhostFailedWrongSessionTest::RunTest(const FString &Parameters) {
-  Slice<FGhostSliceState> GSlice = CreateGhostSlice();
+  Slice<FGhostSliceState> GSlice = createGhostSlice();
   FGhostSliceState State;
 
   State = GSlice.Reducer(
       State,
-      GhostSlice::Actions::GhostSessionStarted(TEXT("sess_ok"),
+      GhostSlice::Actions::ghostSessionStarted(TEXT("sess_ok"),
                                                TEXT("running")));
 
   State = GSlice.Reducer(
       State,
-      GhostSlice::Actions::GhostSessionFailed(TEXT("sess_other"),
+      GhostSlice::Actions::ghostSessionFailed(TEXT("sess_other"),
                                               TEXT("Some error")));
 
   TestEqual("Status still running", State.Status, FString(TEXT("running")));
@@ -84,11 +84,11 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGhostCompletedZeroResultsTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FGhostCompletedZeroResultsTest::RunTest(const FString &Parameters) {
-  Slice<FGhostSliceState> GSlice = CreateGhostSlice();
+  Slice<FGhostSliceState> GSlice = createGhostSlice();
   FGhostSliceState State;
 
   State = GSlice.Reducer(
-      State, GhostSlice::Actions::GhostSessionStarted(TEXT("empty_sess"),
+      State, GhostSlice::Actions::ghostSessionStarted(TEXT("empty_sess"),
                                                       TEXT("running")));
 
   FGhostTestReport EmptyReport;
@@ -98,7 +98,7 @@ bool FGhostCompletedZeroResultsTest::RunTest(const FString &Parameters) {
    */
 
   State = GSlice.Reducer(State,
-                         GhostSlice::Actions::GhostSessionCompleted(
+                         GhostSlice::Actions::ghostSessionCompleted(
                              EmptyReport));
 
   TestEqual("Status completed", State.Status, FString(TEXT("completed")));
@@ -121,7 +121,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGhostSessionRestartTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FGhostSessionRestartTest::RunTest(const FString &Parameters) {
-  Slice<FGhostSliceState> GSlice = CreateGhostSlice();
+  Slice<FGhostSliceState> GSlice = createGhostSlice();
   FGhostSliceState State;
 
   /**
@@ -130,7 +130,7 @@ bool FGhostSessionRestartTest::RunTest(const FString &Parameters) {
    */
   State = GSlice.Reducer(
       State,
-      GhostSlice::Actions::GhostSessionStarted(TEXT("sess_1"),
+      GhostSlice::Actions::ghostSessionStarted(TEXT("sess_1"),
                                                TEXT("running")));
   FGhostTestReport Report;
   FGhostTestResult Result;
@@ -138,7 +138,7 @@ bool FGhostSessionRestartTest::RunTest(const FString &Parameters) {
   Result.bPassed = true;
   Report.Results.Add(Result);
   State = GSlice.Reducer(State,
-                         GhostSlice::Actions::GhostSessionCompleted(Report));
+                         GhostSlice::Actions::ghostSessionCompleted(Report));
   TestEqual("Status completed", State.Status, FString(TEXT("completed")));
 
   /**
@@ -147,7 +147,7 @@ bool FGhostSessionRestartTest::RunTest(const FString &Parameters) {
    */
   State = GSlice.Reducer(
       State,
-      GhostSlice::Actions::GhostSessionStarted(TEXT("sess_2"),
+      GhostSlice::Actions::ghostSessionStarted(TEXT("sess_2"),
                                                TEXT("running")));
 
   TestEqual("New session id", State.ActiveSessionId,
@@ -171,7 +171,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGhostHistoryReplacementTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FGhostHistoryReplacementTest::RunTest(const FString &Parameters) {
-  Slice<FGhostSliceState> GSlice = CreateGhostSlice();
+  Slice<FGhostSliceState> GSlice = createGhostSlice();
   FGhostSliceState State;
 
   /**
@@ -183,7 +183,7 @@ bool FGhostHistoryReplacementTest::RunTest(const FString &Parameters) {
   Entry1.SessionId = TEXT("old");
   History1.Add(Entry1);
   State = GSlice.Reducer(State,
-                         GhostSlice::Actions::GhostHistoryLoaded(History1));
+                         GhostSlice::Actions::ghostHistoryLoaded(History1));
   TestEqual("First history", State.History.Num(), 1);
 
   /**
@@ -198,7 +198,7 @@ bool FGhostHistoryReplacementTest::RunTest(const FString &Parameters) {
   History2.Add(Entry2a);
   History2.Add(Entry2b);
   State = GSlice.Reducer(State,
-                         GhostSlice::Actions::GhostHistoryLoaded(History2));
+                         GhostSlice::Actions::ghostHistoryLoaded(History2));
   TestEqual("History replaced", State.History.Num(), 2);
   TestEqual("First entry", State.History[0].SessionId,
             FString(TEXT("new_a")));
