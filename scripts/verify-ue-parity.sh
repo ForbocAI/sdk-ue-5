@@ -7,12 +7,15 @@
 #
 # Checks (in order):
 #   1. UE conformance (check-ue-conformance.sh)
-#   2. FP conformance (check-ue-fp-conformance.sh)
+#   2. FP source conformance (fp/source_conformance.py)
 #   3. Thin-wrapper guardrails (check-thin-wrapper-guardrails.sh)
 #   4. SDK parity inventory and CLI command parity (check-sdk-parity.py)
-#   5. Test-game executor-boundary guard (check-test-game-executor-boundary.sh)
-#   6. Product boundary audit (check-product-boundary.sh)
-#   7. API contract parity (check-api-contract-parity.py)
+#   5. Redux/RTK boundary discipline (check_redux.py)
+#   6. Line-count discipline (check_line_count.py)
+#   7. Dead-code/data guard (check_dead_code.py)
+#   8. Test-game executor-boundary guard (check-test-game-executor-boundary.sh)
+#   9. Product boundary audit (check-product-boundary.sh)
+#   10. API contract parity (check-api-contract-parity.py)
 #
 # Exit codes:
 #   0 = all checks passed
@@ -36,6 +39,9 @@ FP_CONFORMANCE_STATUS="skipped"
 THIN_WRAPPER_STATUS="skipped"
 TEST_GAME_BOUNDARY_STATUS="skipped"
 SDK_PARITY_STATUS="skipped"
+REDUX_RTK_STATUS="skipped"
+LINE_COUNT_STATUS="skipped"
+DEAD_CODE_STATUS="skipped"
 PRODUCT_BOUNDARY_STATUS="skipped"
 CONTRACT_PARITY_STATUS="skipped"
 HANDLER_CLASSIFICATION_STATUS="skipped"
@@ -160,8 +166,8 @@ run_check "UE Conformance (structural rules)" \
   "$SCRIPT_DIR/check-ue-conformance.sh" UE_CONFORMANCE_STATUS
 
 # ── Phase 2: FP Conformance ──
-run_check "FP Conformance (no loops, no classes, no mutation)" \
-  "$SCRIPT_DIR/check-ue-fp-conformance.sh" FP_CONFORMANCE_STATUS
+run_check "FP Source Conformance (legacy shell rules on Python engine)" \
+  "$SCRIPT_DIR/fp/source_conformance.py" FP_CONFORMANCE_STATUS
 
 # ── Phase 3: Command Surface Guardrails ──
 run_check "Thin-Wrapper Guardrails (command surface rules)" \
@@ -171,7 +177,18 @@ run_check "Thin-Wrapper Guardrails (command surface rules)" \
 run_check "SDK Parity (core/node/test-game inventory and CLI keys)" \
   "$SCRIPT_DIR/check-sdk-parity.py" SDK_PARITY_STATUS
 
-# ── Phase 3c: Test-game executor boundary ──
+# ── Phase 3c: Redux/RTK explicit guidance guard ──
+run_check "Redux/RTK Boundary Discipline (UE SDK Features + Views)" \
+  "$SCRIPT_DIR/check_redux.py" REDUX_RTK_STATUS
+
+# ── Phase 3d: File size and dead-code discipline ──
+run_check "Line-count discipline (Source/Content authored files)" \
+  "$SCRIPT_DIR/check_line_count.py" LINE_COUNT_STATUS
+
+run_check "Dead-code/data guard (orphan authored files)" \
+  "$SCRIPT_DIR/check_dead_code.py" DEAD_CODE_STATUS
+
+# ── Phase 3e: Test-game executor boundary ──
 run_check "Test-game executor boundary (no TestGameLib.h, no shadow executor)" \
   "$SCRIPT_DIR/check-test-game-executor-boundary.sh" TEST_GAME_BOUNDARY_STATUS
 
@@ -261,6 +278,9 @@ echo "  [$(mark_for_status "$UE_CONFORMANCE_STATUS")] UE conformance (structural
 echo "  [$(mark_for_status "$FP_CONFORMANCE_STATUS")] FP conformance (immutability)"
 echo "  [$(mark_for_status "$THIN_WRAPPER_STATUS")] Thin-wrapper guardrails"
 echo "  [$(mark_for_status "$SDK_PARITY_STATUS")] SDK parity inventory and CLI keys"
+echo "  [$(mark_for_status "$REDUX_RTK_STATUS")] Redux/RTK guidance"
+echo "  [$(mark_for_status "$LINE_COUNT_STATUS")] Line-count discipline"
+echo "  [$(mark_for_status "$DEAD_CODE_STATUS")] Dead-code/data guard"
 echo "  [$(mark_for_status "$TEST_GAME_BOUNDARY_STATUS")] Test-game executor boundary"
 echo "  [$(mark_for_status "$PRODUCT_BOUNDARY_STATUS")] Product boundary audit"
 if [ "$QUICK_MODE" -eq 1 ]; then

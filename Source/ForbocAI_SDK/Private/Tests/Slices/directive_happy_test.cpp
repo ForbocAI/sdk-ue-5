@@ -1,6 +1,6 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
-#include "DirectiveSlice.h"
+#include "Features/Directive/DirectiveSlice.h"
 #include "Misc/AutomationTest.h"
 #include "Protocol/ProtocolRequestTypes.h"
 
@@ -8,7 +8,7 @@ using namespace rtk;
 using namespace DirectiveSlice;
 
 /**
- * Test: Full happy path — Started → Received → contextComposed → Validated
+ * Test: Full happy path — Started → Received → Validated
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveHappyPathTest,
@@ -66,28 +66,7 @@ bool FDirectiveHappyPathTest::RunTest(const FString &Parameters) {
   }
 
   /**
-   * Step 3: Context composed
-   * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-   */
-  FPromptConstraints Constraints;
-  Constraints.MaxTokens = 256;
-  Constraints.Temperature = 0.7f;
-
-  State = DirSlice.Reducer(
-      State,
-      DirectiveSlice::Actions::contextComposed(
-          TEXT("hp_1"), TEXT("You are a knight facing a goblin..."),
-          Constraints));
-
-  Run = selectDirectiveById(State, TEXT("hp_1"));
-  TestTrue("Run exists after context", Run.hasValue);
-  if (Run.hasValue) {
-    TestEqual("ContextPrompt set", Run.value.ContextPrompt,
-              FString(TEXT("You are a knight facing a goblin...")));
-  }
-
-  /**
-   * Step 4: Verdict validated (valid)
+   * Step 3: Verdict validated (valid)
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
   FVerdictResponse Verdict;

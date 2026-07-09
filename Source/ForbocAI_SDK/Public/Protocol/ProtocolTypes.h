@@ -15,35 +15,6 @@ typedef func::Maybe<FString> FForbocAISDKPublicProtocolProtocolTypesHOptionalDom
 } } }
 
 
-/**
- * Prompt Constraints — Immutable inference limits.
- * User Story: As an SDK integrator, I need this type so I can understand the
- * generation constraints returned by the API for a directive.
- */
-USTRUCT(BlueprintType)
-struct FPromptConstraints {
-  GENERATED_BODY()
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  int32 MaxTokens;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  float Temperature;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  TArray<FString> Stop;
-
-  /**
-   * JSON-encoded schema payload used when a caller needs schema-constrained
-   * output.
-   */
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString JsonSchemaJson;
-
-  FPromptConstraints()
-      : MaxTokens(512), Temperature(0.7f) {}
-};
-
 UENUM(BlueprintType)
 enum class EDirectiveStatus : uint8 { Running, Completed, Failed };
 
@@ -80,12 +51,6 @@ struct FDirectiveRun {
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   float MemoryRecallThreshold;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString ContextPrompt;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FPromptConstraints ContextConstraints;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   bool bVerdictValid;
@@ -159,7 +124,6 @@ enum class ENPCInstructionType : uint8 {
   QueryVector,
   Decision,
   Reasoning,
-  ExecuteInference,
   Finalize
 };
 
@@ -178,12 +142,6 @@ struct FNPCInstruction {
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   float Threshold;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString Prompt;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FPromptConstraints Constraints;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   bool bValid;

@@ -21,11 +21,9 @@ static const TCHAR *SQLITE_VERSION = TEXT("3460100");
 static const TCHAR *SQLITE_VEC_VERSION = TEXT("v0.1.6");
 
 struct FRuntimeCheckOptions {
-  bool bAllowDownload;
   bool bSkipVector;
   bool bSkipMemory;
   bool bCleanup;
-  FString EmbeddingModel;
   FString DatabasePath;
 };
 
@@ -54,12 +52,9 @@ FString FindOptionRecursive(const TArray<FString> &Args, const FString &Prefix,
 
 FRuntimeCheckOptions RuntimeCheckOptions(const TArray<FString> &Args) {
   FRuntimeCheckOptions Options;
-  Options.bAllowDownload = HasFlagRecursive(Args, TEXT("--allow-download"));
   Options.bSkipVector = HasFlagRecursive(Args, TEXT("--skip-vector"));
   Options.bSkipMemory = HasFlagRecursive(Args, TEXT("--skip-memory"));
   Options.bCleanup = HasFlagRecursive(Args, TEXT("--cleanup"));
-  Options.EmbeddingModel =
-      FindOptionRecursive(Args, TEXT("--embedding-model="));
   Options.DatabasePath = FindOptionRecursive(Args, TEXT("--database="));
   return Options;
 }
@@ -73,20 +68,6 @@ FString RuntimeSmokeDatabasePath() {
                          FString::Printf(TEXT("runtime-smoke-%s.db"),
                                          *FGuid::NewGuid().ToString(
                                              EGuidFormats::Digits)));
-}
-
-/**
- * User Story: As a developer, I need ResolveEmbeddingModelPath to fulfill its role in the module.
- */
-FString ResolveEmbeddingModelPath(const FRuntimeCheckOptions &Options,
-                                  IPlatformFile &PF) {
-  const FString DefaultPath = rtk::detail::DefaultEmbeddingModelPath();
-  return !Options.EmbeddingModel.IsEmpty()
-             ? Options.EmbeddingModel
-             : PF.FileExists(*DefaultPath) ? DefaultPath
-                                           : Options.bAllowDownload
-                                                 ? FString()
-                                                 : TEXT("");
 }
 
 /**

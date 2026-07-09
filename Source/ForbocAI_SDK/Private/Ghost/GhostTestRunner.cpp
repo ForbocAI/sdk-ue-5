@@ -1,7 +1,7 @@
 #include "NPC/NPCModule.h"
 #include "Ghost/GhostModule.h"
 #include "Ghost/GhostModuleInternal.h"
-#include "Ghost/GhostSlice.h"
+#include "Features/Ghost/GhostSlice.h"
 
 namespace GhostInternal {
 

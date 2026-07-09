@@ -1,7 +1,7 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
-#include "Soul/SoulSlice.h"
+#include "Features/Soul/SoulSlice.h"
 
 using namespace rtk;
 using namespace SoulSlice;

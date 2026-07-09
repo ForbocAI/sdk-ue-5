@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "Core/ue_fp.hpp"
 #include "NPC/NPCId.h"
-#include "NPC/NPCSlice.h"
+#include "Features/NPC/NPCSlice.h"
 #include "RuntimeConfig.h"
 #include "RuntimeStore.h"
 #include "Thunks.h"
@@ -142,7 +142,7 @@ inline FAgentResponse processNpc(rtk::EnhancedStore<FRuntimeState> &Store,
   return waitForResult(
       Store.dispatch(rtk::processNPC(NpcId, Text, TEXT("{}"), TEXT(""),
                                      FAgentState(),
-                                     rtk::LocalProtocolRuntime())));
+                                     rtk::InMemoryProtocolRuntime())));
 }
 
 /**
@@ -313,9 +313,10 @@ getGhostHistory(rtk::EnhancedStore<FRuntimeState> &Store, int32 Limit = 10) {
 inline FValidationResult
 validateBridgePayload(rtk::EnhancedStore<FRuntimeState> &Store,
                const FAgentAction &Action,
-               const FBridgeValidationContext &Context) {
+               const FBridgeValidationContext &Context,
+               const FString &NpcId = TEXT("")) {
   return waitForResult(
-      Store.dispatch(rtk::validateBridgeThunk(Action, Context)));
+      Store.dispatch(rtk::validateBridgeThunk(Action, Context, NpcId)));
 }
 
 /**

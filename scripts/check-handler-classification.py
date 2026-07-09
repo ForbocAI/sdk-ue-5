@@ -3,7 +3,7 @@
 check-handler-classification.py
 
 Enforces the handler classification rules in ProtocolThunks.h:
-1. Pass-through handlers must not import/use cortex inference (e.g. Runtime.CompleteInference).
+1. Pass-through handlers must not import/use local inference.
 2. Local-capability handlers must return their required result type.
 3. The UE classification table must match the TS table (if the SDK repo is cloned alongside).
 """
@@ -15,7 +15,7 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPT_DIR.parent
-PROTOCOL_THUNKS = SCRIPT_DIR.parent / "Source" / "ForbocAI_SDK" / "Public" / "Protocol" / "ProtocolThunks.h"
+PROTOCOL_THUNKS = SCRIPT_DIR.parent / "Source" / "ForbocAI_SDK" / "Public" / "Features" / "Protocol" / "ProtocolThunks.h"
 TS_SDK_HANDLERS = ROOT_DIR.parent / "sdk" / "packages" / "core" / "src" / "protocolHandlers" / "index.ts"
 
 def parse_md_table(text):
@@ -70,9 +70,6 @@ def main():
         print("Error: Could not parse classification table from ProtocolThunks.h")
         return 1
 
-    # Filter out ExecuteInference from UE as it's TS-only retained surface
-    # Actually wait, TS has it but UE doesn't. We'll handle this in the diff.
-
     failures = 0
 
     # 1 & 2: Check each handler
@@ -85,12 +82,11 @@ def main():
 
         if classification == "Pass-through":
             if "CompleteInference" in body or "nodeCortexThunk" in body:
-                print(f"[FAIL] Pass-through handler Handle{instruction} uses Cortex/Inference.")
+                print(f"[FAIL] Pass-through handler Handle{instruction} uses local inference.")
                 failures += 1
             else:
                 print(f"[OK] Pass-through handler Handle{instruction} stays clear of inference.")
 
-            # Pass-through handlers should return Serialize<Instruction>Result except ExecuteInference
             if instruction == "Reasoning":
                 if "SerializeReasoningResult" not in body:
                     print(f"[FAIL] Handle{instruction} missing SerializeReasoningResult.")
@@ -144,12 +140,6 @@ def main():
                     ts_classifications[parts[1]] = parts[2]
             elif in_table and not line.strip().startswith('* |'):
                 break
-
-        # Remove ExecuteInference for parity check if it's TS-only retained surface
-        if 'ExecuteInference' in ts_classifications:
-            del ts_classifications['ExecuteInference']
-        if 'ExecuteInference' in ue_classifications:
-            del ue_classifications['ExecuteInference']
 
         if ue_classifications != ts_classifications:
             print(f"[FAIL] UE and TS classification tables diverge!")

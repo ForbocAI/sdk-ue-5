@@ -1,11 +1,11 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
-#include "DirectiveSlice.h"
-#include "Memory/MemorySlice.h"
+#include "Features/Directive/DirectiveSlice.h"
+#include "Features/Memory/MemorySlice.h"
 #include "Misc/AutomationTest.h"
-#include "NPC/NPCSlice.h"
+#include "Features/NPC/NPCSlice.h"
 #include "Protocol/ProtocolRequestTypes.h"
-#include "Protocol/ProtocolThunks.h"
+#include "Features/Protocol/ProtocolThunks.h"
 #include "RuntimeStore.h"
 
 // @covers:coreThunk:checkApiStatusThunk

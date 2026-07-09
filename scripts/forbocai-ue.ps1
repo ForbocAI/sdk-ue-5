@@ -27,6 +27,8 @@ if ($CliArgs.Count -eq 0) {
     Write-Host "  scripts\forbocai-ue.cmd status"
     Write-Host "  scripts\forbocai-ue.cmd doctor"
     Write-Host "  scripts\forbocai-ue.cmd --api-url https://api.forboc.ai status"
+    Write-Host "Environment:"
+    Write-Host "  FORBOCAI_API_URL and FORBOCAI_API_KEY are honored by the CLI and test-game runtime."
     exit 2
 }
 

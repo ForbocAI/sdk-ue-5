@@ -1,8 +1,8 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
-#include "NPC/NPCSlice.h"
-#include "NPC/NPCSliceActions.h"
+#include "Features/NPC/NPCSlice.h"
+#include "Features/NPC/NPCSliceActions.h"
 
 using namespace rtk;
 using namespace NPCSlice;

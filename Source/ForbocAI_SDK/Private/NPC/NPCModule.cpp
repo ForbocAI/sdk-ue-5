@@ -124,7 +124,7 @@ FAgentState AgentOps::CalculateNewState(const FAgentState &Current,
 }
 
 #include "RuntimeStore.h"
-#include "Protocol/ProtocolThunks.h"
+#include "Features/Protocol/ProtocolThunks.h"
 
 /**
  * Runs a protocol turn for the agent against a temporary store instance.

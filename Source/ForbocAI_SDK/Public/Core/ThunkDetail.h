@@ -1,7 +1,8 @@
 #pragma once
 
-#include "API/APISlice.h"
+#include "Features/API/APISlice.h"
 #include "Async/Async.h"
+#include "Core/SdkVectorizer.h"
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "Dom/JsonObject.h"
@@ -101,6 +102,9 @@ inline FString SerializeIdentifyActorResult(const FNPCActorInfo &Actor) {
   const TSharedPtr<FJsonObject> ActorObject = MakeShared<FJsonObject>();
   ActorObject->SetStringField(TEXT("npcId"), Actor.NpcId);
   ActorObject->SetStringField(TEXT("persona"), Actor.Persona);
+  ActorObject->SetObjectField(TEXT("structuredPersona"),
+                              JsonInterop::StructuredPersonaToObject(
+                                  Actor.Persona));
   ActorObject->SetObjectField(TEXT("data"), JsonInterop::StateToObject(Actor.Data));
 
   const TSharedPtr<FJsonObject> Root = MakeShared<FJsonObject>();
@@ -145,18 +149,6 @@ inline FString SerializeReasoningResult(const FString &ReasoningText, const FStr
 }
 
 /**
- * Serializes generated output into an execute-inference result payload.
- * User Story: As protocol execution, I need inference output wrapped in a
- * stable JSON envelope so later instructions can consume it consistently.
- */
-inline FString SerializeInferenceResult(const FString &GeneratedOutput) {
-  const TSharedPtr<FJsonObject> Root = MakeShared<FJsonObject>();
-  Root->SetStringField(TEXT("type"), TEXT("ExecuteInferenceResult"));
-  Root->SetStringField(TEXT("generatedOutput"), GeneratedOutput);
-  return JsonObjectToString(Root);
-}
-
-/**
  * Serializes recalled memories into a query-vector result payload.
  * User Story: As protocol execution, I need recalled memories wrapped in a
  * stable JSON envelope so follow-up instructions can read them consistently.
@@ -197,7 +189,7 @@ inline FString SerializeQueryVectorResult(const TArray<FMemoryItem> &Memories) {
 /**
  * Returns the project-local infrastructure root used by native runtimes.
  * User Story: As local runtime setup, I need one canonical infrastructure root
- * so models and vector assets resolve from the same place.
+ * so vector assets resolve from one place.
  */
 inline FString GetLocalInfrastructureDir() {
   return FPaths::ProjectDir() + TEXT("local_infrastructure/");
@@ -211,15 +203,6 @@ inline FString GetLocalInfrastructureDir() {
 inline FString DefaultNodeMemoryPath() {
   return GetLocalInfrastructureDir() +
          TEXT("vectors/forbocai_vectors.db");
-}
-
-/**
- * Returns the default embedding model path used for local vectorization.
- * User Story: As embedding setup, I need a canonical model path so vector
- * generation can boot without repeated path wiring.
- */
-inline FString DefaultEmbeddingModelPath() {
-  return GetLocalInfrastructureDir() + TEXT("models/all-MiniLM-L6-v2-Q4_K_M.gguf");
 }
 
 /**
@@ -254,6 +237,7 @@ inline FMemoryItem MakeMemoryItem(const FMemoryStoreInstruction &Instruction) {
                                          : Instruction.Type;
   Item.Importance = Instruction.Importance;
   Item.Timestamp = FDateTime::UtcNow().ToUnixTimestamp();
+  Item.Embedding = ForbocAI::SDK::Vectorizer::Embed(Instruction.Text);
   return Item;
 }
 

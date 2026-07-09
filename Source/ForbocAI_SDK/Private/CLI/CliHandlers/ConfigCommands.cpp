@@ -31,7 +31,7 @@ HandlerResult HandleConfig(rtk::EnhancedStore<FRuntimeState> &Store,
              ? [&]() -> HandlerResult {
                  static const TArray<FString> ConfigKeys = {
                      TEXT("version"), TEXT("apiUrl"), TEXT("apiKey"),
-                     TEXT("modelPath"), TEXT("databasePath"),
+                     TEXT("databasePath"),
                      TEXT("vectorDimension"), TEXT("maxRecallResults")};
                  struct LogKeys {
                    static void apply(const TArray<FString> &Keys, int32 Idx) {

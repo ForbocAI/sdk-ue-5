@@ -1,9 +1,9 @@
 #include "RuntimeSubsystem.h"
-#include "NPC/NPCSlice.h"
+#include "Features/NPC/NPCSlice.h"
 #include "RuntimeConfig.h"
 #include "RuntimeStore.h"
-#include "Protocol/ProtocolThunks.h"
-#include "Soul/SoulThunks.h"
+#include "Features/Protocol/ProtocolThunks.h"
+#include "Features/Soul/SoulThunks.h"
 
 /**
  * Initializes the runtime store and wires action middleware for broadcasts.

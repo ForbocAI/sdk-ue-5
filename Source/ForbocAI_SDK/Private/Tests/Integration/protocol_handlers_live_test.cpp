@@ -6,7 +6,7 @@
 
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
-#include "API/APIEndpoints.h"
+#include "Features/API/APIEndpoints.h"
 #include "Core/JsonInterop.h"
 #include "HAL/PlatformProcess.h"
 #include "Misc/AutomationTest.h"
@@ -26,9 +26,7 @@ FString InstructionTypeName(const ENPCInstructionType Type) {
                          ? TEXT("Decision")
                          : Type == ENPCInstructionType::Reasoning
                                ? TEXT("Reasoning")
-                               : Type == ENPCInstructionType::ExecuteInference
-                                     ? TEXT("ExecuteInference")
-                                     : TEXT("Finalize");
+                               : TEXT("Finalize");
 }
 
 FString ExpectedInstructionError(const FString &Expected,
@@ -228,11 +226,11 @@ bool FProcessLiveStepWait::Update() {
                   State->Step = 10;
                   State->Tape = R.Tape;
                   
-                  if (State->Tape.GeneratedOutput.IsEmpty()) {
-                      State->Error = TEXT("GeneratedOutput was not stitched into tape");
-                      State->bSuccess = false;
-                  } else if (!State->Tape.bReasoningCompleted) {
+                  if (!State->Tape.bReasoningCompleted) {
                       State->Error = TEXT("ReasoningOutput was not stitched into tape");
+                      State->bSuccess = false;
+                  } else if (State->Tape.ReasoningOutput.ResponseText.IsEmpty()) {
+                      State->Error = TEXT("Reasoning response text was not stitched into tape");
                       State->bSuccess = false;
                   } else {
                       State->bSuccess = true;
@@ -274,9 +272,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FProtocolHandlersLiveTest::RunTest(const FString &Parameters) {
-  FString RuntimeUrl = FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOC_RUNTIME_URL"));
+  FString RuntimeUrl = FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_API_URL"));
   if (RuntimeUrl.IsEmpty()) {
-      AddInfo(TEXT("Skip: FORBOC_RUNTIME_URL not set"));
+      AddInfo(TEXT("Skip: FORBOCAI_API_URL not set"));
       return true;
   }
   

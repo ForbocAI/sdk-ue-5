@@ -1,13 +1,13 @@
 #pragma once
 /**
- * Test-game store composition — mirrors TS test-game/src/store.ts
+ * Test-game store composition — mirrors TS test-game-cli/src/store.ts
  * Combines 13 game slices into a single Redux store
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
-#include "TestGame/TestGameSlices.h"
+#include "TestGame/Features/TestGameSlices.h"
 
 namespace TestGame {
 
@@ -55,6 +55,10 @@ struct FTestGameState {
   FScenarioSliceState Scenario;
   FHarnessState Harness;
 };
+
+typedef FTestGameState FRootState;
+typedef rtk::EnhancedStore<FTestGameState> FTestGameStore;
+typedef rtk::Dispatcher FAppDispatch;
 
 /**
  * Slice singletons
@@ -219,12 +223,8 @@ inline FTestGameState CreateInitialTestGameState() {
  * User Story: As deterministic game runs, I need a new store per session so
  * each run starts from a clean, reproducible state baseline.
  */
-inline rtk::EnhancedStore<FTestGameState> createTestGameStore() {
+inline FTestGameStore createTestGameStore() {
   std::vector<rtk::Middleware<FTestGameState>> Middlewares;
-  /**
-   * Listener middleware will be added via TestGameListeners.h
-   * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-   */
   return rtk::configureStore<FTestGameState>(&TestGameReducer,
                                              CreateInitialTestGameState(),
                                              Middlewares);

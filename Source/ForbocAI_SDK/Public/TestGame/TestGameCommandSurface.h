@@ -29,12 +29,12 @@
 #include "CoreMinimal.h"
 #include "RuntimeStore.h"
 #include "TestGame/TestGameContract.h"
-#include "TestGame/TestGameTypes.h"
+#include "TestGame/Features/TestGameTypes.h"
 
 namespace TestGame {
 namespace CommandSurface {
 
-// ── Command result and injectable executor for the command surface ──
+// ── Command result for the command surface ──
 
 struct FCommandOutput {
   ETranscriptStatus Status;
@@ -43,8 +43,6 @@ struct FCommandOutput {
 };
 
 struct FAliasState;
-using FCommandExecutor =
-    TFunction<FCommandOutput(const FCommandSpec &, FAliasState &)>;
 
 // ── Alias state (NPC and Ghost id resolution) ──
 
@@ -119,6 +117,25 @@ inline FString ResolveNpcAlias(const FAliasState &Aliases,
 }
 
 /**
+ * Expands bridge preset macros from the API contract into the same inline JSON
+ * payload used by the TS command surfaces.
+ */
+inline FString ExpandBridgePreset(const FAliasState &Aliases,
+                                  const FString &RawPayload) {
+  return RawPayload.EndsWith(TEXT("-jump"))
+             ? [&]() {
+                 const FString Alias = RawPayload.LeftChop(5);
+                 const FString NpcId = ResolveNpcAlias(Aliases, Alias);
+                 return FString::Printf(
+                     TEXT("{\"action\":{\"type\":\"jump\",\"distance\":3},"
+                          "\"context\":{\"constraints\":{\"maxDistance\":2}},"
+                          "\"npcId\":\"%s\"}"),
+                     *NpcId);
+               }()
+             : RawPayload;
+}
+
+/**
  * Tokenize a command string, respecting quoted strings.
  * Local to this command surface — the historical TestGameLib tokenizer is
  * retired alongside the rest of the prior in-process executor surface.
@@ -182,6 +199,11 @@ inline FCommandOutput Execute(const FString &CommandText,
        CommandKey.Contains(TEXT("memory_")) ||
        CommandKey.Contains(TEXT("soul_")))) {
     Args[0] = detail::ResolveNpcAlias(Aliases, Args[0]);
+  }
+
+  if (CommandKey == TEXT("bridge_validate") && Args.Num() > 0 &&
+      Aliases.BridgeValidateCommandRule == TEXT("expand_preset_macro")) {
+    Args[0] = detail::ExpandBridgePreset(Aliases, Args[0]);
   }
 
   const func::TestResult<void> Result =

@@ -7,7 +7,7 @@
 #include "Misc/AutomationTest.h"
 #include "Core/JsonInterop.h"
 #include "Core/ThunkDetail.h"
-#include "Protocol/ProtocolThunks.h"
+#include "Features/Protocol/ProtocolThunks.h"
 #include "Protocol/ProtocolRequestTypes.h"
 #include "API/APICodecs.h"
 

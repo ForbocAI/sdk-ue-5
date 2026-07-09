@@ -6,11 +6,11 @@
 
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
-#include "DirectiveSlice.h"
+#include "Features/Directive/DirectiveSlice.h"
 #include "HAL/PlatformProcess.h"
 #include "Misc/AutomationTest.h"
-#include "NPC/NPCSlice.h"
-#include "Protocol/ProtocolThunks.h"
+#include "Features/NPC/NPCSlice.h"
+#include "Features/Protocol/ProtocolThunks.h"
 #include "RuntimeConfig.h"
 #include "RuntimeStore.h"
 

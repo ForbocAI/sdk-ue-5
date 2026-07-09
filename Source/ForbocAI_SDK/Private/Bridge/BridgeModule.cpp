@@ -1,5 +1,5 @@
 #include "Bridge/BridgeModule.h"
-#include "Bridge/BridgeSlice.h"
+#include "Features/Bridge/BridgeSlice.h"
 #include "CLI/CliOperations.h"
 #include "NPC/NPCModule.h"
 #include "Core/ue_fp.hpp"
@@ -8,7 +8,7 @@
 #include "Misc/Paths.h"
 #include "RuntimeStore.h"
 #include "Serialization/JsonSerializer.h"
-#include "Bridge/BridgeThunks.h"
+#include "Features/Bridge/BridgeThunks.h"
 
 /**
  * PURE VALIDATION FUNCTIONS

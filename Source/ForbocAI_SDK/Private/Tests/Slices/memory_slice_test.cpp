@@ -1,6 +1,6 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
-#include "Memory/MemorySlice.h"
+#include "Features/Memory/MemorySlice.h"
 #include "Misc/AutomationTest.h"
 
 using namespace rtk;

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ -z "${FORBOC_RUNTIME_URL:-}" ]; then
-  echo "[skip] FORBOC_RUNTIME_URL is not set. Skipping runtime-readiness check."
+if [ -z "${FORBOCAI_API_URL:-}" ]; then
+  echo "[skip] FORBOCAI_API_URL is not set. Skipping runtime-readiness check."
   exit 0
 fi
 
-URL="${FORBOC_RUNTIME_URL%/}/status"
+URL="${FORBOCAI_API_URL%/}/status"
 echo "Checking API status at $URL..."
 
 STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || true)

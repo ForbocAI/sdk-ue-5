@@ -21,7 +21,7 @@ HandlerResult HandleNpc(rtk::EnhancedStore<FRuntimeState> &Store,
                  FNPCInternalState Npc = Ops::createNpc(Store, Persona);
                  UE_LOG(LogTemp, Display, TEXT("Created NPC: %s"),
                         *Npc.Id);
-                 return just(Result::Success("NPC created"));
+                 return just(Result::Success(TCHAR_TO_UTF8(*Npc.Id)));
                }()
          : CommandKey == TEXT("npc_list")
              ? [&]() -> HandlerResult {

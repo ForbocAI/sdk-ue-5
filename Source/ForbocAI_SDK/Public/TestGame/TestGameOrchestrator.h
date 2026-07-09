@@ -1,6 +1,6 @@
 #pragma once
 /**
- * Test-game orchestrator — mirrors TS test-game/src/game.ts
+ * Test-game orchestrator — mirrors TS test-game-cli/src/game.ts
  * Executes scenario steps, records transcripts, enforces CLI coverage
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
@@ -8,8 +8,8 @@
 #include "CoreMinimal.h"
 #include "TestGame/TestGameCommandSurface.h"
 #include "TestGame/TestGameContract.h"
-#include "TestGame/TestGameGridRender.h"
-#include "TestGame/TestGameListeners.h"
+#include "TestGame/Views/Terminal/TerminalView.h"
+#include "TestGame/Features/TestGameListeners.h"
 #include "TestGame/TestGameRuntime.h"
 #include "Core/ue_fp.hpp"
 
@@ -262,16 +262,11 @@ inline void LogCommandResult(const FCommandSpec &Cmd,
  */
 inline void ProcessCommand(const FScenarioStep &Step, const FCommandSpec &Cmd,
                            CommandSurface::FAliasState &Aliases,
-                           const CommandSurface::FCommandExecutor &Executor,
                            rtk::EnhancedStore<FTestGameState> &Store) {
   const FString ScenarioId = Step.Id;
   const FCommandSpec StableCmd = Cmd;
-  CommandSurface::FCommandOutput CmdResult;
-  if (Executor) {
-    CmdResult = Executor(StableCmd, Aliases);
-  } else {
-    CmdResult = CommandSurface::Execute(StableCmd.Command, Aliases);
-  }
+  const CommandSurface::FCommandOutput CmdResult =
+      CommandSurface::Execute(StableCmd.Command, Aliases);
 
   /**
    * Update coverage
@@ -313,12 +308,11 @@ namespace detail {
 inline void ProcessCommands(const FScenarioStep &Step,
                             const TArray<FCommandSpec> &Commands, int32 Index,
                             CommandSurface::FAliasState &Aliases,
-                            const CommandSurface::FCommandExecutor &Executor,
                             rtk::EnhancedStore<FTestGameState> &Store) {
   return Index >= Commands.Num()
               ? (void)0
-              : (ProcessCommand(Step, Commands[Index], Aliases, Executor, Store),
-                ProcessCommands(Step, Commands, Index + 1, Aliases, Executor, Store));
+              : (ProcessCommand(Step, Commands[Index], Aliases, Store),
+                ProcessCommands(Step, Commands, Index + 1, Aliases, Store));
 }
 
 /**
@@ -327,7 +321,6 @@ inline void ProcessCommands(const FScenarioStep &Step,
  */
 inline void ProcessSteps(const TArray<FScenarioStep> &Steps, int32 Index,
                          CommandSurface::FAliasState &Aliases,
-                         const CommandSurface::FCommandExecutor &Executor,
                          rtk::EnhancedStore<FTestGameState> &Store) {
   if (Index >= Steps.Num()) {
     return;
@@ -337,8 +330,8 @@ inline void ProcessSteps(const TArray<FScenarioStep> &Steps, int32 Index,
          *Steps[Index].Id);
   UE_LOG(LogTemp, Display, TEXT("%s"), *Steps[Index].Description);
   ApplyScenarioInitialState(Steps[Index], Store);
-  ProcessCommands(Steps[Index], Steps[Index].Commands, 0, Aliases, Executor, Store);
-  ProcessSteps(Steps, Index + 1, Aliases, Executor, Store);
+  ProcessCommands(Steps[Index], Steps[Index].Commands, 0, Aliases, Store);
+  ProcessSteps(Steps, Index + 1, Aliases, Store);
 }
 
 /**
@@ -389,10 +382,7 @@ inline int32 CountTranscriptErrors(const TArray<FTranscriptEntry> &Entries,
  * User Story: As end-to-end test execution, I need one orchestrator entrypoint
  * so a full scenario suite can run and report transcript plus coverage state.
  */
-inline FGameRunResult RunGame(
-    EPlayMode Mode,
-    const CommandSurface::FCommandExecutor &Executor =
-        CommandSurface::FCommandExecutor()) {
+inline FGameRunResult RunGame(EPlayMode Mode) {
   SDKConfig::InitializeConfig();
   auto Store = createTestGameStoreWithListeners();
   Store.dispatch(UIActions::SetMode(Mode));
@@ -421,7 +411,7 @@ inline FGameRunResult RunGame(
   if (ApiUrl.IsEmpty()) {
     UE_LOG(LogTemp, Error,
            TEXT("TestGameContract: explicit runtime URL required. Set "
-                "FORBOC_RUNTIME_URL or FORBOCAI_API_URL before running."));
+                "FORBOCAI_API_URL before running."));
     FGameRunResult Result;
     Result.bComplete = false;
     Result.Summary = TEXT("Runtime URL not configured");
@@ -439,7 +429,7 @@ inline FGameRunResult RunGame(
   CommandSurface::FAliasState Aliases = CommandSurface::CreateAliasState(ContractResp);
   const TArray<FScenarioStep> Steps = Contract::ConvertScenariosRecursive(ContractResp.Scenarios, 0, {});
   
-  detail::ProcessSteps(Steps, 0, Aliases, Executor, Store);
+  detail::ProcessSteps(Steps, 0, Aliases, Store);
 
   /**
    * Build result
@@ -457,7 +447,7 @@ inline FGameRunResult RunGame(
   CollectGroups::apply(ContractResp.RequiredCommandGroups, RequiredGroups, 0);
   TArray<ECommandGroup> Missing = SelectMissingGroups(State.Harness.Covered, RequiredGroups);
   const int32 ErrorCount =
-      detail::CountTranscriptErrors(State.Transcript.Entries, 0);
+      TranscriptSelectors::SelectTranscriptErrorCount(State.Transcript);
   bool bComplete = Missing.Num() == 0 && ErrorCount == 0;
 
   FString Summary = bComplete

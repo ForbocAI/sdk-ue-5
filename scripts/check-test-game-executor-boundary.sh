@@ -55,7 +55,7 @@ if [ -n "$LIB_INCLUDES" ]; then
   echo "[fail] Files still include the retired TestGame/TestGameLib.h:"
   echo "$LIB_INCLUDES"
   echo "       Include TestGame/TestGameRuntime.h for runtime-URL helpers" >&2
-  echo "       or TestGame/TestGameGridRender.h for ASCII rendering." >&2
+  echo "       or TestGame/Views/Terminal/TerminalView.h for ASCII rendering." >&2
   echo "       All command execution must use TestGame::CommandSurface." >&2
   STATUS=1
 else
@@ -66,7 +66,7 @@ fi
 if [ -f "$SRC/Public/TestGame/TestGameLib.h" ]; then
   echo "[fail] TestGame/TestGameLib.h has been re-added. The retired" >&2
   echo "       in-process executor surface is retired — split helpers" >&2
-  echo "       into TestGameRuntime.h / TestGameGridRender.h instead." >&2
+  echo "       into TestGameRuntime.h / Views/Terminal/TerminalView.h instead." >&2
   STATUS=1
 else
   echo "[ok] Retired TestGameLib.h is absent"
@@ -75,17 +75,16 @@ fi
 # 3) Integration tests must not reintroduce an executor symbol.
 TEST_DIR="$SRC/Private/Tests"
 if [ -d "$TEST_DIR" ]; then
-  EXEC_DECLS="$(rg -n '\bExecuteForbocAICommand\b' \
+  EXEC_DECLS="$(rg -n '\b(ExecuteForbocAICommand|FCommandExecutor)\b' \
     "$TEST_DIR" \
     2>/dev/null | normalize_crlf || true)"
   if [ -n "$EXEC_DECLS" ]; then
-    echo "[fail] Integration tests reference the retired ExecuteForbocAICommand entrypoint:"
+    echo "[fail] Integration tests reference a retired test-game executor entrypoint:"
     echo "$EXEC_DECLS"
-    echo "       Drive commands through TestGame::CommandSurface::Execute" >&2
-    echo "       (with a CommandSurface::FCommandExecutor injector for stubs)." >&2
+    echo "       Drive commands through TestGame::CommandSurface::Execute." >&2
     STATUS=1
   else
-    echo "[ok] Integration tests do not reintroduce ExecuteForbocAICommand"
+    echo "[ok] Integration tests do not reintroduce test-game executor hooks"
   fi
 fi
 

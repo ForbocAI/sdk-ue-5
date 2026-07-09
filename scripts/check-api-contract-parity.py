@@ -21,16 +21,20 @@ def read_text(relative: str) -> str:
 
 
 def get_contract_data() -> dict:
-    runtime_url = os.environ.get("FORBOC_RUNTIME_URL")
-    if runtime_url:
+    api_url = os.environ.get("FORBOCAI_API_URL")
+    if api_url:
         try:
-            url = runtime_url.rstrip("/") + "/test-game/contract"
-            with urllib.request.urlopen(url) as response:
+            url = api_url.rstrip("/") + "/test-game/contract"
+            request = urllib.request.Request(url)
+            api_key = os.environ.get("FORBOCAI_API_KEY")
+            if api_key:
+                request.add_header("Authorization", f"Bearer {api_key}")
+            with urllib.request.urlopen(request) as response:
                 if response.status == 200:
                     print(f"Fetched contract from {url}")
                     return json.loads(response.read().decode("utf-8"))
         except Exception as e:
-            print(f"Failed to fetch contract from {runtime_url}: {e}", file=sys.stderr)
+            print(f"Failed to fetch contract from {api_url}: {e}", file=sys.stderr)
 
     candidates: list[Path] = []
     for env_name in ("API_TEST_GAME_CONTRACT", "TEST_GAME_CONTRACT", "UE_API_CONTRACT"):
@@ -54,7 +58,7 @@ def get_contract_data() -> dict:
 
     print("API test-game contract not found.", file=sys.stderr)
     print(
-        "Set API_TEST_GAME_CONTRACT to ForbocAI/api/api/contract/test-game-contract.json or FORBOC_RUNTIME_URL.",
+        "Set API_TEST_GAME_CONTRACT to ForbocAI/api/api/contract/test-game-contract.json or FORBOCAI_API_URL.",
         file=sys.stderr,
     )
     sys.exit(2)
@@ -129,7 +133,7 @@ def parse_transcript_fields(header: str) -> set[str]:
 def validate_ue_sources(contract: dict) -> list[str]:
     failures: list[str] = []
     contract_header = read_text("Source/ForbocAI_SDK/Public/TestGame/TestGameContract.h")
-    types_header = read_text("Source/ForbocAI_SDK/Public/TestGame/TestGameTypes.h")
+    types_header = read_text("Source/ForbocAI_SDK/Public/TestGame/Features/TestGameTypes.h")
     command_surface = read_text("Source/ForbocAI_SDK/Public/TestGame/TestGameCommandSurface.h")
     orchestrator = read_text("Source/ForbocAI_SDK/Public/TestGame/TestGameOrchestrator.h")
 

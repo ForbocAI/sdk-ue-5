@@ -1,6 +1,6 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
-#include "Ghost/GhostSlice.h"
+#include "Features/Ghost/GhostSlice.h"
 #include "Misc/AutomationTest.h"
 
 using namespace rtk;

@@ -1,7 +1,66 @@
 // User Story: As a developer, I need this module to function.
 #include "CLI/CliHandlers.h"
 #include "CLI/CliOperations.h"
+#include "Core/JsonInterop.h"
 #include "RuntimeStore.h"
+
+namespace {
+
+struct FDecodedBridgePayload {
+  FAgentAction Action;
+  FBridgeValidationContext Context;
+  FString NpcId;
+};
+
+FString JsonObjectField(const TSharedPtr<FJsonObject> &Object,
+                        const FString &FieldName) {
+  return Object.IsValid() && Object->HasTypedField<EJson::Object>(FieldName)
+             ? JsonInterop::StringifyObject(Object->GetObjectField(FieldName))
+             : FString(TEXT("{}"));
+}
+
+FString NumberPayloadJson(const FString &FieldName, double Value) {
+  const TSharedPtr<FJsonObject> Payload = MakeShared<FJsonObject>();
+  Payload->SetNumberField(FieldName, Value);
+  return JsonInterop::StringifyObject(Payload);
+}
+
+bool DecodeBridgePayload(const FString &Json,
+                         FDecodedBridgePayload &Decoded) {
+  TSharedPtr<FJsonObject> Root;
+  if (!JsonInterop::ParseJsonObject(Json, Root) || !Root.IsValid() ||
+      !Root->HasTypedField<EJson::Object>(TEXT("action"))) {
+    return false;
+  }
+
+  const TSharedPtr<FJsonObject> ActionObject =
+      Root->GetObjectField(TEXT("action"));
+  Decoded.Action = JsonInterop::ActionFromObject(ActionObject);
+
+  double Distance = 0.0;
+  ActionObject->TryGetNumberField(TEXT("distance"), Distance)
+      ? (Decoded.Action.PayloadJson =
+             NumberPayloadJson(TEXT("distance"), Distance),
+         void())
+      : void();
+
+  Root->TryGetStringField(TEXT("npcId"), Decoded.NpcId);
+
+  if (Root->HasTypedField<EJson::Object>(TEXT("context"))) {
+    const TSharedPtr<FJsonObject> ContextObject =
+        Root->GetObjectField(TEXT("context"));
+    Decoded.Context.NpcStateJson =
+        JsonObjectField(ContextObject, TEXT("npcState"));
+    Decoded.Context.WorldStateJson =
+        JsonObjectField(ContextObject, TEXT("worldState"));
+    Decoded.Context.ConstraintsJson =
+        JsonObjectField(ContextObject, TEXT("constraints"));
+  }
+
+  return !Decoded.Action.Type.IsEmpty();
+}
+
+} // namespace
 
 namespace CLIOps {
 namespace Handlers {
@@ -14,14 +73,18 @@ HandlerResult HandleBridge(rtk::EnhancedStore<FRuntimeState> &Store,
 
   return CommandKey == TEXT("bridge_validate")
              ? (Args.Num() < 1
-                    ? just(Result::Failure(
+                   ? just(Result::Failure(
                           "Usage: bridge_validate <actionJson>"))
                     : [&]() -> HandlerResult {
-                        FAgentAction Action;
-                        Action.PayloadJson = Args[0];
-                        FBridgeValidationContext Context;
+                        FDecodedBridgePayload Payload;
+                        if (!DecodeBridgePayload(Args[0], Payload)) {
+                          return just(Result::Failure(
+                              "Usage: bridge_validate <inline-json-payload|preset-macro>"));
+                        }
                         FValidationResult VResult =
-                            Ops::validateBridgePayload(Store, Action, Context);
+                            Ops::validateBridgePayload(
+                                Store, Payload.Action, Payload.Context,
+                                Payload.NpcId);
                         UE_LOG(LogTemp, Display,
                                TEXT("Validation: %s"),
                                VResult.bValid ? TEXT("PASS")

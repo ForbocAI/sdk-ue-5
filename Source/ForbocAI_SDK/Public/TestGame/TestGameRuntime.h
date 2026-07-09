@@ -14,7 +14,7 @@
  * in-process command executor on one surface. The executor was retired
  * in favor of the first-class commandlet/command-surface boundary; the
  * remaining pure helpers were split into TestGameRuntime.h and
- * TestGameGridRender.h so test-game code can include only what it needs
+ * Views/Terminal/TerminalView.h so test-game code can include only what it needs
  * without re-importing executor-shaped concerns.
  *
  * User Story: As the UE test-game harness, I need a narrow runtime-URL
@@ -64,20 +64,17 @@ inline bool CheckRuntimeConnectivity(
 }
 
 /**
- * Resolves the explicitly configured runtime URL without probing.
- * Prefers FORBOC_RUNTIME_URL, then uses FORBOCAI_API_URL.
+ * Resolves the explicitly configured API URL without probing.
  * User Story: As the explicit-runtime policy, I need consumers to set the
- * runtime URL explicitly so production hosts never silently downgrade to
+ * API URL explicitly so production hosts never silently downgrade to
  * localhost or an unintended remote.
  */
-inline FString ResolveConfiguredRuntimeUrl(const FString &RuntimeUrlOverride,
-                                           const FString &ApiUrlOverride) {
-  return !RuntimeUrlOverride.IsEmpty() ? RuntimeUrlOverride : ApiUrlOverride;
+inline FString ResolveConfiguredRuntimeUrl(const FString &ApiUrlOverride) {
+  return ApiUrlOverride;
 }
 
 inline FString ResolveRuntimeUrlFromEnv() {
   return ResolveConfiguredRuntimeUrl(
-      FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOC_RUNTIME_URL")),
       FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_API_URL")));
 }
 
@@ -88,7 +85,7 @@ inline FString ResolveRuntimeUrlFromEnv() {
  * during development and remotely in CI without per-developer config.
  *
  * Production code paths must NOT call this. Use ResolveRuntimeUrl
- * (or set FORBOC_RUNTIME_URL / FORBOCAI_API_URL explicitly) so the
+ * (or set FORBOCAI_API_URL explicitly) so the
  * explicit-runtime policy holds.
  */
 inline FString ResolveVerificationRuntimeUrl(

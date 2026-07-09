@@ -18,8 +18,7 @@ typedef func::Maybe<FString> FForbocAISDKPublicNPCNPCBaseTypesHOptionalDomainId;
  * arbitrary serialized state can move through SDK flows unchanged.
  *
  * NOTE: Struct names retain the FAgent* prefix for Blueprint continuity.
- * The file was renamed from AgentTypes.h as part of the Agent→NPC terminology
- * migration. Include "NPC/NPCBaseTypes.h" in new code.
+ * NPC/NPCBaseTypes.h is the canonical include for these transport types.
  */
 USTRUCT(BlueprintType)
 struct FAgentState {

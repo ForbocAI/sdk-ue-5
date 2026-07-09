@@ -122,6 +122,57 @@ inline FString StringifyObject(const TSharedPtr<FJsonObject> &Object) {
                 Writer->Close(), Json);
 }
 
+inline TArray<TSharedPtr<FJsonValue>>
+StringArrayValues(const TArray<FString> &Values, int32 Index = 0,
+                  TArray<TSharedPtr<FJsonValue>> Acc = {}) {
+  return Index >= Values.Num()
+             ? Acc
+             : (Acc.Add(MakeShared<FJsonValueString>(Values[Index])),
+                StringArrayValues(Values, Index + 1, MoveTemp(Acc)));
+}
+
+inline void SetStringArrayField(const TSharedRef<FJsonObject> &Object,
+                                const FString &FieldName,
+                                const TArray<FString> &Values) {
+  Object->SetArrayField(FieldName, StringArrayValues(Values));
+}
+
+inline TSharedRef<FJsonObject> EmptyStructuredPersonaObject() {
+  const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+  return (SetStringArrayField(Object, TEXT("traits"), TArray<FString>()),
+          SetStringArrayField(Object, TEXT("goals"), TArray<FString>()),
+          SetStringArrayField(Object, TEXT("relationships"), TArray<FString>()),
+          SetStringArrayField(Object, TEXT("world"), TArray<FString>()),
+          SetStringArrayField(Object, TEXT("speakingStyle"), TArray<FString>()),
+          SetStringArrayField(Object, TEXT("constraints"), TArray<FString>()),
+          Object);
+}
+
+/**
+ * Converts UE's legacy persona string into the TS SDK structuredPersona shape.
+ * Already-structured JSON objects are passed through.
+ */
+inline TSharedRef<FJsonObject> StructuredPersonaToObject(
+    const FString &PersonaOrJson) {
+  TSharedPtr<FJsonObject> Parsed;
+  return (ParseJsonObject(PersonaOrJson, Parsed) && Parsed.IsValid() &&
+          Parsed->HasField(TEXT("traits")))
+             ? Parsed.ToSharedRef()
+             : [&]() {
+                 const TSharedRef<FJsonObject> Object =
+                     EmptyStructuredPersonaObject();
+                 const FString Trait = PersonaOrJson.TrimStartAndEnd();
+                 !Trait.IsEmpty()
+                     ? [&]() {
+                         TArray<FString> Traits;
+                         Traits.Add(Trait);
+                         SetStringArrayField(Object, TEXT("traits"), Traits);
+                       }()
+                     : void();
+                 return Object;
+               }();
+}
+
 /**
  * Serializes a JSON array to a string.
  * User Story: As JSON serialization flows, I need array values encoded so
@@ -466,58 +517,6 @@ inline FMemoryItem MemoryItemFromObject(const TSharedPtr<FJsonObject> &Object) {
                     Object, TEXT("timestamp"),
                     static_cast<int64>(Memory.Timestamp)),
                 Memory);
-}
-
-/**
- * Serializes prompt constraints into API JSON.
- * User Story: As protocol request builders, I need prompt constraints encoded
- * so API-issued generation limits keep a stable transport shape.
- */
-inline TSharedRef<FJsonObject>
-PromptConstraintsToObject(const FPromptConstraints &Config) {
-  const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
-  return (Object->SetNumberField(TEXT("maxTokens"), Config.MaxTokens),
-          Object->SetNumberField(TEXT("temperature"), Config.Temperature),
-          Config.Stop.Num() > 0
-              ? [&]() {
-                  TArray<TSharedPtr<FJsonValue>> StopValues;
-                  StopValues.Reserve(Config.Stop.Num());
-                  detail::BuildStopValuesRecursive(Config.Stop, StopValues, 0);
-                  Object->SetArrayField(TEXT("stop"), StopValues);
-                }()
-              : void(),
-          SetFieldFromJsonString(Object, TEXT("jsonSchema"),
-                                 Config.JsonSchemaJson),
-          Object);
-}
-
-/**
- * Deserializes prompt constraints from API JSON.
- * User Story: As protocol response readers, I need generation constraints
- * decoded so returned settings can be reapplied or inspected in runtime state.
- */
-inline FPromptConstraints
-PromptConstraintsFromObject(const TSharedPtr<FJsonObject> &Object) {
-  FPromptConstraints Config;
-  return !Object.IsValid()
-             ? Config
-             : (Config.MaxTokens = detail::TryGetNumberAs<int32>(
-                    Object, TEXT("maxTokens"), Config.MaxTokens),
-                Config.Temperature = detail::TryGetNumberAs<float>(
-                    Object, TEXT("temperature"), Config.Temperature),
-                [&]() {
-                  const TArray<TSharedPtr<FJsonValue>> *StopValues = nullptr;
-                  (Object->TryGetArrayField(TEXT("stop"), StopValues) &&
-                   StopValues)
-                      ? (Config.Stop.Empty(StopValues->Num()),
-                         detail::ExtractStopValuesRecursive(
-                             *StopValues, Config.Stop, 0),
-                         void())
-                      : void();
-                }(),
-                Config.JsonSchemaJson = JsonStringFromField(
-                    Object, TEXT("jsonSchema"), TEXT("")),
-                Config);
 }
 
 /**

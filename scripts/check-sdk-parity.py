@@ -26,7 +26,7 @@ GENERATED_END = "<!-- END GENERATED SDK PARITY INVENTORY -->"
 TS_SOURCE_ROOTS = (
     ("core", Path("packages/core/src")),
     ("node", Path("packages/node/src")),
-    ("test-game", Path("packages/test-game/src")),
+    ("test-game-cli", Path("packages/test-game-cli/src")),
 )
 
 UE_SOURCE_ROOTS = (Path("Source/ForbocAI_SDK"),)
@@ -518,8 +518,8 @@ def package_for_ts_path(path: str) -> str:
         return "core"
     if path.startswith("packages/node/"):
         return "node-cli" if "/cli" in path else "node"
-    if path.startswith("packages/test-game/"):
-        return "test-game"
+    if path.startswith("packages/test-game-cli/"):
+        return "test-game-cli"
     return "other"
 
 
@@ -528,14 +528,14 @@ def package_label(package: str) -> str:
         "core": "Core",
         "node": "Node",
         "node-cli": "Node CLI",
-        "test-game": "Test Game",
+        "test-game-cli": "Test Game CLI",
         "other": "Other",
     }
     return labels.get(package, package)
 
 
 def package_order(package: str) -> int:
-    order = {"core": 0, "node": 1, "node-cli": 2, "test-game": 3, "other": 4}
+    order = {"core": 0, "node": 1, "node-cli": 2, "test-game-cli": 3, "other": 4}
     return order.get(package, 99)
 
 

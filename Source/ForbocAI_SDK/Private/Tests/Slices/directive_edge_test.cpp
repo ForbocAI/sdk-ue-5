@@ -1,6 +1,6 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
-#include "DirectiveSlice.h"
+#include "Features/Directive/DirectiveSlice.h"
 #include "Misc/AutomationTest.h"
 #include "Protocol/ProtocolRequestTypes.h"
 
@@ -64,58 +64,6 @@ bool FDirectiveRapidFailuresTest::RunTest(const FString &Parameters) {
       TestEqual(FString::Printf(TEXT("rapid_%d error"), i), Run.value.Error,
                 ExpectedError);
     }
-  }
-
-  return true;
-}
-
-/**
- * Test: contextComposed on already-failed directive is a no-op
- * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
- */
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDirectiveContextAfterFailTest,
-                                 "ForbocAI.Slices.Directive.ContextAfterFail",
-                                 EAutomationTestFlags_ApplicationContextMask |
-                                     EAutomationTestFlags::EngineFilter)
-/**
- * User Story: As a developer, I need RunTest to fulfill its role in the module.
- */
-bool FDirectiveContextAfterFailTest::RunTest(const FString &Parameters) {
-  Slice<FDirectiveSliceState> DirSlice = createDirectiveSlice();
-  FDirectiveSliceState State;
-
-  State = DirSlice.Reducer(
-      State,
-      DirectiveSlice::Actions::directiveRunStarted(TEXT("cf"), TEXT("npc1"),
-                                                   TEXT("obs")));
-  State = DirSlice.Reducer(
-      State, DirectiveSlice::Actions::directiveRunFailed(
-                 TEXT("cf"), TEXT("API timeout")));
-
-  /**
-   * Try to compose context on a failed directive
-   * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-   */
-  FPromptConstraints Constraints;
-  Constraints.MaxTokens = 256;
-  State = DirSlice.Reducer(
-      State,
-      DirectiveSlice::Actions::contextComposed(TEXT("cf"), TEXT("Late context"),
-                                               Constraints));
-
-  auto Run = selectDirectiveById(State, TEXT("cf"));
-  TestTrue("Run exists", Run.hasValue);
-  if (Run.hasValue) {
-    /**
-     * The reducer still applies the update (entity adapter updateOne works on
-     * any existing entity regardless of status). This test documents that
-     * behavior — the thunk layer is responsible for not dispatching
-     * contextComposed after failure.
-     * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
-     */
-    TestEqual("Status still Failed",
-              static_cast<int32>(Run.value.Status),
-              static_cast<int32>(EDirectiveStatus::Failed));
   }
 
   return true;

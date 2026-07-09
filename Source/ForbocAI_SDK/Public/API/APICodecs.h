@@ -446,9 +446,9 @@ EncodeProcessTapeObject(const FNPCProcessTape &Tape) {
                                           Tape.ContextJson, false),
       Root->SetObjectField(TEXT("npcState"),
                            JsonInterop::StateToObject(Tape.NpcState)),
-      !Tape.Persona.IsEmpty()
-          ? (Root->SetStringField(TEXT("structuredPersona"), Tape.Persona), void())
-          : void(),
+      Root->SetObjectField(TEXT("structuredPersona"),
+                           JsonInterop::StructuredPersonaToObject(
+                               Tape.Persona)),
       Tape.bHasActor
           ? [&]() {
               const TSharedRef<FJsonObject> Actor = MakeShared<FJsonObject>();
@@ -461,20 +461,6 @@ EncodeProcessTapeObject(const FNPCProcessTape &Tape) {
           : void(),
       detail::BuildRecalledMemoriesRecursive(Tape.Memories, Memories, 0),
       Root->SetArrayField(TEXT("memories"), Memories),
-      !Tape.Prompt.IsEmpty()
-          ? (Root->SetStringField(TEXT("prompt"), Tape.Prompt), void())
-          : void(),
-      (!Tape.Prompt.IsEmpty() || !Tape.GeneratedOutput.IsEmpty())
-          ? (Root->SetObjectField(
-                 TEXT("constraints"),
-                 JsonInterop::PromptConstraintsToObject(Tape.Constraints)),
-             void())
-          : void(),
-      !Tape.GeneratedOutput.IsEmpty()
-          ? (Root->SetStringField(TEXT("generatedOutput"),
-                                  Tape.GeneratedOutput),
-             void())
-          : void(),
       !Tape.RulesetId.IsEmpty()
           ? (Root->SetStringField(TEXT("rulesetId"), Tape.RulesetId), void())
           : void(),
@@ -515,7 +501,7 @@ inline bool DecodeProcessTapeObject(const TSharedPtr<FJsonObject> &Object,
                     JsonInterop::JsonStringFromField(Object, TEXT("context")),
                 Tape.NpcState =
                     JsonInterop::StateFromField(Object, TEXT("npcState")),
-                Tape.Persona = JsonInterop::OptionalStringFromField(
+                Tape.Persona = JsonInterop::JsonStringFromField(
                     Object, TEXT("structuredPersona")),
                 Tape.bHasActor =
                     Object->HasTypedField<EJson::Object>(TEXT("actor")),
@@ -526,7 +512,11 @@ inline bool DecodeProcessTapeObject(const TSharedPtr<FJsonObject> &Object,
                         Tape.Actor.NpcId =
                             Actor->GetStringField(TEXT("npcId"));
                         Tape.Actor.Persona =
-                            Actor->GetStringField(TEXT("persona"));
+                            Actor->HasField(TEXT("structuredPersona"))
+                                ? JsonInterop::JsonStringFromField(
+                                      Actor, TEXT("structuredPersona"))
+                                : JsonInterop::OptionalStringFromField(
+                                      Actor, TEXT("persona"));
                         Tape.Actor.Data =
                             JsonInterop::StateFromField(Actor, TEXT("data"));
                       }()
@@ -541,15 +531,6 @@ inline bool DecodeProcessTapeObject(const TSharedPtr<FJsonObject> &Object,
                          void())
                       : void();
                 }(),
-                Tape.Prompt = JsonInterop::OptionalStringFromField(
-                    Object, TEXT("prompt")),
-                Object->HasTypedField<EJson::Object>(TEXT("constraints"))
-                    ? (Tape.Constraints = JsonInterop::PromptConstraintsFromObject(
-                           Object->GetObjectField(TEXT("constraints"))),
-                       void())
-                    : void(),
-                Tape.GeneratedOutput = JsonInterop::OptionalStringFromField(
-                    Object, TEXT("generatedOutput")),
                 Tape.RulesetId = JsonInterop::OptionalStringFromField(
                     Object, TEXT("rulesetId")),
                 Tape.bVectorQueried = JsonInterop::detail::TryGetBoolAs(
@@ -628,26 +609,6 @@ inline bool DecodeInstructionObject(const TSharedPtr<FJsonObject> &Object,
                                         JsonInterop::detail::TryGetNumberAs<
                                             float>(Object, TEXT("threshold"),
                                                    Instruction.Threshold),
-                                    true);
-                              }),
-                          func::when<FString, bool>(
-                              func::equals<FString>(TEXT("ExecuteInference")),
-                              [&](const FString &) -> bool {
-                                return (
-                                    Instruction.Type =
-                                        ENPCInstructionType::ExecuteInference,
-                                    Instruction.Prompt =
-                                        Object->GetStringField(TEXT("prompt")),
-                                    Object->HasTypedField<EJson::Object>(
-                                        TEXT("constraints"))
-                                        ? (Instruction.Constraints =
-                                               JsonInterop::
-                                                   PromptConstraintsFromObject(
-                                                       Object->GetObjectField(
-                                                           TEXT(
-                                                               "constraints"))),
-                                           void())
-                                        : void(),
                                     true);
                               }),
                           func::when<FString, bool>(
@@ -763,58 +724,6 @@ inline bool DecodeDirectiveResponse(const FString &Json,
                              Response.recallMemory.Threshold),
                      true);
                }();
-}
-
-/**
- * Encodes a context-building request into JSON text.
- * User Story: As context endpoint callers, I need a request encoder so
- * observation, persona, and recalled memories reach the API in one payload.
- */
-inline FString EncodeContextRequest(const FContextRequest &Request) {
-  const TSharedRef<FJsonObject> Root = MakeShared<FJsonObject>();
-  TArray<TSharedPtr<FJsonValue>> Memories;
-  return (Root->SetStringField(TEXT("observation"), Request.Observation),
-          Root->SetObjectField(TEXT("npcState"),
-                               JsonInterop::StateToObject(Request.NpcState)),
-          Root->SetStringField(TEXT("persona"), Request.Persona),
-          detail::BuildRecalledMemoriesRecursive(Request.Memories, Memories, 0),
-          Root->SetArrayField(TEXT("memories"), Memories),
-          ToJsonString(Root));
-}
-
-/**
- * Decodes a context response into prompt and constraint data.
- * User Story: As context endpoint callers, I need typed response decoding so
- * prompt generation results can feed later inference and validation stages.
- */
-inline bool DecodeContextResponse(const FString &Json,
-                                  FContextResponse &Response) {
-  TSharedPtr<FJsonObject> Root;
-  return (!JsonInterop::ParseJsonObject(Json, Root) || !Root.IsValid())
-             ? false
-             : (Response.Prompt = Root->GetStringField(TEXT("prompt")),
-                Root->HasTypedField<EJson::Object>(TEXT("constraints"))
-                    ? (Response.Constraints =
-                           JsonInterop::PromptConstraintsFromObject(
-                               Root->GetObjectField(TEXT("constraints"))),
-                       void())
-                    : void(),
-                true);
-}
-
-/**
- * Encodes a verdict request into JSON text.
- * User Story: As verdict endpoint callers, I need a request encoder so the
- * generated output and NPC state can be evaluated against the observation.
- */
-inline FString EncodeVerdictRequest(const FVerdictRequest &Request) {
-  const TSharedRef<FJsonObject> Root = MakeShared<FJsonObject>();
-  return (
-      Root->SetStringField(TEXT("generatedOutput"), Request.GeneratedOutput),
-      Root->SetStringField(TEXT("observation"), Request.Observation),
-      Root->SetObjectField(TEXT("npcState"),
-                           JsonInterop::StateToObject(Request.NpcState)),
-      ToJsonString(Root));
 }
 
 /**

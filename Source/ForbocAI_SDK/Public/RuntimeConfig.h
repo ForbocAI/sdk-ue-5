@@ -60,16 +60,6 @@ inline FString &ApiKeyStorage() {
 }
 
 /**
- * Returns the mutable storage backing the configured model path.
- * User Story: As local model configuration, I need shared path storage so
- * runtime code and tooling resolve the same model location.
- */
-inline FString &ModelPathStorage() {
-  static FString Value = TEXT("");
-  return Value;
-}
-
-/**
  * Returns the mutable storage backing the configured database path.
  * User Story: As memory persistence configuration, I need shared database path
  * storage so local memory features point at the same file.
@@ -127,7 +117,6 @@ inline FString &ConfigFilePathOverrideStorage() {
 inline void ResetToDefaults() {
   ApiUrlStorage() = DEFAULT_API_URL;
   ApiKeyStorage() = TEXT("");
-  ModelPathStorage() = TEXT("");
   DatabasePathStorage() = TEXT("");
   VectorDimensionStorage() = DEFAULT_VECTOR_DIMENSION;
   MaxRecallResultsStorage() = DEFAULT_MAX_RECALL_RESULTS;
@@ -234,16 +223,6 @@ inline FString GetApiUrl() {
 inline FString GetApiKey() {
   EnsureInitialized();
   return ApiKeyStorage();
-}
-
-/**
- * Returns the configured local model path.
- * User Story: As local inference setup, I need the resolved model path so the
- * runtime can load the configured on-device model.
- */
-inline FString GetModelPath() {
-  EnsureInitialized();
-  return ModelPathStorage();
 }
 
 /**
@@ -383,8 +362,6 @@ inline void LoadFromEnvironment() {
       FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_API_URL"));
   const FString K =
       FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_API_KEY"));
-  const FString M =
-      FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_MODEL_PATH"));
   const FString D =
       FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_DATABASE_PATH"));
   const FString V =
@@ -393,7 +370,6 @@ inline void LoadFromEnvironment() {
       FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_MAX_RECALL"));
   !U.IsEmpty() ? (void)(ApiUrlStorage() = U) : (void)0;
   !K.IsEmpty() ? (void)(ApiKeyStorage() = K) : (void)0;
-  !M.IsEmpty() ? (void)(ModelPathStorage() = M) : (void)0;
   !D.IsEmpty() ? (void)(DatabasePathStorage() = D) : (void)0;
   !V.IsEmpty() ? (void)(VectorDimensionStorage() = FCString::Atoi(*V))
                : (void)0;
@@ -416,8 +392,6 @@ inline void LoadFromConfigFile() {
               ? (void)(ApiUrlStorage() = S) : (void)0;
           (J->TryGetStringField(TEXT("apiKey"), S) && !S.IsEmpty())
               ? (void)(ApiKeyStorage() = S) : (void)0;
-          (J->TryGetStringField(TEXT("modelPath"), S) && !S.IsEmpty())
-              ? (void)(ModelPathStorage() = S) : (void)0;
           (J->TryGetStringField(TEXT("databasePath"), S) && !S.IsEmpty())
               ? (void)(DatabasePathStorage() = S) : (void)0;
           int32 I = 0;
@@ -440,8 +414,6 @@ inline bool SaveToConfigFile() {
   J->SetStringField(TEXT("apiUrl"), ApiUrlStorage());
   !ApiKeyStorage().IsEmpty()
       ? J->SetStringField(TEXT("apiKey"), ApiKeyStorage()) : (void)0;
-  !ModelPathStorage().IsEmpty()
-      ? J->SetStringField(TEXT("modelPath"), ModelPathStorage()) : (void)0;
   !DatabasePathStorage().IsEmpty()
       ? J->SetStringField(TEXT("databasePath"), DatabasePathStorage())
       : (void)0;
@@ -472,12 +444,6 @@ inline void SetConfigValue(const FString &Key, const FString &Value) {
               func::equals<FString>(FString(TEXT("apiKey"))),
               [&](const FString &) {
                 JsonObject->SetStringField(TEXT("apiKey"), Value);
-                return true;
-              }),
-          func::when<FString, bool>(
-              func::equals<FString>(FString(TEXT("modelPath"))),
-              [&](const FString &) {
-                JsonObject->SetStringField(TEXT("modelPath"), Value);
                 return true;
               }),
           func::when<FString, bool>(
@@ -535,13 +501,6 @@ inline FString GetConfigValue(const FString &Key) {
                             [&J](const FString &) {
                               FString V;
                               return J->TryGetStringField(TEXT("apiKey"), V)
-                                  ? V : FString(TEXT(""));
-                            }),
-                        func::when<FString, FString>(
-                            func::equals<FString>(FString(TEXT("modelPath"))),
-                            [&J](const FString &) {
-                              FString V;
-                              return J->TryGetStringField(TEXT("modelPath"), V)
                                   ? V : FString(TEXT(""));
                             }),
                         func::when<FString, FString>(

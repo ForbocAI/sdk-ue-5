@@ -6,8 +6,8 @@
 #include "RuntimeConfig.h"
 #include "RuntimeStore.h"
 #include "Serialization/JsonSerializer.h"
-#include "Soul/SoulSlice.h"
-#include "Soul/SoulThunks.h"
+#include "Features/Soul/SoulSlice.h"
+#include "Features/Soul/SoulThunks.h"
 
 /**
  * SOUL OPERATIONS — Pure free functions

@@ -22,9 +22,10 @@
 #include "CLI/CliOperations.h"
 #include "Core/ue_fp.hpp"
 #include "CoreMinimal.h"
+#include "RuntimeConfig.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
-#include "TestGame/TestGameTypes.h"
+#include "TestGame/Features/TestGameTypes.h"
 
 namespace TestGame {
 namespace Contract {
@@ -295,7 +296,8 @@ inline FContractResponse FetchContract(
         FString::Printf(TEXT("%s/test-game/contract"), *ApiUrl);
 
     const func::HttpResult<FString> Result =
-        Ops::waitForResult(func::AsyncHttp::Get<FString>(Url), 5.0);
+        Ops::waitForResult(
+            func::AsyncHttp::Get<FString>(Url, SDKConfig::GetApiKey()), 5.0);
 
     return (Result.bSuccess && Result.ResponseCode == 200)
                ? ParseContractJson(Result.data)

@@ -1,6 +1,6 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
-#include "DirectiveSlice.h"
+#include "Features/Directive/DirectiveSlice.h"
 #include "Misc/AutomationTest.h"
 #include "Protocol/ProtocolRequestTypes.h"
 

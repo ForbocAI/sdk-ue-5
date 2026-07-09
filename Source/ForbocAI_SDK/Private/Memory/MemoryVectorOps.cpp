@@ -1,5 +1,6 @@
 // User Story: As a developer, I need this module to function.
 #include "Memory/MemoryModuleInternal.h"
+#include "Core/SdkVectorizer.h"
 
 namespace MemoryInternal {
 
@@ -43,9 +44,8 @@ VectorSearch(void *Handle, const FString &Query, int32 Limit) {
 
 MemoryTypes::MemoryStoreEmbeddingResult generateEmbedding(void *Handle,
                                                           const FString &Text) {
-  return MemoryTypes::MemoryStoreEmbeddingResult{
-      true, TEXT("Local embedding generation moved to API or opt-in plugins"),
-      TArray<float>()};
+  return MemoryTypes::MemoryStoreEmbeddingResult{false, FString(),
+                                                 ForbocAI::SDK::Vectorizer::Embed(Text)};
 }
 
 } // namespace SQLiteVSS

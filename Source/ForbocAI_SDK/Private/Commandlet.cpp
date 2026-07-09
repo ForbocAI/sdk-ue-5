@@ -464,14 +464,14 @@ TArray<FString> BuildCommandArgs(const FString &Command,
                     return MergeArgs(
                         BuildPrefixed(
                             Params,
-                            {TEXT("EmbeddingModel="), TEXT("Database=")},
-                            {TEXT("--embedding-model="), TEXT("--database=")}),
+                            {TEXT("Database=")},
+                            {TEXT("--database=")}),
                         BuildFlags(
                             Params,
-                            {TEXT("AllowDownload"), TEXT("SkipVector"),
-                             TEXT("SkipMemory"), TEXT("Cleanup")},
-                            {TEXT("--allow-download"), TEXT("--skip-vector"),
-                             TEXT("--skip-memory"), TEXT("--cleanup")}));
+                            {TEXT("SkipVector"), TEXT("SkipMemory"),
+                             TEXT("Cleanup")},
+                            {TEXT("--skip-vector"), TEXT("--skip-memory"),
+                             TEXT("--cleanup")}));
                   }),
           }),
       TArray<FString>());
@@ -575,18 +575,9 @@ UForbocAICommandlet::executeCommand(const FString &Command,
 UForbocAICommandlet::CommandExecution
 UForbocAICommandlet::createCommandPipeline(const FString &Command,
                                            const TArray<FString> &Args) {
-  return createCommandPipeline(Command, Args,
-                               TestGame::CommandSurface::FCommandExecutor());
-}
-
-UForbocAICommandlet::CommandExecution
-UForbocAICommandlet::createCommandPipeline(
-    const FString &Command, const TArray<FString> &Args,
-    const TestGame::CommandSurface::FCommandExecutor &TestGameExecutor) {
   return UForbocAICommandlet::CommandExecution::create(
-      [this, Command, Args,
-       TestGameExecutor](std::function<void()> Resolve,
-                         std::function<void(std::string)> Reject) {
+      [this, Command, Args](std::function<void()> Resolve,
+                            std::function<void(std::string)> Reject) {
         auto RejectFString = [&Reject](const FString &Error) {
           Reject(TCHAR_TO_UTF8(*Error));
         };
@@ -601,8 +592,7 @@ UForbocAICommandlet::createCommandPipeline(
             Validation,
             [&RejectFString](const FString &Err) { RejectFString(Err); },
             [this, &Command, &Args, &Resolve,
-             &RejectFString, &Reject,
-             &TestGameExecutor](const FString &) {
+             &RejectFString, &Reject](const FString &) {
               if (Command == TEXT("test_game")) {
                 const func::Maybe<TestGame::EPlayMode> Mode =
                     ParseTestGameMode(Args);
@@ -613,7 +603,7 @@ UForbocAICommandlet::createCommandPipeline(
                 }
 
                 const TestGame::FGameRunResult Result =
-                    TestGame::RunGame(Mode.value, TestGameExecutor);
+                    TestGame::RunGame(Mode.value);
                 Result.bComplete ? Resolve()
                                  : RejectFString(Result.Summary);
                 return;

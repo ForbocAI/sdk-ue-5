@@ -8,7 +8,7 @@
  */
 
 #include "API/APICodecs.h"
-#include "API/APIEndpoints.h"
+#include "Features/API/APIEndpoints.h"
 #include "Core/AsyncHttp.h"
 #include "CoreMinimal.h"
 #include "GenericPlatform/GenericPlatformHttp.h"

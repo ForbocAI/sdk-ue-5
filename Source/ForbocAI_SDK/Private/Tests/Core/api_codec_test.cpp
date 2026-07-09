@@ -1,4 +1,4 @@
-#include "API/APISlice.h"
+#include "Features/API/APISlice.h"
 #include "Core/JsonInterop.h"
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
@@ -120,16 +120,6 @@ bool FApiCodecNullableProtocolFieldsTest::RunTest(const FString &Parameters) {
       "npcState": {},
       "persona": null,
       "memories": [],
-      "prompt": null,
-      "constraints": {
-        "model": "local",
-        "useGPU": false,
-        "maxTokens": 128,
-        "temperature": 0.7,
-        "topK": 40,
-        "topP": 0.95
-      },
-      "generatedOutput": null,
       "rulesetId": null,
       "vectorQueried": true
     }
@@ -141,9 +131,6 @@ bool FApiCodecNullableProtocolFieldsTest::RunTest(const FString &Parameters) {
   TestTrue("Nullable finalize signature becomes empty",
            Response.Instruction.Signature.IsEmpty());
   TestTrue("Nullable tape persona becomes empty", Response.Tape.Persona.IsEmpty());
-  TestTrue("Nullable tape prompt becomes empty", Response.Tape.Prompt.IsEmpty());
-  TestTrue("Nullable generated output becomes empty",
-           Response.Tape.GeneratedOutput.IsEmpty());
   TestTrue("Nullable ruleset id becomes empty",
            Response.Tape.RulesetId.IsEmpty());
   return true;

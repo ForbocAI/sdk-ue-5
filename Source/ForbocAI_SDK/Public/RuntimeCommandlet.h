@@ -75,17 +75,6 @@ public:
                                          const TArray<FString> &Args);
 
   /**
-   * Builds the async execution pipeline for one CLI command, with an optional
-   * injected test-game executor for deterministic harness testing.
-   * User Story: As commandlet test coverage, I need the test-game command to
-   * accept a stub executor so the CLI entrypoint can be validated without
-   * depending on live runtime/network state.
-   */
-  CommandExecution createCommandPipeline(
-      const FString &Command, const TArray<FString> &Args,
-      const TestGame::CommandSurface::FCommandExecutor &TestGameExecutor);
-
-  /**
    * Builds the validation pipeline for incoming CLI commands.
    * User Story: As command parsing, I need validation staged before execution
    * so invalid commands fail early with useful errors.

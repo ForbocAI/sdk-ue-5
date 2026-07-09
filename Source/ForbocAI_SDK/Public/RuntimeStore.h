@@ -1,16 +1,16 @@
 #pragma once
 
-#include "API/APISlice.h"
-#include "Bridge/BridgeSlice.h"
+#include "Features/API/APISlice.h"
+#include "Features/Bridge/BridgeSlice.h"
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "Core/ue_fp.hpp"
-#include "DirectiveSlice.h"
+#include "Features/Directive/DirectiveSlice.h"
 #include "ForbocAILog.h"
-#include "Ghost/GhostSlice.h"
-#include "Memory/MemorySlice.h"
-#include "NPC/NPCSlice.h"
-#include "Soul/SoulSlice.h"
+#include "Features/Ghost/GhostSlice.h"
+#include "Features/Memory/MemorySlice.h"
+#include "Features/NPC/NPCSlice.h"
+#include "Features/Soul/SoulSlice.h"
 
 struct FRuntimeState {
   NPCSlice::FNPCSliceState NPCs;

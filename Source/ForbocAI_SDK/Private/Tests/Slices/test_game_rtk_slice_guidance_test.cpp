@@ -1,5 +1,5 @@
 #include "Misc/AutomationTest.h"
-#include "TestGame/TestGameSlices.h"
+#include "TestGame/Features/TestGameSlices.h"
 
 using namespace TestGame;
 
@@ -281,10 +281,18 @@ bool FTestGameMechanicsTerminalSelectorsTest::RunTest(
   TranscriptPayload.CommandGroup = ECommandGroup::Status;
   TranscriptPayload.Command = TEXT("forbocai status");
   TranscriptPayload.Status = ETranscriptStatus::Ok;
-  const FTranscriptState TranscriptState = CreateTranscriptSlice().Reducer(
+  FTranscriptState TranscriptState = CreateTranscriptSlice().Reducer(
       FTranscriptState(), TranscriptActions::RecordTranscript(TranscriptPayload));
+  TranscriptPayload.CommandGroup = ECommandGroup::NpcLifecycle;
+  TranscriptPayload.Command = TEXT("forbocai npc create doomguard");
+  TranscriptPayload.Status = ETranscriptStatus::Error;
+  TranscriptState = CreateTranscriptSlice().Reducer(
+      TranscriptState, TranscriptActions::RecordTranscript(TranscriptPayload));
   TestEqual("Transcript selector reads entries",
             TranscriptSelectors::SelectTranscriptEntries(TranscriptState).Num(),
+            2);
+  TestEqual("Transcript error selector derives failed command count",
+            TranscriptSelectors::SelectTranscriptErrorCount(TranscriptState),
             1);
 
   const FHarnessState HarnessState = CreateHarnessSlice().Reducer(

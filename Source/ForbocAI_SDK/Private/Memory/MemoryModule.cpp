@@ -2,12 +2,12 @@
 #include "Core/ue_fp.hpp"
 #include "HAL/PlatformFilemanager.h"
 #include "Memory/MemoryModuleInternal.h"
-#include "Memory/MemorySlice.h"
+#include "Features/Memory/MemorySlice.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "RuntimeStore.h"
 #include "Serialization/JsonSerializer.h"
-#include "Memory/MemoryThunks.h"
+#include "Features/Memory/MemoryThunks.h"
 
 /**
  * Factory function implementation

@@ -83,15 +83,6 @@ struct FNPCProcessTape {
   TArray<FRecalledMemory> Memories;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString Prompt;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FPromptConstraints Constraints;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString GeneratedOutput;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FString RulesetId;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
@@ -168,48 +159,6 @@ struct FDirectiveResponse {
 };
 
 USTRUCT(BlueprintType)
-struct FContextRequest {
-  GENERATED_BODY()
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  TArray<FRecalledMemory> Memories;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString Observation;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FAgentState NpcState;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString Persona;
-};
-
-USTRUCT(BlueprintType)
-struct FContextResponse {
-  GENERATED_BODY()
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString Prompt;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FPromptConstraints Constraints;
-};
-
-USTRUCT(BlueprintType)
-struct FVerdictRequest {
-  GENERATED_BODY()
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString GeneratedOutput;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString Observation;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FAgentState NpcState;
-};
-
-USTRUCT(BlueprintType)
 struct FVerdictResponse {
   GENERATED_BODY()
 
@@ -268,38 +217,6 @@ inline FDirectiveRequest DirectiveRequest(const FString &Observation,
   Request.Observation = Observation;
   Request.NpcState = NpcState;
   Request.ContextJson = ContextJson;
-  return Request;
-}
-
-/**
- * Builds the context request payload for a protocol turn.
- * User Story: As context composition, I need a factory that binds recalled
- * memories with observation and persona into one request.
- */
-inline FContextRequest ContextRequest(const TArray<FRecalledMemory> &Memories,
-                                      const FString &Observation,
-                                      const FAgentState &NpcState,
-                                      const FString &Persona) {
-  FContextRequest Request;
-  Request.Memories = Memories;
-  Request.Observation = Observation;
-  Request.NpcState = NpcState;
-  Request.Persona = Persona;
-  return Request;
-}
-
-/**
- * Builds the verdict request payload for a protocol turn.
- * User Story: As verdict validation, I need a factory that packages generated
- * output with the original observation and NPC state.
- */
-inline FVerdictRequest VerdictRequest(const FString &GeneratedOutput,
-                                      const FString &Observation,
-                                      const FAgentState &NpcState) {
-  FVerdictRequest Request;
-  Request.GeneratedOutput = GeneratedOutput;
-  Request.Observation = Observation;
-  Request.NpcState = NpcState;
   return Request;
 }
 
