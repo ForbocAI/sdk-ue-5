@@ -226,6 +226,33 @@ inline rtk::ActionCreator<bool> SetHiddenActionCreator() {
   return C;
 }
 
+struct FPatchPlayerPayload {
+  FString Name;
+  bool bHasName;
+  int32 Hp;
+  bool bHasHp;
+  bool bHidden;
+  bool bHasHidden;
+  FPosition Position;
+  bool bHasPosition;
+  TArray<FString> Inventory;
+  bool bHasInventory;
+  FPatchPlayerPayload()
+      : bHasName(false), Hp(0), bHasHp(false), bHidden(false),
+        bHasHidden(false), bHasPosition(false), bHasInventory(false) {}
+};
+
+/**
+ * Returns the cached action creator for targeted player updates.
+ * User Story: As RTK-style player reducers, I need explicit field patch payloads
+ * so the reducer owns the state shape instead of accepting arbitrary merges.
+ */
+inline rtk::ActionCreator<FPatchPlayerPayload> PatchPlayerActionCreator() {
+  static auto C =
+      rtk::createAction<FPatchPlayerPayload>(TEXT("testgame/player/patchPlayer"));
+  return C;
+}
+
 namespace PlayerActions {
 /**
  * Creates an action that moves the player.
@@ -243,7 +270,27 @@ inline rtk::AnyAction SetPosition(const FPosition &P) {
 inline rtk::AnyAction SetHidden(bool H) {
   return SetHiddenActionCreator()(H);
 }
+/**
+ * Creates an action that patches selected player fields.
+ * User Story: As scenario setup, I need targeted player patches so optional
+ * updates do not replace the whole player state shape.
+ */
+inline rtk::AnyAction PatchPlayer(const FPatchPlayerPayload &P) {
+  return PatchPlayerActionCreator()(P);
+}
 } // namespace PlayerActions
+
+namespace PlayerSelectors {
+inline FString SelectPlayerName(const FPlayerState &S) { return S.Name; }
+inline int32 SelectPlayerHp(const FPlayerState &S) { return S.Hp; }
+inline bool SelectPlayerHidden(const FPlayerState &S) { return S.bHidden; }
+inline FPosition SelectPlayerPosition(const FPlayerState &S) {
+  return S.Position;
+}
+inline TArray<FString> SelectPlayerInventory(const FPlayerState &S) {
+  return S.Inventory;
+}
+} // namespace PlayerSelectors
 
 /**
  * Builds the player slice for the test game.
@@ -267,6 +314,28 @@ inline rtk::Slice<FPlayerState> CreatePlayerSlice() {
                                     -> FPlayerState {
                                   FPlayerState Next = S;
                                   Next.bHidden = A.PayloadValue;
+                                  return Next;
+                                });
+    Builder.addCase(PatchPlayerActionCreator(),
+      [](const FPlayerState &S,
+                                   const rtk::Action<FPatchPlayerPayload> &A)
+                                    -> FPlayerState {
+                                  FPlayerState Next = S;
+                                  Next.Name = A.PayloadValue.bHasName
+                                                  ? A.PayloadValue.Name
+                                                  : Next.Name;
+                                  Next.Hp = A.PayloadValue.bHasHp
+                                                ? A.PayloadValue.Hp
+                                                : Next.Hp;
+                                  Next.bHidden = A.PayloadValue.bHasHidden
+                                                     ? A.PayloadValue.bHidden
+                                                     : Next.bHidden;
+                                  Next.Position = A.PayloadValue.bHasPosition
+                                                      ? A.PayloadValue.Position
+                                                      : Next.Position;
+                                  Next.Inventory = A.PayloadValue.bHasInventory
+                                                       ? A.PayloadValue.Inventory
+                                                       : Next.Inventory;
                                   return Next;
                                 });
   });
@@ -538,13 +607,25 @@ inline rtk::Slice<FSocialState> CreateSocialSlice() {
 
 namespace GameBridgeActions {
 
+struct FSetBridgeRulesPayload {
+  int32 MaxJumpForce;
+  bool bHasMaxJumpForce;
+  int32 MaxMoveDistance;
+  bool bHasMaxMoveDistance;
+  FString ActivePreset;
+  bool bHasActivePreset;
+  FSetBridgeRulesPayload()
+      : MaxJumpForce(0), bHasMaxJumpForce(false), MaxMoveDistance(0),
+        bHasMaxMoveDistance(false), bHasActivePreset(false) {}
+};
+
 /**
  * Returns the cached action creator for bridge-rule updates.
  * User Story: As game-specific bridge rules, I need a reusable action creator
  * so the current bridge rules can be swapped consistently.
  */
-inline rtk::ActionCreator<FBridgeRulesState> SetBridgeRulesActionCreator() {
-  static auto C = rtk::createAction<FBridgeRulesState>(
+inline rtk::ActionCreator<FSetBridgeRulesPayload> SetBridgeRulesActionCreator() {
+  static auto C = rtk::createAction<FSetBridgeRulesPayload>(
       TEXT("testgame/bridge/setBridgeRules"));
   return C;
 }
@@ -565,8 +646,19 @@ inline rtk::ActionCreator<FString> LoadBridgePresetActionCreator() {
  * User Story: As bridge-rule setup, I need set-rule actions so scenarios can
  * apply a complete local ruleset in one dispatch.
  */
+inline rtk::AnyAction SetBridgeRules(const FSetBridgeRulesPayload &P) {
+  return SetBridgeRulesActionCreator()(P);
+}
+
 inline rtk::AnyAction SetBridgeRules(const FBridgeRulesState &R) {
-  return SetBridgeRulesActionCreator()(R);
+  FSetBridgeRulesPayload Payload;
+  Payload.MaxJumpForce = R.MaxJumpForce;
+  Payload.bHasMaxJumpForce = true;
+  Payload.MaxMoveDistance = R.MaxMoveDistance;
+  Payload.bHasMaxMoveDistance = true;
+  Payload.ActivePreset = R.ActivePreset;
+  Payload.bHasActivePreset = true;
+  return SetBridgeRules(Payload);
 }
 /**
  * Creates an action that loads a named bridge preset.
@@ -578,6 +670,18 @@ inline rtk::AnyAction LoadBridgePreset(const FString &P) {
 }
 
 } // namespace GameBridgeActions
+
+namespace GameBridgeSelectors {
+inline int32 SelectBridgeMaxJumpForce(const FBridgeRulesState &S) {
+  return S.MaxJumpForce;
+}
+inline int32 SelectBridgeMaxMoveDistance(const FBridgeRulesState &S) {
+  return S.MaxMoveDistance;
+}
+inline FString SelectBridgeActivePreset(const FBridgeRulesState &S) {
+  return S.ActivePreset;
+}
+} // namespace GameBridgeSelectors
 
 /**
  * Builds the game-specific bridge slice.
@@ -591,8 +695,19 @@ inline rtk::Slice<FBridgeRulesState> CreateGameBridgeSlice() {
   [](rtk::ActionReducerMapBuilder<FBridgeRulesState> &Builder) {
     Builder.addCase(GameBridgeActions::SetBridgeRulesActionCreator(),
       [](const FBridgeRulesState &S,
-                   const rtk::Action<FBridgeRulesState> &A) -> FBridgeRulesState {
-                  return A.PayloadValue;
+                   const rtk::Action<GameBridgeActions::FSetBridgeRulesPayload> &A)
+                      -> FBridgeRulesState {
+                  FBridgeRulesState Next = S;
+                  Next.MaxJumpForce = A.PayloadValue.bHasMaxJumpForce
+                                          ? A.PayloadValue.MaxJumpForce
+                                          : Next.MaxJumpForce;
+                  Next.MaxMoveDistance = A.PayloadValue.bHasMaxMoveDistance
+                                             ? A.PayloadValue.MaxMoveDistance
+                                             : Next.MaxMoveDistance;
+                  Next.ActivePreset = A.PayloadValue.bHasActivePreset
+                                          ? A.PayloadValue.ActivePreset
+                                          : Next.ActivePreset;
+                  return Next;
                 });
     Builder.addCase(GameBridgeActions::LoadBridgePresetActionCreator(),
       [](const FBridgeRulesState &S,
