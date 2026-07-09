@@ -9,7 +9,7 @@
 #   1. UE conformance (check-ue-conformance.sh)
 #   2. FP conformance (check-ue-fp-conformance.sh)
 #   3. Thin-wrapper guardrails (check-thin-wrapper-guardrails.sh)
-#   4. CLI command parity (check-cli-command-parity.py)
+#   4. SDK parity inventory and CLI command parity (check-sdk-parity.py)
 #   5. Test-game executor-boundary guard (check-test-game-executor-boundary.sh)
 #   6. Product boundary audit (check-product-boundary.sh)
 #   7. API contract parity (check-api-contract-parity.py)
@@ -35,7 +35,7 @@ UE_CONFORMANCE_STATUS="skipped"
 FP_CONFORMANCE_STATUS="skipped"
 THIN_WRAPPER_STATUS="skipped"
 TEST_GAME_BOUNDARY_STATUS="skipped"
-CLI_COMMAND_PARITY_STATUS="skipped"
+SDK_PARITY_STATUS="skipped"
 PRODUCT_BOUNDARY_STATUS="skipped"
 CONTRACT_PARITY_STATUS="skipped"
 HANDLER_CLASSIFICATION_STATUS="skipped"
@@ -167,9 +167,9 @@ run_check "FP Conformance (no loops, no classes, no mutation)" \
 run_check "Thin-Wrapper Guardrails (command surface rules)" \
   "$SCRIPT_DIR/check-thin-wrapper-guardrails.sh" THIN_WRAPPER_STATUS
 
-# ── Phase 3b: CLI command parity ──
-run_check "CLI Command Parity (UE mirrors TS Node matrix)" \
-  "$SCRIPT_DIR/check-cli-command-parity.py" CLI_COMMAND_PARITY_STATUS
+# ── Phase 3b: SDK parity inventory + CLI command parity ──
+run_check "SDK Parity (core/node/test-game inventory and CLI keys)" \
+  "$SCRIPT_DIR/check-sdk-parity.py" SDK_PARITY_STATUS
 
 # ── Phase 3c: Test-game executor boundary ──
 run_check "Test-game executor boundary (no TestGameLib.h, no shadow executor)" \
@@ -260,6 +260,7 @@ echo "Parity Verification Checklist:"
 echo "  [$(mark_for_status "$UE_CONFORMANCE_STATUS")] UE conformance (structural)"
 echo "  [$(mark_for_status "$FP_CONFORMANCE_STATUS")] FP conformance (immutability)"
 echo "  [$(mark_for_status "$THIN_WRAPPER_STATUS")] Thin-wrapper guardrails"
+echo "  [$(mark_for_status "$SDK_PARITY_STATUS")] SDK parity inventory and CLI keys"
 echo "  [$(mark_for_status "$TEST_GAME_BOUNDARY_STATUS")] Test-game executor boundary"
 echo "  [$(mark_for_status "$PRODUCT_BOUNDARY_STATUS")] Product boundary audit"
 if [ "$QUICK_MODE" -eq 1 ]; then
