@@ -2196,19 +2196,18 @@ mergeHeaders(const TMap<FString, FString> &BaseHeaders,
 inline void addHeaderLineRecursive(const TArray<FString> &HeaderLines,
                                    int32 Index,
                                    TMap<FString, FString> &OutHeaders) {
-  Index >= HeaderLines.Num()
-      ? void()
-      : [&]() {
-          FString Key;
-          FString Value;
-          return HeaderLines[Index].Split(TEXT(":"), &Key, &Value)
-                     ? (Key.TrimStartAndEndInline(),
-                        Value.TrimStartAndEndInline(),
-                        OutHeaders.Add(Key, Value),
-                        OutHeaders.Add(Key.ToLower(), Value), void())
-                     : void();
-        }(),
-    addHeaderLineRecursive(HeaderLines, Index + 1, OutHeaders);
+  if (Index >= HeaderLines.Num()) {
+    return;
+  }
+
+  FString Key;
+  FString Value;
+  HeaderLines[Index].Split(TEXT(":"), &Key, &Value)
+      ? (Key.TrimStartAndEndInline(), Value.TrimStartAndEndInline(),
+         OutHeaders.Add(Key, Value), OutHeaders.Add(Key.ToLower(), Value),
+         void())
+      : void();
+  addHeaderLineRecursive(HeaderLines, Index + 1, OutHeaders);
 }
 
 inline TMap<FString, FString> responseHeaders(FHttpResponsePtr Res) {

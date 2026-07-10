@@ -14,7 +14,7 @@ public class ForbocAI_SDK : ModuleRules
 		 *
 		 * Architecture note (0.4.0+): NPC SLM inference is API-hosted via the
 		 * proprietary ForbocAI-NPC-SLM model. The SDK no longer ships or links
-		 * llama.cpp — ThirdParty/llama.cpp was removed. Local capabilities
+		 * a local SLM runtime. Local capabilities
 		 * retained by the SDK: vector memory (sqlite-vss), actor identification,
 		 * and web3/soul transport.
 		 */

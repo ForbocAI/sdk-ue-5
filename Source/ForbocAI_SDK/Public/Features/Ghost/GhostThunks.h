@@ -6,6 +6,7 @@
 #include "Errors.h"
 #include "Features/API/APISlice.h"
 #include "Features/Ghost/GhostSlice.h"
+#include "Features/Ghost/Local/LocalThunks.h"
 #include "RuntimeConfig.h"
 
 namespace rtk {
@@ -143,13 +144,6 @@ stopGhostThunk(const FString &SessionId) {
         });
   };
 }
-
-/**
- * Local ghost execution (no API). Defined in GhostModule.cpp (uses GhostInternal).
- * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
- */
-ThunkAction<FGhostTestResult, FRuntimeState>
-runLocalGhostTestThunk(const FAgent &Agent, const FString &Scenario);
 
 inline ThunkAction<TArray<FGhostHistoryEntry>, FRuntimeState>
 getGhostHistoryThunk(int32 Limit = 10) {

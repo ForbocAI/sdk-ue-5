@@ -39,7 +39,14 @@ extern rtk::Api<FRuntimeState> ForbocAiApi;
 } // namespace APISlice
 
 #include "API/APICodecs.h"
-#include "Endpoints/EndpointsThunks.h"
+#include "Endpoints/EndpointsApi.h"
+#include "Endpoints/Bridge/BridgeApi.h"
+#include "Endpoints/Ghost/GhostApi.h"
+#include "Endpoints/Memory/MemoryApi.h"
+#include "Endpoints/NPC/NPCApi.h"
+#include "Endpoints/Rules/RulesApi.h"
+#include "Endpoints/Soul/SoulApi.h"
+#include "Endpoints/System/SystemApi.h"
 
 namespace APISlice {
 

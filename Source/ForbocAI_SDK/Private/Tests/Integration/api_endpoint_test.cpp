@@ -8,7 +8,7 @@
  */
 
 #include "API/APICodecs.h"
-#include "Features/API/Endpoints/EndpointsThunks.h"
+#include "Features/API/APISlice.h"
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "GenericPlatform/GenericPlatformHttp.h"
