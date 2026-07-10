@@ -25,20 +25,13 @@ bool FRtkApiTest::RunTest(const FString &Parameters) {
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
   GetUserEndpoint.RequestBuilder = [](const FString &UserId) {
-    return func::AsyncResult<func::HttpResult<int32>>::create(
+    return func::AsyncResult<QueryReturnValue<int32>>::create(
         [UserId](auto Resolve, auto Reject) {
           if (UserId == TEXT("error")) {
-            func::HttpResult<int32> FailedRes;
-            FailedRes.bSuccess = false;
-            FailedRes.error = "Mock Network Failure";
-            FailedRes.ResponseCode = 500;
-            Resolve(FailedRes);
+            Resolve(QueryReturnValue<int32>::failure(
+                FetchBaseQueryError::fetchError(TEXT("Mock Network Failure"))));
           } else {
-            func::HttpResult<int32> SuccessRes;
-            SuccessRes.bSuccess = true;
-            SuccessRes.data = 42;
-            SuccessRes.ResponseCode = 200;
-            Resolve(SuccessRes);
+            Resolve(QueryReturnValue<int32>::success(42));
           }
         });
   };

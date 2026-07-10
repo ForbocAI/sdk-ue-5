@@ -1,6 +1,5 @@
 #include "CLI/CliHandlers.h"
 #include "CLI/CliOperations.h"
-#include "Core/ThunkDetail.h"
 #include "RuntimeConfig.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/PlatformFileManager.h"

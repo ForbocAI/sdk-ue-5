@@ -3,8 +3,8 @@
 #include "Core/rtk.hpp"
 #include "Core/ue_fp.hpp"
 
-#include "Core/ThunkDetail.h"
 #include "Errors.h"
+#include "Features/API/APISlice.h"
 #include "Features/Ghost/GhostSlice.h"
 #include "RuntimeConfig.h"
 

@@ -610,6 +610,10 @@ DownloadInstructionFromObject(const TSharedPtr<FJsonObject> &Object) {
              ? Instruction
              : (Instruction.GatewayUrl = OptionalStringFromField(
                     Object, TEXT("adiGatewayUrl")),
+                Instruction.DownloadUrl = OptionalStringFromField(
+                    Object, TEXT("adiDownloadUrl")),
+                Instruction.AdiAuthHeader = OptionalStringFromField(
+                    Object, TEXT("adiAuthHeader")),
                 Instruction.TxId = OptionalStringFromField(
                     Object, TEXT("adiExpectedTxId")),
                 Instruction.ExpectedTxId = Instruction.TxId, Instruction);

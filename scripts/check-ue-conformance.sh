@@ -79,14 +79,14 @@ fi
 
 # 3) No direct FHttpModule::Get().CreateRequest() outside approved adapter layer.
 #    Approved locations (Public + Private):
-#      AsyncHttp.h       — canonical HTTP adapter (all SDK HTTP goes through here)
-#      ThunkDetail.h     — Arweave transport (binary payloads, retries, custom timeouts)
+#      rtk.hpp           — canonical Redux Toolkit / RTK Query fetchBaseQuery adapter
+#      Feature Thunks    — non-Forboc external transport (binary payloads, retries, custom timeouts)
 #      BridgeModule.cpp  — lazy HTTP wrapper for bridge rules
 #      NativeStorage.cpp — binary file download for native deps
 DIRECT_HTTP="$(rg -n 'FHttpModule::Get\(\)\.CreateRequest\(\)' \
   "${FIRST_PARTY_ROOTS[@]}" \
-  --glob '!**/Core/AsyncHttp.h' \
-  --glob '!**/Core/ThunkDetail.h' \
+  --glob '!**/Core/rtk.hpp' \
+  --glob '!**/Features/Soul/SoulThunks.h' \
   --glob '!**/Bridge/BridgeModule.cpp' \
   --glob '!**/NativeStorage.cpp' \
   --glob '!**/Tests/**' \
@@ -111,15 +111,17 @@ else
   echo "[ok] No class declarations in core FP zone"
 fi
 
-# 4b) AsyncHttp helper stays expression-style in the public FP helper surface.
-ASYNC_HTTP_IMPERATIVE="$(rg -n '\bif \(|\bfor \(|\bwhile \(' \
-  "$SRC/Public/Core/AsyncHttp.h" \
+# 4b) The retired AsyncHttp adapter must not reappear. SDK-to-API transport
+#     belongs to rtk.hpp's RTK Query fetchBaseQuery equivalent.
+ASYNC_HTTP_HITS="$(rg -n 'AsyncHttp|Core/AsyncHttp' \
+  "${FIRST_PARTY_ROOTS[@]}" \
   2>/dev/null | normalize_crlf || true)"
-if [ -n "$ASYNC_HTTP_IMPERATIVE" ]; then
-  echo "[warn] Imperative control flow remains in AsyncHttp.h (tracked for remediation):"
-  echo "$ASYNC_HTTP_IMPERATIVE"
+if [ -n "$ASYNC_HTTP_HITS" ]; then
+  echo "[fail] Retired AsyncHttp adapter reference found:"
+  echo "$ASYNC_HTTP_HITS"
+  STATUS=1
 else
-  echo "[ok] AsyncHttp.h stays expression-style"
+  echo "[ok] Retired AsyncHttp adapter is absent"
 fi
 
 # 5) No FPlatformProcess::CreateProc outside approved CLI/setup code.

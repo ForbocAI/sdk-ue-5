@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import re
 import sys
 import tempfile
 
@@ -47,6 +48,14 @@ CASES: list[Case] = [
          {"RTK-TYPES-002"}),
     Case("setter-action", "Source/Features/Demo/DemoActions.h",
          "void SetPlayerHealth(int v);", {"RTK-ACTION-002"}),
+    Case("api-without-factory", "Source/Features/Demo/DemoApi.h",
+         "rtk::Api<FState> DemoApi;", {"RTK-API-001"}),
+    Case("api-raw-http", "Source/Features/Demo/DemoApi.h",
+         "auto endpoint = rtk::injectEndpoints(api, desc); FHttpModule::Get();",
+         {"RTK-API-002"}),
+    Case("clean-api", "Source/Features/Demo/DemoApi.h",
+         "auto api = rtk::createApi<FState>(TEXT(\"demo\"), TArray<FString>{TEXT(\"Demo\")}); auto endpoint = rtk::injectEndpoints(api, desc); bool providesTags = true;",
+         set(), {"RTK-STRUCT-001", "RTK-API-001", "RTK-API-002", "RTK-QUERY-001"}),
     Case("switch-reducer", "Source/Features/Demo/DemoSlice.h",
          "int r(int s, Act action){ switch(action.type){ default: return s; } }", {"RTK-SLICE-002"}),
     Case("createreducer-ok", "Source/Features/Demo/DemoSlice.h",
@@ -78,6 +87,10 @@ CASES: list[Case] = [
          "int x;", {"RTK-STRUCT-001"}),
     Case("bad-leaf-name", "Source/Features/Demo/Reducers.h",
          "int x;", {"RTK-STRUCT-001"}),
+    Case("wrong-domain-types", "Source/Features/API/SystemTypes.h",
+         "struct FApiStatusResponse { FString Status; };", {"RTK-STRUCT-001"}),
+    Case("clean-nearest-domain-types", "Source/Features/API/APITypes.h",
+         "struct FApiStatusResponse { FString Status; };", set(), {"RTK-STRUCT-001"}),
     Case("clean-types", "Source/Features/Demo/State/StateTypes.h",
          "struct FDemo { int Health; FString Name; };", set(),
          {"RTK-TYPES-001", "RTK-TYPES-002", "RTK-TYPES-004"}),
@@ -85,11 +98,17 @@ CASES: list[Case] = [
 
 
 def run_case(root: Path, plugins: dict, case: Case) -> list[str]:
-    path = root / case.rel
+    case_root = root / re.sub(r"[^A-Za-z0-9_.-]+", "_", case.name)
+    path = case_root / case.rel
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(case.body, encoding="utf-8")
-    unit = build_unit(path, root)
-    return [finding.rule_id for finding in check_redux.check_unit(unit, plugins)]
+    return [
+        finding.rule_id
+        for finding in check_redux.collect_findings(
+            case_root,
+            [case_root / "Source" / "Features", case_root / "Source" / "Views"],
+        )
+    ]
 
 
 def main() -> int:

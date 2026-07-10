@@ -85,7 +85,7 @@ FP_SUBSTRATE_RE = re.compile(
 UE_REQUIRED_FP_SURFACE = (
     "Maybe", "Either", "fmap", "mbind", "match", "or_else", "from_nullable",
     "compose", "curry", "fold", "filter", "traverse", "multi_match",
-    "Dispatcher", "HttpResult", "AsyncResult",
+    "Dispatcher", "AsyncResult",
 )
 TS_REQUIRED_FP_EXPORTS = (
     "just", "nothing", "fmap", "mbind", "match", "orElse", "isJust",
@@ -132,7 +132,7 @@ COMMAND_DIRECT_HTTP = register(Rule(
     "FP-SOURCE-005",
     Severity.HIGH,
     "direct HTTP request creation in command handler",
-    "Command handlers must dispatch through runtime operations, store thunks, HttpOps, or AsyncHttp adapters instead of creating requests directly.",
+    "Command handlers must dispatch through runtime operations, store thunks, or RTK Query endpoints instead of creating requests directly.",
     "rtk/side-effects: effects live in operation/thunk/adapters, not command surfaces",
 ))
 IF_STATEMENT = register(Rule(

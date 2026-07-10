@@ -9,8 +9,8 @@
 #include "TestGame/TestGameCommandSurface.h"
 #include "TestGame/TestGameContract.h"
 #include "TestGame/Views/Terminal/TerminalView.h"
+#include "TestGame/Features/Systems/Harness/HarnessThunks.h"
 #include "TestGame/Features/Systems/Terminal/TerminalListeners.h"
-#include "TestGame/TestGameRuntime.h"
 #include "Core/ue_fp.hpp"
 #include "HAL/PlatformProcess.h"
 

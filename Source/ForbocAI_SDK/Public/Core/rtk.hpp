@@ -3,6 +3,15 @@
 #define RTK_HPP
 
 #include "CoreMinimal.h"
+#include "Dom/JsonObject.h"
+#include "Errors.h"
+#include "GenericPlatform/GenericPlatformHttp.h"
+#include "HttpModule.h"
+#include "Interfaces/IHttpRequest.h"
+#include "Interfaces/IHttpResponse.h"
+#include "JsonObjectConverter.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 #include "ue_fp.hpp"
 #include <functional>
 #include <memory>
@@ -1404,6 +1413,33 @@ struct AsyncThunkConfig {
 };
 
 namespace detail {
+/**
+ * Wraps an already available value in a resolved AsyncResult.
+ * User Story: As thunk authors, I need synchronous values adapted into
+ * AsyncResult so feature workflows can compose through the RTK async contract.
+ */
+template <typename T>
+inline func::AsyncResult<T> ResolveAsync(const T &Value) {
+  return func::createAsyncResult<T>(
+      [Value](std::function<void(T)> Resolve,
+              std::function<void(std::string)> Reject) { Resolve(Value); });
+}
+
+/**
+ * Wraps a UE string error in a rejected AsyncResult.
+ * User Story: As thunk authors, I need UE-string failures adapted into
+ * AsyncResult so feature workflows can reject through the RTK async contract.
+ */
+template <typename T>
+inline func::AsyncResult<T> RejectAsync(const FString &Error) {
+  const std::string Utf8Error = TCHAR_TO_UTF8(*Error);
+  return func::createAsyncResult<T>(
+      [Utf8Error](std::function<void(T)> Resolve,
+                  std::function<void(std::string)> Reject) {
+        Reject(Utf8Error);
+      });
+}
+
 template <typename State, typename CreatorT, typename ReducerT>
 ActionReducerMapBuilder<State> &
 addAsyncThunkCaseWhen(ActionReducerMapBuilder<State> &Builder,
@@ -1790,14 +1826,567 @@ std::function<Result(const State &)> createSelector(
 }
 
 /**
- * Phase 7: RTK Query Equivalent (API Slice)
+ * Phase 7: RTK Query
  * User Story: As a maintainer, I need this implementation note so I can understand which milestone behavior the surrounding code is preserving.
  */
+
+enum class QueryStatus {
+  uninitialized,
+  pending,
+  fulfilled,
+  rejected,
+};
+
+typedef FString ResponseHandler;
+
+struct FetchArgs {
+  FString url;
+  FString method;
+  FString body;
+  ResponseHandler responseHandler;
+  TMap<FString, FString> headers;
+  TMap<FString, FString> params;
+  int32 timeout;
+
+  FetchArgs() : method(TEXT("GET")), timeout(0) {}
+};
+
+struct FetchBaseQueryArgs {
+  FString baseUrl;
+  TMap<FString, FString> headers;
+  ResponseHandler responseHandler;
+  int32 timeout;
+
+  FetchBaseQueryArgs() : responseHandler(TEXT("json")), timeout(0) {}
+};
+
+struct FetchBaseQueryRequest {
+  FString url;
+  FString method;
+  FString body;
+  TMap<FString, FString> headers;
+};
+
+struct FetchBaseQueryResponse {
+  int32 status;
+  FString data;
+  TMap<FString, FString> headers;
+
+  FetchBaseQueryResponse() : status(0) {}
+};
+
+struct FetchBaseQueryMeta {
+  FetchBaseQueryRequest request;
+  func::Maybe<FetchBaseQueryResponse> response;
+
+  FetchBaseQueryMeta()
+      : response(func::nothing<FetchBaseQueryResponse>()) {}
+};
+
+struct FetchBaseQueryError {
+  FString status;
+  int32 statusCode;
+  int32 originalStatus;
+  FString data;
+  FString error;
+
+  FetchBaseQueryError() : statusCode(0), originalStatus(0) {}
+
+  static FetchBaseQueryError httpError(int32 StatusCode, const FString &Data) {
+    FetchBaseQueryError Value;
+    Value.status = FString::FromInt(StatusCode);
+    Value.statusCode = StatusCode;
+    Value.data = Data;
+    return Value;
+  }
+
+  static FetchBaseQueryError fetchError(const FString &Error) {
+    FetchBaseQueryError Value;
+    Value.status = TEXT("FETCH_ERROR");
+    Value.error = Error;
+    return Value;
+  }
+
+  static FetchBaseQueryError parsingError(int32 OriginalStatus,
+                                          const FString &Data,
+                                          const FString &Error) {
+    FetchBaseQueryError Value;
+    Value.status = TEXT("PARSING_ERROR");
+    Value.originalStatus = OriginalStatus;
+    Value.data = Data;
+    Value.error = Error;
+    return Value;
+  }
+
+  static FetchBaseQueryError timeoutError(const FString &Error) {
+    FetchBaseQueryError Value;
+    Value.status = TEXT("TIMEOUT_ERROR");
+    Value.error = Error;
+    return Value;
+  }
+
+  static FetchBaseQueryError customError(const FString &Error,
+                                         const FString &Data = TEXT("")) {
+    FetchBaseQueryError Value;
+    Value.status = TEXT("CUSTOM_ERROR");
+    Value.data = Data;
+    Value.error = Error;
+    return Value;
+  }
+};
+
+struct BaseQueryApi {
+  FString endpoint;
+  FString type;
+  bool forced;
+  FString queryCacheKey;
+
+  BaseQueryApi() : type(TEXT("query")), forced(false) {}
+};
+
+template <typename T = FString, typename E = FetchBaseQueryError,
+          typename M = FetchBaseQueryMeta>
+struct QueryReturnValue {
+  func::Maybe<E> error;
+  func::Maybe<T> data;
+  func::Maybe<M> meta;
+
+  QueryReturnValue()
+      : error(func::nothing<E>()), data(func::nothing<T>()),
+        meta(func::nothing<M>()) {}
+
+  static QueryReturnValue<T, E, M> success(
+      const T &Data, const func::Maybe<M> &Meta = func::nothing<M>()) {
+    QueryReturnValue<T, E, M> Value;
+    Value.data = func::just(Data);
+    Value.meta = Meta;
+    return Value;
+  }
+
+  static QueryReturnValue<T, E, M> failure(
+      const E &Error, const func::Maybe<M> &Meta = func::nothing<M>()) {
+    QueryReturnValue<T, E, M> Value;
+    Value.error = func::just(Error);
+    Value.meta = Meta;
+    return Value;
+  }
+};
+
+template <typename Args = FetchArgs, typename Result = FString,
+          typename Error = FetchBaseQueryError,
+          typename DefinitionExtraOptions = FEmptyPayload,
+          typename Meta = FetchBaseQueryMeta>
+using BaseQueryFn =
+    std::function<func::AsyncResult<QueryReturnValue<Result, Error, Meta>>(
+        const Args &, const BaseQueryApi &, const DefinitionExtraOptions &)>;
+
+template <typename BaseQuery> struct BaseQueryTraits {};
+
+template <typename Args, typename Result, typename Error,
+          typename DefinitionExtraOptions, typename Meta>
+struct BaseQueryTraits<std::function<
+    func::AsyncResult<QueryReturnValue<Result, Error, Meta>>(
+        const Args &, const BaseQueryApi &, const DefinitionExtraOptions &)>> {
+  typedef Args Arg;
+  typedef Result ResultType;
+  typedef Error ErrorType;
+  typedef DefinitionExtraOptions ExtraOptionsType;
+  typedef Meta MetaType;
+};
+
+template <typename BaseQuery>
+using BaseQueryArg = typename BaseQueryTraits<BaseQuery>::Arg;
+
+template <typename BaseQuery>
+using BaseQueryResult = typename BaseQueryTraits<BaseQuery>::ResultType;
+
+template <typename BaseQuery>
+using BaseQueryError = typename BaseQueryTraits<BaseQuery>::ErrorType;
+
+template <typename BaseQuery>
+using BaseQueryExtraOptions =
+    typename BaseQueryTraits<BaseQuery>::ExtraOptionsType;
+
+template <typename BaseQuery>
+using BaseQueryMeta = typename BaseQueryTraits<BaseQuery>::MetaType;
+
+template <typename AdditionalArgs = FEmptyPayload,
+          typename AdditionalDefinitionExtraOptions = FEmptyPayload,
+          typename Config = FEmptyPayload>
+using BaseQueryEnhancer = std::function<BaseQueryFn<FetchArgs, FString>(
+    const BaseQueryFn<FetchArgs, FString> &, const Config &)>;
+
+namespace detail {
+
+template <typename T, typename Enable = void> struct JsonDeserializer;
+
+template <typename JsonValueT>
+bool deserializeStringArrayRecursive(
+    const TArray<TSharedPtr<JsonValueT>> &JsonValues, int32 Index,
+    TArray<FString> &OutValue) {
+  return Index == JsonValues.Num()
+             ? true
+             : !JsonValues[Index].IsValid()
+                   ? false
+                   : (OutValue.Add(JsonValues[Index]->AsString()),
+                      deserializeStringArrayRecursive(JsonValues, Index + 1,
+                                                      OutValue));
+}
+
+template <typename T, typename JsonValueT>
+bool deserializeStructArrayRecursive(
+    const TArray<TSharedPtr<JsonValueT>> &JsonValues, int32 Index,
+    TArray<T> &OutValue) {
+  const TSharedPtr<FJsonObject> JsonObject =
+      Index == JsonValues.Num()
+          ? TSharedPtr<FJsonObject>()
+          : (JsonValues[Index].IsValid() ? JsonValues[Index]->AsObject()
+                                         : TSharedPtr<FJsonObject>());
+  T Item;
+  return Index == JsonValues.Num()
+             ? true
+             : !JsonValues[Index].IsValid()
+                   ? false
+                   : !JsonObject.IsValid()
+                         ? false
+                         : !FJsonObjectConverter::JsonObjectToUStruct(
+                               JsonObject.ToSharedRef(), T::StaticStruct(),
+                               &Item, 0, 0)
+                               ? false
+                               : (OutValue.Add(Item),
+                                  deserializeStructArrayRecursive<T>(
+                                      JsonValues, Index + 1, OutValue));
+}
+
+inline bool isAbsoluteFetchUrl(const FString &Url) {
+  return Url.StartsWith(TEXT("http://")) || Url.StartsWith(TEXT("https://"));
+}
+
+inline FString trimTrailingSlash(const FString &Value) {
+  FString Copy = Value;
+  Copy.RemoveFromEnd(TEXT("/"));
+  return Copy;
+}
+
+inline FString trimLeadingSlash(const FString &Value) {
+  FString Copy = Value;
+  Copy.RemoveFromStart(TEXT("/"));
+  return Copy;
+}
+
+inline FString buildFetchUrl(const FString &BaseUrl, const FString &Url) {
+  return BaseUrl.IsEmpty() || isAbsoluteFetchUrl(Url)
+             ? Url
+             : trimTrailingSlash(BaseUrl) + TEXT("/") + trimLeadingSlash(Url);
+}
+
+inline void appendParamKeysRecursive(const TMap<FString, FString> &Params,
+                                     const TArray<FString> &Keys, int32 Index,
+                                     FString &Query) {
+  Index >= Keys.Num()
+      ? void()
+      : (Params.Find(Keys[Index])
+             ? (Query += (Query.IsEmpty() ? TEXT("?") : TEXT("&")) +
+                        FGenericPlatformHttp::UrlEncode(Keys[Index]) +
+                        TEXT("=") +
+                        FGenericPlatformHttp::UrlEncode(*Params.Find(Keys[Index])),
+                void())
+             : void(),
+         appendParamKeysRecursive(Params, Keys, Index + 1, Query));
+}
+
+inline FString appendFetchParams(const FString &Url,
+                                 const TMap<FString, FString> &Params) {
+  TArray<FString> Keys;
+  FString Query;
+  return Params.Num() == 0
+             ? Url
+             : (Params.GetKeys(Keys),
+                appendParamKeysRecursive(Params, Keys, 0, Query),
+                Url + Query);
+}
+
+inline bool isWriteMethod(const FString &Method) {
+  return Method == TEXT("POST") || Method == TEXT("PUT") ||
+         Method == TEXT("PATCH");
+}
+
+inline bool applyBody(IHttpRequest &Request, const FetchArgs &Args) {
+  return isWriteMethod(Args.method)
+             ? (!Args.headers.Contains(TEXT("Content-Type"))
+                    ? (Request.SetHeader(TEXT("Content-Type"),
+                                         TEXT("application/json")),
+                       void())
+                    : void(),
+                Request.SetContentAsString(Args.body), true)
+             : true;
+}
+
+inline bool applyTimeout(IHttpRequest &Request, const FetchArgs &Args,
+                         const FetchBaseQueryArgs &Options) {
+  const int32 Timeout = Args.timeout > 0 ? Args.timeout : Options.timeout;
+  return Timeout > 0
+             ? (Request.SetTimeout(static_cast<float>(Timeout) / 1000.0f),
+                true)
+             : true;
+}
+
+inline void applyHeaderKeysRecursive(IHttpRequest &Request,
+                                     const TMap<FString, FString> &Headers,
+                                     const TArray<FString> &Keys,
+                                     int32 Index) {
+  Index >= Keys.Num()
+      ? void()
+      : (Headers.Find(Keys[Index])
+             ? (Request.SetHeader(Keys[Index], *Headers.Find(Keys[Index])),
+                void())
+             : void(),
+         applyHeaderKeysRecursive(Request, Headers, Keys, Index + 1));
+}
+
+inline bool applyHeaders(IHttpRequest &Request,
+                         const TMap<FString, FString> &Headers) {
+  TArray<FString> Keys;
+  return (Headers.GetKeys(Keys),
+          applyHeaderKeysRecursive(Request, Headers, Keys, 0), true);
+}
+
+inline bool hasHeader(const TMap<FString, FString> &Headers,
+                      const FString &Name) {
+  return Headers.Contains(Name) || Headers.Contains(Name.ToLower());
+}
+
+inline bool applyAcceptHeader(IHttpRequest &Request,
+                              const TMap<FString, FString> &Headers,
+                              const ResponseHandler &Handler) {
+  return hasHeader(Headers, TEXT("Accept"))
+             ? true
+             : Handler == TEXT("json")
+                   ? (Request.SetHeader(TEXT("Accept"),
+                                        TEXT("application/json")),
+                      true)
+                   : Handler == TEXT("text")
+                         ? (Request.SetHeader(
+                                TEXT("Accept"),
+                                TEXT("text/plain, text/html, */*")),
+                            true)
+                         : true;
+}
+
+inline void mergeHeaderKeysRecursive(const TMap<FString, FString> &Source,
+                                     const TArray<FString> &Keys, int32 Index,
+                                     TMap<FString, FString> &Target) {
+  Index >= Keys.Num()
+      ? void()
+      : (Source.Find(Keys[Index])
+             ? (Target.Add(Keys[Index], *Source.Find(Keys[Index])), void())
+             : void(),
+         mergeHeaderKeysRecursive(Source, Keys, Index + 1, Target));
+}
+
+inline TMap<FString, FString>
+mergeHeaders(const TMap<FString, FString> &BaseHeaders,
+             const TMap<FString, FString> &ArgHeaders) {
+  TMap<FString, FString> Merged = BaseHeaders;
+  TArray<FString> Keys;
+  return (ArgHeaders.GetKeys(Keys),
+          mergeHeaderKeysRecursive(ArgHeaders, Keys, 0, Merged), Merged);
+}
+
+inline void addHeaderLineRecursive(const TArray<FString> &HeaderLines,
+                                   int32 Index,
+                                   TMap<FString, FString> &OutHeaders) {
+  Index >= HeaderLines.Num()
+      ? void()
+      : [&]() {
+          FString Key;
+          FString Value;
+          return HeaderLines[Index].Split(TEXT(":"), &Key, &Value)
+                     ? (Key.TrimStartAndEndInline(),
+                        Value.TrimStartAndEndInline(),
+                        OutHeaders.Add(Key, Value),
+                        OutHeaders.Add(Key.ToLower(), Value), void())
+                     : void();
+        }(),
+    addHeaderLineRecursive(HeaderLines, Index + 1, OutHeaders);
+}
+
+inline TMap<FString, FString> responseHeaders(FHttpResponsePtr Res) {
+  TMap<FString, FString> Headers;
+  return Res.IsValid()
+             ? (addHeaderLineRecursive(Res->GetAllHeaders(), 0, Headers),
+                Headers)
+             : Headers;
+}
+
+inline FString httpFailureMessage(int32 Code, const FString &Content) {
+  const FString Summary = Errors::summarizeHttpError(Code, Content);
+  return Summary;
+}
+
+inline FetchBaseQueryRequest fetchRequestMeta(const FetchArgs &Args,
+                                              const FString &ResolvedUrl,
+                                              const TMap<FString, FString> &Headers) {
+  FetchBaseQueryRequest Request;
+  return (Request.url = ResolvedUrl, Request.method = Args.method,
+          Request.body = Args.body, Request.headers = Headers, Request);
+}
+
+inline FetchBaseQueryResponse fetchResponseMeta(FHttpResponsePtr Res,
+                                                const FString &Content) {
+  FetchBaseQueryResponse Response;
+  return Res.IsValid()
+             ? (Response.status = Res->GetResponseCode(),
+                Response.data = Content,
+                Response.headers = responseHeaders(Res), Response)
+             : Response;
+}
+
+inline FetchBaseQueryMeta fetchMeta(
+    const FetchBaseQueryRequest &Request,
+    const func::Maybe<FetchBaseQueryResponse> &Response) {
+  FetchBaseQueryMeta Meta;
+  Meta.request = Request;
+  Meta.response = Response;
+  return Meta;
+}
+
+template <typename T>
+QueryReturnValue<T> decodeFetchContent(
+    const FString &Content, int32 Code,
+    const func::Maybe<FetchBaseQueryMeta> &Meta) {
+  T ResultPayload;
+  return Content.IsEmpty()
+             ? QueryReturnValue<T>::success(ResultPayload, Meta)
+             : JsonDeserializer<T>::Deserialize(Content, ResultPayload)
+                   ? QueryReturnValue<T>::success(ResultPayload, Meta)
+                   : QueryReturnValue<T>::failure(
+                         FetchBaseQueryError::parsingError(
+                             Code, Content, TEXT("JSON deserialization failed")),
+                         Meta);
+}
+
+template <typename T>
+void resolveFetchCompletion(
+    const std::function<void(QueryReturnValue<T>)> &Resolve,
+    const FetchBaseQueryRequest &RequestMeta, FHttpResponsePtr Res,
+    bool bWasSuccessful) {
+  const int32 Code = Res.IsValid() ? Res->GetResponseCode() : 0;
+  const FString Content = Res.IsValid() ? Res->GetContentAsString() : TEXT("");
+  const func::Maybe<FetchBaseQueryResponse> ResponseMeta =
+      Res.IsValid() ? func::just(fetchResponseMeta(Res, Content))
+                    : func::nothing<FetchBaseQueryResponse>();
+  const func::Maybe<FetchBaseQueryMeta> Meta =
+      func::just(fetchMeta(RequestMeta, ResponseMeta));
+
+  Resolve((!bWasSuccessful || !Res.IsValid())
+              ? QueryReturnValue<T>::failure(
+                    FetchBaseQueryError::fetchError(TEXT("Network failure")),
+                    Meta)
+              : (Code < 200 || Code >= 300)
+                    ? QueryReturnValue<T>::failure(
+                          FetchBaseQueryError::httpError(Code, Content), Meta)
+                    : decodeFetchContent<T>(Content, Code, Meta));
+}
+
+template <typename T, typename Enable> struct JsonDeserializer {
+  static bool Deserialize(const FString &Content, T &OutValue) {
+    return FJsonObjectConverter::JsonObjectStringToUStruct(Content, &OutValue,
+                                                           0, 0);
+  }
+};
+
+template <> struct JsonDeserializer<FString, void> {
+  static bool Deserialize(const FString &Content, FString &OutValue) {
+    OutValue = Content;
+    return true;
+  }
+};
+
+template <> struct JsonDeserializer<rtk::FEmptyPayload, void> {
+  static bool Deserialize(const FString &Content,
+                          rtk::FEmptyPayload &OutValue) {
+    return true;
+  }
+};
+
+template <> struct JsonDeserializer<TArray<FString>, void> {
+  static bool Deserialize(const FString &Content, TArray<FString> &OutValue) {
+    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Content);
+    TArray<TSharedPtr<FJsonValue>> JsonValues;
+    return !FJsonSerializer::Deserialize(Reader, JsonValues)
+               ? false
+               : (OutValue.Empty(JsonValues.Num()),
+                  deserializeStringArrayRecursive(JsonValues, 0, OutValue));
+  }
+};
+
+template <typename T> struct JsonDeserializer<TArray<T>, void> {
+  static bool Deserialize(const FString &Content, TArray<T> &OutValue) {
+    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Content);
+    TArray<TSharedPtr<FJsonValue>> JsonValues;
+    return !FJsonSerializer::Deserialize(Reader, JsonValues)
+               ? false
+               : (OutValue.Empty(JsonValues.Num()),
+                  deserializeStructArrayRecursive<T>(JsonValues, 0, OutValue));
+  }
+};
+
+} // namespace detail
+
+template <typename Result>
+BaseQueryFn<FetchArgs, Result, FetchBaseQueryError, FEmptyPayload,
+            FetchBaseQueryMeta>
+fetchBaseQuery(const FetchBaseQueryArgs &Options = FetchBaseQueryArgs()) {
+  return [Options](const FetchArgs &Args, const BaseQueryApi &Api,
+                   const FEmptyPayload &ExtraOptions)
+             -> func::AsyncResult<QueryReturnValue<Result>> {
+    (void)Api;
+    (void)ExtraOptions;
+    return func::createAsyncResult<QueryReturnValue<Result>>(
+        [Options, Args](
+            std::function<void(QueryReturnValue<Result>)> Resolve,
+            std::function<void(std::string)> Reject) {
+          const FString ResolvedUrl = detail::buildFetchUrl(Options.baseUrl,
+                                                            Args.url);
+          const FString ResolvedUrlWithParams =
+              detail::appendFetchParams(ResolvedUrl, Args.params);
+          const TMap<FString, FString> Headers =
+              detail::mergeHeaders(Options.headers, Args.headers);
+          const FetchBaseQueryRequest RequestMeta =
+              detail::fetchRequestMeta(Args, ResolvedUrlWithParams, Headers);
+          const ResponseHandler Handler =
+              !Args.responseHandler.IsEmpty() ? Args.responseHandler
+                                              : Options.responseHandler;
+          TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request =
+              FHttpModule::Get().CreateRequest();
+          Request->SetURL(ResolvedUrlWithParams);
+          Request->SetVerb(Args.method);
+          (void)Reject;
+          (void)detail::applyTimeout(*Request, Args, Options);
+          (void)detail::applyHeaders(*Request, Headers);
+          (void)detail::applyAcceptHeader(*Request, Headers, Handler);
+          (void)detail::applyBody(*Request, Args);
+
+          Request->OnProcessRequestComplete().BindLambda(
+              [Resolve, RequestMeta](FHttpRequestPtr Req, FHttpResponsePtr Res,
+                                     bool bWasSuccessful) {
+                (void)Req;
+                detail::resolveFetchCompletion<Result>(
+                    Resolve, RequestMeta, Res, bWasSuccessful);
+              });
+
+          Request->ProcessRequest();
+        });
+  };
+}
 
 struct FApiEndpointTag {
   FString Type;
   FString Id;
 };
+
+typedef FApiEndpointTag TagDescription;
 
 template <typename Arg, typename Result> struct ApiEndpoint {
   FString EndpointName;
@@ -1808,9 +2397,27 @@ template <typename Arg, typename Result> struct ApiEndpoint {
    * Abstract request builder/executor
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  std::function<func::AsyncResult<func::HttpResult<Result>>(const Arg &)>
+  std::function<func::AsyncResult<QueryReturnValue<Result>>(const Arg &)>
       RequestBuilder;
 };
+
+template <typename Arg, typename Result>
+using BaseEndpointDefinition = ApiEndpoint<Arg, Result>;
+
+template <typename Arg, typename Result>
+using EndpointDefinition = ApiEndpoint<Arg, Result>;
+
+template <typename Arg, typename Result>
+using QueryDefinition = ApiEndpoint<Arg, Result>;
+
+template <typename Arg, typename Result>
+using MutationDefinition = ApiEndpoint<Arg, Result>;
+
+template <typename Arg, typename Result>
+using InfiniteQueryDefinition = ApiEndpoint<Arg, Result>;
+
+template <typename Arg, typename Result>
+using EndpointDefinitions = TArray<ApiEndpoint<Arg, Result>>;
 
 /**
  * Simplified dynamic slice registry mapped by string path
@@ -1820,6 +2427,10 @@ template <typename State> struct Api {
   FString ReducerPath;
   TArray<FString> TagTypes;
 };
+
+template <typename State> using CreateApi = Api<State>;
+
+template <typename State> using CreateApiOptions = Api<State>;
 
 /**
  * @brief Creates an API slice registry with a defined path and tag types.
@@ -1840,26 +2451,32 @@ Api<State> createApi(const FString &ReducerPath,
 }
 
 /**
- * @brief Unwraps an HTTP result into an AsyncResult.
- * @signature template <typename Result> func::AsyncResult<Result> unwrapEndpointResult(func::HttpResult<Result> HttpResultValue)
- * @param HttpResultValue The HTTP result containing data or error.
+ * @brief Unwraps an RTK Query return value into an AsyncResult.
+ * @signature template <typename Result> func::AsyncResult<Result> unwrapEndpointResult(QueryReturnValue<Result> QueryResult)
+ * @param QueryResult The query return value containing data or error.
  * @return func::AsyncResult<Result> The async result that resolves or rejects based on success.
  *
  * User Story: As a developer writing endpoint queries, I need standard HTTP results translated directly into chainable AsyncResults.
  */
 template <typename Result>
 func::AsyncResult<Result>
-unwrapEndpointResult(func::HttpResult<Result> HttpResultValue) {
-  return HttpResultValue.bSuccess
+unwrapEndpointResult(QueryReturnValue<Result> QueryResult) {
+  return QueryResult.data.hasValue
              ? func::createAsyncResult<Result>(
-                   [HttpResultValue](std::function<void(Result)> Resolve,
-                                     std::function<void(std::string)> Reject) {
-                     Resolve(HttpResultValue.data);
+                   [QueryResult](std::function<void(Result)> Resolve,
+                                 std::function<void(std::string)> Reject) {
+                     Resolve(QueryResult.data.value);
                    })
              : func::createAsyncResult<Result>(
-                   [HttpResultValue](std::function<void(Result)> Resolve,
-                                     std::function<void(std::string)> Reject) {
-                     Reject(HttpResultValue.error);
+                   [QueryResult](std::function<void(Result)> Resolve,
+                                 std::function<void(std::string)> Reject) {
+                     const FString Error =
+                         QueryResult.error.hasValue
+                             ? (!QueryResult.error.value.error.IsEmpty()
+                                    ? QueryResult.error.value.error
+                                    : QueryResult.error.value.status)
+                             : TEXT("RTK Query endpoint returned no data");
+                     Reject(std::string(TCHAR_TO_UTF8(*Error)));
                    });
 }
 
@@ -1881,7 +2498,7 @@ injectEndpoints(const Api<State> &Slice,
       ThunkPrefix,
       [EndpointDesc](const Arg &arg, const ThunkApi<State> &api)
           -> func::AsyncResult<Result> {
-        return func::AsyncChain::then<func::HttpResult<Result>, Result>(
+        return func::AsyncChain::then<QueryReturnValue<Result>, Result>(
             EndpointDesc.RequestBuilder(arg), unwrapEndpointResult<Result>);
       });
 }

@@ -5,17 +5,17 @@
 
 // clang-format off
 #include "CoreMinimal.h"
-#include "SystemTypes.generated.h"
+#include "APITypes.generated.h"
 // clang-format on
 
 namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
-typedef func::Maybe<FString> FForbocAISDKPublicCoreSystemTypesHOptionalDomainId;
+typedef func::Maybe<FString> FForbocAISDKPublicFeaturesAPIAPITypesHOptionalDomainId;
 } } }
 
-
 /**
- * Api Status Response
- * User Story: As an SDK integrator, I need this type or module note so I can understand the role of the surrounding API surface quickly.
+ * API status response.
+ * User Story: As an SDK integrator, I need the API health response contract
+ * colocated with the API feature rather than the Core primitive layer.
  */
 USTRUCT(BlueprintType)
 struct FApiStatusResponse {

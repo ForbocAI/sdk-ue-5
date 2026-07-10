@@ -55,7 +55,7 @@ LIB_INCLUDES="$(rg -n '#include[[:space:]]+"[^"]*TestGame/TestGameLib\.h"' \
 if [ -n "$LIB_INCLUDES" ]; then
   echo "[fail] Files still include the retired TestGame/TestGameLib.h:"
   echo "$LIB_INCLUDES"
-  echo "       Include TestGame/TestGameRuntime.h for runtime-URL helpers" >&2
+  echo "       Include TestGame/Features/Systems/Harness/HarnessThunks.h for runtime-URL helpers" >&2
   echo "       or TestGame/Views/Terminal/TerminalView.h for ASCII rendering." >&2
   echo "       All command execution must use TestGame::CommandSurface." >&2
   STATUS=1
@@ -67,7 +67,7 @@ fi
 if [ -f "$SRC/Public/TestGame/TestGameLib.h" ] || [ -f "$TEST_GAME_SRC/Public/TestGame/TestGameLib.h" ]; then
   echo "[fail] TestGame/TestGameLib.h has been re-added. The retired" >&2
   echo "       in-process executor surface is retired — split helpers" >&2
-  echo "       into TestGameRuntime.h / Views/Terminal/TerminalView.h instead." >&2
+  echo "       into Features/Systems/Harness/HarnessThunks.h / Views/Terminal/TerminalView.h instead." >&2
   STATUS=1
 else
   echo "[ok] Retired TestGameLib.h is absent"

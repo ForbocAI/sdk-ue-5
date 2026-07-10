@@ -36,6 +36,7 @@ IMPORT_RE = re.compile(r'^\s*#\s*include\s+"([^"]+)"', re.MULTILINE)
 ROLE_BY_STEM: dict[str, str] = {
     "Actions": "actions",
     "Adapters": "adapters",
+    "Api": "api",
     "Listeners": "listeners",
     "Selectors": "selectors",
     "Slice": "slice",
@@ -49,6 +50,7 @@ ROLE_STEM_BY_ROLE = {role: stem for stem, role in ROLE_BY_STEM.items()}
 ROLE_GUIDANCE: dict[str, str] = {
     "actions": "Actions describe events or expose narrow UE dispatch facades; reducers own the state transition.",
     "adapters": "Adapters translate authored JSON, UE objects, or external data at boundaries without dispatching.",
+    "api": "Api owns RTK Query createApi/injectEndpoints boundaries for server data and cache lifecycles.",
     "listeners": "Listeners model reactive workflows that respond to future actions or state changes.",
     "selectors": "Selectors derive state and keep views from reading store internals directly.",
     "slice": "Slice owns createSlice assembly, initial state, and pure reducer transition functions.",
@@ -296,6 +298,13 @@ def role_for_stem(stem: str) -> str | None:
     return ROLE_BY_STEM.get(stem)
 
 
+def role_for_stem_suffix(stem: str) -> str | None:
+    for role_stem, role in sorted(ROLE_BY_STEM.items(), key=lambda item: len(item[0]), reverse=True):
+        if stem.endswith(role_stem):
+            return role
+    return None
+
+
 def _camel_name(value: str) -> str:
     return "".join(
         token[:1].upper() + token[1:]
@@ -341,7 +350,7 @@ def _qualified_role_for_path(path: Path) -> str | None:
 
 def role_for_path(path: Path) -> str | None:
     if _is_under_marker(path, "Features") or _is_under_marker(path, "Views"):
-        return _qualified_role_for_path(path)
+        return _qualified_role_for_path(path) or role_for_stem_suffix(path.stem)
     return role_for_stem(path.stem)
 
 

@@ -18,8 +18,8 @@
  * maintaining a local replica that drifts.
  */
 
-#include "Core/AsyncHttp.h"
 #include "CLI/CliOperations.h"
+#include "Core/rtk.hpp"
 #include "Core/ue_fp.hpp"
 #include "CoreMinimal.h"
 #include "RuntimeConfig.h"
@@ -305,13 +305,27 @@ inline FRawContractResponse FetchContractJson(
     const FString Url =
         FString::Printf(TEXT("%s/test-game/contract"), *ApiUrl);
 
-    const func::HttpResult<FString> Result =
-        Ops::waitForResult(
-            func::AsyncHttp::Get<FString>(Url, SDKConfig::GetApiKey()), 5.0);
+    rtk::FetchBaseQueryArgs Options;
+    const FString ApiKey = SDKConfig::GetApiKey();
+    !ApiKey.IsEmpty()
+        ? (Options.headers.Add(TEXT("Authorization"),
+                               FString(TEXT("Bearer ")) + ApiKey),
+           void())
+        : void();
+    rtk::FetchArgs Args;
+    Args.url = Url;
+    Args.method = TEXT("GET");
+    const rtk::QueryReturnValue<FString> Result = Ops::waitForResult(
+        rtk::fetchBaseQuery<FString>(Options)(
+            Args, rtk::BaseQueryApi(), rtk::FEmptyPayload{}),
+        5.0);
 
-    Response.bSuccess = Result.bSuccess && Result.ResponseCode == 200;
-    Response.ResponseCode = Result.ResponseCode;
-    Response.Body = Result.data;
+    Response.ResponseCode =
+        Result.meta.hasValue && Result.meta.value.response.hasValue
+            ? Result.meta.value.response.value.status
+            : 0;
+    Response.bSuccess = Result.data.hasValue && Response.ResponseCode == 200;
+    Response.Body = Result.data.hasValue ? Result.data.value : TEXT("");
     return Response;
   } catch (const std::exception &Error) {
     Response.Error = UTF8_TO_TCHAR(Error.what());

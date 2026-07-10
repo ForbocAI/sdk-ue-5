@@ -48,9 +48,9 @@ echo ""
 echo "[Rule 1] No direct HTTP calls in command surfaces..."
 for f in "${COMMAND_SURFACES[@]}"; do
   [ -f "$f" ] || continue
-  if rg -q "(AsyncHttp::Get|AsyncHttp::Post|FHttpModule|IHttpRequest)" "$f" 2>/dev/null; then
+  if rg -q "(fetchBaseQuery|FHttpModule|IHttpRequest)" "$f" 2>/dev/null; then
     echo "  ✗ VIOLATION: Direct HTTP call in $(basename "$f")"
-    rg -n "(AsyncHttp::Get|AsyncHttp::Post|FHttpModule|IHttpRequest)" "$f" 2>/dev/null
+    rg -n "(fetchBaseQuery|FHttpModule|IHttpRequest)" "$f" 2>/dev/null
     VIOLATIONS=$((VIOLATIONS + 1))
   fi
 done

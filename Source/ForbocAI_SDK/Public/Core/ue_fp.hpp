@@ -3,7 +3,7 @@
 #define UE_FP_HPP
 
 /**
- * @brief UE FP Core Library — Strict UE C++11 functional programming primitives. No C++14, C++17, or later language features are used; Unreal container overloads are first-class because this SDK is UE-only. This header is the canonical source of truth for the functional substrate. If surrounding docs disagree, this file wins. DESIGN PRINCIPLES: - Prefer structs and plain data for domain state. - Prefer factory functions for construction of public values. - Keep domain behavior in free functions under the `func` namespace. - Use member wrappers only when preserving an existing callable C++11 surface is materially cheaper than duplicating abstractions (`MemoizedLast::operator()`, `AsyncResult` chaining). - Value semantics throughout. CONTENTS: 1. seq / gen_seq        — Index sequence (C++14 backport) 2. apply                — Tuple application (C++17 backport) 3. Maybe<T>             — Optional monad (data only) 4. Either<E, T>         — Result/Error monad (data only) 5. Curried / curry      — Automatic function currying 6. Lazy<T> / lazy       — Memoized deferred evaluation 7. MemoizedLast         — Last-input memoization for derived values 8. Pipeline<T> / pipe   — Value transformation chains (operator|) 9. Composed / compose   — Binary function composition 10. fmap                 — Functor map (Maybe, Either, vector, TArray) 11. mbind / ebind        — Monadic bind for Maybe / Either 12. or_else / match      — Extraction / pattern matching 13. ValidationPipeline   — Functional validation chain 14. ConfigBuilder        — Functional configuration builder 15. TestResult           — Functional testing result 16. AsyncResult          — Functional async result handling 17. HttpResult           — Functional HTTP result wrapper 18. AsyncChain           — AsyncResult chaining helpers 19. Dispatcher            — Dictionary-based typed dispatch 20. multi_match           — Multi-case value-based pattern matching 21. from_nullable         — Lift nullable values into Maybe 22. Unreal containers     — TArray and TMap folds, maps, traversal, lookup, update, equality REQUIREMENTS: Several helpers default-construct inactive payloads or error branches as a deliberate C++11 trade-off: `Maybe<T>`, `Either<E, T>`, `ValidationPipeline<T, E>`, `TestResult<T>`, and `HttpResult<T>`. All host types used with these primitives are expected to satisfy that requirement. See also: C++11-FP-GUIDE.md for patterns and usage.
+ * @brief UE FP Core Library — Strict UE C++11 functional programming primitives. No C++14, C++17, or later language features are used; Unreal container overloads are first-class because this SDK is UE-only. This header is the canonical source of truth for the functional substrate. If surrounding docs disagree, this file wins. DESIGN PRINCIPLES: - Prefer structs and plain data for domain state. - Prefer factory functions for construction of public values. - Keep domain behavior in free functions under the `func` namespace. - Use member wrappers only when preserving an existing callable C++11 surface is materially cheaper than duplicating abstractions (`MemoizedLast::operator()`, `AsyncResult` chaining). - Value semantics throughout. CONTENTS: 1. seq / gen_seq        — Index sequence (C++14 backport) 2. apply                — Tuple application (C++17 backport) 3. Maybe<T>             — Optional monad (data only) 4. Either<E, T>         — Result/Error monad (data only) 5. Curried / curry      — Automatic function currying 6. Lazy<T> / lazy       — Memoized deferred evaluation 7. MemoizedLast         — Last-input memoization for derived values 8. Pipeline<T> / pipe   — Value transformation chains (operator|) 9. Composed / compose   — Binary function composition 10. fmap                 — Functor map (Maybe, Either, vector, TArray) 11. mbind / ebind        — Monadic bind for Maybe / Either 12. or_else / match      — Extraction / pattern matching 13. ValidationPipeline   — Functional validation chain 14. ConfigBuilder        — Functional configuration builder 15. TestResult           — Functional testing result 16. AsyncResult          — Functional async result handling 17. AsyncChain           — AsyncResult chaining helpers 18. Dispatcher            — Dictionary-based typed dispatch 19. multi_match           — Multi-case value-based pattern matching 20. from_nullable         — Lift nullable values into Maybe 21. Unreal containers     — TArray and TMap folds, maps, traversal, lookup, update, equality REQUIREMENTS: Several helpers default-construct inactive payloads or error branches as a deliberate C++11 trade-off: `Maybe<T>`, `Either<E, T>`, `ValidationPipeline<T, E>`, and `TestResult<T>`. All host types used with these primitives are expected to satisfy that requirement. See also: C++11-FP-GUIDE.md for patterns and usage.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
@@ -2872,53 +2872,6 @@ inline void executeAsync(const AsyncResult<void> &result) {
       ? detail::runAsyncExecutor(CapturedState)
       : void();
 }
-
-/**
- * @brief 17. HttpResult (Functional Http Request Wrapper)
- *
- * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
- * 
- * @signature typedef std::int32_t HttpStatusCode
- * 
- * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
- */
-
-typedef std::int32_t HttpStatusCode;
-
-template <typename T> struct HttpResult {
-  bool bSuccess;
-  HttpStatusCode ResponseCode;
-  T data;
-  std::string error;
-
-/**
- * @brief Builds a successful HTTP result wrapper.
- *
- * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
- * 
- * @signature static HttpResult<T> Success(T d, HttpStatusCode code = 200)
- * 
- * User Story: As HTTP adapter code, I need a success factory so decoded
-   * payloads carry both data and transport status through one value.
- */
-  static HttpResult<T> Success(T d, HttpStatusCode code = 200) {
-    return HttpResult<T>{true, code, std::move(d), ""};
-  }
-
-/**
- * @brief Builds a failed HTTP result wrapper.
- *
- * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
- * 
- * @signature static HttpResult<T> Failure(std::string e, HttpStatusCode code = 0)
- * 
- * User Story: As HTTP adapter code, I need a failure factory so transport or
-   * decoding errors can move through the same result channel as successes.
- */
-  static HttpResult<T> Failure(std::string e, HttpStatusCode code = 0) {
-    return HttpResult<T>{false, code, T{}, std::move(e)};
-  }
-};
 
 /**
  * @brief 18. AsyncChain (Helpers for chaining AsyncResults)

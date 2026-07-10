@@ -81,6 +81,9 @@ struct FArweaveDownloadInstruction {
 
   UPROPERTY(BlueprintReadOnly, Category = "Soul")
   FString DownloadUrl;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Soul")
+  FString AdiAuthHeader;
 };
 
 USTRUCT(BlueprintType)

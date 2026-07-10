@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../Core/AsyncHttp.h"
 #include "../Core/JsonInterop.h"
 #include "../Core/ue_fp.hpp"
 #include "../Core/rtk.hpp"
@@ -249,13 +248,42 @@ inline FString Encode(const FString &Value) {
 /**
  * Serializes a JSON object into text.
  * User Story: As codec helpers, I need object-to-string conversion so ad hoc
- * payloads can move through the generic HTTP helpers unchanged.
+ * payloads can move through RTK Query request builders unchanged.
  */
 inline FString ToJsonString(const TSharedRef<FJsonObject> &Object) {
   FString Json;
   const TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Json);
   FJsonSerializer::Serialize(Object, Writer);
   return Json;
+}
+
+inline rtk::FetchBaseQueryArgs ApiBaseQueryOptions() {
+  rtk::FetchBaseQueryArgs Options;
+  const FString ApiKey = SDKConfig::GetApiKey();
+  !ApiKey.IsEmpty()
+      ? (Options.headers.Add(TEXT("Authorization"),
+                             FString(TEXT("Bearer ")) + ApiKey),
+         void())
+      : void();
+  return Options;
+}
+
+inline rtk::FetchArgs ApiFetchArgs(const FString &Method, const FString &Url,
+                                   const FString &Body = TEXT("")) {
+  rtk::FetchArgs Args;
+  Args.method = Method;
+  Args.url = Url;
+  Args.body = Body;
+  return Args;
+}
+
+template <typename Result>
+inline func::AsyncResult<rtk::QueryReturnValue<Result>>
+ExecuteApiBaseQuery(const FString &Method, const FString &Url,
+                    const FString &Body = TEXT("")) {
+  return rtk::fetchBaseQuery<Result>(ApiBaseQueryOptions())(
+      ApiFetchArgs(Method, Url, Body), rtk::BaseQueryApi(),
+      rtk::FEmptyPayload{});
 }
 
 /**
@@ -266,7 +294,8 @@ inline FString ToJsonString(const TSharedRef<FJsonObject> &Object) {
 template <typename Arg, typename Result>
 inline ThunkAction<Result, FRuntimeState> MakeEndpoint(
     const FString &EndpointName, const Arg &ArgValue,
-    std::function<func::AsyncResult<func::HttpResult<Result>>(const Arg &)>
+    std::function<func::AsyncResult<rtk::QueryReturnValue<Result>>(
+        const Arg &)>
         RequestBuilder,
     const TArray<FApiEndpointTag> &ProvidesTags = TArray<FApiEndpointTag>(),
     const TArray<FApiEndpointTag> &InvalidatesTags =
@@ -291,7 +320,7 @@ MakeGet(const FString &EndpointName, const FString &Url,
   return MakeEndpoint<rtk::FEmptyPayload, Result>(
       EndpointName, rtk::FEmptyPayload{},
       [Url](const rtk::FEmptyPayload &) {
-        return func::AsyncHttp::Get<Result>(Url, SDKConfig::GetApiKey());
+        return ExecuteApiBaseQuery<Result>(TEXT("GET"), Url);
       },
       Tags);
 }
@@ -309,8 +338,7 @@ inline ThunkAction<Result, FRuntimeState> MakePost(
   return MakeEndpoint<Request, Result>(
       EndpointName, RequestValue,
       [Url](const Request &Arg) {
-        return func::AsyncHttp::Post<Result>(Url, ToJson(Arg),
-                                             SDKConfig::GetApiKey());
+        return ExecuteApiBaseQuery<Result>(TEXT("POST"), Url, ToJson(Arg));
       },
       TArray<FApiEndpointTag>(), Invalidates);
 }
@@ -327,44 +355,56 @@ inline ThunkAction<Result, FRuntimeState> MakeDelete(
   return MakeEndpoint<rtk::FEmptyPayload, Result>(
       EndpointName, rtk::FEmptyPayload{},
       [Url](const rtk::FEmptyPayload &) {
-        return func::AsyncHttp::Delete<Result>(Url, SDKConfig::GetApiKey());
+        return ExecuteApiBaseQuery<Result>(TEXT("DELETE"), Url);
       },
       TArray<FApiEndpointTag>(), Invalidates);
 }
 
 /**
- * Decodes a raw string HTTP result into a typed HTTP result.
+ * Decodes a raw-string RTK Query return value into a typed RTK Query return value.
  * User Story: As endpoint codecs, I need shared decode handling so response
  * parsing and transport failures are mapped consistently.
  */
 template <typename Result>
-inline func::AsyncResult<func::HttpResult<Result>>
-DecodeHttpResult(func::AsyncResult<func::HttpResult<FString>> RawResult,
-                 std::function<bool(const FString &, Result &)> Decoder) {
-  return func::AsyncResult<func::HttpResult<Result>>::create(
+inline func::AsyncResult<rtk::QueryReturnValue<Result>>
+DecodeQueryReturnValue(
+    func::AsyncResult<rtk::QueryReturnValue<FString>> RawResult,
+    std::function<bool(const FString &, Result &)> Decoder) {
+  return func::AsyncResult<rtk::QueryReturnValue<Result>>::create(
       [RawResult,
-       Decoder](std::function<void(func::HttpResult<Result>)> Resolve,
+       Decoder](std::function<void(rtk::QueryReturnValue<Result>)> Resolve,
                 std::function<void(std::string)> Reject) {
         RawResult
-            .then([Decoder, Resolve](const func::HttpResult<FString> &Http) {
-              !Http.bSuccess
-                  ? (Resolve(func::HttpResult<Result>::Failure(
-                         Http.error, Http.ResponseCode)),
+            .then([Decoder, Resolve](
+                      const rtk::QueryReturnValue<FString> &QueryResult) {
+              QueryResult.error.hasValue
+                  ? (Resolve(rtk::QueryReturnValue<Result>::failure(
+                         QueryResult.error.value, QueryResult.meta)),
                      void())
                   : [&]() {
                       Result Parsed;
-                      Decoder(Http.data, Parsed)
-                          ? (Resolve(func::HttpResult<Result>::Success(
-                                 Parsed, Http.ResponseCode)),
+                      Decoder(QueryResult.data.value, Parsed)
+                          ? (Resolve(rtk::QueryReturnValue<Result>::success(
+                                 Parsed, QueryResult.meta)),
                              void())
-                          : (Resolve(func::HttpResult<Result>::Failure(
-                                 "JSON deserialization failed",
-                                 Http.ResponseCode)),
+                          : (Resolve(rtk::QueryReturnValue<Result>::failure(
+                                 rtk::FetchBaseQueryError::parsingError(
+                                     QueryResult.meta.hasValue &&
+                                             QueryResult.meta.value.response
+                                                 .hasValue
+                                         ? QueryResult.meta.value.response.value
+                                               .status
+                                         : 0,
+                                     QueryResult.data.value,
+                                     TEXT("JSON deserialization failed")),
+                                 QueryResult.meta)),
                              void());
                     }();
             })
             .catch_([Resolve](std::string Error) {
-              Resolve(func::HttpResult<Result>::Failure(Error));
+              Resolve(rtk::QueryReturnValue<Result>::failure(
+                  rtk::FetchBaseQueryError::fetchError(
+                      FString(UTF8_TO_TCHAR(Error.c_str())))));
             })
             .execute();
       });
@@ -385,9 +425,8 @@ inline ThunkAction<Result, FRuntimeState> MakePostWithCodec(
   return MakeEndpoint<Request, Result>(
       EndpointName, RequestValue,
       [Url, Encoder, Decoder](const Request &Arg) {
-        return DecodeHttpResult<Result>(
-            func::AsyncHttp::Post<FString>(Url, Encoder(Arg),
-                                           SDKConfig::GetApiKey()),
+        return DecodeQueryReturnValue<Result>(
+            ExecuteApiBaseQuery<FString>(TEXT("POST"), Url, Encoder(Arg)),
             Decoder);
       },
       TArray<FApiEndpointTag>(), Invalidates);
@@ -406,9 +445,8 @@ inline ThunkAction<Result, FRuntimeState> MakeGetWithCodec(
   return MakeEndpoint<rtk::FEmptyPayload, Result>(
       EndpointName, rtk::FEmptyPayload{},
       [Url, Decoder](const rtk::FEmptyPayload &) {
-        return DecodeHttpResult<Result>(
-            func::AsyncHttp::Get<FString>(Url, SDKConfig::GetApiKey()),
-            Decoder);
+        return DecodeQueryReturnValue<Result>(
+            ExecuteApiBaseQuery<FString>(TEXT("GET"), Url), Decoder);
       },
       Tags);
 }
@@ -425,9 +463,8 @@ MakePostRawWithCodec(const FString &EndpointName, const FString &Url,
                      std::function<bool(const FString &, Result &)> Decoder) {
   return MakeEndpoint<FString, Result>(
       EndpointName, PayloadJson, [Url, Decoder](const FString &Arg) {
-        return DecodeHttpResult<Result>(
-            func::AsyncHttp::Post<FString>(Url, Arg, SDKConfig::GetApiKey()),
-            Decoder);
+        return DecodeQueryReturnValue<Result>(
+            ExecuteApiBaseQuery<FString>(TEXT("POST"), Url, Arg), Decoder);
       });
 }
 

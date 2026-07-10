@@ -1,6 +1,6 @@
 #pragma once
 /**
- * Test-game runtime URL helpers.
+ * Test-game harness thunks.
  *
  * This header is intentionally narrow: it resolves the runtime URL used by
  * the test-game harness to reach the API. It is NOT an executor boundary
@@ -13,21 +13,22 @@
  * previously combined runtime URL helpers, ASCII grid rendering, and an
  * in-process command executor on one surface. The executor was retired
  * in favor of the first-class commandlet/command-surface boundary; the
- * remaining pure helpers were split into TestGameRuntime.h and
- * Views/Terminal/TerminalView.h so test-game code can include only what it needs
- * without re-importing executor-shaped concerns.
+ * remaining helpers were split into the Harness feature thunks and
+ * Views/Terminal/TerminalView.h so test-game code can include only what it
+ * needs without re-importing executor-shaped concerns.
  *
- * User Story: As the UE test-game harness, I need a narrow runtime-URL
- * resolution surface so the harness can decide which API host to call
- * without including the retired TestGameLib in-process executor surface.
+ * User Story: As the UE test-game harness, I need runtime-URL resolution and
+ * connectivity probing behind a Harness feature thunk surface so the harness
+ * can decide which API host to call without including the retired TestGameLib
+ * in-process executor surface.
  */
 
-#include "Core/AsyncHttp.h"
 #include "CLI/CliOperations.h"
 #include "CoreMinimal.h"
 #include "Core/ue_fp.hpp"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "TestGame/Features/Systems/Harness/HarnessApi.h"
 #include <exception>
 
 namespace TestGame {
@@ -54,10 +55,10 @@ inline bool HasStatusJsonField(const FString &Body) {
 inline bool CheckRuntimeConnectivity(
     const FString &Url = TEXT("http://localhost:8080/status")) {
   try {
-    const func::HttpResult<FString> Result = Ops::waitForResult(
-        func::AsyncHttp::Get<FString>(Url), 1.5);
-    return Result.bSuccess && Result.ResponseCode == 200 &&
-           detail::HasStatusJsonField(Result.data);
+    FTestGameStore Store = createTestGameStore();
+    const FString Body = Ops::waitForResult(
+        Store.dispatch(HarnessApi::getRuntimeStatusThunk(Url)), 1.5);
+    return detail::HasStatusJsonField(Body);
   } catch (const std::exception &) {
     return false;
   }

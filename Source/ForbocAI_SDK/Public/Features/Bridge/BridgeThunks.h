@@ -4,9 +4,9 @@
 #include "Core/ue_fp.hpp"
 
 #include "Bridge/BridgeModule.h"
-#include "Features/Bridge/BridgeSlice.h"
-#include "Core/ThunkDetail.h"
 #include "Errors.h"
+#include "Features/API/APISlice.h"
+#include "Features/Bridge/BridgeSlice.h"
 #include "RuntimeConfig.h"
 
 namespace BridgeHelpers {

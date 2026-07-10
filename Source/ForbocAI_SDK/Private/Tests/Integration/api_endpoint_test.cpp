@@ -9,7 +9,7 @@
 
 #include "API/APICodecs.h"
 #include "Features/API/Endpoints/EndpointsThunks.h"
-#include "Core/AsyncHttp.h"
+#include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "GenericPlatform/GenericPlatformHttp.h"
 #include "JsonObjectConverter.h"
@@ -50,6 +50,42 @@ struct FApiEndpointTestState {
   bool bStarted = false;
 };
 
+static rtk::FetchBaseQueryArgs TestBaseQueryOptions(const FString &ApiKey) {
+  rtk::FetchBaseQueryArgs Options;
+  !ApiKey.IsEmpty()
+      ? (Options.headers.Add(TEXT("Authorization"),
+                             FString(TEXT("Bearer ")) + ApiKey),
+         void())
+      : void();
+  return Options;
+}
+
+static rtk::FetchArgs TestFetchArgs(const FString &Method, const FString &Url,
+                                    const FString &Payload = TEXT("")) {
+  rtk::FetchArgs Args;
+  Args.method = Method;
+  Args.url = Url;
+  Args.body = Payload;
+  return Args;
+}
+
+static int32 QueryStatusCode(const rtk::QueryReturnValue<FString> &Result) {
+  return Result.meta.hasValue && Result.meta.value.response.hasValue
+             ? Result.meta.value.response.value.status
+             : 0;
+}
+
+static FString QueryBody(const rtk::QueryReturnValue<FString> &Result) {
+  return Result.data.hasValue ? Result.data.value : TEXT("");
+}
+
+static FString QueryErrorMessage(const rtk::QueryReturnValue<FString> &Result) {
+  return Result.error.hasValue
+             ? (!Result.error.value.error.IsEmpty() ? Result.error.value.error
+                                                    : Result.error.value.status)
+             : TEXT("");
+}
+
 /**
  * Latent command: GET request, polls until complete
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
@@ -64,15 +100,17 @@ bool FHttpGetWaitComplete::Update() {
   if (!State->bStarted) {
     const TSharedPtr<FApiEndpointTestState> SharedState = State;
     State->bStarted = true;
-    func::AsyncHttp::Get<FString>(Url, ApiKey)
-        .then([SharedState](const func::HttpResult<FString> &R) {
+    rtk::fetchBaseQuery<FString>(TestBaseQueryOptions(ApiKey))(
+        TestFetchArgs(TEXT("GET"), Url), rtk::BaseQueryApi(),
+        rtk::FEmptyPayload{})
+        .then([SharedState](const rtk::QueryReturnValue<FString> &R) {
           SharedState->bDone = true;
-          SharedState->bSuccess = R.bSuccess;
-          SharedState->HttpCode = R.ResponseCode;
-          if (R.bSuccess) {
-            SharedState->Body = R.data;
+          SharedState->bSuccess = R.data.hasValue;
+          SharedState->HttpCode = QueryStatusCode(R);
+          if (R.data.hasValue) {
+            SharedState->Body = QueryBody(R);
           } else {
-            SharedState->Error = FString(UTF8_TO_TCHAR(R.error.c_str()));
+            SharedState->Error = QueryErrorMessage(R);
           }
         })
         .execute();
@@ -98,15 +136,17 @@ bool FHttpPostWaitComplete::Update() {
   if (!State->bStarted) {
     const TSharedPtr<FApiEndpointTestState> SharedState = State;
     State->bStarted = true;
-    func::AsyncHttp::Post<FString>(Url, Payload, ApiKey)
-        .then([SharedState](const func::HttpResult<FString> &R) {
+    rtk::fetchBaseQuery<FString>(TestBaseQueryOptions(ApiKey))(
+        TestFetchArgs(TEXT("POST"), Url, Payload), rtk::BaseQueryApi(),
+        rtk::FEmptyPayload{})
+        .then([SharedState](const rtk::QueryReturnValue<FString> &R) {
           SharedState->bDone = true;
-          SharedState->bSuccess = R.bSuccess;
-          SharedState->HttpCode = R.ResponseCode;
-          if (R.bSuccess) {
-            SharedState->Body = R.data;
+          SharedState->bSuccess = R.data.hasValue;
+          SharedState->HttpCode = QueryStatusCode(R);
+          if (R.data.hasValue) {
+            SharedState->Body = QueryBody(R);
           } else {
-            SharedState->Error = FString(UTF8_TO_TCHAR(R.error.c_str()));
+            SharedState->Error = QueryErrorMessage(R);
           }
         })
         .execute();

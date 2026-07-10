@@ -12,7 +12,7 @@
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 #include "Bridge/BridgeTypes.h"
-#include "Core/SystemTypes.h"
+#include "Features/API/APITypes.h"
 #include "Ghost/GhostTypes.h"
 #include "Memory/MemoryTypes.h"
 #include "NPC/NPCBaseTypes.h"

@@ -86,6 +86,7 @@ SCAN_ROOTS = configured_scan_roots(PROJECT_ROOT)
 
 from features_boundaries import (
     Finding,
+    ROLE_STEM_BY_ROLE,
     RULES,
     Rule,
     Severity,
@@ -369,6 +370,86 @@ def leaf_guidance(stem: str) -> str:
     return STRUCT_LEAF.guidance
 
 
+def _camel_name(value: str) -> str:
+    return "".join(
+        token[:1].upper() + token[1:]
+        for token in re.split(r"[^A-Za-z0-9]+", value)
+        if token
+    )
+
+
+def _parts_after_marker(path: Path, marker: str) -> tuple[str, ...]:
+    parts = path.parts
+    if marker not in parts:
+        return ()
+    index = parts.index(marker)
+    return tuple(parts[index + 1 : -1])
+
+
+def _domain_parts(unit: SourceUnit) -> tuple[str, ...]:
+    return _parts_after_marker(unit.path, "Features") or _parts_after_marker(unit.path, "Views")
+
+
+def _domain_qualifiers(unit: SourceUnit) -> tuple[str, ...]:
+    parts = _domain_parts(unit)
+    return tuple(
+        "".join(_camel_name(part) for part in parts[index:])
+        for index in range(len(parts) - 1, -1, -1)
+    )
+
+
+def _nearest_leaf_stem(unit: SourceUnit) -> str | None:
+    if unit.declared_role is None:
+        return None
+    qualifiers = _domain_qualifiers(unit)
+    if not qualifiers:
+        return None
+    return qualifiers[0] + ROLE_STEM_BY_ROLE[unit.declared_role]
+
+
+def _layered_leaf_stems(unit: SourceUnit) -> tuple[str, ...]:
+    if unit.declared_role is None:
+        return ()
+    return tuple(
+        qualifier + ROLE_STEM_BY_ROLE[unit.declared_role]
+        for qualifier in _domain_qualifiers(unit)
+    )
+
+
+def check_feature_leaf_names(units: list[SourceUnit]) -> list[Finding]:
+    role_units = [
+        unit for unit in units
+        if (_parts_after_marker(unit.path, "Features") or _parts_after_marker(unit.path, "Views"))
+        and unit.declared_role is not None
+    ]
+    nearest_counts: dict[tuple[str, str], int] = {}
+    for unit in role_units:
+        nearest = _nearest_leaf_stem(unit)
+        if nearest:
+            key = (unit.declared_role or "", nearest)
+            nearest_counts[key] = nearest_counts.get(key, 0) + 1
+
+    findings: list[Finding] = []
+    for unit in role_units:
+        nearest = _nearest_leaf_stem(unit)
+        if nearest is None or unit.stem == nearest:
+            continue
+        layered = _layered_leaf_stems(unit)
+        conflict = nearest_counts.get((unit.declared_role or "", nearest), 0) > 1
+        if conflict and unit.stem in layered[1:]:
+            continue
+        findings.append(
+            Finding(
+                unit.path,
+                1,
+                STRUCT_LEAF.id,
+                STRUCT_LEAF.severity,
+                f"feature leaf `{unit.stem}` must be `{nearest}`; only layer parent domains when `{nearest}` conflicts",
+            )
+        )
+    return findings
+
+
 def check_imports(unit: SourceUnit, role: str) -> list[Finding]:
     findings: list[Finding] = []
     rel = _rel_key(unit.path)
@@ -498,6 +579,7 @@ def collect_findings(project_root: Path, scan_roots: list[Path]) -> list[Finding
     for unit in units:
         findings += check_unit(unit, plugins)
 
+    findings += check_feature_leaf_names(units)
     findings += check_store_boundary(project_root)
     findings += check_multiple_api_roots(units)
     findings += check_import_graph(units)

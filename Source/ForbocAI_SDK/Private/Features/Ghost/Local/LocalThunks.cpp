@@ -3,7 +3,6 @@
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
-#include "Core/ThunkDetail.h"
 #include "Ghost/GhostModuleInternal.h"
 #include "Features/Ghost/GhostSlice.h"
 #include "Features/Ghost/GhostThunks.h"

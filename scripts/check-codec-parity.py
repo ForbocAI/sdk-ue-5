@@ -4,15 +4,15 @@ from pathlib import Path
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: check-codec-parity.py <path-to-ThunkDetail.h>")
+        print("Usage: check-codec-parity.py <path-to-ProtocolThunks.h>")
         sys.exit(1)
 
-    thunk_detail_path = Path(sys.argv[1])
-    if not thunk_detail_path.exists():
-        print(f"[FAIL] Could not find {thunk_detail_path}")
+    protocol_thunks_path = Path(sys.argv[1])
+    if not protocol_thunks_path.exists():
+        print(f"[FAIL] Could not find {protocol_thunks_path}")
         sys.exit(1)
 
-    content = thunk_detail_path.read_text(encoding="utf-8")
+    content = protocol_thunks_path.read_text(encoding="utf-8")
     failures = []
 
     # 1. DecisionResult nested tape fields
