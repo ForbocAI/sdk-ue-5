@@ -1837,7 +1837,76 @@ enum class QueryStatus {
   rejected,
 };
 
+enum class DefinitionType {
+  query,
+  mutation,
+  infinitequery,
+};
+
+struct _NEVER {};
+
+struct NamedSchemaError {
+  FString name;
+  FString message;
+
+  NamedSchemaError() : name(TEXT("NamedSchemaError")) {}
+  explicit NamedSchemaError(const FString &Message)
+      : name(TEXT("NamedSchemaError")), message(Message) {}
+};
+
+struct SkipToken {};
+inline const SkipToken skipToken = SkipToken();
+
+typedef SkipToken SkipTokenType;
+typedef FString QueryCacheKey;
 typedef FString ResponseHandler;
+
+struct SubscriptionOptions {
+  int32 pollingInterval;
+  bool skipPollingIfUnfocused;
+  bool refetchOnReconnect;
+  bool refetchOnFocus;
+
+  SubscriptionOptions()
+      : pollingInterval(0), skipPollingIfUnfocused(false),
+        refetchOnReconnect(false), refetchOnFocus(false) {}
+};
+
+struct PrefetchOptions {
+  bool force;
+  int32 ifOlderThan;
+
+  PrefetchOptions() : force(false), ifOlderThan(0) {}
+};
+
+struct StartQueryActionCreatorOptions {
+  bool subscribe;
+  bool forceRefetch;
+  SubscriptionOptions subscriptionOptions;
+
+  StartQueryActionCreatorOptions() : subscribe(true), forceRefetch(false) {}
+};
+
+struct RetryOptions {
+  int32 maxRetries;
+
+  RetryOptions() : maxRetries(5) {}
+};
+
+struct Module {
+  FString name;
+};
+
+typedef Module CoreModule;
+typedef TArray<Module> ApiModules;
+
+inline const TCHAR *coreModuleName = TEXT("coreModule");
+
+inline Module coreModule() {
+  Module Value;
+  Value.name = coreModuleName;
+  return Value;
+}
 
 struct FetchArgs {
   FString url;
@@ -2016,7 +2085,50 @@ template <typename AdditionalArgs = FEmptyPayload,
 using BaseQueryEnhancer = std::function<BaseQueryFn<FetchArgs, FString>(
     const BaseQueryFn<FetchArgs, FString> &, const Config &)>;
 
+struct SerializeQueryArgsOptions {
+  FString endpointName;
+  FString queryArgs;
+};
+
+typedef std::function<QueryCacheKey(const SerializeQueryArgsOptions &)>
+    SerializeQueryArgs;
+
+inline QueryCacheKey
+defaultSerializeQueryArgs(const SerializeQueryArgsOptions &Options) {
+  return Options.endpointName + TEXT("(") + Options.queryArgs + TEXT(")");
+}
+
+template <typename Arg>
+QueryCacheKey defaultSerializeQueryArgs(const FString &EndpointName,
+                                        const Arg &QueryArgs) {
+  SerializeQueryArgsOptions Options;
+  Options.endpointName = EndpointName;
+  Options.queryArgs = payload_debug::DebugPayloadString(QueryArgs);
+  return defaultSerializeQueryArgs(Options);
+}
+
 namespace detail {
+
+template <typename T, typename = void> struct HasEqualOperator : std::false_type {};
+
+template <typename T>
+struct HasEqualOperator<
+    T, typename std::enable_if<
+           std::is_convertible<decltype(std::declval<const T &>() ==
+                                        std::declval<const T &>()),
+                               bool>::value>::type> : std::true_type {};
+
+template <typename T>
+T copyWithStructuralSharingImpl(const T &OldValue, const T &NewValue,
+                                std::true_type) {
+  return OldValue == NewValue ? OldValue : NewValue;
+}
+
+template <typename T>
+T copyWithStructuralSharingImpl(const T &, const T &NewValue,
+                                std::false_type) {
+  return NewValue;
+}
 
 template <typename T, typename Enable = void> struct JsonDeserializer;
 
@@ -2333,6 +2445,12 @@ template <typename T> struct JsonDeserializer<TArray<T>, void> {
 
 } // namespace detail
 
+template <typename T>
+T copyWithStructuralSharing(const T &OldValue, const T &NewValue) {
+  return detail::copyWithStructuralSharingImpl<T>(
+      OldValue, NewValue, typename detail::HasEqualOperator<T>::type());
+}
+
 template <typename Result>
 BaseQueryFn<FetchArgs, Result, FetchBaseQueryError, FEmptyPayload,
             FetchBaseQueryMeta>
@@ -2380,6 +2498,86 @@ fetchBaseQuery(const FetchBaseQueryArgs &Options = FetchBaseQueryArgs()) {
   };
 }
 
+namespace detail {
+
+template <typename Args, typename Result, typename Error,
+          typename DefinitionExtraOptions, typename Meta>
+void retryBaseQueryAttempt(
+    const BaseQueryFn<Args, Result, Error, DefinitionExtraOptions, Meta>
+        &BaseQuery,
+    const Args &ArgsValue, const BaseQueryApi &Api,
+    const DefinitionExtraOptions &ExtraOptions, int32 Attempt,
+    int32 MaxRetries,
+    std::function<void(QueryReturnValue<Result, Error, Meta>)> Resolve,
+    std::function<void(std::string)> Reject) {
+  BaseQuery(ArgsValue, Api, ExtraOptions)
+      .then([BaseQuery, ArgsValue, Api, ExtraOptions, Attempt, MaxRetries,
+             Resolve, Reject](QueryReturnValue<Result, Error, Meta> Value) {
+        Value.error.hasValue && Attempt < MaxRetries
+            ? retryBaseQueryAttempt<Args, Result, Error,
+                                    DefinitionExtraOptions, Meta>(
+                  BaseQuery, ArgsValue, Api, ExtraOptions, Attempt + 1,
+                  MaxRetries, Resolve, Reject)
+            : Resolve(Value);
+      })
+      .catch_([BaseQuery, ArgsValue, Api, ExtraOptions, Attempt, MaxRetries,
+               Resolve, Reject](std::string ErrorText) {
+        Attempt < MaxRetries
+            ? retryBaseQueryAttempt<Args, Result, Error,
+                                    DefinitionExtraOptions, Meta>(
+                  BaseQuery, ArgsValue, Api, ExtraOptions, Attempt + 1,
+                  MaxRetries, Resolve, Reject)
+            : Reject(ErrorText);
+      })
+      .execute();
+}
+
+} // namespace detail
+
+template <typename Args = FetchArgs, typename Result = FString,
+          typename Error = FetchBaseQueryError,
+          typename DefinitionExtraOptions = FEmptyPayload,
+          typename Meta = FetchBaseQueryMeta>
+BaseQueryFn<Args, Result, Error, DefinitionExtraOptions, Meta>
+retry(const BaseQueryFn<Args, Result, Error, DefinitionExtraOptions, Meta>
+          &BaseQuery,
+      const RetryOptions &Options = RetryOptions()) {
+  return [BaseQuery, Options](const Args &ArgsValue, const BaseQueryApi &Api,
+                              const DefinitionExtraOptions &ExtraOptions)
+             -> func::AsyncResult<QueryReturnValue<Result, Error, Meta>> {
+    return func::createAsyncResult<QueryReturnValue<Result, Error, Meta>>(
+        [BaseQuery, Options, ArgsValue, Api, ExtraOptions](
+            std::function<void(QueryReturnValue<Result, Error, Meta>)> Resolve,
+            std::function<void(std::string)> Reject) {
+          detail::retryBaseQueryAttempt<Args, Result, Error,
+                                        DefinitionExtraOptions, Meta>(
+              BaseQuery, ArgsValue, Api, ExtraOptions, 0,
+              FMath::Max(0, Options.maxRetries), Resolve, Reject);
+        });
+  };
+}
+
+template <typename Error = FetchBaseQueryError>
+BaseQueryFn<FEmptyPayload, FEmptyPayload, Error, FEmptyPayload,
+            FetchBaseQueryMeta>
+fakeBaseQuery(const Error &ErrorValue = Error()) {
+  return [ErrorValue](const FEmptyPayload &, const BaseQueryApi &,
+                      const FEmptyPayload &)
+             -> func::AsyncResult<
+                 QueryReturnValue<FEmptyPayload, Error, FetchBaseQueryMeta>> {
+    return func::createAsyncResult<
+        QueryReturnValue<FEmptyPayload, Error, FetchBaseQueryMeta>>(
+        [ErrorValue](
+            std::function<void(QueryReturnValue<FEmptyPayload, Error,
+                                                FetchBaseQueryMeta>)> Resolve,
+            std::function<void(std::string)> Reject) {
+          (void)Reject;
+          Resolve(QueryReturnValue<FEmptyPayload, Error,
+                                   FetchBaseQueryMeta>::failure(ErrorValue));
+        });
+  };
+}
+
 struct FApiEndpointTag {
   FString Type;
   FString Id;
@@ -2389,6 +2587,7 @@ typedef FApiEndpointTag TagDescription;
 
 template <typename Arg, typename Result> struct ApiEndpoint {
   FString EndpointName;
+  DefinitionType Type;
   TArray<FApiEndpointTag> ProvidesTags;
   TArray<FApiEndpointTag> InvalidatesTags;
 
@@ -2398,6 +2597,8 @@ template <typename Arg, typename Result> struct ApiEndpoint {
    */
   std::function<func::AsyncResult<QueryReturnValue<Result>>(const Arg &)>
       RequestBuilder;
+
+  ApiEndpoint() : Type(DefinitionType::query) {}
 };
 
 template <typename Arg, typename Result>
@@ -2418,6 +2619,119 @@ using InfiniteQueryDefinition = ApiEndpoint<Arg, Result>;
 template <typename Arg, typename Result>
 using EndpointDefinitions = TArray<ApiEndpoint<Arg, Result>>;
 
+template <typename Arg, typename Result>
+using ApiEndpointQuery = ApiEndpoint<Arg, Result>;
+
+template <typename Arg, typename Result>
+using ApiEndpointMutation = ApiEndpoint<Arg, Result>;
+
+template <typename Arg, typename Result>
+using ApiEndpointInfiniteQuery = ApiEndpoint<Arg, Result>;
+
+template <typename Arg> using QueryArgFrom = Arg;
+template <typename Result> using ResultTypeFrom = Result;
+template <typename PageParam> using PageParamFrom = PageParam;
+template <typename Arg> using InfiniteQueryArgFrom = Arg;
+
+template <typename Result, typename Arg>
+using QueryActionCreatorResult = func::AsyncResult<Result>;
+
+template <typename Result, typename Arg>
+using MutationActionCreatorResult = func::AsyncResult<Result>;
+
+template <typename Result, typename Arg>
+using InfiniteQueryActionCreatorResult = func::AsyncResult<Result>;
+
+template <typename Result> struct QuerySubState {
+  QueryStatus status;
+  func::Maybe<Result> data;
+  func::Maybe<FetchBaseQueryError> error;
+
+  QuerySubState() : status(QueryStatus::uninitialized) {}
+};
+
+template <typename Result> using MutationResultSelectorResult = QuerySubState<Result>;
+template <typename Result> using QueryResultSelectorResult = QuerySubState<Result>;
+template <typename Result>
+using InfiniteQueryResultSelectorResult = QuerySubState<Result>;
+template <typename Result> using InfiniteQuerySubState = QuerySubState<Result>;
+
+template <typename Result, typename PageParam> struct InfiniteData {
+  TArray<Result> pages;
+  TArray<PageParam> pageParams;
+};
+
+template <typename Arg, typename Result> using QueryExtraOptions = ApiEndpoint<Arg, Result>;
+template <typename Arg, typename Result>
+using MutationExtraOptions = ApiEndpoint<Arg, Result>;
+template <typename Arg, typename Result>
+using InfiniteQueryExtraOptions = ApiEndpoint<Arg, Result>;
+template <typename Arg, typename Result>
+using InfiniteQueryConfigOptions = ApiEndpoint<Arg, Result>;
+
+template <typename State> using RootState = State;
+template <typename State, typename QueryState, typename MutationState>
+struct CombinedState {
+  State root;
+  QueryState queries;
+  MutationState mutations;
+};
+template <typename ApiT> using DefinitionsFromApi = ApiT;
+template <typename ApiT> using TagTypesFromApi = ApiT;
+template <typename DefinitionT, typename Result>
+using OverrideResultType = DefinitionT;
+template <typename DefinitionsT, typename Result>
+using UpdateDefinitions = DefinitionsT;
+template <typename T> using TSHelpersId = T;
+template <typename T> using TSHelpersNoInfer = T;
+template <typename T, typename U> using TSHelpersOverride = U;
+template <typename T> using QueryKeys = TArray<QueryCacheKey>;
+template <typename Schema> using SchemaType = Schema;
+template <typename Error> using SchemaFailureInfo = Error;
+template <typename Error> using SchemaFailureHandler = std::function<void(const Error &)>;
+template <typename Error>
+using SchemaFailureConverter = std::function<NamedSchemaError(const Error &)>;
+template <typename Result>
+using ResultDescription = TArray<FApiEndpointTag>;
+template <typename Arg, typename Result>
+using TypedQueryOnQueryStarted =
+    std::function<void(const Arg &, const QueryActionCreatorResult<Result, Arg> &)>;
+template <typename Arg, typename Result>
+using TypedMutationOnQueryStarted =
+    std::function<void(const Arg &,
+                       const MutationActionCreatorResult<Result, Arg> &)>;
+
+template <typename State> struct ApiContext {
+  std::function<const State &()> getState;
+  Dispatcher dispatch;
+};
+
+template <typename State> struct EndpointBuilder {
+  template <typename Arg, typename Result>
+  QueryDefinition<Arg, Result>
+  query(const QueryDefinition<Arg, Result> &Definition) const {
+    QueryDefinition<Arg, Result> Copy = Definition;
+    Copy.Type = DefinitionType::query;
+    return Copy;
+  }
+
+  template <typename Arg, typename Result>
+  MutationDefinition<Arg, Result>
+  mutation(const MutationDefinition<Arg, Result> &Definition) const {
+    MutationDefinition<Arg, Result> Copy = Definition;
+    Copy.Type = DefinitionType::mutation;
+    return Copy;
+  }
+
+  template <typename Arg, typename Result>
+  InfiniteQueryDefinition<Arg, Result>
+  infiniteQuery(const InfiniteQueryDefinition<Arg, Result> &Definition) const {
+    InfiniteQueryDefinition<Arg, Result> Copy = Definition;
+    Copy.Type = DefinitionType::infinitequery;
+    return Copy;
+  }
+};
+
 /**
  * Simplified dynamic slice registry mapped by string path
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
@@ -2425,11 +2739,20 @@ using EndpointDefinitions = TArray<ApiEndpoint<Arg, Result>>;
 template <typename State> struct Api {
   FString ReducerPath;
   TArray<FString> TagTypes;
+  ApiModules Modules;
 };
 
 template <typename State> using CreateApi = Api<State>;
 
-template <typename State> using CreateApiOptions = Api<State>;
+template <typename State> struct CreateApiOptions {
+  FString reducerPath;
+  TArray<FString> tagTypes;
+  std::function<void(EndpointBuilder<State> &)> endpoints;
+  ApiModules modules;
+};
+
+template <typename State>
+using BuildCreateApi = std::function<Api<State>(const CreateApiOptions<State> &)>;
 
 /**
  * @brief Creates an API slice registry with a defined path and tag types.
@@ -2447,6 +2770,34 @@ Api<State> createApi(const FString &ReducerPath,
   Slice.ReducerPath = ReducerPath;
   Slice.TagTypes = TagTypes;
   return Slice;
+}
+
+template <typename State>
+Api<State> createApi(const CreateApiOptions<State> &Options) {
+  EndpointBuilder<State> Builder;
+  Api<State> Slice = createApi<State>(Options.reducerPath, Options.tagTypes);
+  Slice.Modules = Options.modules;
+  Options.endpoints ? Options.endpoints(Builder) : void();
+  return Slice;
+}
+
+template <typename State>
+BuildCreateApi<State>
+buildCreateApi(const ApiModules &Modules = ApiModules{coreModule()}) {
+  return [Modules](const CreateApiOptions<State> &Options) {
+    CreateApiOptions<State> NextOptions = Options;
+    NextOptions.modules = Modules;
+    return createApi<State>(NextOptions);
+  };
+}
+
+template <typename State>
+std::function<void()> setupListeners(Dispatcher Dispatch,
+                                     const SubscriptionOptions &Options =
+                                         SubscriptionOptions()) {
+  (void)Dispatch;
+  (void)Options;
+  return []() {};
 }
 
 /**

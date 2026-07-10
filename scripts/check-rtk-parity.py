@@ -39,8 +39,73 @@ def read_text(path: Path) -> str:
 
 
 def strip_comments(text: str) -> str:
-    without_block = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
-    return re.sub(r"//.*", "", without_block)
+    output: list[str] = []
+    index = 0
+    in_block_comment = False
+    in_line_comment = False
+    in_single_quote = False
+    in_double_quote = False
+    escaped = False
+
+    while index < len(text):
+        current = text[index]
+        next_char = text[index + 1] if index + 1 < len(text) else ""
+
+        if in_block_comment:
+            if current == "\n":
+                output.append(current)
+            if current == "*" and next_char == "/":
+                in_block_comment = False
+                index += 2
+            else:
+                index += 1
+            continue
+
+        if in_line_comment:
+            if current == "\n":
+                in_line_comment = False
+                output.append(current)
+            index += 1
+            continue
+
+        if escaped:
+            output.append(current)
+            escaped = False
+            index += 1
+            continue
+
+        if (in_single_quote or in_double_quote) and current == "\\":
+            output.append(current)
+            escaped = True
+            index += 1
+            continue
+
+        if not in_single_quote and current == '"':
+            in_double_quote = not in_double_quote
+            output.append(current)
+            index += 1
+            continue
+
+        if not in_double_quote and current == "'":
+            in_single_quote = not in_single_quote
+            output.append(current)
+            index += 1
+            continue
+
+        if not in_single_quote and not in_double_quote:
+            if current == "/" and next_char == "*":
+                in_block_comment = True
+                index += 2
+                continue
+            if current == "/" and next_char == "/":
+                in_line_comment = True
+                index += 2
+                continue
+
+        output.append(current)
+        index += 1
+
+    return "".join(output)
 
 
 def candidate_ts_roots(root: Path) -> list[Path]:
@@ -146,6 +211,7 @@ def rtk_hpp_names(path: Path) -> tuple[str, ...]:
         r"\benum\s+(?:class\s+)?([A-Za-z_][A-Za-z0-9_]*)",
         r"\busing\s+([A-Za-z_][A-Za-z0-9_]*)\s*=",
         r"\btypedef\b[^;{}]*\s+([A-Za-z_][A-Za-z0-9_]*)\s*;",
+        r"\b(?:inline\s+)?(?:static\s+)?(?:constexpr\s+)?(?:const\s+)?[A-Za-z_][A-Za-z0-9_:<>,\s\*&]*\s+\*?([A-Za-z_][A-Za-z0-9_]*)\s*(?:=|;)",
     ):
         names.update(re.findall(pattern, text))
     for match in re.finditer(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\(", text):

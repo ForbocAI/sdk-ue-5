@@ -40,10 +40,24 @@ bool FRtkApiTest::RunTest(const FString &Parameters) {
    * 2. Register Endpoint in Api
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  Api<FAppMockState> TestApi =
-      createApi<FAppMockState>(TEXT("testApi"), TArray<FString>());
+  EndpointBuilder<FAppMockState> Builder;
+  auto BuiltGetUserEndpoint =
+      Builder.mutation<FString, int32>(GetUserEndpoint);
+  TestTrue("Endpoint builder marks mutation definitions",
+           BuiltGetUserEndpoint.Type == DefinitionType::mutation);
 
-  auto GetUserThunk = injectEndpoints(TestApi, GetUserEndpoint);
+  CreateApiOptions<FAppMockState> ApiOptions;
+  ApiOptions.reducerPath = TEXT("testApi");
+  ApiOptions.tagTypes.Add(TEXT("User"));
+  ApiOptions.endpoints = [](EndpointBuilder<FAppMockState> &EndpointBuilder) {
+    (void)EndpointBuilder;
+  };
+  Api<FAppMockState> TestApi = buildCreateApi<FAppMockState>()(ApiOptions);
+  TestEqual("createApi options keep reducerPath", TestApi.ReducerPath,
+            FString(TEXT("testApi")));
+  TestEqual("createApi options keep tagTypes", TestApi.TagTypes.Num(), 1);
+
+  auto GetUserThunk = injectEndpoints(TestApi, BuiltGetUserEndpoint);
 
   TArray<FString> EventLog;
   std::function<AnyAction(const AnyAction &)> MockDispatch =
@@ -81,6 +95,56 @@ bool FRtkApiTest::RunTest(const FString &Parameters) {
             FString(TEXT("testApi/getUser/pending")));
   TestEqual("Dispatched rejected second (API fail)", EventLog[1],
             FString(TEXT("testApi/getUser/rejected")));
+
+  SerializeQueryArgsOptions SerializeOptions;
+  SerializeOptions.endpointName = TEXT("getUser");
+  SerializeOptions.queryArgs = TEXT("123");
+  TestEqual("defaultSerializeQueryArgs mirrors RTK cache key shape",
+            defaultSerializeQueryArgs(SerializeOptions),
+            FString(TEXT("getUser(123)")));
+
+  FetchBaseQueryError PlannedError =
+      FetchBaseQueryError::customError(TEXT("queryFn required"));
+  bool bFakeBaseQueryResolved = false;
+  fakeBaseQuery<>(PlannedError)(rtk::FEmptyPayload{}, BaseQueryApi(),
+                               rtk::FEmptyPayload{})
+      .then([&bFakeBaseQueryResolved,
+             PlannedError](QueryReturnValue<rtk::FEmptyPayload> Value) {
+        bFakeBaseQueryResolved =
+            Value.error.hasValue &&
+            Value.error.value.status == PlannedError.status &&
+            Value.error.value.error == PlannedError.error;
+      })
+      .execute();
+  TestTrue("fakeBaseQuery resolves a typed RTK Query error",
+           bFakeBaseQueryResolved);
+
+  int32 RetryAttempts = 0;
+  BaseQueryFn<rtk::FEmptyPayload, int32> FlakyBaseQuery =
+      [&RetryAttempts](const rtk::FEmptyPayload &, const BaseQueryApi &,
+                       const rtk::FEmptyPayload &) {
+        return func::AsyncResult<QueryReturnValue<int32>>::create(
+            [&RetryAttempts](
+                std::function<void(QueryReturnValue<int32>)> Resolve,
+                std::function<void(std::string)> Reject) {
+              (void)Reject;
+              ++RetryAttempts == 1
+                  ? Resolve(QueryReturnValue<int32>::failure(
+                        FetchBaseQueryError::fetchError(TEXT("retry once"))))
+                  : Resolve(QueryReturnValue<int32>::success(7));
+            });
+      };
+  RetryOptions RetryConfig;
+  RetryConfig.maxRetries = 1;
+  int32 RetryValue = 0;
+  retry<rtk::FEmptyPayload, int32>(FlakyBaseQuery, RetryConfig)(
+      rtk::FEmptyPayload{}, BaseQueryApi(), rtk::FEmptyPayload{})
+      .then([&RetryValue](QueryReturnValue<int32> Value) {
+        RetryValue = Value.data.hasValue ? Value.data.value : 0;
+      })
+      .execute();
+  TestEqual("retry replays failed RTK Query results", RetryAttempts, 2);
+  TestEqual("retry resolves the successful result", RetryValue, 7);
 
   return true;
 }
