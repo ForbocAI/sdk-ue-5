@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+append_wsl_env_entries() {
+  local current="${WSLENV:-}"
+  local entry
+
+  for entry in "$@"; do
+    [[ -z "$entry" ]] && continue
+    case ":$current:" in
+      *":$entry:"*) ;;
+      *) current="${current:+$current:}$entry" ;;
+    esac
+  done
+
+  printf '%s' "$current"
+}
+
+wsl_env_entry_for() {
+  local name="$1"
+  local value="${!name:-}"
+
+  case "$name" in
+    API_TEST_GAME_CONTRACT|FORBOCAI_CONFIG_PATH|FORBOCAI_DATABASE_PATH|FORBOC_SDK_SOURCE_PATH|UE_ROOT)
+      [[ "$value" == /* ]] && printf '%s/p\n' "$name" || printf '%s\n' "$name"
+      ;;
+    *)
+      printf '%s\n' "$name"
+      ;;
+  esac
+}
+
+collect_forboc_wsl_env_entries() {
+  local name
+
+  while IFS='=' read -r name _; do
+    case "$name" in
+      API_TEST_GAME_CONTRACT|FORBOCAI*|FORBOC_FP_*|FORBOC_SDK_SOURCE_PATH|UE_ROOT)
+        wsl_env_entry_for "$name"
+        ;;
+    esac
+  done < <(env)
+}
+
+prepare_plugin_host() {
+  local host="$ROOT/test-game-cli/.forbocai-plugin-host"
+  local link="$host/ForbocAI_SDK"
+
+  mkdir -p "$host"
+  if [[ -L "$link" ]]; then
+    ln -sfn "$ROOT" "$link"
+    return
+  fi
+  if [[ -e "$link" ]]; then
+    echo "Plugin host path already exists and is not a symlink: $link" >&2
+    exit 1
+  fi
+  ln -s "$ROOT" "$link"
+}
+
+if grep -qi microsoft /proc/version 2>/dev/null; then
+  if command -v powershell.exe >/dev/null 2>&1; then
+    mapfile -t WSL_ENV_ENTRIES < <(collect_forboc_wsl_env_entries)
+    WSLENV="$(append_wsl_env_entries "${WSL_ENV_ENTRIES[@]}")"
+    export WSLENV
+    powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$(wslpath -w "$SCRIPT_DIR/forbocai-ue-test-game.ps1")" "$@"
+    exit $?
+  fi
+fi
+
+PROJECT="$ROOT/test-game-cli/ForbocAI_SDK.uproject"
+prepare_plugin_host
+case "$(uname -s)" in
+  Darwin)
+    UE_ROOT="${UE_ROOT:-/Users/Shared/Epic Games/UE_5.8}"
+    BUILD="$UE_ROOT/Engine/Build/BatchFiles/Mac/Build.sh"
+    EDITOR_CMD="$UE_ROOT/Engine/Binaries/Mac/UnrealEditor-Cmd"
+    PLATFORM="Mac"
+    ;;
+  Linux)
+    UE_ROOT="${UE_ROOT:-/opt/UnrealEngine}"
+    BUILD="$UE_ROOT/Engine/Build/BatchFiles/Linux/Build.sh"
+    EDITOR_CMD="$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd"
+    PLATFORM="Linux"
+    ;;
+  *)
+    echo "Unsupported platform. On Windows, run scripts/forbocai-ue-test-game.cmd or scripts/forbocai-ue-test-game.ps1." >&2
+    exit 2
+    ;;
+esac
+
+if [[ ! -f "$PROJECT" ]]; then
+  echo "UE test-game host project not found: $PROJECT" >&2
+  exit 1
+fi
+if [[ ! -x "$BUILD" && ! -f "$BUILD" ]]; then
+  echo "Unreal build script not found: $BUILD" >&2
+  echo "Set UE_ROOT to your UE 5.8 install." >&2
+  exit 1
+fi
+if [[ ! -x "$EDITOR_CMD" && ! -f "$EDITOR_CMD" ]]; then
+  echo "UnrealEditor-Cmd not found: $EDITOR_CMD" >&2
+  echo "Set UE_ROOT to your UE 5.8 install." >&2
+  exit 1
+fi
+
+if [[ "${FORBOCAI_UE_SKIP_BUILD:-0}" != "1" ]]; then
+  "$BUILD" ForbocAI_SDK_Editor "$PLATFORM" Development -Project="$PROJECT" -WaitMutex -NoHotReloadFromIDE
+fi
+
+CLI_ARGS=()
+index=0
+for arg in "$@"; do
+  CLI_ARGS+=("-CliArg${index}=${arg}")
+  index=$((index + 1))
+done
+
+"$EDITOR_CMD" "$PROJECT" -run=ForbocAITestGame \
+  -nosplash -nopause -unattended -NoSound -NoRHI -NullRHI \
+  "${CLI_ARGS[@]}"

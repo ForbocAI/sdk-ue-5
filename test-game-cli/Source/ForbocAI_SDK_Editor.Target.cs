@@ -9,6 +9,6 @@ public class ForbocAI_SDK_EditorTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V7;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_8;
 
-		ExtraModuleNames.AddRange( new string[] { "ForbocAI_SDK", "ForbocAI_TestGame_CLI" } );
+		ExtraModuleNames.AddRange( new string[] { "ForbocAI_TestGame_CLI" } );
 	}
 }

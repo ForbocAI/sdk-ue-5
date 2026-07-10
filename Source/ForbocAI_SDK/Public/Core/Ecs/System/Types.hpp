@@ -2,9 +2,6 @@
 
 namespace ecs {
 
-  TMap<ComponentType, FComponentValue> Components;
-};
-
 typedef TFunction<FWorld(const FSystemExecutionPayload &)> SystemFn;
 
 struct FDescriptor {

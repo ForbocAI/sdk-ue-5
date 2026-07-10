@@ -16,8 +16,8 @@ namespace File {
 /**
  * Downloads a binary file from a URL to a local path asynchronously.
  * Supports simple redirects if needed. Returns empty on failure.
- * User Story: As model bootstrap, I need binary downloads so local runtime
- * assets can be fetched before native inference starts.
+ * User Story: As native dependency setup, I need binary downloads so sqlite
+ * and vector-memory assets can be fetched before local storage starts.
  */
 FORBOCAI_SDK_API func::AsyncResult<FString>
 DownloadBinary(const FString &Url, const FString &DestPath);

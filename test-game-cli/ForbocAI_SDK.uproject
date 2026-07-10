@@ -3,7 +3,15 @@
 	"EngineAssociation": "5.8",
 	"Category": "",
 	"Description": "",
-	"AdditionalPluginDirectories": [".."],
+	"DisableEnginePluginsByDefault": true,
+	"Modules": [
+		{
+			"Name": "ForbocAI_TestGame_CLI",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"AdditionalPluginDirectories": [".forbocai-plugin-host"],
 	"Plugins": [
 		{
 			"Name": "ForbocAI_SDK",

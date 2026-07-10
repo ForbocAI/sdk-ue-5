@@ -17,6 +17,6 @@ struct FDirectiveRunStartedPayload {
   FString Id;
   FString NpcId;
   FString Observation;
-}
+};
 
 } // namespace DirectiveSlice

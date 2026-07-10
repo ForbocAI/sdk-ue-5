@@ -314,7 +314,7 @@ HandleDecision(const FNPCProcessResponse &Response,
  * Architectural note (2026-04-28): SLM inference is now API-hosted. The API
  * runs the model itself and populates Tape.ReasoningText / Tape.ResponseText
  * before returning. The SDK's only remaining responsibility for a Reasoning
- * step is to mark the tape completed and continue. Local cortex execution is
+ * step is to mark the tape completed and continue. SDK-local inference is
  * deliberately not invoked here.
  */
 inline func::AsyncResult<FAgentResponse>
@@ -464,7 +464,7 @@ PersistMemoryInstructions(const TArray<FMemoryStoreInstruction> &Instructions,
                    TEXT("API returned memoryStore instructions, but no memory "
                         "engine is configured"))
              : func::AsyncChain::then<FMemoryItem, rtk::FEmptyPayload>(
-                   Runtime.storeMemory(MakeMemoryItem(Instructions[Index]))(
+                   Runtime.StoreMemory(MakeMemoryItem(Instructions[Index]))(
                        Dispatch, GetState),
                    [Instructions, Index, Runtime, Dispatch,
                     GetState](const FMemoryItem &Stored) {

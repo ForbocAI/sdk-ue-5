@@ -2,16 +2,6 @@
 
 namespace ecs {
 
- * @signature inline bool hasTag(const FHasTagRequest &Request)
- *
- * User Story: As ECS query code, tag membership should use Maybe lookup plus
- * reusable array predicates.
- */
-inline bool hasTag(const FHasTagRequest &Request) {
-  return func::map_array_contains<EntityKey, Tag>(Request.World.Tags, Request.Entity,
-                                          Request.TagValue);
-}
-
 /**
  * @brief Sets one world resource using a request payload.
  */
@@ -202,5 +192,7 @@ gatherComponents(const FGatherComponentsRequest &Request) {
 struct FSystemExecutionPayload {
   FWorld World;
   EntityKey Entity;
+  TMap<ComponentType, FComponentValue> Components;
+};
 
 } // namespace ecs

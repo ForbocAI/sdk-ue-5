@@ -294,5 +294,8 @@ struct FGatherComponentsRequest {
  * marking payloads instead of scattered aggregate construction.
  */
 inline FRecordEntityDirtyRequest createRecordEntityDirtyRequest(FWorld World,
+                                                                const EntityKey &Entity) {
+  return {World, Entity};
+}
 
 } // namespace ecs

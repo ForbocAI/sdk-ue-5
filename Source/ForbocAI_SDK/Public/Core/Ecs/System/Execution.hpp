@@ -148,5 +148,6 @@ struct FWorldRuntimeInspection {
 struct FWorldInspection {
   FWorldStorageInspection Storage;
   FWorldRuntimeInspection Runtime;
+};
 
 } // namespace ecs

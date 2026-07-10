@@ -2,6 +2,8 @@
 
 #include "Core/rtk.hpp"
 
+#include "Core/ecs.hpp"
+#include "Core/frmt.hpp"
 #include "Core/ue_fp.hpp"
 #include "CoreMinimal.h"
 

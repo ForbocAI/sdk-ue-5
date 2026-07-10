@@ -15,6 +15,6 @@ using namespace rtk;
 struct FGhostSessionStartedPayload {
   FString SessionId;
   FString Status;
-}
+};
 
 } // namespace GhostSlice

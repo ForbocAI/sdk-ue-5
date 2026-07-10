@@ -11,7 +11,6 @@
 // @covers:coreThunk:checkApiStatusThunk
 // @covers:coreThunk:clearMemoryRemoteThunk
 // @covers:coreThunk:clearNodeMemoryThunk
-// @covers:coreThunk:completeRemoteThunk
 // @covers:coreThunk:deleteRulesetThunk
 // @covers:coreThunk:doctorThunk
 // @covers:coreThunk:exportSoulThunk

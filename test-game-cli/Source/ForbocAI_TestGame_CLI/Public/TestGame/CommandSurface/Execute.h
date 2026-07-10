@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CLI/CliOperations.h"
+#include "CLI/CLIModule.h"
 #include "Core/ue_fp.hpp"
 #include "RuntimeStore.h"
 #include "TestGame/CommandSurface/Alias.h"

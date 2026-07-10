@@ -232,8 +232,7 @@ inline bool operator==(const FGraph &Left,
          Left.EventSpecs.OrderIndependentCompareEqual(Right.EventSpecs);
 }
 
-inline bool operator!=(const FGraph &Left,
-                       const FGraph &Right) {
+inline bool operator!=(const FGraph &Left, const FGraph &Right) {
   return !(Left == Right);
 }
 
@@ -247,6 +246,6 @@ inline bool operator!=(const FGraph &Left,
 inline FGraph createDomainRegistry() { return FGraph(); }
 
 typedef std::function<FNode(const FNode &)> FDomainNodeTransform;
-typedef std::function<FGraph(const FGraph &)>
+typedef std::function<FGraph(const FGraph &)> FDomainRegistryTransform;
 
 } // namespace ecs

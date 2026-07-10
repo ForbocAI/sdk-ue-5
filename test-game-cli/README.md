@@ -4,7 +4,7 @@ This is the standalone test/host project for the ForbocAI UE SDK. It is used by 
 
 ## Structure and Discovery
 
-The project uses `AdditionalPluginDirectories: [".."]` in its `.uproject` file to dynamically discover and load the `ForbocAI_SDK` plugin from the repository root. This allows the plugin to be developed in a canonical flat layout while still being testable.
+The project uses `AdditionalPluginDirectories: [".forbocai-plugin-host"]` in its `.uproject` file. The runner scripts create that ignored local host as a symlink/junction to the current SDK checkout before invoking Unreal, so the project discovers exactly one `ForbocAI_SDK` plugin without manual setup.
 
 ## Running Tests
 
@@ -15,4 +15,9 @@ To run the test scenarios, including the parity verifier, contract harness, and 
    ```bash
    bash scripts/verify-ue-parity.sh
    ```
-3. Run the automation tests (RunGame entry) via the Unreal Engine session frontend or command line testing tools.
+3. Run the commandlet-backed test-game CLI:
+   ```bash
+   scripts/forbocai-ue-test-game --mode autoplay
+   ```
+
+The commandlet is `ForbocAITestGame`. It lives in this test-game module and delegates scenario commands through `TestGame::CommandSurface`, which calls the SDK `CLIOps` command boundary.

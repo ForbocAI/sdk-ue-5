@@ -2,8 +2,6 @@
 
 namespace ecs {
 
-};
-
 inline bool operator==(const FWorldStorageInspection &Left,
                        const FWorldStorageInspection &Right) {
   return Left.EntityCount == Right.EntityCount &&
@@ -120,5 +118,12 @@ inline FEntityInspection createEntityInspection(const EntityKey &Entity) {
  * over entity keys instead of nullable pointer logic.
  */
 inline FTagInspectionSelector selectEntityTagsForInspection(const FWorld &World) {
+  return [&World](const EntityKey &Entity) {
+    return func::match(
+        func::find_map_value<EntityKey, TArray<Tag>>(World.Tags, Entity),
+        [](const TArray<Tag> &Tags) { return Tags; },
+        []() { return TArray<Tag>(); });
+  };
+}
 
 } // namespace ecs

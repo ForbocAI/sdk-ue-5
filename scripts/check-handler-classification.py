@@ -81,7 +81,8 @@ def main():
             continue
 
         if classification == "Pass-through":
-            if "CompleteInference" in body or "nodeCortexThunk" in body:
+            forbidden_local_inference = ("CompleteInference", "nodeCortexThunk")
+            if any(symbol in body for symbol in forbidden_local_inference):
                 print(f"[FAIL] Pass-through handler Handle{instruction} uses local inference.")
                 failures += 1
             else:

@@ -292,5 +292,14 @@ inline FWorld setTag(const FSetTagRequest &Request) {
 
 /**
  * @brief Checks whether an entity currently has a tag.
+ * @signature inline bool hasTag(const FHasTagRequest &Request)
+ *
+ * User Story: As ECS query code, tag membership should use Maybe lookup plus
+ * reusable array predicates.
+ */
+inline bool hasTag(const FHasTagRequest &Request) {
+  return func::map_array_contains<EntityKey, Tag>(
+      Request.World.Tags, Request.Entity, Request.TagValue);
+}
 
 } // namespace ecs

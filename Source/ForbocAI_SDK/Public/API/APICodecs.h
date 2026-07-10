@@ -612,6 +612,20 @@ inline bool DecodeInstructionObject(const TSharedPtr<FJsonObject> &Object,
                                     true);
                               }),
                           func::when<FString, bool>(
+                              func::equals<FString>(TEXT("Decision")),
+                              [&](const FString &) -> bool {
+                                Instruction.Type =
+                                    ENPCInstructionType::Decision;
+                                return true;
+                              }),
+                          func::when<FString, bool>(
+                              func::equals<FString>(TEXT("Reasoning")),
+                              [&](const FString &) -> bool {
+                                Instruction.Type =
+                                    ENPCInstructionType::Reasoning;
+                                return true;
+                              }),
+                          func::when<FString, bool>(
                               func::equals<FString>(TEXT("Finalize")),
                               [&](const FString &) -> bool {
                                 return (

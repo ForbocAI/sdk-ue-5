@@ -12,6 +12,7 @@
 #include "TestGame/Features/Systems/Terminal/TerminalListeners.h"
 #include "TestGame/TestGameRuntime.h"
 #include "Core/ue_fp.hpp"
+#include "HAL/PlatformProcess.h"
 
 namespace TestGame {
 
@@ -305,6 +306,18 @@ inline void ProcessCommand(const FScenarioStep &Step, const FCommandSpec &Cmd,
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 namespace detail {
+inline int32 CommandDelayMs() {
+  const FString Raw =
+      FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_TEST_GAME_COMMAND_DELAY_MS"));
+  const int32 Parsed = Raw.IsEmpty() ? 1000 : FCString::Atoi(*Raw);
+  return Parsed >= 0 ? Parsed : 1000;
+}
+
+inline void DelayAfterCommand() {
+  const float Seconds = static_cast<float>(CommandDelayMs()) / 1000.0f;
+  Seconds > 0.0f ? FPlatformProcess::Sleep(Seconds) : void();
+}
+
 inline void ProcessCommands(const FScenarioStep &Step,
                             const TArray<FCommandSpec> &Commands, int32 Index,
                             CommandSurface::FAliasState &Aliases,
@@ -312,6 +325,7 @@ inline void ProcessCommands(const FScenarioStep &Step,
   return Index >= Commands.Num()
               ? (void)0
               : (ProcessCommand(Step, Commands[Index], Aliases, Store),
+                DelayAfterCommand(),
                 ProcessCommands(Step, Commands, Index + 1, Aliases, Store));
 }
 
@@ -382,7 +396,8 @@ inline int32 CountTranscriptErrors(const TArray<FTranscriptEntry> &Entries,
  * User Story: As end-to-end test execution, I need one orchestrator entrypoint
  * so a full scenario suite can run and report transcript plus coverage state.
  */
-inline FGameRunResult RunGame(EPlayMode Mode) {
+inline FGameRunResult RunGame(EPlayMode Mode,
+                              const FString &ApiUrlOverride = TEXT("")) {
   SDKConfig::InitializeConfig();
   auto Store = createTestGameStoreWithListeners();
   Store.dispatch(UIActions::setMode(Mode));
@@ -407,7 +422,8 @@ inline FGameRunResult RunGame(EPlayMode Mode) {
          Mode == EPlayMode::Autoplay ? TEXT("autoplay") : TEXT("manual"));
   UE_LOG(LogTemp, Display, TEXT("%s"), *RenderLegend());
 
-  const FString ApiUrl = ResolveRuntimeUrl();
+  const FString ApiUrl =
+      !ApiUrlOverride.IsEmpty() ? ApiUrlOverride : ResolveRuntimeUrl();
   if (ApiUrl.IsEmpty()) {
     UE_LOG(LogTemp, Error,
            TEXT("TestGameContract: explicit runtime URL required. Set "

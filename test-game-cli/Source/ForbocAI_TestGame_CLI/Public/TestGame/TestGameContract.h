@@ -62,6 +62,15 @@ struct FContractResponse {
   FContractResponse() : bValid(false) {}
 };
 
+struct FRawContractResponse {
+  bool bSuccess;
+  int32 ResponseCode;
+  FString Body;
+  FString Error;
+
+  FRawContractResponse() : bSuccess(false), ResponseCode(0) {}
+};
+
 // ── Parsing helpers (FP-compliant) ──
 
 namespace detail {
@@ -289,8 +298,9 @@ inline FContractResponse ParseContractJson(const FString &JsonBody) {
  * User Story: As the UE test-game, I need to fetch the contract from
  * GET /test-game/contract so I prove real API-authoritative parity.
  */
-inline FContractResponse FetchContract(
+inline FRawContractResponse FetchContractJson(
     const FString &ApiUrl = TEXT("http://localhost:8080")) {
+  FRawContractResponse Response;
   try {
     const FString Url =
         FString::Printf(TEXT("%s/test-game/contract"), *ApiUrl);
@@ -299,12 +309,20 @@ inline FContractResponse FetchContract(
         Ops::waitForResult(
             func::AsyncHttp::Get<FString>(Url, SDKConfig::GetApiKey()), 5.0);
 
-    return (Result.bSuccess && Result.ResponseCode == 200)
-               ? ParseContractJson(Result.data)
-               : FContractResponse{};
-  } catch (const std::exception &) {
-    return FContractResponse{};
+    Response.bSuccess = Result.bSuccess && Result.ResponseCode == 200;
+    Response.ResponseCode = Result.ResponseCode;
+    Response.Body = Result.data;
+    return Response;
+  } catch (const std::exception &Error) {
+    Response.Error = UTF8_TO_TCHAR(Error.what());
+    return Response;
   }
+}
+
+inline FContractResponse FetchContract(
+    const FString &ApiUrl = TEXT("http://localhost:8080")) {
+  const FRawContractResponse Raw = FetchContractJson(ApiUrl);
+  return Raw.bSuccess ? ParseContractJson(Raw.Body) : FContractResponse{};
 }
 
 /**

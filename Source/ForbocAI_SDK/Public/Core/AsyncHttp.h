@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Dom/JsonObject.h"
+#include "Errors.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
@@ -95,6 +96,12 @@ inline bool ApplyAuthorization(IHttpRequest &Request, const FString &ApiKey) {
                 true);
 }
 
+inline std::string HttpFailureMessage(HttpStatusCode Code,
+                                      const FString &Content) {
+  const FString Summary = Errors::summarizeHttpError(Code, Content);
+  return std::string(TCHAR_TO_UTF8(*Summary));
+}
+
 template <typename T>
 func::HttpResult<T> DecodeContentResult(const FString &Content,
                                         HttpStatusCode Code) {
@@ -120,7 +127,7 @@ void ResolveRequestCompletion(
   Resolve((!bWasSuccessful || !Res.IsValid())
               ? func::HttpResult<T>::Failure("Network failure", 0)
               : (Code < 200 || Code >= 300)
-                    ? func::HttpResult<T>::Failure(TCHAR_TO_UTF8(*Content),
+                    ? func::HttpResult<T>::Failure(HttpFailureMessage(Code, Content),
                                                    Code)
                     : DecodeContentResult<T>(Content, Code));
 }

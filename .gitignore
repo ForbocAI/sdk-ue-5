@@ -56,3 +56,6 @@ dist_ForbocAI_SDK_v*/
 
 # JavaScript package installs for CLI test-game tooling
 node_modules/
+
+# Local plugin discovery host created by scripts/forbocai-ue-test-game
+test-game-cli/.forbocai-plugin-host/

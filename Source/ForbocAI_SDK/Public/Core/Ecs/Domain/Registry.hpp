@@ -2,8 +2,6 @@
 
 namespace ecs {
 
-    FDomainRegistryTransform;
-
 inline func::Maybe<DomainPathKey> findParentDomainKey(const FPath &Path) {
   return func::fmap(
       func::maybe_filter(

@@ -75,7 +75,7 @@ exportSoulThunk(const FString &NpcId) {
                        })
                        .catch_([Dispatch](std::string Error) {
                          Dispatch(SoulSlice::Actions::remoteExportSoulFailed(
-                             FString(UTF8_TO_TCHAR(Error.c_str()))));
+                             Errors::extractThunkErrorMessage(Error)));
                        }));
           }();
   };
@@ -136,7 +136,7 @@ exportSoulThunk(const FSoul &Soul) {
                    })
                    .catch_([Dispatch](std::string Error) {
                      Dispatch(SoulSlice::Actions::remoteExportSoulFailed(
-                         FString(UTF8_TO_TCHAR(Error.c_str()))));
+                         Errors::extractThunkErrorMessage(Error)));
                    }));
   };
 }
@@ -184,7 +184,7 @@ importSoulThunk(const FString &TxId) {
                })
                .catch_([Dispatch](std::string Error) {
                  Dispatch(SoulSlice::Actions::importSoulFailed(
-                     FString(UTF8_TO_TCHAR(Error.c_str()))));
+                     Errors::extractThunkErrorMessage(Error)));
                }));
   };
 }

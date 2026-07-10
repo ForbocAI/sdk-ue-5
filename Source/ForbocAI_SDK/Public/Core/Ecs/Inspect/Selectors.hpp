@@ -2,14 +2,6 @@
 
 namespace ecs {
 
-  return [&World](const EntityKey &Entity) {
-    return func::match(
-        func::find_map_value<EntityKey, TArray<Tag>>(World.Tags, Entity),
-        [](const TArray<Tag> &Tags) { return Tags; },
-        []() { return TArray<Tag>(); });
-  };
-}
-
 /**
  * @brief Builds a selector for entity domains used by inspection.
  * @signature inline FDomainInspectionSelector selectEntityDomainsForInspection(const FWorld &World)

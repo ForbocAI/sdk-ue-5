@@ -2,10 +2,6 @@
 
 namespace ecs {
 
-                                                const EntityKey &Entity) {
-  return {World, Entity};
-}
-
 /**
  * @brief Builds the dirty entity batch recording request payload.
  * @signature inline FRecordEntitiesDirtyRequest createRecordEntitiesDirtyRequest(FWorld World, const TArray<EntityKey> &Entities)
