@@ -1,5 +1,7 @@
 #pragma once
 
+// Imperative local soul workflows live at this thunk boundary.
+
 #include "Core/rtk.hpp"
 #include "Core/ue_fp.hpp"
 #include "Features/Memory/MemorySlice.h"

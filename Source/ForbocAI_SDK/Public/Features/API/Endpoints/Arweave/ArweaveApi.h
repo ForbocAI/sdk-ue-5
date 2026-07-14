@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EndpointsAdapters.h"
+#include "Features/API/Endpoints/EndpointsAdapters.h"
 
 #include "Async/Async.h"
 #include "HAL/PlatformProcess.h"

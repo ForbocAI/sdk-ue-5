@@ -88,7 +88,7 @@ void UForbocAIBlueprintLibrary::clearMemory(const FString &NpcId) {
 /**
  * Starts a ghost run and returns the remote session id.
  * User Story: As blueprint automation flows, I need a node that launches ghost
- * runs so designers can trigger runtime tests from gameplay tools.
+ * runs so integrators can trigger runtime tests from host tools.
  */
 FString UForbocAIBlueprintLibrary::startGhost(const FString &TestSuite,
                                              int32 Duration) {
@@ -99,7 +99,7 @@ FString UForbocAIBlueprintLibrary::startGhost(const FString &TestSuite,
 /**
  * Stops a ghost run and returns the stop status string.
  * User Story: As blueprint automation flows, I need a node that stops ghost
- * runs so long-running tests can be cancelled from gameplay tools.
+ * runs so long-running tests can be cancelled from host tools.
  */
 FString UForbocAIBlueprintLibrary::stopGhost(const FString &SessionId) {
   FGhostStopResponse Resp = Ops::stopGhost(GetBPStore(), SessionId);

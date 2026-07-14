@@ -207,7 +207,7 @@ struct FRegisterEventSpecRequest {
  * @signature inline FPath createDomainPath(const TArray<FString> &Segments)
  *
  * User Story: As a feature author, I need stable domain paths so higher
- * gameplay domains can import downward into shared ECS primitives.
+ * host domains can import downward into shared ECS primitives.
  */
 
 } // namespace ecs

@@ -24,7 +24,6 @@ from typing import Callable, Sequence, TypeVar
 GENERATED_START = "<!-- BEGIN GENERATED SDK PARITY INVENTORY -->"
 GENERATED_END = "<!-- END GENERATED SDK PARITY INVENTORY -->"
 
-UE_SCRIPT_ROOT = Path("scripts")
 TS_SOURCE_SUFFIXES = {".ts", ".tsx"}
 UE_SOURCE_SUFFIXES = {".h", ".hpp", ".cpp", ".cs"}
 IGNORED_PARTS = {
@@ -119,23 +118,32 @@ def has_ignored_part(path: Path) -> bool:
 def candidate_ts_roots(root: Path) -> list[Path]:
     env_root = os.environ.get("FORBOCAI_TS_SDK_ROOT")
     roots = [Path(env_root)] if env_root else []
-    return roots + [
-        root.parent / "sdk",
-        root.parent / "sdk-ts",
-        root.parent / "sdk-node",
-    ]
+    siblings = sorted(
+        (
+            candidate
+            for candidate in root.parent.iterdir()
+            if candidate.is_dir() and candidate != root and (candidate / "package.json").is_file()
+        ),
+        key=lambda candidate: candidate.name.casefold(),
+    )
+    return roots + siblings
 
 
 def resolve_ts_root(root: Path, explicit_root: str | None) -> Path:
     roots = [Path(explicit_root)] if explicit_root else candidate_ts_roots(root)
     for ts_root in roots:
-        if (ts_root / "packages/core/src/cliCommandMatrix.ts").is_file():
+        try:
+            source_roots = discover_ts_source_roots(ts_root)
+            find_matrix_source(
+                iter_ts_files(ts_root, source_roots),
+                extract_ts_node_keys,
+                "TS CLI command matrix",
+            )
             return ts_root
+        except (FileNotFoundError, ValueError, json.JSONDecodeError):
+            continue
 
-    searched = "\n".join(
-        f"  - {candidate / 'packages/core/src/cliCommandMatrix.ts'}"
-        for candidate in roots
-    )
+    searched = "\n".join(f"  - {candidate}" for candidate in roots)
     raise FileNotFoundError(
         "Could not find TS SDK root. Set FORBOCAI_TS_SDK_ROOT or pass "
         f"--ts-sdk-root.\nSearched:\n{searched}"
@@ -197,34 +205,58 @@ def ue_module_name(source_root: Path) -> str:
     return source_root.name
 
 
-def is_test_game_ue_root(source_root: Path) -> bool:
-    return "testgame" in normalize_name(ue_module_name(source_root))
+def parity_group(name: str) -> str | None:
+    normalized = normalize_name(name)
+    if "browser" in normalized:
+        return None
+    return "test-game" if "testgame" in normalized else "sdk"
+
+
+def program_label(
+    group: str,
+    ts_source_roots: Sequence[Path],
+    ue_source_roots: Sequence[Path],
+) -> str:
+    title = group.replace("-", " ").title()
+    ts_names = " + ".join(ts_package_name(root) for root in ts_source_roots)
+    ue_names = " + ".join(ue_module_name(root) for root in ue_source_roots)
+    return f"{title}: TS {ts_names} -> UE {ue_names}"
 
 
 def build_parity_programs(
     ts_source_roots: Sequence[Path],
     ue_source_roots: Sequence[Path],
 ) -> tuple[ParityProgram, ...]:
-    ts_by_package = {ts_package_name(source_root): source_root for source_root in ts_source_roots}
-    sdk_ts_roots = tuple(
-        source_root
-        for package, source_root in sorted(ts_by_package.items(), key=lambda item: package_order(item[0]))
-        if package in {"core", "node"}
-    )
-    test_game_ts_roots = tuple(
-        source_root
-        for package, source_root in sorted(ts_by_package.items(), key=lambda item: package_order(item[0]))
-        if package in {"test-game-core", "test-game-cli"}
-    )
-
-    sdk_ue_roots = tuple(source_root for source_root in ue_source_roots if not is_test_game_ue_root(source_root))
-    test_game_ue_roots = tuple(source_root for source_root in ue_source_roots if is_test_game_ue_root(source_root))
-
     programs: list[ParityProgram] = []
-    if sdk_ts_roots and sdk_ue_roots:
-        programs.append(ParityProgram("SDK: TS core + node -> UE SDK", sdk_ts_roots, sdk_ue_roots))
-    if test_game_ts_roots and test_game_ue_roots:
-        programs.append(ParityProgram("Test Game: TS test-game-core + test-game-cli -> UE test-game-cli", test_game_ts_roots, test_game_ue_roots))
+    for group in ("sdk", "test-game"):
+        matching_ts_roots = tuple(
+            sorted(
+                (
+                    source_root
+                    for source_root in ts_source_roots
+                    if parity_group(ts_package_name(source_root)) == group
+                ),
+                key=lambda source_root: ts_package_name(source_root).casefold(),
+            )
+        )
+        matching_ue_roots = tuple(
+            sorted(
+                (
+                    source_root
+                    for source_root in ue_source_roots
+                    if parity_group(ue_module_name(source_root)) == group
+                ),
+                key=lambda source_root: ue_module_name(source_root).casefold(),
+            )
+        )
+        if matching_ts_roots and matching_ue_roots:
+            programs.append(
+                ParityProgram(
+                    program_label(group, matching_ts_roots, matching_ue_roots),
+                    matching_ts_roots,
+                    matching_ue_roots,
+                )
+            )
     return tuple(programs)
 
 
@@ -284,16 +316,6 @@ def iter_ue_files(root: Path, source_roots: Sequence[Path]) -> list[Path]:
             and not has_ignored_part(path.relative_to(root))
         )
 
-    script_root = root / UE_SCRIPT_ROOT
-    if script_root.is_dir():
-        source_files.extend(
-            path
-            for path in script_root.rglob("*")
-            if path.is_file()
-            and not has_ignored_part(path.relative_to(root))
-        )
-
-    source_files.extend(path for path in root.glob("*.uproject") if path.is_file())
     return sorted(set(source_files), key=lambda path: relative(path, root))
 
 
@@ -452,6 +474,25 @@ def extract_ue_node_keys(path: Path) -> list[str]:
     if not match:
         raise ValueError(f"Could not find UE node CLI command marker block in {path}")
     return re.findall(r'\{\s*TEXT\("([^"]+)"\)', match.group("body"))
+
+
+def find_matrix_source(
+    source_files: Sequence[Path],
+    extractor: Callable[[Path], list[str]],
+    label: str,
+) -> tuple[Path, list[str]]:
+    matches: list[tuple[Path, list[str]]] = []
+    for path in source_files:
+        try:
+            keys = extractor(path)
+        except (UnicodeDecodeError, ValueError):
+            continue
+        matches.append((path, keys))
+
+    if len(matches) != 1:
+        paths = ", ".join(str(path) for path, _keys in matches) or "none"
+        raise ValueError(f"Expected exactly one {label}; found {len(matches)}: {paths}")
+    return matches[0]
 
 
 def strip_comments(text: str) -> str:
@@ -730,17 +771,8 @@ def package_label(package: str) -> str:
     return package.replace("-", " ").title() if package else "Other"
 
 
-def package_order(package: str) -> int:
-    order = {
-        "core": 0,
-        "node": 1,
-        "test-game-core": 2,
-        "test-game-cli": 3,
-        "browser": 4,
-        "test-game-browser": 5,
-        "other": 6,
-    }
-    return order.get(package, 99)
+def package_order(package: str) -> tuple[str, str]:
+    return normalize_name(package), package.casefold()
 
 
 def grouped(items: Sequence[T], package_of: Callable[[T], str]) -> list[tuple[str, list[T]]]:
@@ -1060,7 +1092,10 @@ def build_generated_section(
         f"- Discovered UE source roots: {format_roots(ue_source_roots)}",
         f"- Unmapped TS source roots: {format_roots(unmapped_ts_source_roots)}",
         f"- Unmapped UE source roots: {format_roots(unmapped_ue_source_roots)}",
-        "- Active parity programs: TS `core` + `node` compare to the UE SDK module; TS `test-game-core` + `test-game-cli` compare to the UE test-game module.",
+        "- Active parity programs: " + "; ".join(
+            f"{inventory.program.label}"
+            for inventory in inventories
+        ) + ".",
         "- `Same` for folders/files means a UE path contains the same normalized TS path/name suffix inside that parity program.",
         "- `Different` means no same normalized path/name suffix was found; listed UE item(s), when present, are closest dynamic candidates from that same parity program.",
         "- Function names are included in the generated symbol/function mirrors.",
@@ -1112,12 +1147,26 @@ def update_last_updated(text: str) -> str:
     return re.sub(r"Last updated:\s*\d{4}-\d{2}-\d{2}", f"Last updated: {today}", text, count=1)
 
 
-def check_cli_command_parity(ts_root: Path, ue_root: Path) -> tuple[int, list[str], list[str]]:
-    ts_matrix = ts_root / "packages/core/src/cliCommandMatrix.ts"
-    ue_matrix = ue_root / "Source/ForbocAI_SDK/Public/CLI/CliCommandMatrix.h"
-
-    ts_keys = extract_ts_node_keys(ts_matrix)
-    ue_keys = extract_ue_node_keys(ue_matrix)
+def check_cli_command_parity(
+    ts_root: Path,
+    ue_root: Path,
+    ts_source_roots: Sequence[Path],
+    ue_source_roots: Sequence[Path],
+) -> tuple[int, list[str], list[str]]:
+    ts_matrix, ts_keys = find_matrix_source(
+        iter_ts_files(ts_root, ts_source_roots),
+        extract_ts_node_keys,
+        "TS CLI command matrix",
+    )
+    ue_matrix, ue_keys = find_matrix_source(
+        tuple(
+            path
+            for path in iter_ue_files(ue_root, ue_source_roots)
+            if path.suffix in UE_SOURCE_SUFFIXES
+        ),
+        extract_ue_node_keys,
+        "UE CLI command matrix",
+    )
 
     missing = [key for key in ts_keys if key not in ue_keys]
     extra = [key for key in ue_keys if key not in ts_keys]
@@ -1161,10 +1210,14 @@ def main() -> int:
     ts_root = resolve_ts_root(ue_root, args.ts_sdk_root)
     map_path = resolve_map_path(ue_root, args.map_path)
 
-    cli_status, ts_keys, ue_keys = check_cli_command_parity(ts_root, ue_root)
-
     ts_source_roots = discover_ts_source_roots(ts_root)
     ue_source_roots = discover_ue_source_roots(ue_root)
+    cli_status, ts_keys, ue_keys = check_cli_command_parity(
+        ts_root,
+        ue_root,
+        ts_source_roots,
+        ue_source_roots,
+    )
     programs = build_parity_programs(ts_source_roots, ue_source_roots)
     if not programs:
         raise ValueError("No TS/UE parity programs were discovered.")

@@ -143,7 +143,7 @@ inline FString ReplaceRuntimeFormatToken(const FString &Pattern,
  * @signature inline FString RuntimeString(const FString &Pattern, const TArray<FString> &Values)
  * @return The pattern formatted with the supplied argument values.
  *
- * User Story: As gameplay UI, RTK logger, and ECS projection code, I need one
+ * User Story: As host UI, RTK logger, and ECS projection code, I need one
  * small formatter boundary so user-visible text is derived from state without
  * scattering FString conversion logic.
  */

@@ -12,7 +12,7 @@
  * @brief Game-project ECS primitives that depend on FP only and never on RTK.
  *
  * User Stories:
- * - As a gameplay feature author, I need neutral Components / Entities /
+ * - As a host feature author, I need neutral Components / Entities /
  *   Systems taxonomy so Unreal features can share ECS vocabulary with
  *   Rust and GDScript game projects.
  * - As a reducer author, I need ECS worlds to be plain value structs so project

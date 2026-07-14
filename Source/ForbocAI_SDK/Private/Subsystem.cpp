@@ -8,7 +8,7 @@
 /**
  * Initializes the runtime store and wires action middleware for broadcasts.
  * User Story: As game runtime startup, I need the subsystem to create and wire
- * the store so gameplay events can observe SDK state changes. This registers
+ * the store so host events can observe SDK state changes. This registers
  * the NPC-removal listener and the action-broadcast middleware before store
  * creation.
  */
@@ -46,7 +46,7 @@ void UForbocAISubsystem::Deinitialize() {
 /**
  * Applies API credentials and URL overrides to the runtime config.
  * User Story: As subsystem setup flows, I need one init entry point for API
- * config so gameplay code can point the runtime at the right backend.
+ * config so host code can point the runtime at the right backend.
  */
 void UForbocAISubsystem::Init(FString ApiKey, FString ApiUrl) {
   SDKConfig::SetApiConfig(
@@ -55,7 +55,7 @@ void UForbocAISubsystem::Init(FString ApiKey, FString ApiUrl) {
 
 /**
  * Runs a protocol turn for an NPC and broadcasts dialogue or actions.
- * User Story: As gameplay interaction flows, I need NPC turns processed from
+ * User Story: As host interaction flows, I need NPC turns processed from
  * the subsystem so dialogue, typing, and action events are broadcast to game code.
  */
 void UForbocAISubsystem::ProcessNPC(FString NpcId, FString Input) {
@@ -85,7 +85,7 @@ void UForbocAISubsystem::ProcessNPC(FString NpcId, FString Input) {
 
 /**
  * Exports an NPC soul and broadcasts the completed transaction id.
- * User Story: As gameplay soul-export flows, I need subsystem-triggered export
+ * User Story: As host soul-export flows, I need subsystem-triggered export
  * events so game code can react when a soul has been published.
  */
 void UForbocAISubsystem::exportSoul(FString AgentId) {
@@ -100,7 +100,7 @@ void UForbocAISubsystem::exportSoul(FString AgentId) {
 
 /**
  * Returns the latest state snapshot for the requested NPC.
- * User Story: As gameplay state queries, I need the latest NPC state from the
+ * User Story: As host state queries, I need the latest NPC state from the
  * subsystem so UI and logic can inspect current agent data.
  */
 FAgentState UForbocAISubsystem::GetNPCState(FString NpcId) const {
@@ -115,7 +115,7 @@ FAgentState UForbocAISubsystem::GetNPCState(FString NpcId) const {
 
 /**
  * Returns the id of the active NPC, if any.
- * User Story: As gameplay targeting flows, I need the active NPC id so other
+ * User Story: As host targeting flows, I need the active NPC id so other
  * systems can address the current actor consistently.
  */
 FString UForbocAISubsystem::GetActiveNPCId() const {
@@ -126,7 +126,7 @@ FString UForbocAISubsystem::GetActiveNPCId() const {
 
 /**
  * Writes the active NPC into OutNPC when one is present.
- * User Story: As gameplay state queries, I need the active NPC materialized so
+ * User Story: As host state queries, I need the active NPC materialized so
  * consumers can read the full runtime record without manual store access.
  */
 bool UForbocAISubsystem::GetActiveNPC(FNPCInternalState &OutNPC) const {
@@ -143,7 +143,7 @@ bool UForbocAISubsystem::GetActiveNPC(FNPCInternalState &OutNPC) const {
 
 /**
  * Returns the last memory recall result emitted by the store.
- * User Story: As gameplay memory UIs, I need the last recall batch so recent
+ * User Story: As host memory UIs, I need the last recall batch so recent
  * memory results can be rendered without reissuing the query.
  */
 TArray<FMemoryItem> UForbocAISubsystem::GetLastRecalledMemories() const {
@@ -155,7 +155,7 @@ TArray<FMemoryItem> UForbocAISubsystem::GetLastRecalledMemories() const {
 
 /**
  * Writes the most recent bridge validation result into OutResult.
- * User Story: As gameplay validation feedback, I need the latest bridge result
+ * User Story: As host validation feedback, I need the latest bridge result
  * so designers can inspect whether an action was valid.
  */
 bool UForbocAISubsystem::GetLastBridgeValidation(
@@ -171,7 +171,7 @@ bool UForbocAISubsystem::GetLastBridgeValidation(
 
 /**
  * Writes the last imported soul into OutSoul when one exists.
- * User Story: As gameplay soul-import flows, I need the latest imported soul
+ * User Story: As host soul-import flows, I need the latest imported soul
  * exposed so game tools can inspect the restored payload.
  */
 bool UForbocAISubsystem::GetLastImportedSoul(FSoul &OutSoul) const {
@@ -186,7 +186,7 @@ bool UForbocAISubsystem::GetLastImportedSoul(FSoul &OutSoul) const {
 
 /**
  * Broadcasts selected store actions through the subsystem event delegates.
- * User Story: As gameplay event listeners, I need store actions translated
+ * User Story: As host event listeners, I need store actions translated
  * into delegates so blueprint and C++ subscribers can react to runtime changes.
  */
 void UForbocAISubsystem::HandleAction(const rtk::AnyAction &Action) {

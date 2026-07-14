@@ -6,7 +6,7 @@
 #include "Errors.h"
 #include "Features/API/APISlice.h"
 #include "Features/Ghost/GhostSlice.h"
-#include "Features/Ghost/Local/LocalThunks.h"
+#include "Features/Ghost/Local/GhostLocalThunks.h"
 #include "RuntimeConfig.h"
 
 namespace rtk {

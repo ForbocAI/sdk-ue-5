@@ -1,5 +1,7 @@
 #pragma once
 
+// Imperative local ghost workflows live at this thunk boundary.
+
 #include "Core/rtk.hpp"
 #include "Ghost/GhostTypes.h"
 #include "NPC/NPCBaseTypes.h"

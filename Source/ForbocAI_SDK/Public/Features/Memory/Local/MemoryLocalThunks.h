@@ -1,5 +1,7 @@
 #pragma once
 
+// Imperative local memory workflows live at this thunk boundary.
+
 #include "Async/Async.h"
 #include "Core/rtk.hpp"
 #include "Core/ue_fp.hpp"

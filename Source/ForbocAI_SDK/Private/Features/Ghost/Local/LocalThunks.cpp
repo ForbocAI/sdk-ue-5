@@ -1,10 +1,10 @@
-#include "Features/Ghost/Local/LocalThunks.h"
+#include "Features/Ghost/Local/GhostLocalThunks.h"
 
 #include "Features/Ghost/GhostSlice.h"
 #include "Ghost/GhostModuleInternal.h"
 
 /**
- * G.6: Local ghost test execution thunk - test logic in thunk, module dispatches
+ * Local ghost test execution thunk - test logic in thunk, module dispatches.
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
