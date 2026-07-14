@@ -7,7 +7,7 @@
 #include "Core/rtk.hpp"
 #include "Core/ue_fp.hpp"
 #include "CoreMinimal.h"
-#include "Types.h"
+#include "Features/Contracts/ContractsTypes.h"
 #include "Features/Directive/DirectiveActions.h"
 #include "Features/Directive/DirectiveAdapters.h"
 

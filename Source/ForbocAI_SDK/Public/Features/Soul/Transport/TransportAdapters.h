@@ -3,7 +3,7 @@
 #include "Core/rtk.hpp"
 #include "Core/ue_fp.hpp"
 #include "RuntimeConfig.h"
-#include "Soul/SoulTypes.h"
+#include "Features/Soul/SoulTypes.h"
 
 namespace rtk {
 

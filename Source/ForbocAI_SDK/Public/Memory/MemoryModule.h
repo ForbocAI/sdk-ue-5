@@ -3,7 +3,7 @@
 #include "Async/Async.h"
 #include "Core/ue_fp.hpp"
 #include "CoreMinimal.h"
-#include "Types.h"
+#include "Features/Contracts/ContractsTypes.h"
 
 /**
  * UE FP Core Type Aliases for Memory operations

@@ -3,7 +3,7 @@
 #include "Core/rtk.hpp"
 #include "Core/ue_fp.hpp"
 #include "Errors.h"
-#include "Features/API/APISlice.h"
+#include "Features/API/APIApi.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Soul/SoulSlice.h"
 #include "Features/Soul/Transport/TransportAdapters.h"

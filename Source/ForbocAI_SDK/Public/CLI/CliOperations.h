@@ -6,7 +6,12 @@
 #include "Features/NPC/NPCSlice.h"
 #include "RuntimeConfig.h"
 #include "RuntimeStore.h"
-#include "Thunks.h"
+#include "Features/API/APIThunks.h"
+#include "Features/Bridge/BridgeThunks.h"
+#include "Features/Ghost/GhostThunks.h"
+#include "Features/Memory/MemoryThunks.h"
+#include "Features/Protocol/ProtocolThunks.h"
+#include "Features/Soul/SoulThunks.h"
 #include "HttpManager.h"
 #include "HttpModule.h"
 #include <stdexcept>

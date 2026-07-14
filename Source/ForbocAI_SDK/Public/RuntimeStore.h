@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Features/API/APISlice.h"
 #include "Features/Bridge/BridgeSlice.h"
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
@@ -19,7 +18,6 @@ struct FRuntimeState {
   BridgeSlice::FBridgeSliceState Bridge;
   SoulSlice::FSoulSliceState Soul;
   GhostSlice::FGhostSliceState Ghost;
-  APISlice::FAPIState API;
 
   /**
    * G8: Generic state bag for game-specific slices.
@@ -100,17 +98,6 @@ inline const rtk::Slice<GhostSlice::FGhostSliceState> &GetGhostSlice() {
   return func::eval(Slice);
 }
 
-/**
- * Returns the singleton API slice definition.
- * User Story: As store assembly, I need one shared API slice instance so
- * endpoint cache state is wired consistently.
- */
-inline const rtk::Slice<APISlice::FAPIState> &GetAPISlice() {
-  static const func::Lazy<rtk::Slice<APISlice::FAPIState>> Slice =
-      func::lazy([]() -> rtk::Slice<APISlice::FAPIState> { return APISlice::createAPISlice(); });
-  return func::eval(Slice);
-}
-
 } // namespace StoreInternal
 
 /**
@@ -179,11 +166,6 @@ inline FString SummarizeGhostState(const GhostSlice::FGhostSliceState &State) {
       State.bLoading ? TEXT("true") : TEXT("false"), *State.Error);
 }
 
-inline FString SummarizeAPIState(const APISlice::FAPIState &State) {
-  return FString::Printf(TEXT("endpoint=%s status=%s error=%s"),
-                         *State.LastEndpoint, *State.Status, *State.Error);
-}
-
 inline FString SummarizeExtraState(const TMap<FString, FString> &Extra) {
   return FString::Printf(TEXT("entries=%d"), Extra.Num());
 }
@@ -216,8 +198,6 @@ inline FString DescribeStateDelta(const FRuntimeState &Before,
   AppendDeltaIfChanged(Changes, TEXT("Ghost"),
                        SummarizeGhostState(Before.Ghost),
                        SummarizeGhostState(After.Ghost));
-  AppendDeltaIfChanged(Changes, TEXT("API"), SummarizeAPIState(Before.API),
-                       SummarizeAPIState(After.API));
   AppendDeltaIfChanged(Changes, TEXT("Extra"),
                        SummarizeExtraState(Before.Extra),
                        SummarizeExtraState(After.Extra));
@@ -241,7 +221,6 @@ inline FRuntimeState StoreReducer(const FRuntimeState &State,
   Next.Bridge = StoreInternal::GetBridgeSlice().Reducer(State.Bridge, Action);
   Next.Soul = StoreInternal::GetSoulSlice().Reducer(State.Soul, Action);
   Next.Ghost = StoreInternal::GetGhostSlice().Reducer(State.Ghost, Action);
-  Next.API = StoreInternal::GetAPISlice().Reducer(State.API, Action);
 
   /**
    * G8: Run extra reducers (game slices) — recursive application.

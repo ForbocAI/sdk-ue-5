@@ -5,7 +5,7 @@
 
 #include "Bridge/BridgeModule.h"
 #include "Errors.h"
-#include "Features/API/APISlice.h"
+#include "Features/API/APIApi.h"
 #include "Features/Bridge/BridgeSlice.h"
 #include "RuntimeConfig.h"
 

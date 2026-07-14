@@ -3,7 +3,7 @@
 // Imperative local ghost workflows live at this thunk boundary.
 
 #include "Core/rtk.hpp"
-#include "Ghost/GhostTypes.h"
+#include "Features/Ghost/GhostTypes.h"
 #include "NPC/NPCBaseTypes.h"
 #include "RuntimeStore.h"
 

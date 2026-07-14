@@ -9,7 +9,7 @@
 #include "CoreMinimal.h"
 #include "Features/NPC/Events/EventsActions.h"
 #include "NPC/NPCTypes.h"
-#include "Types.h"
+#include "Features/Contracts/ContractsTypes.h"
 
 namespace NPCSlice {
 

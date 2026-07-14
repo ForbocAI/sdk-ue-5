@@ -104,6 +104,7 @@ from features_boundaries import (
     line_number,
     register,
     role_for_include,
+    role_for_stem_suffix,
 )
 
 
@@ -129,6 +130,20 @@ STRUCT_LEAF = register(
             "boundary by moving, splitting, or renaming the code."
         ),
         skill="model-redux-state-design-state-ownership: name by domain/role, not the component tree",
+    )
+)
+
+ROOT_ROLE = register(
+    Rule(
+        id="RTK-STRUCT-002",
+        severity=Severity.HIGH,
+        summary="program-root source file declares an RTK role",
+        guidance=(
+            "Keep only the program store and public wiring/entry surfaces at the "
+            "source root. Actions, Adapters, Api, Listeners, Selectors, Slice, "
+            "Thunks, Types, and Views must live in their feature/view domain."
+        ),
+        skill="build-modern-redux-apps-modern-redux: keep app wiring at the root and feature logic in feature folders",
     )
 )
 
@@ -534,19 +549,67 @@ def check_unit(unit: SourceUnit, plugins: dict[str, object]) -> list[Finding]:
 
 # --- Global checks ---------------------------------------------------------
 
+SOURCE_SUFFIXES = {".c", ".cc", ".cpp", ".cxx", ".h", ".hh", ".hpp", ".hxx"}
+
+
+def discover_store_paths(project_root: Path) -> list[Path]:
+    source_root = project_root / "Source"
+    if not source_root.is_dir():
+        return []
+    return sorted(
+        path
+        for path in source_root.rglob("*")
+        if path.is_file()
+        and path.suffix.lower() in SOURCE_SUFFIXES
+        and path.stem.lower().endswith("store")
+        and not {"Features", "Views", "Tests", "Intermediate"}.intersection(path.parts)
+    )
+
+
+def discover_program_entry_roots(project_root: Path) -> list[Path]:
+    roots = sorted({path.parent for path in discover_store_paths(project_root)})
+    source_root = project_root / "Source"
+    return roots or ([source_root] if source_root.is_dir() else [])
+
+
+def check_root_role_boundaries(project_root: Path) -> list[Finding]:
+    findings: list[Finding] = []
+    for root in discover_program_entry_roots(project_root):
+        for path in sorted(root.iterdir()):
+            if not path.is_file() or path.suffix.lower() not in SOURCE_SUFFIXES:
+                continue
+            if path.stem.lower().endswith("store"):
+                continue
+            declared_role = role_for_stem_suffix(path.stem)
+            if declared_role is not None:
+                findings.append(
+                    Finding(
+                        path,
+                        1,
+                        ROOT_ROLE.id,
+                        ROOT_ROLE.severity,
+                        f"root source file declares {declared_role} role; move it under Features or Views",
+                    )
+                )
+    return findings
+
 def check_store_boundary(project_root: Path) -> list[Finding]:
     findings: list[Finding] = []
-    store_paths = [project_root / "Source/Store.h", project_root / "Source/Store.cpp"]
-    existing = [path for path in store_paths if path.exists()]
-    combined = "\n".join(path.read_text(encoding="utf-8", errors="replace") for path in existing)
-    for path in existing:
+    store_paths = discover_store_paths(project_root)
+    for path in store_paths:
         text = path.read_text(encoding="utf-8", errors="replace")
         for match in STORE_LEGACY_RE.finditer(text):
             findings.append(Finding(path, line_number(text, match.start()), STORE_LEGACY.id, STORE_LEGACY.severity, STORE_LEGACY.summary))
         for match in STORE_ARRAY_MW_RE.finditer(text):
             findings.append(Finding(path, line_number(text, match.start()), STORE_ARRAY_MW.id, STORE_ARRAY_MW.severity, STORE_ARRAY_MW.summary))
-    if existing and not CONFIGURE_STORE_RE.search(combined):
-        findings.append(Finding(existing[0], 1, STORE_CONFIGURE.id, STORE_CONFIGURE.severity, STORE_CONFIGURE.summary))
+    for root in sorted({path.parent for path in store_paths}):
+        root_stores = [path for path in store_paths if path.parent == root]
+        combined = "\n".join(
+            path.read_text(encoding="utf-8", errors="replace")
+            for path in root_stores
+        )
+        if not CONFIGURE_STORE_RE.search(combined):
+            findings.append(Finding(root_stores[0], 1, STORE_CONFIGURE.id, STORE_CONFIGURE.severity, STORE_CONFIGURE.summary))
     return findings
 
 
@@ -580,6 +643,7 @@ def collect_findings(project_root: Path, scan_roots: list[Path]) -> list[Finding
         findings += check_unit(unit, plugins)
 
     findings += check_feature_leaf_names(units)
+    findings += check_root_role_boundaries(project_root)
     findings += check_store_boundary(project_root)
     findings += check_multiple_api_roots(units)
     findings += check_import_graph(units)

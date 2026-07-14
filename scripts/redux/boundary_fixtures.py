@@ -83,6 +83,8 @@ CASES: list[Case] = [
          "void f(){ auto s = SelectRuntimeState(); }", {"RTK-VIEW-007"}),
     Case("bare-role-leaf", "Source/Features/Demo/Actions.h",
          "int x;", {"RTK-STRUCT-001"}),
+    Case("root-role-leaf", "Source/DemoTypes.h",
+         "struct FDemo { int Value; };", {"RTK-STRUCT-002"}),
     Case("bare-view-leaf", "Source/Views/Demo/View.cpp",
          "int x;", {"RTK-STRUCT-001"}),
     Case("bad-leaf-name", "Source/Features/Demo/Reducers.h",

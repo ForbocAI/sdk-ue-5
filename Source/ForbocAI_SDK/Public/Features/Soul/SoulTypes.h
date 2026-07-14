@@ -5,7 +5,7 @@
 
 // clang-format off
 #include "CoreMinimal.h"
-#include "Memory/MemoryTypes.h"
+#include "Features/Memory/MemoryTypes.h"
 #include "NPC/NPCBaseTypes.h"
 #include "SoulTypes.generated.h"
 // clang-format on

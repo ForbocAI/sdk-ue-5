@@ -4,7 +4,7 @@
 #include "Core/ue_fp.hpp"
 
 #include "Errors.h"
-#include "Features/API/APISlice.h"
+#include "Features/API/APIApi.h"
 #include "Features/Ghost/GhostSlice.h"
 #include "Features/Ghost/Local/GhostLocalThunks.h"
 #include "RuntimeConfig.h"

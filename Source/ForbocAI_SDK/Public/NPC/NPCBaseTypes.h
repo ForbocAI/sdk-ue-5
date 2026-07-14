@@ -4,7 +4,7 @@
 #include "Core/ue_fp.hpp"
 
 #include "CoreMinimal.h"
-#include "Memory/MemoryTypes.h"
+#include "Features/Memory/MemoryTypes.h"
 #include "NPCBaseTypes.generated.h"
 
 namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {

@@ -2,7 +2,7 @@
 
 #include "Core/ue_fp.hpp"
 #include "CoreMinimal.h"
-#include "Memory/MemoryTypes.h"
+#include "Features/Memory/MemoryTypes.h"
 
 /**
  * Native Storage Wrappers

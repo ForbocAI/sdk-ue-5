@@ -4,7 +4,7 @@
 #include "../Core/ue_fp.hpp"
 #include "../Core/rtk.hpp"
 #include "../RuntimeConfig.h"
-#include "../Types.h"
+#include "Features/Contracts/ContractsTypes.h"
 #include "CoreMinimal.h"
 #include "Dom/JsonObject.h"
 #include "GenericPlatform/GenericPlatformHttp.h"
@@ -18,7 +18,7 @@ namespace APISlice {
 
 using namespace rtk;
 
-extern rtk::Api<FRuntimeState> ForbocAiApi;
+extern rtk::Api<FRuntimeState> api;
 
 namespace Detail {
 
@@ -305,7 +305,7 @@ inline ThunkAction<Result, FRuntimeState> MakeEndpoint(
   Endpoint.ProvidesTags = ProvidesTags;
   Endpoint.InvalidatesTags = InvalidatesTags;
   Endpoint.RequestBuilder = RequestBuilder;
-  return injectEndpoints(ForbocAiApi, Endpoint)(ArgValue);
+  return injectEndpoints(api, Endpoint)(ArgValue);
 }
 
 /**

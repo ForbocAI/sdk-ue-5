@@ -8,7 +8,7 @@
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
-#include "Types.h"
+#include "Features/Contracts/ContractsTypes.h"
 #include "NPCTypes.generated.h"
 // clang-format on
 
