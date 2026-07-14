@@ -24,7 +24,6 @@ using func::make_right;
  *
  * Canonical commands:
  *   doctor
- *   npc_list
  *   npc_create -Persona="..."
  *   npc_process -Id="..." -Input="..."
  *   soul_export -Id="..."

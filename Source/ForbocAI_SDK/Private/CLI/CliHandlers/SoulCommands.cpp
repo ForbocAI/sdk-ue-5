@@ -1,6 +1,7 @@
 // User Story: As a developer, I need this module to function.
 #include "CLI/CliHandlers.h"
-#include "CLI/CliOperations.h"
+#include "Features/CLI/NPC/NPCThunks.h"
+#include "Features/CLI/Soul/CLISoulThunks.h"
 #include "Store.h"
 
 namespace CLIOps {
@@ -33,19 +34,6 @@ HandlerResult HandleSoul(rtk::EnhancedStore<FRuntimeState> &Store,
                                TEXT("Soul imported: %s"), *Imported.Id);
                         return just(
                             Result::Success("Soul imported"));
-                      }())
-         : CommandKey == TEXT("soul_import_npc")
-             ? (Args.Num() < 1
-                    ? just(Result::Failure(
-                          "Usage: soul_import_npc <txId>"))
-                    : [&]() -> HandlerResult {
-                        FImportedNpc Npc =
-                            Ops::importNpcFromSoul(Store, Args[0]);
-                        UE_LOG(LogTemp, Display,
-                               TEXT("NPC imported from soul: %s"),
-                               *Npc.NpcId);
-                        return just(Result::Success(
-                            "NPC imported from soul"));
                       }())
          : CommandKey == TEXT("soul_list")
              ? [&]() -> HandlerResult {

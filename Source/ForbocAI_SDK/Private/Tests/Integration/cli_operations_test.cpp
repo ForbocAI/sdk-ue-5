@@ -1,4 +1,3 @@
-#include "CLI/CliOperations.h"
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "HAL/FileManager.h"
@@ -9,6 +8,8 @@
 #include "Misc/Paths.h"
 #include "Features/Config/ConfigAdapters.h"
 #include "Store.h"
+#include "Features/CLI/Config/ConfigThunks.h"
+#include "Features/CLI/NPC/NPCThunks.h"
 
 // @covers:cliOp:loadBridgePreset
 // @covers:cliOp:getBridgeRules
@@ -18,8 +19,8 @@
 // @covers:cliOp:setConfigValue
 // @covers:cliOp:createNpc
 // @covers:cliOp:exportSoul
-// @covers:cliOp:generateEmbedding
 // @covers:cliOp:getActiveNpc
+// @covers:cliOp:getNpc
 // @covers:cliOp:getGhostHistory
 // @covers:cliOp:getGhostResults
 // @covers:cliOp:startGhost
@@ -28,11 +29,8 @@
 // @covers:cliOp:importNpcFromSoul
 // @covers:cliOp:importSoul
 // @covers:cliOp:initNodeMemory
-// @covers:cliOp:initVector
-// @covers:cliOp:listNpcs
 // @covers:cliOp:listSouls
-// @covers:cliOp:localExportSoul
-// @covers:cliOp:memoryClear
+// @covers:cliOp:clearMemory
 // @covers:cliOp:listMemory
 // @covers:cliOp:recallMemory
 // @covers:cliOp:storeMemory
@@ -42,7 +40,6 @@
 // @covers:cliOp:listRulesets
 // @covers:cliOp:listRulePresets
 // @covers:cliOp:registerRuleset
-// @covers:cliOp:RuntimeConfig
 // @covers:cliOp:storeNodeMemory
 // @covers:cliOp:updateNpc
 // @covers:cliOp:validateBridgePayload
@@ -64,11 +61,9 @@
 // @covers:cli:memory_list
 // @covers:cli:memory_recall
 // @covers:cli:memory_store
-// @covers:cli:npc_active
 // @covers:cli:npc_chat
 // @covers:cli:npc_create
 // @covers:cli:npc_import
-// @covers:cli:npc_list
 // @covers:cli:npc_process
 // @covers:cli:npc_state
 // @covers:cli:npc_update
@@ -77,13 +72,11 @@
 // @covers:cli:rules_presets
 // @covers:cli:rules_register
 // @covers:cli:soul_export
+// @covers:cli:soul_chat
 // @covers:cli:soul_import
-// @covers:cli:soul_import_npc
 // @covers:cli:soul_list
 // @covers:cli:soul_verify
 // @covers:cli:status
-// @covers:cli:system_status
-// @covers:cli:vector_init
 // @covers:cli:version
 
 
@@ -111,6 +104,8 @@ bool FOpsCreateNpcTest::RunTest(const FString &Parameters) {
 
   func::Maybe<FNPCInternalState> Active = Ops::getActiveNpc(Store);
   TestTrue("Active NPC exists", Active.hasValue);
+  const func::Maybe<FNPCInternalState> Found = Ops::getNpc(Store, Result.Id);
+  TestTrue("Created NPC is addressable by id", Found.hasValue);
   if (Active.hasValue) {
     TestEqual("Active NPC Id matches created", Active.value.Id, Result.Id);
     TestEqual("Active NPC Persona", Active.value.Persona,
@@ -136,33 +131,6 @@ bool FOpsGetActiveEmptyTest::RunTest(const FString &Parameters) {
 
   func::Maybe<FNPCInternalState> Active = Ops::getActiveNpc(Store);
   TestFalse("No active NPC on fresh store", Active.hasValue);
-
-  return true;
-}
-
-/**
- * Test: Ops::listNpcs returns all created NPCs
- * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
- */
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsListNpcsTest,
-                                 "ForbocAI.Integration.Ops.listNpcs",
-                                 EAutomationTestFlags_ApplicationContextMask |
-                                     EAutomationTestFlags::EngineFilter)
-/**
- * User Story: As a developer, I need RunTest to fulfill its role in the module.
- */
-bool FOpsListNpcsTest::RunTest(const FString &Parameters) {
-  EnhancedStore<FRuntimeState> Store = createRuntimeStore();
-
-  TArray<FNPCInternalState> Empty = Ops::listNpcs(Store);
-  TestEqual("Empty list initially", Empty.Num(), 0);
-
-  Ops::createNpc(Store, TEXT("Guard"));
-  Ops::createNpc(Store, TEXT("Merchant"));
-  Ops::createNpc(Store, TEXT("Thief"));
-
-  TArray<FNPCInternalState> All = Ops::listNpcs(Store);
-  TestEqual("Three NPCs listed", All.Num(), 3);
 
   return true;
 }
@@ -249,11 +217,11 @@ bool FOpsCreateAndRemoveTest::RunTest(const FString &Parameters) {
   FNPCInternalState Npc = Ops::createNpc(Store, TEXT("Ephemeral"));
   FString NpcId = Npc.Id;
 
-  TestEqual("One NPC exists", Ops::listNpcs(Store).Num(), 1);
+  TestTrue("Created NPC exists", Ops::getNpc(Store, NpcId).hasValue);
 
   Store.dispatch(NPCSlice::Actions::removeNPC(NpcId));
 
-  TestEqual("Zero NPCs after removal", Ops::listNpcs(Store).Num(), 0);
+  TestFalse("Removed NPC no longer exists", Ops::getNpc(Store, NpcId).hasValue);
 
   func::Maybe<FNPCInternalState> Active = Ops::getActiveNpc(Store);
   TestFalse("No active NPC after removal", Active.hasValue);

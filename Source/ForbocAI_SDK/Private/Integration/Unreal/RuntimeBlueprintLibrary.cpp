@@ -1,6 +1,12 @@
 #include "Integration/Unreal/RuntimeBlueprintLibrary.h"
-#include "CLI/CliOperations.h"
 #include "Store.h"
+#include "Features/CLI/Bridge/CLIBridgeThunks.h"
+#include "Features/CLI/Config/ConfigThunks.h"
+#include "Features/CLI/Ghost/CLIGhostThunks.h"
+#include "Features/CLI/Memory/CLIMemoryThunks.h"
+#include "Features/CLI/NPC/NPCThunks.h"
+#include "Features/CLI/Soul/CLISoulThunks.h"
+#include "Features/CLI/System/SystemThunks.h"
 
 namespace {
 /**

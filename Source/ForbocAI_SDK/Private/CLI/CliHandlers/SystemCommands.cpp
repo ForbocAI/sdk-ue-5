@@ -1,6 +1,6 @@
 // User Story: As a developer, I need this module to function.
 #include "CLI/CliHandlers.h"
-#include "CLI/CliOperations.h"
+#include "Features/CLI/System/SystemThunks.h"
 #include "Features/Config/ConfigAdapters.h"
 #include "Store.h"
 
@@ -26,8 +26,7 @@ HandlerResult HandleSystem(rtk::EnhancedStore<FRuntimeState> &Store,
                  UE_LOG(LogTemp, Display, TEXT("API: %s"), *Status.Status);
                  return just(Result::Success("Status checked"));
                }()
-         : (CommandKey == TEXT("doctor") ||
-            CommandKey == TEXT("system_status"))
+         : CommandKey == TEXT("doctor")
              ? [&]() -> HandlerResult {
                  UE_LOG(LogTemp, Display, TEXT("ForbocAI SDK v%s (UE5)"),
                         *SDKConfig::GetSdkVersion());

@@ -85,15 +85,6 @@ HandlerResult HandleConfig(rtk::EnhancedStore<FRuntimeState> &Store,
                           const TArray<FString> &Args);
 
 /**
- * Handles vector-store setup CLI commands.
- * User Story: As CLI users, I need vector initialization routed separately so
- * local infrastructure setup has a focused handler.
- */
-HandlerResult HandleVector(rtk::EnhancedStore<FRuntimeState> &Store,
-                          const FString &CommandKey,
-                          const TArray<FString> &Args);
-
-/**
  * Handles dependency setup CLI commands.
  * User Story: As CLI users, I need setup commands grouped so dependency checks
  * and installation flows share one dispatch path.

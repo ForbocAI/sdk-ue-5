@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CLI/CliOperations.h"
+#include "Features/Async/AsyncAdapters.h"
 #include "TestGame/Features/Systems/Contract/ContractAdapters.h"
 #include "TestGame/Features/Systems/Contract/ContractApi.h"
 #include "TestGame/Features/Systems/Harness/Game/GameTypes.h"
@@ -13,7 +13,7 @@ inline FRawContractResponse GetContractJson(FTestGameStore &Store,
                                             const FString &ApiUrl) {
   FRawContractResponse Response;
   try {
-    Response.Body = Ops::waitForResult(
+    Response.Body = AsyncAdapters::waitForResult(
         Store.dispatch(ContractApi::getTestGameContractThunk(ApiUrl)), 5.0);
     Response.bSuccess = !Response.Body.IsEmpty();
     return Response;

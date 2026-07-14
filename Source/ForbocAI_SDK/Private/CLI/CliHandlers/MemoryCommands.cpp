@@ -1,6 +1,6 @@
 // User Story: As a developer, I need this module to function.
 #include "CLI/CliHandlers.h"
-#include "CLI/CliOperations.h"
+#include "Features/CLI/Memory/CLIMemoryThunks.h"
 #include "Dom/JsonObject.h"
 #include "Store.h"
 #include "Serialization/JsonSerializer.h"

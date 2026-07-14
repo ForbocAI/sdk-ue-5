@@ -101,31 +101,34 @@ void FBddCoverageSpec::Define() {
       
       // 3. Expected CLI Ops
       TSet<FString> ExpectedCliOps;
-      FString CliOpsContent = ReadFile(FPaths::Combine(SourceDir, TEXT("Public/CLI/CliOperations.h")));
-      
-      FRegexPattern NsPattern(TEXT("namespace Ops \\{((?s).*?)\\} // namespace Ops"));
-      FRegexMatcher NsMatcher(NsPattern, CliOpsContent);
-      if (NsMatcher.FindNext()) {
-          FString NsContent = NsMatcher.GetCaptureGroup(1);
+      const TArray<FString> CliThunkFiles = FindFiles(
+          FPaths::Combine(SourceDir, TEXT("Public/Features/CLI")),
+          TEXT("Thunks.h"));
+      for (const FString &File : CliThunkFiles) {
+          const FString NsContent = ReadFile(File);
+          const int32 OpsNamespace = NsContent.Find(TEXT("namespace Ops"));
+          if (OpsNamespace == INDEX_NONE) {
+              continue;
+          }
           FRegexPattern FnPattern(TEXT("inline\\s+(?:[\\w:<>\\s\\[\\]*&]+?\\s+)(\\w+)\\s*\\("));
-          FRegexMatcher FnMatcher(FnPattern, NsContent);
+          FRegexMatcher FnMatcher(FnPattern, NsContent.Mid(OpsNamespace));
           while (FnMatcher.FindNext()) {
               FString Name = FnMatcher.GetCaptureGroup(1);
-              if (Name != TEXT("Wait") && Name != TEXT("waitForResult")) {
-                  ExpectedCliOps.Add(Name);
-              }
+              ExpectedCliOps.Add(Name);
           }
       }
       CheckCoverage(TEXT("cliOp"), ExpectedCliOps);
       
       // 4. Expected CLI Actions
       TSet<FString> ExpectedCli;
-      FString CommandletContent = ReadFile(FPaths::Combine(SourceDir, TEXT("Private/Commandlet.cpp")));
-      FRegexPattern ValidCmdsPattern(TEXT("ValidCommands\\s*=\\s*\\{((?s)[^}]+)\\};"));
-      FRegexMatcher ValidCmdsMatcher(ValidCmdsPattern, CommandletContent);
-      if (ValidCmdsMatcher.FindNext()) {
-          FString CmdList = ValidCmdsMatcher.GetCaptureGroup(1);
-          ExtractRegexMatches(CmdList, TEXT("TEXT\\(\"([^\"]+)\"\\)"), 1, ExpectedCli);
+      const FString CliAdapters = ReadFile(FPaths::Combine(
+          SourceDir, TEXT("Public/Features/CLI/CLIAdapters.h")));
+      const int32 Begin = CliAdapters.Find(TEXT("// BEGIN_NODE_CLI_COMMAND_KEYS"));
+      const int32 End = CliAdapters.Find(TEXT("// END_NODE_CLI_COMMAND_KEYS"));
+      if (Begin != INDEX_NONE && End > Begin) {
+          ExtractRegexMatches(CliAdapters.Mid(Begin, End - Begin),
+                              TEXT("TEXT\\(\"([^\"]+)\"\\)"), 1,
+                              ExpectedCli);
       }
       CheckCoverage(TEXT("cli"), ExpectedCli);
     });

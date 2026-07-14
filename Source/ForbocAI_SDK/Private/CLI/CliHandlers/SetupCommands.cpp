@@ -1,9 +1,9 @@
 #include "CLI/CliHandlers.h"
-#include "CLI/CliOperations.h"
+#include "Features/Async/AsyncAdapters.h"
 #include "Features/Config/ConfigAdapters.h"
+#include "Features/Memory/Local/Storage/StorageAdapters.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/PlatformFileManager.h"
-#include "Misc/Guid.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
@@ -18,100 +18,6 @@ namespace {
  */
 static const TCHAR *SQLITE_VERSION = TEXT("3460100");
 static const TCHAR *SQLITE_VEC_VERSION = TEXT("v0.1.6");
-
-struct FRuntimeCheckOptions {
-  bool bSkipVector;
-  bool bSkipMemory;
-  bool bCleanup;
-  FString DatabasePath;
-};
-
-/**
- * User Story: As a developer, I need HasFlagRecursive to fulfill its role in the module.
- */
-bool HasFlagRecursive(const TArray<FString> &Args, const FString &Flag,
-                      int32 Index = 0) {
-  return Index == Args.Num()
-             ? false
-             : Args[Index] == Flag ? true
-                                   : HasFlagRecursive(Args, Flag, Index + 1);
-}
-
-/**
- * User Story: As a developer, I need FindOptionRecursive to fulfill its role in the module.
- */
-FString FindOptionRecursive(const TArray<FString> &Args, const FString &Prefix,
-                            int32 Index = 0) {
-  return Index == Args.Num()
-             ? TEXT("")
-             : Args[Index].StartsWith(Prefix)
-                   ? Args[Index].Mid(Prefix.Len())
-                   : FindOptionRecursive(Args, Prefix, Index + 1);
-}
-
-FRuntimeCheckOptions RuntimeCheckOptions(const TArray<FString> &Args) {
-  FRuntimeCheckOptions Options;
-  Options.bSkipVector = HasFlagRecursive(Args, TEXT("--skip-vector"));
-  Options.bSkipMemory = HasFlagRecursive(Args, TEXT("--skip-memory"));
-  Options.bCleanup = HasFlagRecursive(Args, TEXT("--cleanup"));
-  Options.DatabasePath = FindOptionRecursive(Args, TEXT("--database="));
-  return Options;
-}
-
-/**
- * User Story: As a developer, I need RuntimeSmokeDatabasePath to fulfill its role in the module.
- */
-FString RuntimeSmokeDatabasePath() {
-  return FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("ForbocAI"),
-                         TEXT("runtime-smoke"),
-                         FString::Printf(TEXT("runtime-smoke-%s.db"),
-                                         *FGuid::NewGuid().ToString(
-                                             EGuidFormats::Digits)));
-}
-
-/**
- * User Story: As a developer, I need ContainsRecalledTextRecursive to fulfill its role in the module.
- */
-bool ContainsRecalledTextRecursive(const TArray<FMemoryItem> &Items,
-                                   const FString &ExpectedText, int32 Index) {
-  return Index == Items.Num()
-             ? false
-             : Items[Index].Text == ExpectedText
-                   ? true
-                   : ContainsRecalledTextRecursive(Items, ExpectedText,
-                                                   Index + 1);
-}
-
-/**
- * User Story: As a developer, I need EnsureParentDirectory to fulfill its role in the module.
- */
-void EnsureParentDirectory(const FString &Path) {
-  FPlatformFileManager::Get().GetPlatformFile().CreateDirectoryTree(
-      *FPaths::GetPath(Path));
-}
-
-/**
- * User Story: As a developer, I need CleanupSmokeDatabase to fulfill its role in the module.
- */
-void CleanupSmokeDatabase(rtk::EnhancedStore<FRuntimeState> &Store,
-                          const FString &DatabasePath) {
-  try {
-    Ops::clearNodeMemory(Store);
-  } catch (const std::exception &) {
-  }
-  IFileManager::Get().Delete(*DatabasePath, false, true, true);
-}
-
-/**
- * User Story: As a developer, I need CleanupSmokeDatabaseIfNeeded to fulfill its role in the module.
- */
-void CleanupSmokeDatabaseIfNeeded(rtk::EnhancedStore<FRuntimeState> &Store,
-                                  const FString &DatabasePath,
-                                  bool bShouldCleanup) {
-  bShouldCleanup
-      ? [&]() { CleanupSmokeDatabase(Store, DatabasePath); }()
-      : (void)0;
-}
 
 /**
  * Finds the first subdirectory matching a prefix inside a directory.
@@ -134,81 +40,6 @@ FString FindSubdirWithPrefix(const FString &Dir, const FString &Prefix) {
   };
 
   return FindHelper::apply(Dirs, Dir, Prefix, 0);
-}
-
-Result RunRuntimeSmokeCheck(rtk::EnhancedStore<FRuntimeState> &Store,
-                            const TArray<FString> &Args) {
-  IPlatformFile &PF = FPlatformFileManager::Get().GetPlatformFile();
-  const FRuntimeCheckOptions Options = RuntimeCheckOptions(Args);
-  const FString DatabasePath =
-      Options.DatabasePath.IsEmpty() ? RuntimeSmokeDatabasePath()
-                                     : FPaths::ConvertRelativePathToFull(
-                                           Options.DatabasePath);
-  const bool bOwnsDatabasePath = Options.DatabasePath.IsEmpty();
-  const FString SmokeText =
-      FString::Printf(TEXT("runtime-smoke-%s"),
-                      *FGuid::NewGuid().ToString(EGuidFormats::Digits));
-
-  EnsureParentDirectory(DatabasePath);
-
-  UE_LOG(LogTemp, Display, TEXT(""));
-  UE_LOG(LogTemp, Display, TEXT("=== ForbocAI Native Runtime Smoke Check ==="));
-  UE_LOG(LogTemp, Display, TEXT("  Database: %s"), *DatabasePath);
-  UE_LOG(LogTemp, Display, TEXT("  Vector: %s"),
-         Options.bSkipVector ? TEXT("skipped") : TEXT("enabled"));
-  UE_LOG(LogTemp, Display, TEXT("  Memory: %s"),
-         Options.bSkipMemory ? TEXT("skipped") : TEXT("enabled"));
-
-  /* 5 early-return guards as nested ternary chain */
-  return !WITH_FORBOC_SQLITE_VEC
-    ? Result::Failure(
-        "setup_runtime_check requires WITH_FORBOC_SQLITE_VEC=1")
-    : (Options.bSkipVector && !Options.bSkipMemory)
-    ? Result::Failure(
-        "setup_runtime_check cannot verify memory storage while --skip-vector is set")
-    : [&]() -> Result {
-      try {
-        Ops::initNodeMemory(Store, DatabasePath);
-        return !PF.FileExists(*DatabasePath)
-          ? Result::Failure("Node memory database was not created on disk")
-          : [&]() -> Result {
-            UE_LOG(LogTemp, Display, TEXT("  [OK] node memory initialized"));
-
-            const Result VectorResult = Result::Success("");
-
-            return !VectorResult.bSuccess
-              ? VectorResult
-              : [&]() -> Result {
-                /* Memory block */
-                const Result MemoryResult = !Options.bSkipMemory
-                  ? [&]() -> Result {
-                      Ops::storeNodeMemory(Store, SmokeText, 0.95f);
-                      const TArray<FMemoryItem> Recalled =
-                          Ops::recallNodeMemory(Store, SmokeText, 5, 0.0f);
-                      return !ContainsRecalledTextRecursive(Recalled, SmokeText, 0)
-                        ? Result::Failure(
-                            "Stored smoke memory was not recalled from the local vector store")
-                        : [&]() -> Result {
-                            UE_LOG(LogTemp, Display, TEXT("  [OK] memory store/recall verified"));
-                            return Result::Success("");
-                          }();
-                    }()
-                  : Result::Success("");
-
-                return !MemoryResult.bSuccess ? MemoryResult
-                                              : Result::Success("");
-              }();
-          }();
-      } catch (const std::exception &Error) {
-        CleanupSmokeDatabaseIfNeeded(Store, DatabasePath,
-                                     bOwnsDatabasePath || Options.bCleanup);
-        return Result::Failure(Error.what());
-      }
-
-      CleanupSmokeDatabaseIfNeeded(Store, DatabasePath,
-                                   bOwnsDatabasePath || Options.bCleanup);
-      return Result::Success("Native runtime smoke check passed");
-    }();
 }
 
 /**
@@ -388,7 +219,7 @@ Result VerifyThirdParty() {
   (!bSqliteHeaders || !bSqliteAmalgamation || !bVec0)
     ? [&]() {
         UE_LOG(LogTemp, Display, TEXT(
-            "  To set up: setup_deps --sqlite-only"));
+            "  To set up: setup --sqlite-only"));
       }()
     : (void)0;
 
@@ -442,7 +273,8 @@ Result SetupThirdPartyDeps(rtk::EnhancedStore<FRuntimeState> &Store,
           UE_LOG(LogTemp, Display, TEXT("  [download] %s"),
                  *FPaths::GetCleanFilename(Dest));
           try {
-            Ops::waitForResult(Native::File::DownloadBinary(Url, Dest), 120.0);
+            AsyncAdapters::waitForResult(Native::File::DownloadBinary(Url, Dest),
+                                       120.0);
             ++DownloadCount;
             return true;
           } catch (const std::exception &E) {
@@ -630,15 +462,13 @@ HandlerResult HandleSetup(rtk::EnhancedStore<FRuntimeState> &Store,
   using func::just;
   using func::nothing;
 
-  return (CommandKey == TEXT("setup") || CommandKey == TEXT("setup_deps"))
+  return CommandKey == TEXT("setup")
     ? just(SetupThirdPartyDeps(Store, Args))
-    : (CommandKey == TEXT("setup_check") || CommandKey == TEXT("setup_verify"))
+    : CommandKey == TEXT("setup_check")
     ? [&]() -> HandlerResult {
         (void)Store;
         return just(VerifyThirdParty());
       }()
-    : (CommandKey == TEXT("setup_runtime_check"))
-    ? just(RunRuntimeSmokeCheck(Store, Args))
     : nothing<Result>();
 }
 

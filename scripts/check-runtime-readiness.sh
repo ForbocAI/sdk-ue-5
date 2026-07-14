@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ -z "${FORBOCAI_API_URL:-}" ]; then
-  echo "[skip] FORBOCAI_API_URL is not set. Skipping runtime-readiness check."
-  exit 0
-fi
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OUTPUT=""
 
-URL="${FORBOCAI_API_URL%/}/status"
-echo "Checking API status at $URL..."
+echo "Checking runtime readiness through the UE CLI and SDK default API..."
 
-STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || true)
-
-if [ "$STATUS_CODE" -eq 200 ]; then
-  echo "[ok] Runtime API is reachable and healthy."
-  exit 0
-else
-  echo "[fail] Runtime API check failed (HTTP $STATUS_CODE)."
+if ! OUTPUT="$(FORBOCAI_UE_SKIP_BUILD=1 "$SCRIPT_DIR/forbocai-ue" status 2>&1)"; then
+  printf '%s\n' "$OUTPUT" >&2
+  echo "[fail] UE CLI runtime-readiness command failed." >&2
   exit 1
 fi
+
+if ! grep -Fq "API: online" <<<"$OUTPUT"; then
+  printf '%s\n' "$OUTPUT" >&2
+  echo "[fail] UE CLI completed without reporting API: online." >&2
+  exit 1
+fi
+
+echo "[ok] UE CLI -> SDK -> production API runtime path is healthy."

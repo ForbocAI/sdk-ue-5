@@ -1,6 +1,6 @@
 #include "Bridge/BridgeModule.h"
 #include "Features/Bridge/BridgeSlice.h"
-#include "CLI/CliOperations.h"
+#include "Features/Async/AsyncAdapters.h"
 #include "NPC/NPCModule.h"
 #include "Core/fp.hpp"
 #include "HAL/PlatformFilemanager.h"
@@ -100,7 +100,7 @@ FValidationResult BridgeOps::Validate(const FAgentAction &Action,
                                       const TArray<FValidationRule> &Rules,
                                       const FBridgeRuleContext &Context) {
   auto Store = store();
-  return Ops::waitForResult(
+  return AsyncAdapters::waitForResult(
       Store.dispatch(rtk::localValidateBridgeThunk(Action, Rules, Context)));
 }
 

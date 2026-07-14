@@ -1,6 +1,6 @@
 // User Story: As a developer, I need this module to function.
 #include "CLI/CliHandlers.h"
-#include "CLI/CliOperations.h"
+#include "Features/CLI/NPC/NPCThunks.h"
 #include "Store.h"
 
 namespace CLIOps {
@@ -23,26 +23,6 @@ HandlerResult HandleNpc(rtk::EnhancedStore<FRuntimeState> &Store,
                         *Npc.Id);
                  return just(Result::Success(TCHAR_TO_UTF8(*Npc.Id)));
                }()
-         : CommandKey == TEXT("npc_list")
-             ? [&]() -> HandlerResult {
-                 TArray<FNPCInternalState> Npcs = Ops::listNpcs(Store);
-                 UE_LOG(LogTemp, Display, TEXT("Found %d NPCs"),
-                        Npcs.Num());
-                 struct LogNpcs {
-                   static void apply(const TArray<FNPCInternalState> &N,
-                                     int32 Idx) {
-                     Idx >= N.Num()
-                         ? void()
-                         : ([&]() {
-                              UE_LOG(LogTemp, Display, TEXT("- %s (%s)"),
-                                     *N[Idx].Id, *N[Idx].Persona);
-                            }(),
-                            apply(N, Idx + 1), void());
-                   }
-                 };
-                 LogNpcs::apply(Npcs, 0);
-                 return just(Result::Success("NPCs listed"));
-               }()
          : CommandKey == TEXT("npc_process")
              ? (Args.Num() < 2
                     ? just(Result::Failure(
@@ -55,29 +35,12 @@ HandlerResult HandleNpc(rtk::EnhancedStore<FRuntimeState> &Store,
                         return just(
                             Result::Success("Protocol complete"));
                       }())
-         : CommandKey == TEXT("npc_active")
-             ? [&]() -> HandlerResult {
-                 func::Maybe<FNPCInternalState> Active =
-                     Ops::getActiveNpc(Store);
-                 Active.hasValue
-                     ? [&]() {
-                         UE_LOG(LogTemp, Display,
-                                TEXT("Active NPC: %s (%s)"),
-                                *Active.value.Id,
-                                *Active.value.Persona);
-                       }()
-                     : [&]() {
-                         UE_LOG(LogTemp, Display,
-                                TEXT("No active NPC"));
-                       }();
-                 return just(
-                     Result::Success("Active NPC queried"));
-               }()
          : CommandKey == TEXT("npc_state")
              ? [&]() -> HandlerResult {
-                 func::Maybe<FNPCInternalState> Active =
-                     Ops::getActiveNpc(Store);
-                 return !Active.hasValue
+                 const func::Maybe<FNPCInternalState> Target =
+                     Args.Num() > 0 ? Ops::getNpc(Store, Args[0])
+                                    : Ops::getActiveNpc(Store);
+                 return !Target.hasValue
                      ? [&]() -> HandlerResult {
                          UE_LOG(LogTemp, Display,
                                 TEXT("No active NPC"));
@@ -87,10 +50,10 @@ HandlerResult HandleNpc(rtk::EnhancedStore<FRuntimeState> &Store,
                      : [&]() -> HandlerResult {
                          UE_LOG(LogTemp, Display,
                                 TEXT("NPC ID:      %s"),
-                                *Active.value.Id);
+                                *Target.value.Id);
                          UE_LOG(LogTemp, Display,
                                 TEXT("Persona:     %s"),
-                                *Active.value.Persona);
+                                *Target.value.Persona);
                          return just(
                              Result::Success("NPC state printed"));
                        }();

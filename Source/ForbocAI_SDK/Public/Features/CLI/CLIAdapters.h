@@ -49,20 +49,6 @@ inline const TArray<FCommandRoute> &NodeParityRoutes() {
   return Routes;
 }
 
-inline const TArray<FString> &UeOnlyCommandKeys() {
-  static const TArray<FString> Keys = {
-      TEXT("npc_list"),
-      TEXT("npc_active"),
-      TEXT("soul_import_npc"),
-      TEXT("system_status"),
-      TEXT("vector_init"),
-      TEXT("setup_deps"),
-      TEXT("setup_verify"),
-      TEXT("setup_runtime_check"),
-  };
-  return Keys;
-}
-
 inline bool ContainsRouteKeyRecursive(const TArray<FCommandRoute> &Routes,
                                       const FString &Key, int32 Index) {
   return Index >= Routes.Num()
@@ -72,25 +58,12 @@ inline bool ContainsRouteKeyRecursive(const TArray<FCommandRoute> &Routes,
                    : ContainsRouteKeyRecursive(Routes, Key, Index + 1);
 }
 
-inline bool ContainsStringRecursive(const TArray<FString> &Values,
-                                    const FString &Value, int32 Index) {
-  return Index >= Values.Num()
-             ? false
-             : Values[Index] == Value
-                   ? true
-                   : ContainsStringRecursive(Values, Value, Index + 1);
-}
-
 inline bool IsNodeParityCommandKey(const FString &Key) {
   return ContainsRouteKeyRecursive(NodeParityRoutes(), Key, 0);
 }
 
-inline bool IsUeOnlyCommandKey(const FString &Key) {
-  return ContainsStringRecursive(UeOnlyCommandKeys(), Key, 0);
-}
-
 inline bool IsValidCommandKey(const FString &Key) {
-  return IsNodeParityCommandKey(Key) || IsUeOnlyCommandKey(Key);
+  return IsNodeParityCommandKey(Key);
 }
 
 inline FString RouteKeyForGroupRecursive(const TArray<FCommandRoute> &Routes,

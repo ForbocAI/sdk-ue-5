@@ -1,6 +1,5 @@
 #include "CLI/CLIModule.h"
 #include "CLI/CliHandlers.h"
-#include "CLI/CliOperations.h"
 #include "Store.h"
 #include <exception>
 
@@ -31,7 +30,7 @@ func::TestResult<void> DispatchCommand(const FString &CommandKey,
    */
   static const std::vector<Handler> Handlers = {
       HandleSystem, HandleNpc,    HandleMemory, HandleGhost,
-      HandleBridge, HandleSoul,   HandleConfig, HandleVector, HandleSetup,
+      HandleBridge, HandleSoul,   HandleConfig, HandleSetup,
   };
 
   struct DispatchRecursive {
