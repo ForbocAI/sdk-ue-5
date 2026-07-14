@@ -4,6 +4,14 @@ set -eu
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 SDK_ROOT=$(git -C "$SCRIPT_DIR/../.." rev-parse --show-toplevel)
 DEMO_ROOT=${1:-$(git -C "$SDK_ROOT" config --get forboc.demoPath || true)}
+SDK_HEAD=$(git -C "$SDK_ROOT" rev-parse HEAD)
+GIT_LOCAL_ENV_VARS=$(git -C "$SDK_ROOT" rev-parse --local-env-vars)
+
+# A Git hook inherits repository-local variables such as GIT_INDEX_FILE. Clear
+# them before invoking Git against the independent demo and submodule repos.
+for VARIABLE_NAME in $GIT_LOCAL_ENV_VARS; do
+  unset "$VARIABLE_NAME"
+done
 
 if [ -z "$DEMO_ROOT" ]; then
   exit 0
@@ -27,7 +35,6 @@ if ! git -C "$SUBMODULE_ROOT" diff --quiet ||
   exit 1
 fi
 
-SDK_HEAD=$(git -C "$SDK_ROOT" rev-parse HEAD)
 git -C "$SUBMODULE_ROOT" fetch --quiet "$SDK_ROOT" "$SDK_HEAD"
 git -C "$SUBMODULE_ROOT" checkout --quiet --detach "$SDK_HEAD"
 
