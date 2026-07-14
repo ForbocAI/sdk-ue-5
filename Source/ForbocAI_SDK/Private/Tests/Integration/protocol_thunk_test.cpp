@@ -227,7 +227,7 @@ bool FProtocolDirectiveLifecycleTest::RunTest(const FString &Parameters) {
   }
 
   /**
-   * Simulate directive response
+   * Apply directive response
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
   FDirectiveResponse DirResponse;
@@ -238,7 +238,7 @@ bool FProtocolDirectiveLifecycleTest::RunTest(const FString &Parameters) {
       DirectiveSlice::Actions::directiveReceived(TEXT("run_1"), DirResponse));
 
   /**
-   * Simulate verdict
+   * Apply verdict
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
   FVerdictResponse Verdict;

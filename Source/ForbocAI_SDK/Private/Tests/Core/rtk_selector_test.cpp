@@ -1,7 +1,6 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
-#include "rtk_test_mocks.h"
 
 using namespace rtk;
 

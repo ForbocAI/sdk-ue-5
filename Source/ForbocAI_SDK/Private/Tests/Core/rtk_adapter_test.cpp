@@ -1,7 +1,7 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
-#include "rtk_test_mocks.h"
+#include "rtk_test_fixtures.h"
 
 using namespace rtk;
 
@@ -13,12 +13,12 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRtkEntityAdapterTest,
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FRtkEntityAdapterTest::RunTest(const FString &Parameters) {
-  auto Adapter = createEntityAdapter<FNpcMockState>(
-      [](const FNpcMockState &E) { return E.Id; });
+  auto Adapter = createEntityAdapter<FNpcFixtureState>(
+      [](const FNpcFixtureState &E) { return E.Id; });
   auto State = Adapter.getInitialState();
   auto Selectors = Adapter.getSelectors();
 
-  State = Adapter.addOne(State, FNpcMockState{TEXT("1"), 100});
+  State = Adapter.addOne(State, FNpcFixtureState{TEXT("1"), 100});
   TestEqual("addOne total count", Selectors.selectTotal(State), 1);
 
   auto Ent1 = Selectors.selectById(State, TEXT("1"));
@@ -26,11 +26,11 @@ bool FRtkEntityAdapterTest::RunTest(const FString &Parameters) {
   TestEqual("selectById accurate health", Ent1.value.Health, 100);
 
   State = Adapter.addMany(
-      State, {FNpcMockState{TEXT("2"), 200}, FNpcMockState{TEXT("3"), 300}});
+      State, {FNpcFixtureState{TEXT("2"), 200}, FNpcFixtureState{TEXT("3"), 300}});
   TestEqual("addMany total count", Selectors.selectTotal(State), 3);
 
-  State = Adapter.updateOne(State, TEXT("3"), [](const FNpcMockState &E) {
-    FNpcMockState Next = E;
+  State = Adapter.updateOne(State, TEXT("3"), [](const FNpcFixtureState &E) {
+    FNpcFixtureState Next = E;
     Next.Health = 350;
     return Next;
   });
@@ -43,7 +43,7 @@ bool FRtkEntityAdapterTest::RunTest(const FString &Parameters) {
   TestFalse("removeOne removed entity from lookup",
             Selectors.selectById(State, TEXT("1")).hasValue);
 
-  State = Adapter.setAll(State, {FNpcMockState{TEXT("4"), 400}});
+  State = Adapter.setAll(State, {FNpcFixtureState{TEXT("4"), 400}});
   TestEqual("setAll total count", Selectors.selectTotal(State), 1);
 
   return true;

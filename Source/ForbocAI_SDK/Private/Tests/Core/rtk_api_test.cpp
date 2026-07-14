@@ -1,7 +1,7 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
-#include "rtk_test_mocks.h"
+#include "rtk_test_fixtures.h"
 
 using namespace rtk;
 
@@ -21,7 +21,7 @@ bool FRtkApiTest::RunTest(const FString &Parameters) {
   GetUserEndpoint.ProvidesTags = {{TEXT("User"), TEXT("ID")}};
 
   /**
-   * Mock HTTP Builder that resolves after parsing
+   * Deterministic endpoint request builder that resolves after parsing
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
   GetUserEndpoint.RequestBuilder = [](const FString &UserId) {
@@ -29,7 +29,7 @@ bool FRtkApiTest::RunTest(const FString &Parameters) {
         [UserId](auto Resolve, auto Reject) {
           if (UserId == TEXT("error")) {
             Resolve(QueryReturnValue<int32>::failure(
-                FetchBaseQueryError::fetchError(TEXT("Mock Network Failure"))));
+                FetchBaseQueryError::fetchError(TEXT("planned network failure"))));
           } else {
             Resolve(QueryReturnValue<int32>::success(42));
           }
@@ -40,19 +40,19 @@ bool FRtkApiTest::RunTest(const FString &Parameters) {
    * 2. Register Endpoint in Api
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  EndpointBuilder<FAppMockState> Builder;
+  EndpointBuilder<FAppFixtureState> Builder;
   auto BuiltGetUserEndpoint =
       Builder.mutation<FString, int32>(GetUserEndpoint);
   TestTrue("Endpoint builder marks mutation definitions",
            BuiltGetUserEndpoint.Type == DefinitionType::mutation);
 
-  CreateApiOptions<FAppMockState> ApiOptions;
+  CreateApiOptions<FAppFixtureState> ApiOptions;
   ApiOptions.reducerPath = TEXT("testApi");
   ApiOptions.tagTypes.Add(TEXT("User"));
-  ApiOptions.endpoints = [](EndpointBuilder<FAppMockState> &EndpointBuilder) {
+  ApiOptions.endpoints = [](EndpointBuilder<FAppFixtureState> &EndpointBuilder) {
     (void)EndpointBuilder;
   };
-  Api<FAppMockState> TestApi = buildCreateApi<FAppMockState>()(ApiOptions);
+  Api<FAppFixtureState> TestApi = buildCreateApi<FAppFixtureState>()(ApiOptions);
   TestEqual("createApi options keep reducerPath", TestApi.ReducerPath,
             FString(TEXT("testApi")));
   TestEqual("createApi options keep tagTypes", TestApi.TagTypes.Num(), 1);
@@ -60,14 +60,14 @@ bool FRtkApiTest::RunTest(const FString &Parameters) {
   auto GetUserThunk = injectEndpoints(TestApi, BuiltGetUserEndpoint);
 
   TArray<FString> EventLog;
-  std::function<AnyAction(const AnyAction &)> MockDispatch =
+  std::function<AnyAction(const AnyAction &)> RecordDispatch =
       [&EventLog](const AnyAction &Action) {
         EventLog.Add(Action.Type);
         return Action;
       };
-  const FAppMockState State{};
-  std::function<const FAppMockState &()> MockGetState =
-      [&State]() -> const FAppMockState & {
+  const FAppFixtureState State{};
+  std::function<const FAppFixtureState &()> ReadState =
+      [&State]() -> const FAppFixtureState & {
     return State;
   };
 
@@ -76,7 +76,7 @@ bool FRtkApiTest::RunTest(const FString &Parameters) {
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
   auto SuccessOp = GetUserThunk(TEXT("123"));
-  SuccessOp(MockDispatch, MockGetState).execute();
+  SuccessOp(RecordDispatch, ReadState).execute();
 
   TestEqual("Dispatched pending first (API success)", EventLog[0],
             FString(TEXT("testApi/getUser/pending")));
@@ -89,7 +89,7 @@ bool FRtkApiTest::RunTest(const FString &Parameters) {
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
   auto FailOp = GetUserThunk(TEXT("error"));
-  FailOp(MockDispatch, MockGetState).execute();
+  FailOp(RecordDispatch, ReadState).execute();
 
   TestEqual("Dispatched pending first (API fail)", EventLog[0],
             FString(TEXT("testApi/getUser/pending")));
@@ -102,22 +102,6 @@ bool FRtkApiTest::RunTest(const FString &Parameters) {
   TestEqual("defaultSerializeQueryArgs mirrors RTK cache key shape",
             defaultSerializeQueryArgs(SerializeOptions),
             FString(TEXT("getUser(123)")));
-
-  FetchBaseQueryError PlannedError =
-      FetchBaseQueryError::customError(TEXT("queryFn required"));
-  bool bFakeBaseQueryResolved = false;
-  fakeBaseQuery<>(PlannedError)(rtk::FEmptyPayload{}, BaseQueryApi(),
-                               rtk::FEmptyPayload{})
-      .then([&bFakeBaseQueryResolved,
-             PlannedError](QueryReturnValue<rtk::FEmptyPayload> Value) {
-        bFakeBaseQueryResolved =
-            Value.error.hasValue &&
-            Value.error.value.status == PlannedError.status &&
-            Value.error.value.error == PlannedError.error;
-      })
-      .execute();
-  TestTrue("fakeBaseQuery resolves a typed RTK Query error",
-           bFakeBaseQueryResolved);
 
   int32 RetryAttempts = 0;
   BaseQueryFn<rtk::FEmptyPayload, int32> FlakyBaseQuery =

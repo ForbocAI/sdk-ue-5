@@ -1,7 +1,7 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
-#include "rtk_test_mocks.h"
+#include "rtk_test_fixtures.h"
 
 using namespace rtk;
 
@@ -14,18 +14,18 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRtkAsyncThunkTest,
  */
 bool FRtkAsyncThunkTest::RunTest(const FString &Parameters) {
   /**
-   * Build a mock async thunk
+   * Build a deterministic async thunk
    * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
    */
-  auto TestThunk = createAsyncThunk<int, FString, FAppMockState>(
+  auto TestThunk = createAsyncThunk<int, FString, FAppFixtureState>(
       TEXT("test/fetchData"),
       [](const FString &Arg,
-         const ThunkApi<FAppMockState> &Api) -> func::AsyncResult<int> {
+         const ThunkApi<FAppFixtureState> &Api) -> func::AsyncResult<int> {
         return func::AsyncResult<int>::create(
             [Arg](std::function<void(int)> Resolve,
                   std::function<void(std::string)> Reject) {
               if (Arg == TEXT("fail")) {
-                Reject("Mock error");
+                Reject("planned error");
               } else {
                 Resolve(42);
               }
@@ -33,15 +33,15 @@ bool FRtkAsyncThunkTest::RunTest(const FString &Parameters) {
       });
 
   TArray<FString> DispatchedActions;
-  std::function<AnyAction(const AnyAction &)> MockDispatch =
+  std::function<AnyAction(const AnyAction &)> RecordDispatch =
       [&DispatchedActions](const AnyAction &Action) {
         DispatchedActions.Add(Action.Type);
         return Action;
       };
 
-  const FAppMockState State{};
-  std::function<const FAppMockState &()> MockGetState =
-      [&State]() -> const FAppMockState & {
+  const FAppFixtureState State{};
+  std::function<const FAppFixtureState &()> ReadState =
+      [&State]() -> const FAppFixtureState & {
     return State;
   };
 
@@ -50,7 +50,7 @@ bool FRtkAsyncThunkTest::RunTest(const FString &Parameters) {
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
   auto ThunkActionSuccess = TestThunk(TEXT("success"));
-  auto ResultSuccess = ThunkActionSuccess(MockDispatch, MockGetState);
+  auto ResultSuccess = ThunkActionSuccess(RecordDispatch, ReadState);
   ResultSuccess.execute();
 
   TestEqual("Dispatched pending first (success)", DispatchedActions[0],
@@ -64,7 +64,7 @@ bool FRtkAsyncThunkTest::RunTest(const FString &Parameters) {
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
   auto ThunkActionFail = TestThunk(TEXT("fail"));
-  auto ResultFail = ThunkActionFail(MockDispatch, MockGetState);
+  auto ResultFail = ThunkActionFail(RecordDispatch, ReadState);
   ResultFail.execute();
 
   TestEqual("Dispatched pending first (fail)", DispatchedActions[0],

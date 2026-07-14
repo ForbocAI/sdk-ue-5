@@ -1,6 +1,6 @@
 /**
  * Protocol payloads isolation tests — tests local serialization codecs
- * NO MOCKING ALLOWED.
+ * Payloads are exercised through their concrete serialization contracts.
  */
 
 #include "CoreMinimal.h"

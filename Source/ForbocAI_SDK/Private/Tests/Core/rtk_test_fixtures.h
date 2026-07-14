@@ -3,15 +3,15 @@
 
 #include "CoreMinimal.h"
 
-struct FNpcMockState {
+struct FNpcFixtureState {
   FString Id;
   int32 Health;
 
-  bool operator==(const FNpcMockState &Other) const {
+  bool operator==(const FNpcFixtureState &Other) const {
     return Id == Other.Id && Health == Other.Health;
   }
 };
 
-struct FAppMockState {
-  FNpcMockState ActiveNpc;
+struct FAppFixtureState {
+  FNpcFixtureState ActiveNpc;
 };

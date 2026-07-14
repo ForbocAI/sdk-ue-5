@@ -1,7 +1,7 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
-#include "rtk_test_mocks.h"
+#include "rtk_test_fixtures.h"
 
 using namespace rtk;
 
@@ -25,8 +25,8 @@ bool FRtkMiddlewareTest::RunTest(const FString &Parameters) {
         return Action;
       };
 
-  const FAppMockState State{};
-  std::function<const FAppMockState &()> GetState = [&State]() -> const FAppMockState & {
+  const FAppFixtureState State{};
+  std::function<const FAppFixtureState &()> GetState = [&State]() -> const FAppFixtureState & {
     return State;
   };
 
@@ -34,8 +34,8 @@ bool FRtkMiddlewareTest::RunTest(const FString &Parameters) {
    * 2. Setup Middleware A (Logging before and after)
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  Middleware<FAppMockState> MiddlewareA =
-      [&EventLog](const MiddlewareApi<FAppMockState> &Api)
+  Middleware<FAppFixtureState> MiddlewareA =
+      [&EventLog](const MiddlewareApi<FAppFixtureState> &Api)
           -> std::function<Dispatcher(Dispatcher)> {
         return [&EventLog](Dispatcher Next) -> Dispatcher {
           return [&EventLog, Next](const AnyAction &Action) -> AnyAction {
@@ -51,10 +51,10 @@ bool FRtkMiddlewareTest::RunTest(const FString &Parameters) {
    * 3. Setup Listener Middleware (MwB)
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  ListenerMiddleware<FAppMockState> Listeners =
-      addListener(createListenerMiddleware<FAppMockState>(), TEXT("trigger"),
+  ListenerMiddleware<FAppFixtureState> Listeners =
+      addListener(createListenerMiddleware<FAppFixtureState>(), TEXT("trigger"),
                   [&EventLog](const AnyAction &Action,
-                              const MiddlewareApi<FAppMockState> &Api) {
+                              const MiddlewareApi<FAppFixtureState> &Api) {
                     EventLog.Add(TEXT("Listener_Triggered"));
                   });
 
@@ -62,7 +62,7 @@ bool FRtkMiddlewareTest::RunTest(const FString &Parameters) {
    * 4. Compose
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  std::vector<Middleware<FAppMockState>> Chain = {
+  std::vector<Middleware<FAppFixtureState>> Chain = {
       MiddlewareA, buildListenerMiddleware(Listeners)};
   auto EnhancedDispatch = applyMiddleware(BaseDispatch, GetState, Chain);
 
