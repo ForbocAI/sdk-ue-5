@@ -31,13 +31,19 @@ TEST_GAME_SRC="$PLUGIN_ROOT/test-game-cli/Source/ForbocAI_TestGame_CLI"
 COMMAND_SURFACES=(
   "$SRC/Public/CLI/CLIModule.h"
   "$SRC/Public/CLI/CliHandlers.h"
-  "$TEST_GAME_SRC/Public/TestGame/TestGameCommandSurface.h"
-  "$TEST_GAME_SRC/Public/TestGame/CommandSurface/Alias.h"
-  "$TEST_GAME_SRC/Public/TestGame/CommandSurface/Execute.h"
-  "$TEST_GAME_SRC/Public/TestGame/CommandSurface/Scenario.h"
-  "$TEST_GAME_SRC/Public/TestGame/CommandSurface/Tokens.h"
-  "$TEST_GAME_SRC/Public/TestGame/CommandSurface/Types.h"
 )
+while IFS= read -r command_surface; do
+  COMMAND_SURFACES+=("$command_surface")
+done < <(
+  find "$TEST_GAME_SRC/Public/TestGame/Features" -type f \
+    \( -name 'CommandRunner*.h' -o -name 'CommandRunner*.hpp' \) \
+    -print | sort
+)
+
+if [ "${#COMMAND_SURFACES[@]}" -le 2 ]; then
+  echo "[FAIL] No test-game CommandRunner role files were discovered." >&2
+  exit 1
+fi
 
 VIOLATIONS=0
 

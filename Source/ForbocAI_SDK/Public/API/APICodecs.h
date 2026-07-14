@@ -3,7 +3,7 @@
 #include "../Core/JsonInterop.h"
 #include "../Core/ue_fp.hpp"
 #include "../Core/rtk.hpp"
-#include "../RuntimeConfig.h"
+#include "Features/Config/ConfigAdapters.h"
 #include "Features/Contracts/ContractsTypes.h"
 #include "CoreMinimal.h"
 #include "Dom/JsonObject.h"

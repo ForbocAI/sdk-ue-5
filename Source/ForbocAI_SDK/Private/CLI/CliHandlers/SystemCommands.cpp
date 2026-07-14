@@ -1,7 +1,7 @@
 // User Story: As a developer, I need this module to function.
 #include "CLI/CliHandlers.h"
 #include "CLI/CliOperations.h"
-#include "RuntimeConfig.h"
+#include "Features/Config/ConfigAdapters.h"
 #include "RuntimeStore.h"
 
 namespace CLIOps {

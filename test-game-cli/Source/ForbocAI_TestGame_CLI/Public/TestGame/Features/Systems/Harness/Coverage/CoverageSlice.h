@@ -28,35 +28,4 @@ inline rtk::Slice<FHarnessState> CreateHarnessSlice() {
       });
 }
 
-inline TArray<ECommandGroup>
-SelectMissingGroups(const TMap<ECommandGroup, bool> &Covered,
-                    const TArray<ECommandGroup> &Groups) {
-  struct CollectMissing {
-    static void apply(const TMap<ECommandGroup, bool> &C,
-                      const TArray<ECommandGroup> &G,
-                      TArray<ECommandGroup> &Out, int32 Idx) {
-      Idx >= G.Num()
-          ? void()
-          : ((!C.Contains(G[Idx]) || !(*C.Find(G[Idx])))
-                 ? (Out.Add(G[Idx]), void())
-                 : void(),
-             apply(C, G, Out, Idx + 1), void());
-    }
-  };
-  TArray<ECommandGroup> Missing;
-  CollectMissing::apply(Covered, Groups, Missing, 0);
-  return Missing;
-}
-
-namespace HarnessSelectors {
-inline TMap<ECommandGroup, bool> SelectHarnessCovered(const FHarnessState &S) {
-  return S.Covered;
-}
-
-inline TArray<ECommandGroup> SelectHarnessMissingGroups(
-    const FHarnessState &S, const TArray<ECommandGroup> &Groups) {
-  return SelectMissingGroups(S.Covered, Groups);
-}
-} // namespace HarnessSelectors
-
 } // namespace TestGame

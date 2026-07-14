@@ -16,22 +16,16 @@ REPO_ROOT = PLUGIN_ROOT
 WORKSPACE_ROOT = REPO_ROOT.parent
 
 
-def read_text(relative: str) -> str:
-    return (PLUGIN_ROOT / relative).read_text(encoding="utf-8")
-
-
-def read_existing(relative_paths: list[str]) -> str:
-    chunks: list[str] = []
-    missing: list[str] = []
-    for relative_path in relative_paths:
-        path = PLUGIN_ROOT / relative_path
-        if path.exists():
-            chunks.append(path.read_text(encoding="utf-8"))
-        else:
-            missing.append(relative_path)
-    if missing and not chunks:
-        raise FileNotFoundError(", ".join(missing))
-    return "\n".join(chunks)
+def source_text(root: Path, *, domain: str | None = None) -> str:
+    paths = sorted(
+        path
+        for path in root.rglob("*")
+        if path.is_file() and path.suffix.lower() in {".h", ".hpp", ".cpp"}
+        and (domain is None or domain in path.parts)
+    )
+    if not paths:
+        raise FileNotFoundError(f"no UE sources discovered under {root}")
+    return "\n".join(path.read_text(encoding="utf-8") for path in paths)
 
 
 def get_contract_data() -> dict:
@@ -134,7 +128,12 @@ def validate_contract_matrix(contract: dict) -> list[str]:
 
 
 def parse_cpp_command_group_mappings(header: str) -> set[str]:
-    return set(re.findall(r'GroupStr == TEXT\("([^"]+)"\)\s*\?\s*ECommandGroup::', header))
+    return set(
+        re.findall(
+            r'\b[A-Za-z][A-Za-z0-9_]*\s*==\s*TEXT\("([^"]+)"\)\s*\?\s*ECommandGroup::',
+            header,
+        )
+    )
 
 
 def parse_transcript_fields(header: str) -> set[str]:
@@ -146,43 +145,39 @@ def parse_transcript_fields(header: str) -> set[str]:
 
 def validate_ue_sources(contract: dict) -> list[str]:
     failures: list[str] = []
-    test_game_root = "test-game-cli/Source/ForbocAI_TestGame_CLI/Public/TestGame"
-    contract_header = read_text(f"{test_game_root}/TestGameContract.h")
-    types_header = read_text(f"{test_game_root}/Features/Systems/Harness/HarnessTypes.h")
-    command_surface = read_existing(
-        [
-            f"{test_game_root}/TestGameCommandSurface.h",
-            f"{test_game_root}/CommandSurface/Alias.h",
-            f"{test_game_root}/CommandSurface/Execute.h",
-            f"{test_game_root}/CommandSurface/Scenario.h",
-            f"{test_game_root}/CommandSurface/Tokens.h",
-            f"{test_game_root}/CommandSurface/Types.h",
-        ]
+    test_game_root = (
+        PLUGIN_ROOT
+        / "test-game-cli"
+        / "Source"
+        / "ForbocAI_TestGame_CLI"
+        / "Public"
+        / "TestGame"
     )
-    orchestrator = read_text(f"{test_game_root}/TestGameOrchestrator.h")
+    all_sources = source_text(test_game_root)
+    contract_sources = source_text(test_game_root / "Features", domain="Contract")
 
     required_groups = set(contract.get("requiredCommandGroups") or [])
-    mapped_groups = parse_cpp_command_group_mappings(contract_header)
+    mapped_groups = parse_cpp_command_group_mappings(contract_sources)
     failures.extend(sorted_difference(required_groups, mapped_groups, "UE ParseCommandGroup mappings"))
     for group in sorted(mapped_groups):
         if "-" in group:
             failures.append(f"UE ParseCommandGroup uses hyphenated group {group}; API uses underscores")
 
-    required_contract_snippets = [
-        'Root->GetStringField(TEXT("version"))',
-        'Root->GetStringField(TEXT("slotContractVersion"))',
-        'Root->TryGetArrayField(TEXT("requiredCommandGroups")',
-        'Root->TryGetObjectField(TEXT("aliasRules")',
-        'Root->TryGetArrayField(TEXT("scenarios")',
-        'ScenObj->GetStringField(TEXT("id"))',
-        'CmdObj->GetStringField(TEXT("group"))',
-        'CmdObj->TryGetArrayField(TEXT("expectedRoutes")',
-        "Local.ExpectedRoutes = Cmd.ExpectedRoutes",
-        "Step.Id = Scenario.Id",
-    ]
-    for snippet in required_contract_snippets:
-        if snippet not in contract_header:
-            failures.append(f"UE contract parser missing snippet: {snippet}")
+    for field in (
+        "version",
+        "slotContractVersion",
+        "requiredCommandGroups",
+        "aliasRules",
+        "scenarios",
+        "id",
+        "group",
+        "expectedRoutes",
+    ):
+        if f'TEXT("{field}")' not in contract_sources:
+            failures.append(f"UE contract parser missing field: {field}")
+    for conversion in ("ToCommandSpec", "ToScenarioStep", "ExpectedRoutes"):
+        if conversion not in contract_sources:
+            failures.append(f"UE contract conversion missing: {conversion}")
 
     expected_transcript_fields = {
         "Id",
@@ -194,12 +189,11 @@ def validate_ue_sources(contract: dict) -> list[str]:
         "Output",
         "Timestamp",
     }
-    transcript_fields = parse_transcript_fields(types_header)
+    transcript_fields = parse_transcript_fields(all_sources)
     failures.extend(
         sorted_difference(expected_transcript_fields, transcript_fields, "UE transcript fields")
     )
 
-    transcript_text = command_surface + "\n" + orchestrator
     required_transcript_snippets = [
         "ScenarioId",
         "CommandGroup",
@@ -209,7 +203,7 @@ def validate_ue_sources(contract: dict) -> list[str]:
         "Output",
     ]
     for snippet in required_transcript_snippets:
-        if snippet not in transcript_text:
+        if snippet not in all_sources:
             failures.append(f"UE transcript recording missing {snippet}")
 
     return failures

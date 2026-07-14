@@ -1,6 +1,6 @@
 #include "CLI/CliHandlers.h"
 #include "CLI/CliOperations.h"
-#include "RuntimeConfig.h"
+#include "Features/Config/ConfigAdapters.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/PlatformFileManager.h"
 #include "Misc/Guid.h"

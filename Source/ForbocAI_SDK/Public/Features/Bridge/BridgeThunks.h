@@ -4,10 +4,10 @@
 #include "Core/ue_fp.hpp"
 
 #include "Bridge/BridgeModule.h"
-#include "Errors.h"
+#include "Features/Errors/ErrorsAdapters.h"
 #include "Features/API/APIApi.h"
 #include "Features/Bridge/BridgeSlice.h"
-#include "RuntimeConfig.h"
+#include "Features/Config/ConfigAdapters.h"
 
 namespace BridgeHelpers {
 /**

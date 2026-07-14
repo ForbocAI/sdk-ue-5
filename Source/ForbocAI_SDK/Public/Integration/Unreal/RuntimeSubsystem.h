@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "RuntimeConfig.h"
+#include "Features/Config/ConfigAdapters.h"
 #include "RuntimeStore.h"
 #include "Features/Contracts/ContractsTypes.h"
 #include "Subsystems/GameInstanceSubsystem.h"

@@ -1,6 +1,6 @@
-#include "RuntimeSubsystem.h"
+#include "Integration/Unreal/RuntimeSubsystem.h"
 #include "Features/NPC/NPCSlice.h"
-#include "RuntimeConfig.h"
+#include "Features/Config/ConfigAdapters.h"
 #include "RuntimeStore.h"
 #include "Features/Protocol/ProtocolThunks.h"
 #include "Features/Soul/SoulThunks.h"

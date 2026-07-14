@@ -1,37 +1,9 @@
 #pragma once
 
 #include "Core/ue_fp.hpp"
-#include "CoreMinimal.h"
+#include "Features/Errors/ErrorsTypes.h"
 
 namespace Errors {
-
-/**
- * G9: Consistent error shape — all SDK errors flow through this type
- * User Story: As a maintainer, I need this implementation note so I can understand which milestone behavior the surrounding code is preserving.
- */
-
-enum class EErrorCategory : uint8 {
-  Network,    // Connection failed, timeout, DNS
-  Http,       // Non-2xx response
-  Validation, // Missing required field, invalid input
-  Protocol,   // Protocol loop errors (max turns, unknown instruction)
-  Memory,     // Vector DB / embedding errors
-  Inference,  // API-hosted SLM inference errors
-  Arweave,    // Soul upload/download errors
-  Config,     // Configuration errors (missing key, invalid URL)
-  Unknown     // Unclassified
-};
-
-struct FSDKError {
-  EErrorCategory Category;
-  FString Code;
-  FString Message;
-  int32 StatusCode; // HTTP status code (0 for non-HTTP errors)
-
-  FSDKError()
-      : Category(EErrorCategory::Unknown), Code(TEXT("UNKNOWN")),
-        Message(TEXT("")), StatusCode(0) {}
-};
 
 /**
  * Builds a normalized network error.
@@ -143,53 +115,58 @@ inline bool isHttpErrorHtml(const FString &Message) {
          Message.Contains(TEXT("<!doctype html"), ESearchCase::IgnoreCase);
 }
 
+inline FString stripHtmlTagsRecursive(const FString &Message, int32 Index,
+                                      bool bInTag,
+                                      bool bLastWasWhitespace, FString Out) {
+  return Index >= Message.Len()
+             ? Out.TrimStartAndEnd()
+         : Message[Index] == TEXT('<')
+             ? stripHtmlTagsRecursive(Message, Index + 1, true,
+                                      bLastWasWhitespace, MoveTemp(Out))
+         : Message[Index] == TEXT('>')
+             ? stripHtmlTagsRecursive(Message, Index + 1, false,
+                                      bLastWasWhitespace, MoveTemp(Out))
+         : bInTag
+             ? stripHtmlTagsRecursive(Message, Index + 1, true,
+                                      bLastWasWhitespace, MoveTemp(Out))
+         : FChar::IsWhitespace(Message[Index])
+             ? stripHtmlTagsRecursive(
+                   Message, Index + 1, false, true,
+                   bLastWasWhitespace
+                       ? MoveTemp(Out)
+                       : (Out.AppendChar(TEXT(' ')), MoveTemp(Out)))
+             : (Out.AppendChar(Message[Index]),
+                stripHtmlTagsRecursive(Message, Index + 1, false, false,
+                                       MoveTemp(Out)));
+}
+
 inline FString stripHtmlTags(const FString &Message) {
-  FString Out;
-  bool bInTag = false;
-  bool bLastWasWhitespace = false;
-  for (int32 Index = 0; Index < Message.Len(); ++Index) {
-    const TCHAR Ch = Message[Index];
-    if (Ch == TEXT('<')) {
-      bInTag = true;
-      continue;
-    }
-    if (Ch == TEXT('>')) {
-      bInTag = false;
-      continue;
-    }
-    if (bInTag) {
-      continue;
-    }
-    if (FChar::IsWhitespace(Ch)) {
-      if (!bLastWasWhitespace) {
-        Out.AppendChar(TEXT(' '));
-        bLastWasWhitespace = true;
-      }
-      continue;
-    }
-    Out.AppendChar(Ch);
-    bLastWasWhitespace = false;
-  }
-  return Out.TrimStartAndEnd();
+  return stripHtmlTagsRecursive(Message, 0, false, false, FString());
 }
 
 inline FString readHtmlTitle(const FString &Message) {
   const int32 TitleStart = Message.Find(TEXT("<title"), ESearchCase::IgnoreCase);
-  if (TitleStart == INDEX_NONE) {
-    return FString();
-  }
-  const int32 TitleOpenEnd = Message.Find(TEXT(">"), ESearchCase::CaseSensitive,
-                                          ESearchDir::FromStart, TitleStart);
-  if (TitleOpenEnd == INDEX_NONE) {
-    return FString();
-  }
-  const int32 TitleClose = Message.Find(TEXT("</title>"), ESearchCase::IgnoreCase,
-                                        ESearchDir::FromStart, TitleOpenEnd + 1);
-  if (TitleClose == INDEX_NONE || TitleClose <= TitleOpenEnd) {
-    return FString();
-  }
-  return stripHtmlTags(Message.Mid(TitleOpenEnd + 1,
-                                  TitleClose - TitleOpenEnd - 1));
+  return TitleStart == INDEX_NONE
+             ? FString()
+             : [&]() {
+                 const int32 TitleOpenEnd =
+                     Message.Find(TEXT(">"), ESearchCase::CaseSensitive,
+                                  ESearchDir::FromStart, TitleStart);
+                 return TitleOpenEnd == INDEX_NONE
+                            ? FString()
+                            : [&]() {
+                                const int32 TitleClose = Message.Find(
+                                    TEXT("</title>"), ESearchCase::IgnoreCase,
+                                    ESearchDir::FromStart, TitleOpenEnd + 1);
+                                return TitleClose == INDEX_NONE ||
+                                               TitleClose <= TitleOpenEnd
+                                           ? FString()
+                                           : stripHtmlTags(Message.Mid(
+                                                 TitleOpenEnd + 1,
+                                                 TitleClose - TitleOpenEnd -
+                                                     1));
+                              }();
+               }();
 }
 
 inline int32 parseLeadingStatusCode(const FString &Message) {
@@ -200,12 +177,14 @@ inline int32 parseLeadingStatusCode(const FString &Message) {
 }
 
 inline FString removeLeadingStatusCode(const FString &Message, int32 StatusCode) {
-  if (StatusCode <= 0 || !Message.StartsWith(FString::FromInt(StatusCode))) {
-    return Message;
-  }
-  FString Reason = Message.Mid(3).TrimStartAndEnd();
-  Reason.RemoveFromStart(TEXT(":"));
-  return Reason.TrimStartAndEnd();
+  return StatusCode <= 0 ||
+                 !Message.StartsWith(FString::FromInt(StatusCode))
+             ? Message
+             : [&]() {
+                 FString Reason = Message.Mid(3).TrimStartAndEnd();
+                 Reason.RemoveFromStart(TEXT(":"));
+                 return Reason.TrimStartAndEnd();
+               }();
 }
 
 /**
@@ -214,27 +193,32 @@ inline FString removeLeadingStatusCode(const FString &Message, int32 StatusCode)
  * reduced to status and title so strict failures stay readable.
  */
 inline FString summarizeHttpError(int32 StatusCode, const FString &Message) {
-  if (!isHttpErrorHtml(Message)) {
-    return StatusCode > 0 && !Message.IsEmpty()
-               ? FString::Printf(TEXT("HTTP %d: %s"), StatusCode, *Message)
-               : Message;
-  }
-
-  FString Title = readHtmlTitle(Message);
-  if (Title.IsEmpty()) {
-    Title = stripHtmlTags(Message.Left(512));
-  }
-
-  const int32 EffectiveStatus =
-      StatusCode > 0 ? StatusCode : parseLeadingStatusCode(Title);
-  const FString Reason = removeLeadingStatusCode(Title, EffectiveStatus);
-  return EffectiveStatus > 0
-             ? FString::Printf(TEXT("HTTP %d%s%s"), EffectiveStatus,
-                               Reason.IsEmpty() ? TEXT("") : TEXT(": "),
-                               *Reason)
-             : FString::Printf(TEXT("HTTP error%s%s"),
-                               Reason.IsEmpty() ? TEXT("") : TEXT(": "),
-                               *Reason);
+  return !isHttpErrorHtml(Message)
+             ? (StatusCode > 0 && !Message.IsEmpty()
+                    ? FString::Printf(TEXT("HTTP %d: %s"), StatusCode,
+                                      *Message)
+                    : Message)
+             : [&]() {
+                 const FString HtmlTitle = readHtmlTitle(Message);
+                 const FString Title =
+                     HtmlTitle.IsEmpty()
+                         ? stripHtmlTags(Message.Left(512))
+                         : HtmlTitle;
+                 const int32 EffectiveStatus =
+                     StatusCode > 0 ? StatusCode
+                                    : parseLeadingStatusCode(Title);
+                 const FString Reason =
+                     removeLeadingStatusCode(Title, EffectiveStatus);
+                 return EffectiveStatus > 0
+                            ? FString::Printf(
+                                  TEXT("HTTP %d%s%s"), EffectiveStatus,
+                                  Reason.IsEmpty() ? TEXT("") : TEXT(": "),
+                                  *Reason)
+                            : FString::Printf(
+                                  TEXT("HTTP error%s%s"),
+                                  Reason.IsEmpty() ? TEXT("") : TEXT(": "),
+                                  *Reason);
+               }();
 }
 
 /**

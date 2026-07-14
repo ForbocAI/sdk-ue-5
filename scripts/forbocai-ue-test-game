@@ -47,18 +47,32 @@ collect_forboc_wsl_env_entries() {
 
 prepare_plugin_host() {
   local host="$ROOT/test-game-cli/.forbocai-plugin-host"
-  local link="$host/ForbocAI_SDK"
+  local plugin="$host/ForbocAI_SDK"
+  local directory
 
   mkdir -p "$host"
-  if [[ -L "$link" ]]; then
-    ln -sfn "$ROOT" "$link"
-    return
+  if [[ -L "$plugin" ]]; then
+    rm "$plugin"
   fi
-  if [[ -e "$link" ]]; then
-    echo "Plugin host path already exists and is not a symlink: $link" >&2
+  if [[ -e "$plugin" && ! -d "$plugin" ]]; then
+    echo "Plugin host path already exists and is not a directory: $plugin" >&2
     exit 1
   fi
-  ln -s "$ROOT" "$link"
+  mkdir -p "$plugin"
+
+  cp "$ROOT/ForbocAI_SDK.uplugin" "$plugin/ForbocAI_SDK.uplugin"
+  for directory in Config Content Resources Source ThirdParty; do
+    [[ -d "$ROOT/$directory" ]] || continue
+    if [[ -L "$plugin/$directory" ]]; then
+      ln -sfn "$ROOT/$directory" "$plugin/$directory"
+      continue
+    fi
+    if [[ -e "$plugin/$directory" ]]; then
+      echo "Plugin host directory already exists and is not a symlink: $plugin/$directory" >&2
+      exit 1
+    fi
+    ln -s "$ROOT/$directory" "$plugin/$directory"
+  done
 }
 
 if grep -qi microsoft /proc/version 2>/dev/null; then

@@ -2,59 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
-#include "Core/ue_fp.hpp"
 #include "TestGame/Features/Entities/NPCs/NPCsActions.h"
 #include "TestGame/Features/Entities/NPCs/NPCsAdapters.h"
 
 namespace TestGame {
-
-struct FNPCsSliceState {
-  rtk::EntityState<FGameNPC> Entities;
-
-  FNPCsSliceState() : Entities(GetNPCAdapter().getInitialState()) {}
-
-  bool operator==(const FNPCsSliceState &O) const {
-    return Entities.ids == O.Entities.ids;
-  }
-};
-
-namespace NPCsSelectors {
-inline TArray<FGameNPC> SelectAllNpcs(const FNPCsSliceState &S) {
-  return GetNPCAdapter().getSelectors().selectAll(S.Entities);
-}
-
-inline func::Maybe<FGameNPC> SelectNpcById(const FNPCsSliceState &S,
-                                           const FString &Id) {
-  return GetNPCAdapter().getSelectors().selectById(S.Entities, Id);
-}
-
-inline rtk::EntityState<FGameNPC> SelectNpcEntities(const FNPCsSliceState &S) {
-  return S.Entities;
-}
-
-inline TArray<FString> SelectNpcIds(const FNPCsSliceState &S) {
-  return GetNPCAdapter().getSelectors().selectIds(S.Entities);
-}
-
-inline int32 SelectNpcTotal(const FNPCsSliceState &S) {
-  return GetNPCAdapter().getSelectors().selectTotal(S.Entities);
-}
-} // namespace NPCsSelectors
-
-inline FGameNPC PatchNpc(const FGameNPC &Existing,
-                         const NPCsActions::FPatchNPCChanges &Patch) {
-  FGameNPC Updated = Existing;
-  Updated.Name = Patch.bHasName ? Patch.Name : Updated.Name;
-  Updated.Faction = Patch.bHasFaction ? Patch.Faction : Updated.Faction;
-  Updated.Hp = Patch.bHasHp ? Patch.Hp : Updated.Hp;
-  Updated.Suspicion =
-      Patch.bHasSuspicion ? Patch.Suspicion : Updated.Suspicion;
-  Updated.Inventory = Patch.bHasInventory ? Patch.Inventory : Updated.Inventory;
-  Updated.KnownSecrets =
-      Patch.bHasKnownSecrets ? Patch.KnownSecrets : Updated.KnownSecrets;
-  Updated.Position = Patch.bHasPosition ? Patch.Position : Updated.Position;
-  return Updated;
-}
 
 inline rtk::Slice<FNPCsSliceState> CreateNPCsSlice() {
   return rtk::createSlice<FNPCsSliceState>(

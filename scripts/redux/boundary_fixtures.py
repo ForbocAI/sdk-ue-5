@@ -85,6 +85,8 @@ CASES: list[Case] = [
          "int x;", {"RTK-STRUCT-001"}),
     Case("root-role-leaf", "Source/DemoTypes.h",
          "struct FDemo { int Value; };", {"RTK-STRUCT-002"}),
+    Case("root-unqualified-leaf", "Source/Legacy.h",
+         "inline int RunLegacy() { return 1; }", {"RTK-STRUCT-002"}),
     Case("bare-view-leaf", "Source/Views/Demo/View.cpp",
          "int x;", {"RTK-STRUCT-001"}),
     Case("bad-leaf-name", "Source/Features/Demo/Reducers.h",

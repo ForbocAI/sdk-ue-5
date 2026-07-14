@@ -6,14 +6,6 @@
 
 namespace TestGame {
 
-namespace UISelectors {
-inline EPlayMode SelectUiMode(const FUIState &S) { return S.Mode; }
-
-inline TArray<FString> SelectUiMessages(const FUIState &S) {
-  return S.Messages;
-}
-} // namespace UISelectors
-
 inline rtk::Slice<FUIState> CreateUISlice() {
   return rtk::createSlice<FUIState>(
       TEXT("testgame/ui"), FUIState(),

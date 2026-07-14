@@ -13,6 +13,7 @@ This module is a role plugin (``check``) for the boundaries runner.
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 from features_boundaries import (
     IMPORT_RE,
@@ -31,7 +32,7 @@ from features_boundaries import (
 ROLE = "view"
 
 ALLOWED_FEATURE_ROLES = {"actions", "selectors"}
-FEATURE_INCLUDE = re.compile(r"^Features/")
+FEATURE_INCLUDE = re.compile(r"(?:^|/)Features/")
 STORE_INCLUDE = "Store.h"
 STORE_ACCESS = re.compile(r"\bStore::GetStore\s*\(|\.dispatch\s*\(|\.getState\s*\(")
 DIRECT_ASYNC_WORKFLOW = re.compile(
@@ -137,7 +138,7 @@ def _include_findings(unit: SourceUnit) -> list[Finding]:
     for match in IMPORT_RE.finditer(unit.raw):
         include = match.group(1)
         line = line_number(unit.raw, match.start())
-        if include == STORE_INCLUDE:
+        if Path(include).name.endswith(STORE_INCLUDE):
             findings.append(Finding(unit.path, line, VIEW_STORE_IMPORT.id, VIEW_STORE_IMPORT.severity, VIEW_STORE_IMPORT.summary))
         elif FEATURE_INCLUDE.match(include) and role_for_include(include) not in ALLOWED_FEATURE_ROLES:
             findings.append(

@@ -8,58 +8,25 @@
 #include "CoreMinimal.h"
 #include "Core/ecs.hpp"
 #include "Core/rtk.hpp"
-#include "TestGame/Features/Systems/Harness/HarnessSlice.h"
+#include "TestGame/Features/Entities/NPCs/NPCsSlice.h"
+#include "TestGame/Features/Entities/Player/PlayerSlice.h"
+#include "TestGame/Features/Systems/Bridge/BridgeSlice.h"
+#include "TestGame/Features/Systems/Grid/GridSlice.h"
+#include "TestGame/Features/Systems/Harness/Coverage/CoverageSlice.h"
+#include "TestGame/Features/Systems/Harness/Game/GameTypes.h"
+#include "TestGame/Features/Systems/Inventory/InventorySlice.h"
+#include "TestGame/Features/Systems/Memory/MemorySlice.h"
+#include "TestGame/Features/Systems/Scenario/ScenarioSlice.h"
+#include "TestGame/Features/Systems/Social/SocialSlice.h"
+#include "TestGame/Features/Systems/Soul/SoulSlice.h"
+#include "TestGame/Features/Systems/Stealth/StealthSlice.h"
+#include "TestGame/Features/Systems/Terminal/Transcript/TranscriptSlice.h"
+#include "TestGame/Features/Systems/Terminal/TerminalListeners.h"
+#include "TestGame/Features/Systems/Terminal/UI/UISlice.h"
 
 namespace TestGame {
 
-/**
- * Root state — all 13 slice states
- * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
- */
-
-struct FTestGameState {
-  /**
-   * Domain 1: Entities
-   * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-   */
-  FNPCsSliceState NPCs;
-  FPlayerState Player;
-
-  /**
-   * Domain 2: Mechanics
-   * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-   */
-  FGridState Grid;
-  FStealthState Stealth;
-  FSocialState Social;
-  FBridgeRulesState Bridge;
-
-  /**
-   * Domain 3: Store
-   * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-   */
-  FGameMemorySliceState Memory;
-  FInventoryState Inventory;
-  FSoulTrackingState Soul;
-
-  /**
-   * Domain 4: Terminal
-   * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-   */
-  FUIState UI;
-  FTranscriptState Transcript;
-
-  /**
-   * Domain 5: Autoplay
-   * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-   */
-  FScenarioSliceState Scenario;
-  FHarnessState Harness;
-};
-
 typedef FTestGameState FRootState;
-typedef rtk::EnhancedStore<FTestGameState> FTestGameStore;
-typedef rtk::Dispatcher FAppDispatch;
 typedef ecs::FWorld FTestGameEcsWorld;
 
 inline FTestGameEcsWorld CreateInitialTestGameEcsWorld() {
@@ -231,6 +198,7 @@ inline FTestGameState CreateInitialTestGameState() {
  */
 inline FTestGameStore createTestGameStore() {
   std::vector<rtk::Middleware<FTestGameState>> Middlewares;
+  Middlewares.push_back(createGameListenerMiddleware());
   return rtk::configureStore<FTestGameState>(&TestGameReducer,
                                              CreateInitialTestGameState(),
                                              Middlewares);

@@ -18,13 +18,6 @@ struct FTranscriptEntry {
   FString Timestamp;
 };
 
-struct FGameRunResult {
-  bool bComplete;
-  TArray<ECommandGroup> MissingGroups;
-  TArray<FTranscriptEntry> Transcript;
-  FString Summary;
-};
-
 enum class EPlayMode : uint8 { Manual, Autoplay };
 
 struct FUIState {

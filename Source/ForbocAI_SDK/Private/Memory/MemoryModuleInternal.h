@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Memory/MemoryModule.h"
-#include "NativeStorage.h"
+#include "Features/Memory/Local/Storage/StorageAdapters.h"
 
 namespace MemoryInternal {
 

@@ -4,7 +4,7 @@
 #include "Misc/AutomationTest.h"
 #include "Misc/Guid.h"
 #include "Misc/Paths.h"
-#include "RuntimeCommandlet.h"
+#include "CLI/RuntimeCommandlet.h"
 #include "RuntimeStore.h"
 
 // @covers:cli:setup

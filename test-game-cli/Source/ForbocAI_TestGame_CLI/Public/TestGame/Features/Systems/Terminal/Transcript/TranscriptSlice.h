@@ -6,25 +6,6 @@
 
 namespace TestGame {
 
-namespace TranscriptSelectors {
-inline TArray<FTranscriptEntry>
-SelectTranscriptEntries(const FTranscriptState &S) {
-  return S.Entries;
-}
-
-inline int32 SelectTranscriptErrorCountRecursive(
-    const TArray<FTranscriptEntry> &Entries, int32 Index) {
-  return Index >= Entries.Num()
-             ? 0
-             : ((Entries[Index].Status == ETranscriptStatus::Error ? 1 : 0) +
-                SelectTranscriptErrorCountRecursive(Entries, Index + 1));
-}
-
-inline int32 SelectTranscriptErrorCount(const FTranscriptState &S) {
-  return SelectTranscriptErrorCountRecursive(S.Entries, 0);
-}
-} // namespace TranscriptSelectors
-
 inline rtk::Slice<FTranscriptState> CreateTranscriptSlice() {
   return rtk::createSlice<FTranscriptState>(
       TEXT("testgame/transcript"), FTranscriptState(),

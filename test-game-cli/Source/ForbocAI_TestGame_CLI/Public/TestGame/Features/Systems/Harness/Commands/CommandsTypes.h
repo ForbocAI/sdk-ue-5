@@ -5,6 +5,7 @@
 namespace TestGame {
 
 enum class ECommandGroup : uint8 {
+  Unknown,
   Status,
   NpcLifecycle,
   NpcProcessChat,
@@ -40,6 +41,8 @@ struct FCommandSpec {
   ECommandGroup Group;
   FString Command;
   TArray<FString> ExpectedRoutes;
+
+  FCommandSpec() : Group(ECommandGroup::Unknown) {}
 };
 
 } // namespace TestGame

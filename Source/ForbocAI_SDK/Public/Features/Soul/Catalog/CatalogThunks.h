@@ -2,10 +2,10 @@
 
 #include "Core/rtk.hpp"
 #include "Core/ue_fp.hpp"
-#include "Errors.h"
+#include "Features/Errors/ErrorsAdapters.h"
 #include "Features/API/APIApi.h"
 #include "Features/Soul/SoulSlice.h"
-#include "RuntimeConfig.h"
+#include "Features/Config/ConfigAdapters.h"
 
 namespace rtk {
 

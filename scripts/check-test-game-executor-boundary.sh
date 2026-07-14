@@ -7,9 +7,8 @@
 # under the test-game surface. The retired `TestGameLib.h` header used to
 # host `ExecuteForbocAICommand`, a shadow CLI that bypassed CLIOps; that
 # entire header is retired (see ForbocAI/sdk-ue-5#5). All UE test-game
-# command execution must flow through `TestGame::CommandSurface`
-# (`TestGame/TestGameCommandSurface.h`), which delegates to the canonical
-# `CLIOps::DispatchCommand`.
+# command execution must flow through the Harness `CommandRunnerThunks` role,
+# which delegates to the canonical `CLIOps::DispatchCommand`.
 #
 # Rules enforced:
 #   1. No file may include the retired `TestGame/TestGameLib.h` header.
@@ -57,7 +56,7 @@ if [ -n "$LIB_INCLUDES" ]; then
   echo "$LIB_INCLUDES"
   echo "       Include TestGame/Features/Systems/Harness/HarnessThunks.h for runtime-URL helpers" >&2
   echo "       or TestGame/Views/Terminal/TerminalView.h for ASCII rendering." >&2
-  echo "       All command execution must use TestGame::CommandSurface." >&2
+  echo "       All command execution must use TestGame::CommandRunner." >&2
   STATUS=1
 else
   echo "[ok] No TestGame/TestGameLib.h includes"
@@ -84,11 +83,25 @@ if [ "${#TEST_DIRS[@]}" -gt 0 ]; then
   if [ -n "$EXEC_DECLS" ]; then
     echo "[fail] Integration tests reference a retired test-game executor entrypoint:"
     echo "$EXEC_DECLS"
-    echo "       Drive commands through TestGame::CommandSurface::Execute." >&2
+    echo "       Drive commands through TestGame::CommandRunner::Execute." >&2
     STATUS=1
   else
     echo "[ok] Integration tests do not reintroduce test-game executor hooks"
   fi
+fi
+
+# 4) The canonical SDK CLI dispatch may be called only from the one
+# CommandRunner thunk boundary in the test-game program.
+CLI_DISPATCHES="$(rg -l '\bCLIOps::DispatchCommand\b' \
+  "$TEST_GAME_SRC/Public" "$TEST_GAME_SRC/Private" 2>/dev/null | \
+  normalize_crlf || true)"
+EXPECTED_DISPATCH="$TEST_GAME_SRC/Public/TestGame/Features/Systems/Harness/CommandRunner/CommandRunnerThunks.h"
+if [ "$CLI_DISPATCHES" != "$EXPECTED_DISPATCH" ]; then
+  echo "[fail] Test-game CLI dispatch is not isolated to CommandRunnerThunks.h:" >&2
+  printf '%s\n' "$CLI_DISPATCHES" >&2
+  STATUS=1
+else
+  echo "[ok] Canonical CLI dispatch is isolated to CommandRunnerThunks.h"
 fi
 
 echo "[done] Test-game executor boundary check complete (exit $STATUS)"

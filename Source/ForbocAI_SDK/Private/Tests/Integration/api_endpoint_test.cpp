@@ -15,7 +15,7 @@
 #include "JsonObjectConverter.h"
 #include "HAL/PlatformProcess.h"
 #include "Misc/AutomationTest.h"
-#include "RuntimeConfig.h"
+#include "Features/Config/ConfigAdapters.h"
 #include "Features/Soul/SoulTypes.h"
 
 // @covers:api:deleteMemoryClear

@@ -3,7 +3,7 @@
 #include "Core/SdkVectorizer.h"
 #include "Features/Memory/MemorySlice.h"
 #include "Misc/Paths.h"
-#include "NativeStorage.h"
+#include "Features/Memory/Local/Storage/StorageAdapters.h"
 
 namespace rtk {
 namespace detail {

@@ -7,7 +7,7 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Guid.h"
 #include "Misc/Paths.h"
-#include "RuntimeConfig.h"
+#include "Features/Config/ConfigAdapters.h"
 #include "RuntimeStore.h"
 
 // @covers:cliOp:loadBridgePreset

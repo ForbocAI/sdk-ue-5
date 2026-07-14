@@ -1,9 +1,9 @@
-#include "RuntimeCommandlet.h"
+#include "CLI/RuntimeCommandlet.h"
 #include "CLI/CliCommandMatrix.h"
 #include "CLI/CLIModule.h"
 #include "Core/ue_fp.hpp"
 #include "Misc/Parse.h"
-#include "RuntimeConfig.h"
+#include "Features/Config/ConfigAdapters.h"
 
 namespace {
 

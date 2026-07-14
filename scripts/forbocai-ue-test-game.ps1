@@ -12,26 +12,53 @@ $UE_ROOT = if ($env:UE_ROOT) { $env:UE_ROOT } else { "C:\Program Files\Epic Game
 $Build = Join-Path $UE_ROOT "Engine\Build\BatchFiles\Build.bat"
 $EditorCmd = Join-Path $UE_ROOT "Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
 $PluginHost = Join-Path $Root "test-game-cli\.forbocai-plugin-host"
-$PluginLink = Join-Path $PluginHost "ForbocAI_SDK"
+$PluginRoot = Join-Path $PluginHost "ForbocAI_SDK"
+
+function Sync-PluginDirectory {
+    param([Parameter(Mandatory = $true)][string]$Name)
+
+    $SourcePath = Join-Path $Root $Name
+    if (-not (Test-Path $SourcePath -PathType Container)) {
+        return
+    }
+
+    $PluginPath = Join-Path $PluginRoot $Name
+    $Item = Get-Item $PluginPath -Force -ErrorAction SilentlyContinue
+    if ($null -ne $Item) {
+        if (($Item.LinkType -eq "Junction" -or $Item.LinkType -eq "SymbolicLink") -and $Item.Target -eq $SourcePath) {
+            return
+        }
+        if ($Item.LinkType -ne "Junction" -and $Item.LinkType -ne "SymbolicLink") {
+            throw "Plugin host directory already exists and is not a junction/symlink: $PluginPath"
+        }
+        [System.IO.Directory]::Delete($PluginPath)
+    }
+
+    New-Item -ItemType Junction -Path $PluginPath -Target $SourcePath | Out-Null
+}
 
 function Ensure-PluginHost {
     if (-not (Test-Path $PluginHost)) {
         New-Item -ItemType Directory -Path $PluginHost | Out-Null
     }
 
-    if (Test-Path $PluginLink) {
-        $Item = Get-Item $PluginLink
-        if ($Item.LinkType -eq "Junction" -or $Item.LinkType -eq "SymbolicLink") {
-            if ($Item.Target -ne $Root) {
-                Remove-Item $PluginLink -Force
-                New-Item -ItemType Junction -Path $PluginLink -Target $Root | Out-Null
-            }
-            return
+    $PluginItem = Get-Item $PluginRoot -Force -ErrorAction SilentlyContinue
+    if ($null -ne $PluginItem) {
+        if ($PluginItem.LinkType -eq "Junction" -or $PluginItem.LinkType -eq "SymbolicLink") {
+            [System.IO.Directory]::Delete($PluginRoot)
+        } elseif (-not $PluginItem.PSIsContainer) {
+            throw "Plugin host path already exists and is not a directory: $PluginRoot"
         }
-        throw "Plugin host path already exists and is not a junction/symlink: $PluginLink"
     }
 
-    New-Item -ItemType Junction -Path $PluginLink -Target $Root | Out-Null
+    if (-not (Test-Path $PluginRoot)) {
+        New-Item -ItemType Directory -Path $PluginRoot | Out-Null
+    }
+
+    Copy-Item (Join-Path $Root "ForbocAI_SDK.uplugin") (Join-Path $PluginRoot "ForbocAI_SDK.uplugin") -Force
+    @("Config", "Content", "Resources", "Source", "ThirdParty") | ForEach-Object {
+        Sync-PluginDirectory -Name $_
+    }
 }
 
 if (-not (Test-Path $Project)) {

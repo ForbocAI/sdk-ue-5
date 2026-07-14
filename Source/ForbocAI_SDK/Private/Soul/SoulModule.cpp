@@ -3,7 +3,7 @@
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "JsonObjectConverter.h"
-#include "RuntimeConfig.h"
+#include "Features/Config/ConfigAdapters.h"
 #include "RuntimeStore.h"
 #include "Serialization/JsonSerializer.h"
 #include "Features/Soul/SoulSlice.h"

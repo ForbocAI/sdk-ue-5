@@ -65,11 +65,26 @@ else
 fi
 
 # 2) No raw new/delete in first-party runtime code (excluding Tests, ThirdParty).
-RAW_NEW="$(rg -n '\bnew [A-Z]|\bdelete [A-Za-z]' \
+RAW_NEW_CANDIDATES="$(rg -n '\bnew [A-Z]|\bdelete [A-Za-z]' \
   "${PRIVATE_ROOTS[@]}" \
   --glob '!**/Tests/**' \
   --glob '!**/Native/SqliteAmalgamation.c' \
   2>/dev/null | normalize_crlf || true)"
+RAW_NEW=""
+while IFS= read -r line; do
+  [ -z "$line" ] && continue
+  code="${line#*:*:}"
+  trimmed="$(echo "$code" | sed 's/^[[:space:]]*//')"
+  case "$trimmed" in
+    \**|//*) continue ;;
+  esac
+  stripped="$(echo "$code" | sed 's|//.*||' | sed 's|/\*.*\*/||g')"
+  if echo "$stripped" | rg -q '\bnew [A-Z]|\bdelete [A-Za-z]' 2>/dev/null; then
+    RAW_NEW="${RAW_NEW}
+${line}"
+  fi
+done <<< "$RAW_NEW_CANDIDATES"
+RAW_NEW="$(echo "$RAW_NEW" | sed '/^$/d')"
 if [ -n "$RAW_NEW" ]; then
   echo "[warn] raw new/delete found in first-party runtime code (tracked for remediation):"
   echo "$RAW_NEW"
@@ -82,13 +97,13 @@ fi
 #      rtk.hpp           — canonical Redux Toolkit / RTK Query fetchBaseQuery adapter
 #      Feature Thunks    — non-Forboc external transport (binary payloads, retries, custom timeouts)
 #      BridgeModule.cpp  — lazy HTTP wrapper for bridge rules
-#      NativeStorage.cpp — binary file download for native deps
+#      Memory/Local/**/Adapters.cpp — binary download for native dependencies
 DIRECT_HTTP="$(rg -n 'FHttpModule::Get\(\)\.CreateRequest\(\)' \
   "${FIRST_PARTY_ROOTS[@]}" \
   --glob '!**/Core/rtk.hpp' \
   --glob '!**/Features/Soul/SoulThunks.h' \
   --glob '!**/Bridge/BridgeModule.cpp' \
-  --glob '!**/NativeStorage.cpp' \
+  --glob '!**/Features/Memory/Local/**/*Adapters.cpp' \
   --glob '!**/Tests/**' \
   2>/dev/null | normalize_crlf || true)"
 if [ -n "$DIRECT_HTTP" ]; then
@@ -158,8 +173,6 @@ fi
 #    Excludes: Tests/, comments, ThirdParty/, SqliteAmalgamation.c
 IMPERATIVE_HITS="$(rg -n '\b(if|for|while|switch)\s*\(' \
   "${FIRST_PARTY_ROOTS[@]}" \
-  --glob '!**/RuntimeConfig.h' \
-  --glob '!**/Commandlet.cpp' \
   --glob '!**/Tests/**' \
   --glob '!**/ThirdParty/**' \
   --glob '!**/Native/SqliteAmalgamation.c' \

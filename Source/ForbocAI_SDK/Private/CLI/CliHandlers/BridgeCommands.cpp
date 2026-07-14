@@ -28,36 +28,38 @@ FString NumberPayloadJson(const FString &FieldName, double Value) {
 bool DecodeBridgePayload(const FString &Json,
                          FDecodedBridgePayload &Decoded) {
   TSharedPtr<FJsonObject> Root;
-  if (!JsonInterop::ParseJsonObject(Json, Root) || !Root.IsValid() ||
-      !Root->HasTypedField<EJson::Object>(TEXT("action"))) {
-    return false;
-  }
+  return !JsonInterop::ParseJsonObject(Json, Root) || !Root.IsValid() ||
+                 !Root->HasTypedField<EJson::Object>(TEXT("action"))
+             ? false
+             : [&]() {
+                 const TSharedPtr<FJsonObject> ActionObject =
+                     Root->GetObjectField(TEXT("action"));
+                 Decoded.Action = JsonInterop::ActionFromObject(ActionObject);
 
-  const TSharedPtr<FJsonObject> ActionObject =
-      Root->GetObjectField(TEXT("action"));
-  Decoded.Action = JsonInterop::ActionFromObject(ActionObject);
+                 double Distance = 0.0;
+                 ActionObject->TryGetNumberField(TEXT("distance"), Distance)
+                     ? (Decoded.Action.PayloadJson =
+                            NumberPayloadJson(TEXT("distance"), Distance),
+                        void())
+                     : void();
 
-  double Distance = 0.0;
-  ActionObject->TryGetNumberField(TEXT("distance"), Distance)
-      ? (Decoded.Action.PayloadJson =
-             NumberPayloadJson(TEXT("distance"), Distance),
-         void())
-      : void();
+                 Root->TryGetStringField(TEXT("npcId"), Decoded.NpcId);
 
-  Root->TryGetStringField(TEXT("npcId"), Decoded.NpcId);
+                 Root->HasTypedField<EJson::Object>(TEXT("context"))
+                     ? [&]() {
+                         const TSharedPtr<FJsonObject> ContextObject =
+                             Root->GetObjectField(TEXT("context"));
+                         Decoded.Context.NpcStateJson = JsonObjectField(
+                             ContextObject, TEXT("npcState"));
+                         Decoded.Context.WorldStateJson = JsonObjectField(
+                             ContextObject, TEXT("worldState"));
+                         Decoded.Context.ConstraintsJson = JsonObjectField(
+                             ContextObject, TEXT("constraints"));
+                       }()
+                     : void();
 
-  if (Root->HasTypedField<EJson::Object>(TEXT("context"))) {
-    const TSharedPtr<FJsonObject> ContextObject =
-        Root->GetObjectField(TEXT("context"));
-    Decoded.Context.NpcStateJson =
-        JsonObjectField(ContextObject, TEXT("npcState"));
-    Decoded.Context.WorldStateJson =
-        JsonObjectField(ContextObject, TEXT("worldState"));
-    Decoded.Context.ConstraintsJson =
-        JsonObjectField(ContextObject, TEXT("constraints"));
-  }
-
-  return !Decoded.Action.Type.IsEmpty();
+                 return !Decoded.Action.Type.IsEmpty();
+               }();
 }
 
 } // namespace
@@ -73,24 +75,27 @@ HandlerResult HandleBridge(rtk::EnhancedStore<FRuntimeState> &Store,
 
   return CommandKey == TEXT("bridge_validate")
              ? (Args.Num() < 1
-                   ? just(Result::Failure(
+                    ? just(Result::Failure(
                           "Usage: bridge_validate <actionJson>"))
                     : [&]() -> HandlerResult {
                         FDecodedBridgePayload Payload;
-                        if (!DecodeBridgePayload(Args[0], Payload)) {
-                          return just(Result::Failure(
-                              "Usage: bridge_validate <inline-json-payload|preset-macro>"));
-                        }
-                        FValidationResult VResult =
-                            Ops::validateBridgePayload(
-                                Store, Payload.Action, Payload.Context,
-                                Payload.NpcId);
-                        UE_LOG(LogTemp, Display,
-                               TEXT("Validation: %s"),
-                               VResult.bValid ? TEXT("PASS")
-                                              : TEXT("FAIL"));
-                        return just(Result::Success(
-                            "Bridge validation done"));
+                        return !DecodeBridgePayload(Args[0], Payload)
+                                   ? just(Result::Failure(
+                                         "Usage: bridge_validate <inline-json-payload|preset-macro>"))
+                                   : [&]() -> HandlerResult {
+                                       FValidationResult VResult =
+                                           Ops::validateBridgePayload(
+                                               Store, Payload.Action,
+                                               Payload.Context,
+                                               Payload.NpcId);
+                                       UE_LOG(
+                                           LogTemp, Display,
+                                           TEXT("Validation: %s"),
+                                           VResult.bValid ? TEXT("PASS")
+                                                          : TEXT("FAIL"));
+                                       return just(Result::Success(
+                                           "Bridge validation done"));
+                                     }();
                       }())
          : CommandKey == TEXT("bridge_rules")
              ? [&]() -> HandlerResult {

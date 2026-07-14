@@ -10,7 +10,7 @@
 #include "Core/JsonInterop.h"
 #include "HAL/PlatformProcess.h"
 #include "Misc/AutomationTest.h"
-#include "RuntimeConfig.h"
+#include "Features/Config/ConfigAdapters.h"
 #include "RuntimeStore.h"
 
 using namespace rtk;

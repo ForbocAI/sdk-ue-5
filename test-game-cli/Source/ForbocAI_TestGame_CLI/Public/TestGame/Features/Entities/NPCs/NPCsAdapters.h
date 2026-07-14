@@ -22,4 +22,19 @@ inline rtk::EntityAdapter<FGameNPC> &GetNPCAdapter() {
   return Adapter;
 }
 
+inline FGameNPC PatchNpc(const FGameNPC &Existing,
+                         const NPCsActions::FPatchNPCChanges &Patch) {
+  FGameNPC Updated = Existing;
+  Updated.Name = Patch.bHasName ? Patch.Name : Updated.Name;
+  Updated.Faction = Patch.bHasFaction ? Patch.Faction : Updated.Faction;
+  Updated.Hp = Patch.bHasHp ? Patch.Hp : Updated.Hp;
+  Updated.Suspicion =
+      Patch.bHasSuspicion ? Patch.Suspicion : Updated.Suspicion;
+  Updated.Inventory = Patch.bHasInventory ? Patch.Inventory : Updated.Inventory;
+  Updated.KnownSecrets =
+      Patch.bHasKnownSecrets ? Patch.KnownSecrets : Updated.KnownSecrets;
+  Updated.Position = Patch.bHasPosition ? Patch.Position : Updated.Position;
+  return Updated;
+}
+
 } // namespace TestGame

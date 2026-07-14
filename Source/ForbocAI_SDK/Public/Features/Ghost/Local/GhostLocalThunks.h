@@ -5,7 +5,8 @@
 #include "Core/rtk.hpp"
 #include "Features/Ghost/GhostTypes.h"
 #include "NPC/NPCBaseTypes.h"
-#include "RuntimeStore.h"
+
+struct FRuntimeState;
 
 namespace rtk {
 

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Core/ue_fp.hpp"
 #include "Features/Directive/DirectiveSlice.h"
-#include "ForbocAILog.h"
+#include "Features/Logging/LoggingTypes.h"
 #include "Features/Ghost/GhostSlice.h"
 #include "Features/Memory/MemorySlice.h"
 #include "Features/NPC/NPCSlice.h"

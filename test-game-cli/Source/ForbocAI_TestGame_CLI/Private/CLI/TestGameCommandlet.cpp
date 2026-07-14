@@ -1,8 +1,11 @@
 #include "TestGame/CLI/TestGameCommandlet.h"
 
-#include "RuntimeConfig.h"
-#include "TestGame/TestGameContract.h"
-#include "TestGame/TestGameOrchestrator.h"
+#include "Features/Config/ConfigAdapters.h"
+#include "TestGame/Features/Systems/Contract/ContractThunks.h"
+#include "TestGame/Features/Systems/Harness/Game/GameThunks.h"
+#include "TestGame/Features/Systems/Terminal/TerminalSelectors.h"
+#include "TestGame/TestGameStore.h"
+#include "TestGame/Views/Terminal/TerminalView.h"
 #include "Misc/Parse.h"
 
 namespace {
@@ -135,20 +138,26 @@ TestGame::EPlayMode ParsePlayMode(const FString &Mode) {
 }
 
 void PrintUsage() {
-  UE_LOG(LogTemp, Display, TEXT("Usage: forbocai-ue-test-game [contract|--mode autoplay|manual]"));
-  UE_LOG(LogTemp, Display, TEXT("       forbocai-ue-test-game --api-url https://api.forboc.ai --mode autoplay"));
+  TestGame::PresentProgress(TestGame::SelectUsageViewModel());
 }
 
 int32 RunContractCommand(const FString &ApiUrl) {
+  TestGame::FTestGameStore Store = TestGame::createTestGameStore();
   const TestGame::Contract::FRawContractResponse Raw =
-      TestGame::Contract::FetchContractJson(ApiUrl);
-  UE_LOG(LogTemp, Display, TEXT("%s"), *Raw.Body);
+      TestGame::Contract::GetContractJson(Store, ApiUrl);
+  TestGame::PresentProgress(TestGame::SelectContractViewModel(Raw));
   return Raw.bSuccess ? 0 : 1;
 }
 
 int32 RunGameCommand(const FString &Mode, const FString &ApiUrl) {
+  TestGame::FTestGameStore Store = TestGame::createTestGameStore();
+  const TestGame::FGameProgressSink ProgressSink =
+      [](const TestGame::FGameProgress &Progress) {
+        TestGame::PresentProgress(
+            TestGame::SelectTerminalProgressViewModel(Progress));
+      };
   const TestGame::FGameRunResult Result =
-      TestGame::RunGame(ParsePlayMode(Mode), ApiUrl);
+      TestGame::RunGame(Store, ParsePlayMode(Mode), ApiUrl, ProgressSink);
   return Result.bComplete ? 0 : 2;
 }
 
@@ -168,22 +177,18 @@ int32 UForbocAITestGameCommandlet::Main(const FString &Params) {
   const FString ApiUrl = ResolveApiUrl(Invocation);
   SDKConfig::SetApiConfig(ApiUrl, ResolveApiKey(Invocation));
 
-  if (HasTokenRecursive(Invocation.Tokens, TEXT("--help"), 0) ||
-      HasTokenRecursive(Invocation.Tokens, TEXT("-h"), 0)) {
-    PrintUsage();
-    return 0;
-  }
-
-  if (Invocation.Tokens.Num() > 0 && Invocation.Tokens[0] == TEXT("contract")) {
-    return RunContractCommand(ApiUrl);
-  }
-
-  const FString Mode = ResolveMode(Invocation.Tokens);
-  if (Mode == TEXT("autoplay") || Mode == TEXT("manual")) {
-    return RunGameCommand(Mode, ApiUrl);
-  }
-
-  UE_LOG(LogTemp, Error, TEXT("Invalid mode: %s"), *Mode);
-  PrintUsage();
-  return 2;
+  return HasTokenRecursive(Invocation.Tokens, TEXT("--help"), 0) ||
+                 HasTokenRecursive(Invocation.Tokens, TEXT("-h"), 0)
+             ? (PrintUsage(), 0)
+         : Invocation.Tokens.Num() > 0 &&
+                   Invocation.Tokens[0] == TEXT("contract")
+             ? RunContractCommand(ApiUrl)
+             : [&]() {
+                 const FString Mode = ResolveMode(Invocation.Tokens);
+                 return Mode == TEXT("autoplay") || Mode == TEXT("manual")
+                            ? RunGameCommand(Mode, ApiUrl)
+                            : (TestGame::PresentProgress(
+                                   TestGame::SelectInvalidModeViewModel(Mode)),
+                               PrintUsage(), 2);
+               }();
 }

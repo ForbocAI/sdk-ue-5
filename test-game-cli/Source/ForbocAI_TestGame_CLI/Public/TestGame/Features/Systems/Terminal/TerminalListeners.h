@@ -8,8 +8,10 @@
 #include "CoreMinimal.h"
 #include "Core/frmt.hpp"
 #include "Core/rtk.hpp"
-#include "TestGame/Features/Systems/Harness/HarnessSlice.h"
-#include "TestGame/TestGameStore.h"
+#include "TestGame/Features/Entities/NPCs/NPCsActions.h"
+#include "TestGame/Features/Entities/NPCs/NPCsSelectors.h"
+#include "TestGame/Features/Systems/Harness/Game/GameTypes.h"
+#include "TestGame/Features/Systems/Terminal/UI/UIActions.h"
 
 namespace TestGame {
 
@@ -95,19 +97,6 @@ inline rtk::Middleware<FTestGameState> createGameListenerMiddleware() {
       };
     };
   };
-}
-
-/**
- * Creates a test-game store with listener middleware registered.
- * User Story: As game-run setup, I need a store factory with listeners attached
- * so transcript and UI side effects are active by default.
- */
-inline FTestGameStore createTestGameStoreWithListeners() {
-  std::vector<rtk::Middleware<FTestGameState>> Middlewares;
-  Middlewares.push_back(createGameListenerMiddleware());
-  return rtk::configureStore<FTestGameState>(&TestGameReducer,
-                                             CreateInitialTestGameState(),
-                                             Middlewares);
 }
 
 } // namespace TestGame

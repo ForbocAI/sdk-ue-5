@@ -273,13 +273,19 @@ def command_surface_files() -> list[Path]:
             root / "Private" / "Commandlet.cpp",
             root / "Private" / "CLI",
             root / "Public" / "CLI",
-            root / "Public" / "TestGame" / "TestGameCommandSurface.h",
-            root / "Public" / "TestGame" / "CommandSurface",
         ):
             if candidate.is_file() and candidate.suffix in CPP_SUFFIXES:
                 files.append(candidate)
             elif candidate.is_dir():
                 files.extend(path for path in iter_files(candidate, CPP_SUFFIXES) if path.suffix in {".h", ".hpp", ".cpp"})
+        features = root / "Public" / "TestGame" / "Features"
+        if features.is_dir():
+            files.extend(
+                path
+                for path in iter_files(features, CPP_SUFFIXES)
+                if path.suffix in {".h", ".hpp", ".cpp"}
+                and path.stem.startswith("CommandRunner")
+            )
     if PACKAGES_ROOT.exists():
         files.extend(
             path

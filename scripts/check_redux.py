@@ -476,7 +476,7 @@ def check_imports(unit: SourceUnit, role: str) -> list[Finding]:
         target = role_for_include(include)
         if target and target in FORBIDDEN_TARGET_ROLES.get(role, set()):
             findings.append(Finding(unit.path, line, IMPORT_DIRECTION.id, IMPORT_DIRECTION.severity, f"{role} must not import {target}: `{include}`"))
-        if include == "Store.h" and rel not in STORE_BOUNDARY_RELS:
+        if Path(include).name.endswith("Store.h") and rel not in STORE_BOUNDARY_RELS:
             findings.append(Finding(unit.path, line, IMPORT_STORE.id, IMPORT_STORE.severity, IMPORT_STORE.summary))
     return findings
 
@@ -572,6 +572,19 @@ def discover_program_entry_roots(project_root: Path) -> list[Path]:
     return roots or ([source_root] if source_root.is_dir() else [])
 
 
+def is_module_entry(path: Path) -> bool:
+    sibling_sources = [
+        candidate
+        for candidate in path.parent.glob(f"{path.stem}.*")
+        if candidate.is_file() and candidate.suffix.lower() in SOURCE_SUFFIXES
+    ]
+    code = "\n".join(
+        candidate.read_text(encoding="utf-8", errors="replace")
+        for candidate in sibling_sources
+    )
+    return bool(re.search(r"\bIMPLEMENT_(?:PRIMARY_GAME_)?MODULE\s*\(", code))
+
+
 def check_root_role_boundaries(project_root: Path) -> list[Finding]:
     findings: list[Finding] = []
     for root in discover_program_entry_roots(project_root):
@@ -580,17 +593,23 @@ def check_root_role_boundaries(project_root: Path) -> list[Finding]:
                 continue
             if path.stem.lower().endswith("store"):
                 continue
+            if is_module_entry(path):
+                continue
             declared_role = role_for_stem_suffix(path.stem)
-            if declared_role is not None:
-                findings.append(
-                    Finding(
-                        path,
-                        1,
-                        ROOT_ROLE.id,
-                        ROOT_ROLE.severity,
-                        f"root source file declares {declared_role} role; move it under Features or Views",
-                    )
+            detail = (
+                f"declares {declared_role} role"
+                if declared_role is not None
+                else "is not a store or module entry"
+            )
+            findings.append(
+                Finding(
+                    path,
+                    1,
+                    ROOT_ROLE.id,
+                    ROOT_ROLE.severity,
+                    f"root source file {detail}; move behavior under Features or presentation under Views",
                 )
+            )
     return findings
 
 def check_store_boundary(project_root: Path) -> list[Finding]:

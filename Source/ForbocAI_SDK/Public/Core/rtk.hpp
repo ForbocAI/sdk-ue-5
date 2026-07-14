@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Dom/JsonObject.h"
-#include "Errors.h"
+#include "Features/Errors/ErrorsAdapters.h"
 #include "GenericPlatform/GenericPlatformHttp.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
@@ -2308,18 +2308,18 @@ mergeHeaders(const TMap<FString, FString> &BaseHeaders,
 inline void addHeaderLineRecursive(const TArray<FString> &HeaderLines,
                                    int32 Index,
                                    TMap<FString, FString> &OutHeaders) {
-  if (Index >= HeaderLines.Num()) {
-    return;
-  }
-
-  FString Key;
-  FString Value;
-  HeaderLines[Index].Split(TEXT(":"), &Key, &Value)
-      ? (Key.TrimStartAndEndInline(), Value.TrimStartAndEndInline(),
-         OutHeaders.Add(Key, Value), OutHeaders.Add(Key.ToLower(), Value),
-         void())
-      : void();
-  addHeaderLineRecursive(HeaderLines, Index + 1, OutHeaders);
+  Index >= HeaderLines.Num()
+      ? void()
+      : [&]() {
+          FString Key;
+          FString Value;
+          HeaderLines[Index].Split(TEXT(":"), &Key, &Value)
+              ? (Key.TrimStartAndEndInline(), Value.TrimStartAndEndInline(),
+                 OutHeaders.Add(Key, Value),
+                 OutHeaders.Add(Key.ToLower(), Value), void())
+              : void();
+          addHeaderLineRecursive(HeaderLines, Index + 1, OutHeaders);
+        }();
 }
 
 inline TMap<FString, FString> responseHeaders(FHttpResponsePtr Res) {

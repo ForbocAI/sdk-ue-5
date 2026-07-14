@@ -1,4 +1,4 @@
-#include "ForbocAILog.h"
+#include "Features/Logging/LoggingTypes.h"
 #include "Modules/ModuleManager.h"
 
 DEFINE_LOG_CATEGORY(LogForbocAI);

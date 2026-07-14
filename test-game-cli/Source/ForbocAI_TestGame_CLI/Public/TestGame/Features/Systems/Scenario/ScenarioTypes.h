@@ -5,7 +5,13 @@
 
 namespace TestGame {
 
-enum class EEventType : uint8 { Stealth, Social, Escape, Persistence };
+enum class EEventType : uint8 {
+  Unknown,
+  Stealth,
+  Social,
+  Escape,
+  Persistence
+};
 
 struct FScenarioStep {
   FString Id;
@@ -13,6 +19,18 @@ struct FScenarioStep {
   FString Description;
   EEventType EventType;
   TArray<FCommandSpec> Commands;
+
+  FScenarioStep() : EventType(EEventType::Unknown) {}
 };
+
+struct FScenarioSliceState {
+  TArray<FScenarioStep> Steps;
+
+  bool operator==(const FScenarioSliceState &Other) const {
+    return Steps.Num() == Other.Steps.Num();
+  }
+};
+
+typedef FScenarioSliceState FScenarioState;
 
 } // namespace TestGame

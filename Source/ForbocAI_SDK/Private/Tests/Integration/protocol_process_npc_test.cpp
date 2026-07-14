@@ -11,7 +11,7 @@
 #include "Misc/AutomationTest.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Protocol/ProtocolThunks.h"
-#include "RuntimeConfig.h"
+#include "Features/Config/ConfigAdapters.h"
 #include "RuntimeStore.h"
 
 using namespace rtk;

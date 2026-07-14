@@ -1,5 +1,11 @@
 #include "Misc/AutomationTest.h"
-#include "TestGame/Features/Systems/Harness/HarnessSlice.h"
+#include "TestGame/Features/Entities/NPCs/NPCsSelectors.h"
+#include "TestGame/Features/Systems/Harness/Coverage/CoverageSelectors.h"
+#include "TestGame/Features/Systems/Memory/MemorySelectors.h"
+#include "TestGame/Features/Systems/Scenario/ScenarioSelectors.h"
+#include "TestGame/Features/Systems/Terminal/Transcript/TranscriptSelectors.h"
+#include "TestGame/Features/Systems/Terminal/UI/UISelectors.h"
+#include "TestGame/TestGameStore.h"
 
 using namespace TestGame;
 
@@ -308,7 +314,11 @@ bool FTestGameMechanicsTerminalSelectorsTest::RunTest(
   FScenarioSliceState ScenarioState;
   FScenarioStep Step;
   Step.Id = TEXT("s1");
-  ScenarioState.Steps.Add(Step);
+  TArray<FScenarioStep> ContractSteps;
+  ContractSteps.Add(Step);
+  ScenarioState = CreateScenarioSlice().Reducer(
+      FScenarioSliceState(),
+      ScenarioActions::contractReceived(MoveTemp(ContractSteps)));
   TestEqual("Scenario steps selector reads state",
             ScenarioSelectors::SelectScenarioSteps(ScenarioState).Num(), 1);
 

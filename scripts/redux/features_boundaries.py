@@ -355,15 +355,17 @@ def role_for_path(path: Path) -> str | None:
 
 
 def role_for_include(include: str) -> str | None:
-    if not include.startswith("Features/"):
+    parts = Path(include).parts
+    if "Features" not in parts:
         return None
-    return role_for_path(Path(include))
+    return role_for_path(Path(*parts[parts.index("Features") :]))
 
 
 def feature_relative_include(include: str) -> Path | None:
-    if not include.startswith("Features/"):
+    parts = Path(include).parts
+    if "Features" not in parts:
         return None
-    return Path(include).relative_to("Features")
+    return Path(*parts[parts.index("Features") + 1 :])
 
 
 def iter_source_files(roots: Iterable[Path]) -> Iterable[Path]:
@@ -522,17 +524,17 @@ def find_import_cycles(units: list[SourceUnit]) -> list[list[str]]:
 
 
 def _include_key(include: str) -> str | None:
-    if not include.startswith("Features/"):
+    parts = Path(include).parts
+    if "Features" not in parts:
         return None
-    return include
+    return Path(*parts[parts.index("Features") :]).as_posix()
 
 
 def _feature_include_key(unit: SourceUnit) -> str | None:
-    marker = "Source/Features/"
-    text = unit.path.as_posix()
-    if marker not in text:
+    parts = unit.path.parts
+    if "Features" not in parts:
         return None
-    return "Features/" + text.split(marker, 1)[1]
+    return Path(*parts[parts.index("Features") :]).as_posix()
 
 
 # --- Output formatters -----------------------------------------------------
