@@ -1,5 +1,5 @@
 /**
- * processNPC full protocol loop — uses SDKConfig resolution (localhost:8080 default) — I.2 Thunk Integration Tests
+ * processNPC full protocol loop - uses SDKConfig production default - I.2 Thunk Integration Tests.
  * Requires FORBOCAI_API_KEY. Set FORBOCAI_API_URL for production. Exercises tape evolution, NPC state, history, block behavior.
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
@@ -12,7 +12,7 @@
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Protocol/ProtocolThunks.h"
 #include "Features/Config/ConfigAdapters.h"
-#include "RuntimeStore.h"
+#include "Store.h"
 
 using namespace rtk;
 

@@ -2,7 +2,7 @@
 #include "CLI/CliHandlers.h"
 #include "CLI/CliOperations.h"
 #include "Core/JsonInterop.h"
-#include "RuntimeStore.h"
+#include "Store.h"
 
 namespace {
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Features/API/APIAdapters.h"
 #include "Features/API/Endpoints/EndpointsTypes.h"
 
 namespace APISlice {

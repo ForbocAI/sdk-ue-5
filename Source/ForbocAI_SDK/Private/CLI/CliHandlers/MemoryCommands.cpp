@@ -2,7 +2,7 @@
 #include "CLI/CliHandlers.h"
 #include "CLI/CliOperations.h"
 #include "Dom/JsonObject.h"
-#include "RuntimeStore.h"
+#include "Store.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Core/ue_fp.hpp"
-#include "RuntimeStore.h"
+#include "Core/fp.hpp"
+#include "Store.h"
 
 /**
  * Per-domain CLI command handlers.

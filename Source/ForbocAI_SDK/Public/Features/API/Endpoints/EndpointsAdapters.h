@@ -1,6 +1,7 @@
 #pragma once
 
-#include "EndpointsTypes.h"
+#include "Core/JsonInterop.h"
+#include "Features/API/Endpoints/EndpointsTypes.h"
 
 namespace APISlice {
 

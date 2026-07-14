@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Features/Config/ConfigAdapters.h"
-#include "RuntimeStore.h"
+#include "Store.h"
 #include "Features/Contracts/ContractsTypes.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "RuntimeSubsystem.generated.h"

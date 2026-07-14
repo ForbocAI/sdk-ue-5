@@ -1,7 +1,7 @@
 #include "NPC/NPCModule.h"
 #include "NPC/NPCId.h"
 #include "Containers/UnrealString.h"
-#include "Core/ue_fp.hpp"
+#include "Core/fp.hpp"
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
@@ -123,7 +123,7 @@ FAgentState AgentOps::CalculateNewState(const FAgentState &Current,
              : TypeFactory::AgentState(Updates.JsonData);
 }
 
-#include "RuntimeStore.h"
+#include "Store.h"
 #include "Features/Protocol/ProtocolThunks.h"
 
 /**

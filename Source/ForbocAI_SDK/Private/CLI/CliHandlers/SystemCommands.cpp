@@ -2,7 +2,7 @@
 #include "CLI/CliHandlers.h"
 #include "CLI/CliOperations.h"
 #include "Features/Config/ConfigAdapters.h"
-#include "RuntimeStore.h"
+#include "Store.h"
 
 namespace CLIOps {
 namespace Handlers {

@@ -3,7 +3,7 @@
 #define FORBOC_AI_GAME_CORE_ECS_HPP
 
 #include "CoreMinimal.h"
-#include "Core/ue_fp.hpp"
+#include "Core/fp.hpp"
 
 #include <initializer_list>
 
@@ -24,10 +24,10 @@
  * - ECS helpers are pure value transforms over request structs.
  * - RTK slices/actions/selectors own store semantics and unidirectional data
  *   flow.
- * - ue_fp.hpp is used for composition, Maybe/Either, and lazy values;
+ * - fp.hpp is used for composition, Maybe/Either, and lazy values;
  *   it must not model a replacement action, reducer, selector, or store layer.
  * - Neutral FP helpers for arrays, maps, predicates, traversal, lookup,
- *   validation, and catalogs belong in ue_fp.hpp. Do not re-declare those
+ *   validation, and catalogs belong in fp.hpp. Do not re-declare those
  *   generic combinators in ecs.hpp; ECS should import them and only add
  *   world/entity/component/system semantics.
  * - When only nouns change, keep the nouns in catalogs and fold through one

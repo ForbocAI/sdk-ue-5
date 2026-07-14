@@ -12,7 +12,7 @@
 #include "JsonObjectConverter.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
-#include "ue_fp.hpp"
+#include "fp.hpp"
 #include <functional>
 #include <memory>
 #include <type_traits>
@@ -2588,8 +2588,8 @@ typedef FApiEndpointTag TagDescription;
 template <typename Arg, typename Result> struct ApiEndpoint {
   FString EndpointName;
   DefinitionType Type;
-  TArray<FApiEndpointTag> ProvidesTags;
-  TArray<FApiEndpointTag> InvalidatesTags;
+  TArray<FApiEndpointTag> providesTags;
+  TArray<FApiEndpointTag> invalidatesTags;
 
   /**
    * Abstract request builder/executor

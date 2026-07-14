@@ -17,7 +17,7 @@ struct FComponentValueFormatCase {
  * @signature inline int32 componentValueKindKey(EComponentValueKind Kind)
  *
  * User Story: As ECS inspection code, enum formatting should use a stable
- * dispatcher key that composes with ue_fp dispatch helpers.
+ * dispatcher key that composes with fp dispatch helpers.
  */
 inline int32 componentValueKindKey(EComponentValueKind Kind) {
   return static_cast<int32>(Kind);

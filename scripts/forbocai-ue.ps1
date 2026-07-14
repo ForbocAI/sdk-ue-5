@@ -5,6 +5,12 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+$EnvironmentModule = Join-Path $PSScriptRoot "lib\TestEnvironment.ps1"
+. $EnvironmentModule
+Import-ForbocTestEnvironment -KeyRequirement Optional
+$CommandletResultModule = Join-Path $PSScriptRoot "lib\CommandletResult.ps1"
+. $CommandletResultModule
+
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Root = Split-Path -Parent $ScriptDir
 $Project = Join-Path $Root "ForbocAI_CLI.uproject"
@@ -28,7 +34,7 @@ if ($CliArgs.Count -eq 0) {
     Write-Host "  scripts\forbocai-ue.cmd doctor"
     Write-Host "  scripts\forbocai-ue.cmd --api-url https://api.forboc.ai status"
     Write-Host "Environment:"
-    Write-Host "  FORBOCAI_API_URL and FORBOCAI_API_KEY are honored by the CLI and test-game runtime."
+    Write-Host "  FORBOCAI_API_URL overrides the SDK default; FORBOCAI_API_KEY is loaded from the test env file when available."
     exit 2
 }
 
@@ -54,5 +60,5 @@ for ($Index = 0; $Index -lt $CliArgs.Count; $Index++) {
     $CommandletArgs += "-CliArg$Index=$($CliArgs[$Index])"
 }
 
-& $EditorCmd @CommandletArgs
-exit $LASTEXITCODE
+Invoke-ForbocCommandlet -Executable $EditorCmd -Arguments $CommandletArgs -SuccessMarker "[RESULT] Command completed successfully"
+exit 0

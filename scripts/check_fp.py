@@ -8,7 +8,7 @@ canonical functional substrate. It does not own ECS topology or RTK role rules.
 
 The engine provides FP-specific machinery: a comment/string stripper, a
 canonical tokenizer, and the ``func::`` helper vocabulary derived from the SDK's
-Core/ue_fp.hpp so guidance and reinvented-helper detection track the functional
+Core/fp.hpp so guidance and reinvented-helper detection track the functional
 substrate instead of a hand-maintained copy.
 """
 
@@ -208,13 +208,13 @@ def _first_existing(paths: tuple[Path, ...]) -> Path:
 SCRIPT_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = _path_from_env("FORBOC_FP_PROJECT_ROOT", SCRIPT_ROOT.parent)
 SOURCE_ROOT = _path_from_env("FORBOC_FP_SOURCE_ROOT", PROJECT_ROOT / "Source")
-UE_FP_HPP = _path_from_env(
-    "FORBOC_FP_UE_FP_HPP",
+FP_HPP = _path_from_env(
+    "FORBOC_FP_HPP",
     _first_existing(
         (
-            PROJECT_ROOT / "Source" / "ForbocAI_SDK" / "Public" / "Core" / "ue_fp.hpp",
-            PROJECT_ROOT / "Plugins" / "ForbocAI_SDK" / "Source" / "ForbocAI_SDK" / "Public" / "Core" / "ue_fp.hpp",
-            PROJECT_ROOT.parent / "sdk-ue-5" / "Source" / "ForbocAI_SDK" / "Public" / "Core" / "ue_fp.hpp",
+            PROJECT_ROOT / "Source" / "ForbocAI_SDK" / "Public" / "Core" / "fp.hpp",
+            PROJECT_ROOT / "Plugins" / "ForbocAI_SDK" / "Source" / "ForbocAI_SDK" / "Public" / "Core" / "fp.hpp",
+            PROJECT_ROOT.parent / "sdk-ue-5" / "Source" / "ForbocAI_SDK" / "Public" / "Core" / "fp.hpp",
         )
     ),
 )
@@ -318,10 +318,10 @@ def normalize(token: str) -> str:
     return value
 
 
-# --- ue_fp.hpp helper vocabulary -------------------------------------------
+# --- fp.hpp helper vocabulary -------------------------------------------
 # The FP substrate is the source of truth for which func:: helpers replace loops
 # and branches, and for detecting hand-rolled reinventions. Add a helper to
-# ue_fp.hpp and the guards track it; if ue_fp.hpp cannot be read the vocabulary
+# fp.hpp and the guards track it; if fp.hpp cannot be read the vocabulary
 # is empty and vocabulary-driven rules simply do not fire.
 
 _FP_NAME_RE = re.compile(r"\b([a-z][a-z0-9_]{2,})\s*\(")
@@ -340,14 +340,14 @@ _ROUTE_PREFIXES = ("match", "multi_match", "dispatch", "when", "wildcard", "equa
 
 
 @lru_cache(maxsize=1)
-def _ue_fp_source() -> str:
-    return UE_FP_HPP.read_text(encoding="utf-8", errors="replace") if UE_FP_HPP.exists() else ""
+def _fp_source() -> str:
+    return FP_HPP.read_text(encoding="utf-8", errors="replace") if FP_HPP.exists() else ""
 
 
 @lru_cache(maxsize=1)
 def fp_helper_names() -> frozenset[str]:
-    """Every func:: composition helper name present in ue_fp.hpp."""
-    names = set(_FP_NAME_RE.findall(_ue_fp_source()))
+    """Every func:: composition helper name present in fp.hpp."""
+    names = set(_FP_NAME_RE.findall(_fp_source()))
     return frozenset(name for name in names if name.startswith(_FP_PREFIXES))
 
 

@@ -4,9 +4,9 @@
 #include "Features/Memory/MemorySlice.h"
 #include "Misc/AutomationTest.h"
 #include "Features/NPC/NPCSlice.h"
-#include "Protocol/ProtocolRequestTypes.h"
+#include "Features/Protocol/Requests/RequestsTypes.h"
 #include "Features/Protocol/ProtocolThunks.h"
-#include "RuntimeStore.h"
+#include "Store.h"
 
 // @covers:coreThunk:checkApiStatusThunk
 // @covers:coreThunk:clearMemoryRemoteThunk

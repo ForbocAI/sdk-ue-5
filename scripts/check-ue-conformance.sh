@@ -121,9 +121,9 @@ else
   echo "[ok] No unapproved direct HTTP request creation"
 fi
 
-# 4) No class declarations in core FP zone (ue_fp.hpp, rtk.hpp).
+# 4) No class declarations in core FP zone (fp.hpp, rtk.hpp).
 CORE_CLASSES="$(rg -n '^\s*class [A-Z]' \
-  "$SRC/Public/Core/ue_fp.hpp" \
+  "$SRC/Public/Core/fp.hpp" \
   "$SRC/Public/Core/rtk.hpp" \
   2>/dev/null | normalize_crlf || true)"
 if [ -n "$CORE_CLASSES" ]; then

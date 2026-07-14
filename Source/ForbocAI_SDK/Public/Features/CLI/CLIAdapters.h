@@ -1,21 +1,9 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Features/CLI/CLITypes.h"
 
 namespace ForbocAI {
 namespace CLI {
-
-struct FCommandRoute {
-  FString Key;
-  FString Group;
-  FString Subcommand;
-};
-
-struct FCommandParseResult {
-  bool bMatched;
-  FString CommandKey;
-  TArray<FString> Args;
-};
 
 inline const TArray<FCommandRoute> &NodeParityRoutes() {
   static const TArray<FCommandRoute> Routes = {

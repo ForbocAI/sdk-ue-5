@@ -194,7 +194,7 @@ validateEntityDomain(const FValidateEntityDomainRequest &Request) {
  * @signature inline func::Either<FString, bool> validateSystemSpec(const FValidateSystemSpecRequest &Request)
  *
  * User Story: As registry validation, system spec checks should compose domain
- * and component validation through ue_fp Either semantics.
+ * and component validation through fp Either semantics.
  */
 inline func::Either<FString, bool>
 validateSystemSpec(const FValidateSystemSpecRequest &Request) {

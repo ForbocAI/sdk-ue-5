@@ -1,6 +1,6 @@
 #pragma once
-#ifndef UE_FP_HPP
-#define UE_FP_HPP
+#ifndef FORBOCAI_FP_HPP
+#define FORBOCAI_FP_HPP
 
 /**
  * @brief UE FP Core Library — Strict UE C++11 functional programming primitives. No C++14, C++17, or later language features are used; Unreal container overloads are first-class because this SDK is UE-only. This header is the canonical source of truth for the functional substrate. If surrounding docs disagree, this file wins. DESIGN PRINCIPLES: - Prefer structs and plain data for domain state. - Prefer factory functions for construction of public values. - Keep domain behavior in free functions under the `func` namespace. - Use member wrappers only when preserving an existing callable C++11 surface is materially cheaper than duplicating abstractions (`MemoizedLast::operator()`, `AsyncResult` chaining). - Value semantics throughout. CONTENTS: 1. seq / gen_seq        — Index sequence (C++14 backport) 2. apply                — Tuple application (C++17 backport) 3. Maybe<T>             — Optional monad (data only) 4. Either<E, T>         — Result/Error monad (data only) 5. Curried / curry      — Automatic function currying 6. Lazy<T> / lazy       — Memoized deferred evaluation 7. MemoizedLast         — Last-input memoization for derived values 8. Pipeline<T> / pipe   — Value transformation chains (operator|) 9. Composed / compose   — Binary function composition 10. fmap                 — Functor map (Maybe, Either, vector, TArray) 11. mbind / ebind        — Monadic bind for Maybe / Either 12. or_else / match      — Extraction / pattern matching 13. ValidationPipeline   — Functional validation chain 14. ConfigBuilder        — Functional configuration builder 15. TestResult           — Functional testing result 16. AsyncResult          — Functional async result handling 17. AsyncChain           — AsyncResult chaining helpers 18. Dispatcher            — Dictionary-based typed dispatch 19. multi_match           — Multi-case value-based pattern matching 20. from_nullable         — Lift nullable values into Maybe 21. Unreal containers     — TArray and TMap folds, maps, traversal, lookup, update, equality REQUIREMENTS: Several helpers default-construct inactive payloads or error branches as a deliberate C++11 trade-off: `Maybe<T>`, `Either<E, T>`, `ValidationPipeline<T, E>`, and `TestResult<T>`. All host types used with these primitives are expected to satisfy that requirement. See also: C++11-FP-GUIDE.md for patterns and usage.
@@ -3379,4 +3379,4 @@ T requireJust(const Maybe<T> &m, const std::string &errorMsg) {
 
 } // namespace func
 
-#endif // UE_FP_HPP
+#endif // FORBOCAI_FP_HPP

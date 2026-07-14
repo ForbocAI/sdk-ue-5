@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../Core/JsonInterop.h"
-#include "../Core/ue_fp.hpp"
-#include "../Core/rtk.hpp"
+#include "Core/JsonInterop.h"
+#include "Core/fp.hpp"
+#include "Core/rtk.hpp"
 #include "Features/Config/ConfigAdapters.h"
 #include "Features/Contracts/ContractsTypes.h"
 #include "CoreMinimal.h"
@@ -147,14 +147,16 @@ inline void ExtractGhostTestRecordsRecursive(
                  const TSharedPtr<FJsonObject> Test =
                      Source[Index]->AsObject();
                  FGhostResultRecord Record;
-                 Record.TestName = Test->GetStringField(TEXT("testName"));
+                 Record.TestName = JsonInterop::OptionalStringFromField(
+                     Test, TEXT("testName"));
                  Record.bTestPassed = JsonInterop::detail::TryGetBoolAs(
                      Test, TEXT("testPassed"), false);
                  Record.TestDuration = JsonInterop::detail::TryGetNumberAs<int64>(
                      Test, TEXT("testDuration"), 0);
-                 Record.TestError = Test->GetStringField(TEXT("testError"));
-                 Record.TestScreenshot =
-                     Test->GetStringField(TEXT("testScreenshot"));
+                 Record.TestError = JsonInterop::OptionalStringFromField(
+                     Test, TEXT("testError"));
+                 Record.TestScreenshot = JsonInterop::OptionalStringFromField(
+                     Test, TEXT("testScreenshot"));
                  Out.Add(Record);
                }()
              : void(),
@@ -297,13 +299,13 @@ inline ThunkAction<Result, FRuntimeState> MakeEndpoint(
     std::function<func::AsyncResult<rtk::QueryReturnValue<Result>>(
         const Arg &)>
         RequestBuilder,
-    const TArray<FApiEndpointTag> &ProvidesTags = TArray<FApiEndpointTag>(),
-    const TArray<FApiEndpointTag> &InvalidatesTags =
+    const TArray<FApiEndpointTag> &providesTags = TArray<FApiEndpointTag>(),
+    const TArray<FApiEndpointTag> &invalidatesTags =
         TArray<FApiEndpointTag>()) {
   ApiEndpoint<Arg, Result> Endpoint;
   Endpoint.EndpointName = EndpointName;
-  Endpoint.ProvidesTags = ProvidesTags;
-  Endpoint.InvalidatesTags = InvalidatesTags;
+  Endpoint.providesTags = providesTags;
+  Endpoint.invalidatesTags = invalidatesTags;
   Endpoint.RequestBuilder = RequestBuilder;
   return injectEndpoints(api, Endpoint)(ArgValue);
 }
@@ -601,9 +603,9 @@ inline FString EncodeNpcProcessRequest(const FNPCProcessRequest &Request) {
   const TSharedRef<FJsonObject> Root = MakeShared<FJsonObject>();
   return (Root->SetObjectField(TEXT("tape"),
                                EncodeProcessTapeObject(Request.Tape)),
-          Request.bHasLastResult
+          Request.bHasPreviousResult
               ? (JsonInterop::SetFieldFromJsonString(
-                     Root, TEXT("lastResult"), Request.LastResult, false),
+                     Root, TEXT("lastResult"), Request.PreviousResult, false),
                  void())
               : void(),
           ToJsonString(Root));

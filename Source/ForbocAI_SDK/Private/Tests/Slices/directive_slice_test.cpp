@@ -2,7 +2,7 @@
 #include "CoreMinimal.h"
 #include "Features/Directive/DirectiveSlice.h"
 #include "Misc/AutomationTest.h"
-#include "Protocol/ProtocolRequestTypes.h"
+#include "Features/Protocol/Requests/RequestsTypes.h"
 
 using namespace rtk;
 using namespace DirectiveSlice;

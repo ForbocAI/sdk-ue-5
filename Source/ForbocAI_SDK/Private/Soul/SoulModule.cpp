@@ -4,7 +4,7 @@
 #include "Interfaces/IHttpResponse.h"
 #include "JsonObjectConverter.h"
 #include "Features/Config/ConfigAdapters.h"
-#include "RuntimeStore.h"
+#include "Store.h"
 #include "Serialization/JsonSerializer.h"
 #include "Features/Soul/SoulSlice.h"
 #include "Features/Soul/SoulThunks.h"

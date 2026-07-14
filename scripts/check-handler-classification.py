@@ -16,7 +16,16 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPT_DIR.parent
 PROTOCOL_THUNKS = SCRIPT_DIR.parent / "Source" / "ForbocAI_SDK" / "Public" / "Features" / "Protocol" / "ProtocolThunks.h"
-TS_SDK_HANDLERS = ROOT_DIR.parent / "sdk" / "packages" / "core" / "src" / "protocolHandlers" / "index.ts"
+TS_SDK_HANDLER_ROOT = (
+    ROOT_DIR.parent
+    / "sdk"
+    / "packages"
+    / "core"
+    / "src"
+    / "features"
+    / "protocol"
+    / "handlers"
+)
 
 def parse_md_table(text):
     classifications = {}
@@ -37,6 +46,36 @@ def parse_md_table(text):
         elif in_table and not line.strip().startswith('// |'):
             break
     return classifications
+
+
+def parse_ts_table(text):
+    classifications = {}
+    in_table = False
+    for line in text.split('\n'):
+        stripped = line.strip()
+        if stripped.startswith('* | Instruction'):
+            in_table = True
+            continue
+        if in_table and stripped.startswith('* | ---'):
+            continue
+        if in_table and stripped.startswith('* |'):
+            parts = [part.strip() for part in stripped.split('|')]
+            if len(parts) >= 3:
+                classifications[parts[1]] = parts[2]
+        elif in_table and not stripped.startswith('* |'):
+            break
+    return classifications
+
+
+def discover_ts_classification_table():
+    if not TS_SDK_HANDLER_ROOT.is_dir():
+        return None, {}
+    discovered = []
+    for path in sorted(TS_SDK_HANDLER_ROOT.rglob("*.ts")):
+        classifications = parse_ts_table(path.read_text(encoding="utf-8"))
+        if classifications:
+            discovered.append((path, classifications))
+    return discovered[0] if len(discovered) == 1 else (None, {})
 
 def extract_function_body(text, func_name):
     # Very rudimentary extraction for C++ functions
@@ -122,35 +161,21 @@ def main():
                     print(f"[OK] Local handler Handle{instruction} returns correct result type.")
 
     # 3: Divergence check
-    if TS_SDK_HANDLERS.exists():
-        with open(TS_SDK_HANDLERS, "r", encoding="utf-8") as f:
-            ts_code = f.read()
-        
-        # In TS, table is formatted with ' * |' instead of '// |'
-        ts_classifications = {}
-        in_table = False
-        for line in ts_code.split('\n'):
-            if line.strip().startswith('* | Instruction'):
-                in_table = True
-                continue
-            if in_table and line.strip().startswith('* | ---'):
-                continue
-            if in_table and line.strip().startswith('* |'):
-                parts = [p.strip() for p in line.strip().split('|')]
-                if len(parts) >= 3:
-                    ts_classifications[parts[1]] = parts[2]
-            elif in_table and not line.strip().startswith('* |'):
-                break
-
+    ts_table_path, ts_classifications = discover_ts_classification_table()
+    if ts_table_path is not None:
         if ue_classifications != ts_classifications:
             print(f"[FAIL] UE and TS classification tables diverge!")
             print(f"  UE: {ue_classifications}")
             print(f"  TS: {ts_classifications}")
             failures += 1
         else:
-            print("[OK] UE and TS classification tables match.")
+            print(f"[OK] UE and TS classification tables match ({ts_table_path}).")
     else:
-        print(f"[WARN] TS SDK not found at {TS_SDK_HANDLERS}, skipping divergence check.")
+        print(
+            f"[FAIL] Expected exactly one TS classification table under "
+            f"{TS_SDK_HANDLER_ROOT}."
+        )
+        failures += 1
 
     if failures > 0:
         print(f"\nFailed {failures} checks.")

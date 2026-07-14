@@ -7,8 +7,8 @@
 #include "Misc/AutomationTest.h"
 #include "Core/JsonInterop.h"
 #include "Features/Protocol/ProtocolThunks.h"
-#include "Protocol/ProtocolRequestTypes.h"
-#include "API/APICodecs.h"
+#include "Features/Protocol/Requests/RequestsTypes.h"
+#include "Features/API/APIAdapters.h"
 
 using namespace rtk;
 

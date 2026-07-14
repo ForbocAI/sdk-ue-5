@@ -1192,7 +1192,7 @@ def check_cli_command_parity(
         print("[fail] Command sets match, but order differs from TS matrix.")
 
     print("")
-    print("[hint] Update Source/ForbocAI_SDK/Public/CLI/CliCommandMatrix.h")
+    print("[hint] Update Source/ForbocAI_SDK/Public/Features/CLI/CLIAdapters.h")
     print("       so the BEGIN_NODE_CLI_COMMAND_KEYS block mirrors TS exactly.")
     return 1, ts_keys, ue_keys
 

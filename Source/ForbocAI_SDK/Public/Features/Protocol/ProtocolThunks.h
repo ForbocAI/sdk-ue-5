@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/rtk.hpp"
-#include "Core/ue_fp.hpp"
+#include "Core/fp.hpp"
 
 // Handler classification — pinned by the canonical instruction sequence in
 // classified/docs/design/api/architecture.md § Canonical Instruction Sequence.
@@ -21,8 +21,11 @@
 #include "Core/JsonInterop.h"
 #include "Features/Directive/DirectiveSlice.h"
 #include "Features/Memory/MemoryThunks.h"
-#include "Protocol/ProtocolRequestTypes.h"
+#include "Features/NPC/NPCSlice.h"
+#include "Features/Protocol/Requests/RequestsAdapters.h"
 #include <memory>
+
+struct FRuntimeState;
 
 namespace rtk {
 
@@ -549,8 +552,8 @@ RunProtocolTurn(const FString &NpcId, const FString &Input,
              : [&]() -> func::AsyncResult<FAgentResponse> {
     FNPCProcessRequest Request;
     Request.Tape = Tape;
-    Request.LastResult = LastResult;
-    Request.bHasLastResult = bHasLastResult;
+    Request.PreviousResult = LastResult;
+    Request.bHasPreviousResult = bHasLastResult;
 
     return func::AsyncChain::then<FNPCProcessResponse, FAgentResponse>(
                APISlice::Endpoints::postNpcProcess(NpcId, Request)(Dispatch,
@@ -630,7 +633,8 @@ PersistMemoryInstructions(const TArray<FMemoryStoreInstruction> &Instructions,
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 
-inline ThunkAction<FAgentResponse, FRuntimeState>
+template <typename RuntimeState = FRuntimeState>
+inline ThunkAction<FAgentResponse, RuntimeState>
 processNPC(const FString &NpcId, const FString &Input = TEXT(""),
            const FString &ContextJson = TEXT("{}"),
            const FString &Persona = TEXT(""),
@@ -638,7 +642,7 @@ processNPC(const FString &NpcId, const FString &Input = TEXT(""),
            const FProtocolRuntime &Runtime = FProtocolRuntime()) {
   return [NpcId, Input, ContextJson, Persona, InitialState, Runtime](
              std::function<AnyAction(const AnyAction &)> Dispatch,
-             std::function<const FRuntimeState &()> GetState)
+             std::function<const RuntimeState &()> GetState)
              -> func::AsyncResult<FAgentResponse> {
     const auto ExistingNpc = NPCSlice::selectNPCById(GetState().NPCs, NpcId);
     const bool bHasExplicitState =
@@ -672,9 +676,8 @@ processNPC(const FString &NpcId, const FString &Input = TEXT(""),
       Dispatch(
           DirectiveSlice::Actions::directiveRunStarted(RunId, NpcId, Input));
 
-      FNPCProcessTape Tape = TypeFactory::ProcessTape(Input, ContextJson,
-                                                      CurrentState,
-                                                      ResolvedPersona);
+      FNPCProcessTape Tape = ProtocolRequests::ProcessTape(
+          Input, ContextJson, CurrentState, ResolvedPersona);
       Tape.Memories.Empty();
       Tape.bVectorQueried = false;
 

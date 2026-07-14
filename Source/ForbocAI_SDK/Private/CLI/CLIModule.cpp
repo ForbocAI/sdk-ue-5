@@ -1,7 +1,7 @@
 #include "CLI/CLIModule.h"
 #include "CLI/CliHandlers.h"
 #include "CLI/CliOperations.h"
-#include "RuntimeStore.h"
+#include "Store.h"
 #include <exception>
 
 namespace CLIOps {

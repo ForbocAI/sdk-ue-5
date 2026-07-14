@@ -122,9 +122,9 @@ def source_files(project_root: Path) -> list[Path]:
     ]
 
 
-def orphan_headers(project_root: Path) -> list[Path]:
+def orphan_headers(project_root: Path, dependency_sources: list[Path]) -> list[Path]:
     files = source_files(project_root)
-    texts = {path: read(path) for path in files}
+    texts = {path: read(path) for path in dependency_sources}
     module_stems = module_entry_stems(project_root)
 
     includers: dict[str, set[Path]] = defaultdict(set)
@@ -140,7 +140,7 @@ def orphan_headers(project_root: Path) -> list[Path]:
             continue
         if "Tests" in path.parts or path.stem in module_stems:
             continue
-        if REFLECTION_RE.search(texts[path]):
+        if REFLECTION_RE.search(read(path)):
             continue
         source_rel = path.relative_to(source_root).as_posix()
         sibling_cpp = path.with_suffix(".cpp")
@@ -187,9 +187,15 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     parse_args()
     total = 0
-    for target in ue_targets():
+    targets = ue_targets()
+    dependency_sources = [
+        path
+        for target in targets
+        for path in source_files(resolve_root(target.root))
+    ]
+    for target in targets:
         project_root = resolve_root(target.root)
-        headers = orphan_headers(project_root)
+        headers = orphan_headers(project_root, dependency_sources)
         data = orphan_data(project_root)
         count = len(headers) + len(data)
         total += count

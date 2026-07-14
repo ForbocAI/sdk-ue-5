@@ -2,11 +2,11 @@
 #include "Features/Bridge/BridgeSlice.h"
 #include "CLI/CliOperations.h"
 #include "NPC/NPCModule.h"
-#include "Core/ue_fp.hpp"
+#include "Core/fp.hpp"
 #include "HAL/PlatformFilemanager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
-#include "RuntimeStore.h"
+#include "Store.h"
 #include "Serialization/JsonSerializer.h"
 #include "Features/Bridge/BridgeThunks.h"
 

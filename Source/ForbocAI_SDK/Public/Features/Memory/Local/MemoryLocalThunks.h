@@ -4,10 +4,12 @@
 
 #include "Async/Async.h"
 #include "Core/rtk.hpp"
-#include "Core/ue_fp.hpp"
+#include "Core/fp.hpp"
 #include "Features/Memory/Local/LocalAdapters.h"
 #include "Features/Memory/MemorySlice.h"
 #include "HAL/FileManager.h"
+
+struct FRuntimeState;
 
 namespace rtk {
 

@@ -1,6 +1,9 @@
 #pragma once
 
-#include "API/APICodecs.h"
+#include "Core/rtk.hpp"
+#include "Features/Soul/SoulTypes.h"
+
+struct FRuntimeState;
 
 namespace APISlice {
 

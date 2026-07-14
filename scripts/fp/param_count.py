@@ -20,7 +20,7 @@ A payload/request struct is NOT a solution: bundling the arguments into one
 struct only hides the arity behind a wrapper -- the function still does too much.
 The real fix is to split the function into multiple smaller functions that
 compose (currying to capture the stable inputs, functions-as-arguments, and
-func::compose/pipe3/pipe4/converge2/folds); see Core/ue_fp.hpp.
+func::compose/pipe3/pipe4/converge2/folds); see Core/fp.hpp.
 """
 
 from __future__ import annotations
@@ -67,7 +67,7 @@ ACTIONABLE = register(
         severity=Severity.HIGH,
         summary="function carries more than two reducible data parameters",
         guidance="A payload/request struct is NOT the fix -- it only hides the arity behind a wrapper. Split the function into multiple smaller functions that compose: (1) curry -- capture the stable inputs in a factory that returns a unary function over the varying input; (2) supply behavior as a function argument and compose the steps with func::compose/pipe3/pipe4/converge2, folds, catalogs, or a Dispatcher; (3) factor independent responsibilities into their own functions and wire them together. A leading const &/* parameter is DATA -- do not widen a signature by threading more const inputs.",
-        skill="ue_fp.hpp cookbook: split into composed functions (currying, functions-as-args), not a payload-struct wrapper",
+        skill="fp.hpp cookbook: split into composed functions (currying, functions-as-args), not a payload-struct wrapper",
     )
 )
 

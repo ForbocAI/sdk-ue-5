@@ -4,7 +4,7 @@ import os
 
 # Resolve paths relative to this script
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-FP_HPP = os.path.abspath(os.path.join(SCRIPT_DIR, "../Source/ForbocAI_SDK/Public/Core/ue_fp.hpp"))
+FP_HPP = os.path.abspath(os.path.join(SCRIPT_DIR, "../Source/ForbocAI_SDK/Public/Core/fp.hpp"))
 RTK_HPP = os.path.abspath(os.path.join(SCRIPT_DIR, "../Source/ForbocAI_SDK/Public/Core/rtk.hpp"))
 
 with open(FP_HPP, "r") as f:

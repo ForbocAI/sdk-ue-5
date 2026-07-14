@@ -9,13 +9,13 @@ namespace ContractApi {
 
 inline bool providesTags(
     const rtk::ApiEndpoint<FString, FString> &EndpointDefinition) {
-  return EndpointDefinition.ProvidesTags.Num() > 0;
+  return EndpointDefinition.providesTags.Num() > 0;
 }
 
 inline rtk::ApiEndpoint<FString, FString> contractEndpoint() {
   rtk::ApiEndpoint<FString, FString> Endpoint;
   Endpoint.EndpointName = TEXT("getTestGameContract");
-  Endpoint.ProvidesTags = {
+  Endpoint.providesTags = {
       rtk::FApiEndpointTag{TEXT("TestGameContract"), TEXT("CURRENT")}};
   Endpoint.RequestBuilder = [](const FString &ApiUrl) {
     rtk::FetchBaseQueryArgs Options;

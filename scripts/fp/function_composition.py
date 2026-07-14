@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Enforce the ue_fp.hpp composition/naming cookbook, on the check_fp engine.
+"""Enforce the fp.hpp composition/naming cookbook, on the check_fp engine.
 
-Derived from Core/ue_fp.hpp's unary-composition cookbook (the megaphone rule).
+Derived from Core/fp.hpp's unary-composition cookbook (the megaphone rule).
 It catches naming and call-shape violations that hide non-compositional bags:
 
 * path/domain words repeated inside C++ identifiers;
@@ -116,31 +116,31 @@ EXTERNAL_UNREAL_TYPE_NAMES = {
 LAZY_NOUN = register(Rule(
     "FP-COMP-001", Severity.HIGH, "identifier uses a lazy wrapper noun",
     "Name the exact role/domain boundary. Split vague bags/helpers into subdomain data and reusable composers.",
-    "ue_fp.hpp cookbook: name the composition boundary, not a bag/helper wrapper"))
+    "fp.hpp cookbook: name the composition boundary, not a bag/helper wrapper"))
 REPEATED_PATH_TOKEN = register(Rule(
     "FP-COMP-002", Severity.MEDIUM, "identifier repeats a domain atom already in its path",
     "Keep the shortest collision-free name derived from the path/namespace atom ladder.",
-    "ue_fp.hpp cookbook: folder/namespace boundaries own domain words"))
+    "fp.hpp cookbook: folder/namespace boundaries own domain words"))
 COOKBOOK_CALL = register(Rule(
     "FP-COMP-003", Severity.HIGH, "call shape repeats field/member composition",
     "Pass grouped declaration atoms to one reusable composer; the composer owns conversion and folds.",
-    "ue_fp.hpp megaphone rule: grouped declaration atoms + one composer, not per-field wrappers"))
+    "fp.hpp megaphone rule: grouped declaration atoms + one composer, not per-field wrappers"))
 WRAPPER_FAMILY = register(Rule(
     "FP-COMP-004", Severity.MEDIUM, "struct/class is a noun wrapper family",
     "Put atoms/selectors/projectors/validators in grouped declarations and fold them with one composer.",
-    "ue_fp.hpp cookbook: registries declare atoms/paths as data, folded by one composer"))
+    "fp.hpp cookbook: registries declare atoms/paths as data, folded by one composer"))
 TEXT_ATOM_REPETITION = register(Rule(
     "FP-COMP-005", Severity.MEDIUM, "file repeats platform text atoms",
     "Move authored atoms to grouped declarations or JSON and let generic helpers own TEXT conversion.",
-    "ue_fp.hpp cookbook: generic declaration helpers own TEXT(...) conversion"))
+    "fp.hpp cookbook: generic declaration helpers own TEXT(...) conversion"))
 WIDE_SCALAR_STRUCT = register(Rule(
     "FP-COMP-006", Severity.MEDIUM, "wide scalar/list struct hides subdomains",
     "Split wide scalar/list records by subdomain and compose them through a reader/adapter fold.",
-    "ue_fp.hpp cookbook: split wide scalar bags, recompose through a fold"))
+    "fp.hpp cookbook: split wide scalar bags, recompose through a fold"))
 NESTED_COMPOSE = register(Rule(
     "FP-COMP-007", Severity.MEDIUM, "hand-composed nested func::compose(...) chain",
     "Assemble more than two functions with func::pipe3/pipe4 or a fold over a catalog, not nested compose(compose(...)).",
-    "ue_fp.hpp cookbook: do not hand-write compose(...) chains; feed a composer grouped declarations"))
+    "fp.hpp cookbook: do not hand-write compose(...) chains; feed a composer grouped declarations"))
 
 
 @dataclass(frozen=True)

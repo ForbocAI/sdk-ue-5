@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/rtk.hpp"
-#include "Core/ue_fp.hpp"
+#include "Core/fp.hpp"
 
 #include "NPC/NPCTypes.h"
 

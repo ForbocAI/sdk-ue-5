@@ -4,6 +4,12 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# shellcheck source=lib/test-environment.sh
+source "$SCRIPT_DIR/lib/test-environment.sh"
+forbocai_load_test_environment required
+# shellcheck source=lib/commandlet-result.sh
+source "$SCRIPT_DIR/lib/commandlet-result.sh"
+
 append_wsl_env_entries() {
   local current="${WSLENV:-}"
   local entry
@@ -132,6 +138,7 @@ for arg in "$@"; do
   index=$((index + 1))
 done
 
-"$EDITOR_CMD" "$PROJECT" -run=ForbocAITestGame \
+forbocai_run_commandlet "CLI coverage complete." \
+  "$EDITOR_CMD" "$PROJECT" -run=ForbocAITestGame \
   -nosplash -nopause -unattended -NoSound -NoRHI -NullRHI \
   "${CLI_ARGS[@]}"

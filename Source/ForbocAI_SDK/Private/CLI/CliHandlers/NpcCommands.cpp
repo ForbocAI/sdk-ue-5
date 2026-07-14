@@ -1,7 +1,7 @@
 // User Story: As a developer, I need this module to function.
 #include "CLI/CliHandlers.h"
 #include "CLI/CliOperations.h"
-#include "RuntimeStore.h"
+#include "Store.h"
 
 namespace CLIOps {
 namespace Handlers {

@@ -5,7 +5,7 @@
 #include "Misc/Guid.h"
 #include "Misc/Paths.h"
 #include "CLI/RuntimeCommandlet.h"
-#include "RuntimeStore.h"
+#include "Store.h"
 
 // @covers:cli:setup
 // @covers:cli:setup_check

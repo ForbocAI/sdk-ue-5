@@ -1,7 +1,7 @@
 #pragma once
 
 #include "NPC/NPCModule.h"
-#include "Core/ue_fp.hpp"
+#include "Core/fp.hpp"
 #include "CoreMinimal.h"
 #include "Features/Contracts/ContractsTypes.h"
 

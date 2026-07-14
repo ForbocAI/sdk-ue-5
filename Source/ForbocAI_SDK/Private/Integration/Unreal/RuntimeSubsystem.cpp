@@ -1,7 +1,7 @@
 #include "Integration/Unreal/RuntimeSubsystem.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Config/ConfigAdapters.h"
-#include "RuntimeStore.h"
+#include "Store.h"
 #include "Features/Protocol/ProtocolThunks.h"
 #include "Features/Soul/SoulThunks.h"
 

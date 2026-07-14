@@ -6,5 +6,5 @@
 #include "Features/Memory/MemoryTypes.h"
 #include "Features/Soul/SoulTypes.h"
 #include "NPC/NPCBaseTypes.h"
-#include "Protocol/ProtocolRequestTypes.h"
-#include "Protocol/ProtocolTypes.h"
+#include "Features/Protocol/Requests/RequestsTypes.h"
+#include "Features/Protocol/ProtocolTypes.h"

@@ -64,6 +64,14 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# shellcheck source=lib/test-environment.sh
+source "$SCRIPT_DIR/lib/test-environment.sh"
+if [[ "$QUICK_MODE" -eq 1 ]]; then
+  forbocai_load_test_environment optional
+else
+  forbocai_load_test_environment required
+fi
+
 FAILURES=0
 TOTAL=0
 

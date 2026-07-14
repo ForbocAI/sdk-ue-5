@@ -1,11 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Core/ue_fp.hpp"
+#include "Core/fp.hpp"
 #include "NPC/NPCId.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Config/ConfigAdapters.h"
-#include "RuntimeStore.h"
+#include "Store.h"
 #include "Features/API/APIThunks.h"
 #include "Features/Bridge/BridgeThunks.h"
 #include "Features/Ghost/GhostThunks.h"

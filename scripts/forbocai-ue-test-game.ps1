@@ -5,6 +5,12 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+$EnvironmentModule = Join-Path $PSScriptRoot "lib\TestEnvironment.ps1"
+. $EnvironmentModule
+Import-ForbocTestEnvironment -KeyRequirement Required
+$CommandletResultModule = Join-Path $PSScriptRoot "lib\CommandletResult.ps1"
+. $CommandletResultModule
+
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Root = Split-Path -Parent $ScriptDir
 $Project = Join-Path $Root "test-game-cli\ForbocAI_SDK.uproject"
@@ -95,5 +101,5 @@ for ($Index = 0; $Index -lt $CliArgs.Count; $Index++) {
     $CommandletArgs += "-CliArg$Index=$($CliArgs[$Index])"
 }
 
-& $EditorCmd @CommandletArgs
-exit $LASTEXITCODE
+Invoke-ForbocCommandlet -Executable $EditorCmd -Arguments $CommandletArgs -SuccessMarker "CLI coverage complete."
+exit 0

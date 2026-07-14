@@ -2,12 +2,12 @@
 #include "Ghost/GhostModuleInternal.h"
 #include "Features/Ghost/GhostSlice.h"
 #include "Features/Ghost/GhostThunks.h"
-#include "Core/ue_fp.hpp"
+#include "Core/fp.hpp"
 #include "HAL/PlatformFilemanager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "NPC/NPCModule.h"
-#include "RuntimeStore.h"
+#include "Store.h"
 #include "Serialization/JsonSerializer.h"
 
 /**

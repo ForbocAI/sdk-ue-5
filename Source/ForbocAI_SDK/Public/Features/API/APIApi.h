@@ -22,7 +22,7 @@ inline rtk::Api<FRuntimeState> api = []() {
 
 } // namespace APISlice
 
-#include "API/APICodecs.h"
+#include "Features/API/APIAdapters.h"
 #include "Endpoints/Arweave/ArweaveApi.h"
 #include "Endpoints/Bridge/BridgeApi.h"
 #include "Endpoints/Ghost/GhostApi.h"

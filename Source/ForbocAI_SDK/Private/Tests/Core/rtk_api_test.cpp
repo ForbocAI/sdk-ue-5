@@ -18,7 +18,7 @@ bool FRtkApiTest::RunTest(const FString &Parameters) {
    */
   ApiEndpoint<FString, int32> GetUserEndpoint;
   GetUserEndpoint.EndpointName = TEXT("getUser");
-  GetUserEndpoint.ProvidesTags = {{TEXT("User"), TEXT("ID")}};
+  GetUserEndpoint.providesTags = {{TEXT("User"), TEXT("ID")}};
 
   /**
    * Deterministic endpoint request builder that resolves after parsing

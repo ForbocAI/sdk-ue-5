@@ -76,10 +76,10 @@ NULLISH_RE = re.compile(
     r"\bIsValid\s*\("
 )
 FP_SUBSTRATE_RE = re.compile(
-    r"\bfunc::|#include\s+[\"<][^\">]*ue_fp\.hpp[\">]|"
+    r"\bfunc::|#include\s+[\"<][^\">]*fp\.hpp[\">]|"
     r"\b(?:just|nothing|fmap|mbind|match|orElse|fromNullable|requireJust|compose|curry|"
     r"multiMatch|createDispatcher|left|right|efmap|ebind|ematch)\b|"
-    r"from ['\"][^'\"]*(?:functional_core|/fp|@forbocai/core)[^'\"]*['\"]"
+    r"from ['\"][^'\"]*(?:/core/fp|/fp|@forbocai/core)[^'\"]*['\"]"
 )
 
 UE_REQUIRED_FP_SURFACE = (
@@ -118,7 +118,7 @@ PUBLIC_MUTABLE = register(Rule(
     "FP-SOURCE-003",
     Severity.MEDIUM,
     "mutable keyword in public header",
-    "Keep public values copy-on-write/immutable. Only canonical memoization primitives in ue_fp.hpp/rtk.hpp may expose mutable storage.",
+    "Keep public values copy-on-write/immutable. Only canonical memoization primitives in fp.hpp/rtk.hpp may expose mutable storage.",
     "fp: public state is immutable or confined to canonical memoization helpers",
 ))
 COMMAND_SIZE = register(Rule(
@@ -174,14 +174,14 @@ FP_SUBSTRATE_MISSING = register(Rule(
     "FP-SOURCE-011",
     Severity.LOW,
     "FP-shaped file does not use the FP substrate",
-    "Files with branching, nullable handling, or accumulation should visibly compose through ue_fp.hpp/functional_core primitives unless they are pure adapters.",
+    "Files with branching, nullable handling, or accumulation should visibly compose through the canonical core/fp substrate unless they are pure adapters.",
     "fp: use the canonical FP substrate instead of ad hoc control plumbing",
 ))
 FP_CORE_SURFACE = register(Rule(
     "FP-SOURCE-012",
     Severity.HIGH,
     "functional core surface is missing documented primitives",
-    "Keep ue_fp.hpp and functional_core.ts exposing the documented Maybe/Either/composition/matching primitives so SDKs have the same FP vocabulary.",
+    "Keep fp.hpp and core/fp.ts exposing the documented Maybe/Either/composition/matching primitives so SDKs have the same FP vocabulary.",
     "fp: canonical functional-core surface contract",
 ))
 
@@ -189,8 +189,8 @@ BLOCKING_SEVERITIES = {Severity.CRITICAL, Severity.HIGH}
 IGNORED_PARTS = {".git", "Binaries", "Build", "coverage", "dist", "DerivedDataCache", "Intermediate", "node_modules", "Saved", "__pycache__"}
 SKIPPED_PARTS = {"Tests", "ThirdParty", "__pycache__"}
 SKIPPED_SOURCE_FILENAMES = {"SqliteAmalgamation.c"}
-PUBLIC_MEMOIZATION_EXCEPTIONS = {"ue_fp.hpp", "rtk.hpp"}
-FP_IMPLEMENTATION_EXCEPTIONS = {"ue_fp.hpp", "rtk.hpp", "functional_core.ts"}
+PUBLIC_MEMOIZATION_EXCEPTIONS = {"fp.hpp", "rtk.hpp"}
+FP_IMPLEMENTATION_EXCEPTIONS = {"fp.hpp", "rtk.hpp", "fp.ts"}
 
 
 def has_part(path: Path, parts: set[str]) -> bool:
@@ -482,7 +482,7 @@ def scan_fp_substrate_adoption() -> list[Finding]:
             1,
             FP_SUBSTRATE_MISSING.id,
             FP_SUBSTRATE_MISSING.severity,
-            "file has FP-shaped control/data flow but no visible use of ue_fp.hpp/functional_core primitives",
+            "file has FP-shaped control/data flow but no visible use of the canonical core/fp substrate",
         ))
     return findings
 
@@ -510,7 +510,7 @@ def missing_ts_surface_names(text: str) -> list[str]:
 def scan_fp_core_surface() -> list[Finding]:
     findings: list[Finding] = []
     if SDK_SOURCE_ROOT.exists():
-        core_path = PUBLIC_ROOT / "Core" / "ue_fp.hpp"
+        core_path = PUBLIC_ROOT / "Core" / "fp.hpp"
         if core_path.exists():
             missing = missing_ue_surface_names(core_path.read_text(encoding="utf-8", errors="replace"))
             if missing:
@@ -519,10 +519,10 @@ def scan_fp_core_surface() -> list[Finding]:
                     1,
                     FP_CORE_SURFACE.id,
                     FP_CORE_SURFACE.severity,
-                    f"ue_fp.hpp missing documented FP primitives: {', '.join(missing)}",
+                    f"fp.hpp missing documented FP primitives: {', '.join(missing)}",
                 ))
     if PACKAGES_ROOT.exists():
-        core_path = PROJECT_ROOT / "packages" / "core" / "src" / "functional_core.ts"
+        core_path = PROJECT_ROOT / "packages" / "core" / "src" / "core" / "fp.ts"
         if core_path.exists():
             missing = missing_ts_surface_names(core_path.read_text(encoding="utf-8", errors="replace"))
             if missing:
@@ -531,7 +531,7 @@ def scan_fp_core_surface() -> list[Finding]:
                     1,
                     FP_CORE_SURFACE.id,
                     FP_CORE_SURFACE.severity,
-                    f"functional_core.ts missing documented FP exports: {', '.join(missing)}",
+                    f"core/fp.ts missing documented FP exports: {', '.join(missing)}",
                 ))
     return findings
 

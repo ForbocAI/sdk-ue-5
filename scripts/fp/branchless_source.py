@@ -3,7 +3,7 @@
 
 Built on the check_fp engine: findings carry stable ids/severities and the
 guidance for each control-flow keyword is DERIVED from the func:: helper
-vocabulary in Core/ue_fp.hpp, so a loop always points at the current fold/
+vocabulary in Core/fp.hpp, so a loop always points at the current fold/
 traverse helpers and a switch at the current match/dispatch helpers. Beyond the
 keyword ban it also flags the two ways people dodge it: deep ternary chains
 (mechanical if-else-if replacement) and goto/do.
@@ -55,7 +55,7 @@ CONTROL = register(
         severity=Severity.HIGH,
         summary="non-FP control-flow keyword in authored Source",
         guidance=f"Loops: {_helper_hint('loop')}. Routing/branches: {_helper_hint('route')} plus func::match/ternary for small value selection. Explicit guards belong only at UE/effect boundaries.",
-        skill="ue_fp.hpp: branching policy -- match/multi_match/Dispatcher + fold/filter/find/traverse instead of if/for/switch",
+        skill="fp.hpp: branching policy -- match/multi_match/Dispatcher + fold/filter/find/traverse instead of if/for/switch",
     )
 )
 TERNARY_ABUSE = register(
@@ -63,8 +63,8 @@ TERNARY_ABUSE = register(
         id="FP-BRANCH-002",
         severity=Severity.MEDIUM,
         summary="chained ternary used as a mechanical if-replacement",
-        guidance="ue_fp.hpp forbids mechanically replacing if with ternary chains. Use func::match for Maybe/Either, func::multi_match/Dispatcher case tables for routing.",
-        skill="ue_fp.hpp: do not replace every if with ternary chains",
+        guidance="fp.hpp forbids mechanically replacing if with ternary chains. Use func::match for Maybe/Either, func::multi_match/Dispatcher case tables for routing.",
+        skill="fp.hpp: do not replace every if with ternary chains",
     )
 )
 JUMP = register(
@@ -73,7 +73,7 @@ JUMP = register(
         severity=Severity.HIGH,
         summary="goto/do control flow",
         guidance="Replace with SDK functional-core recursion, folds, AsyncChain composition, or an explicit state-machine data table interpreted by one reusable step function.",
-        skill="ue_fp.hpp: functional-core recursion/folds over open-ended loops",
+        skill="fp.hpp: functional-core recursion/folds over open-ended loops",
     )
 )
 

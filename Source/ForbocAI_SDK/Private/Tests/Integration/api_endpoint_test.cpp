@@ -1,13 +1,13 @@
 // @covers:api:getApiStatus
 
 /**
- * API endpoint integration tests — uses SDKConfig resolution (localhost:8080 default, FORBOCAI_API_URL override)
+ * API endpoint integration tests - uses SDKConfig production default and FORBOCAI_API_URL override.
  * I.5 — Auth, response normalization, representative endpoints, error handling
- * Requires FORBOCAI_API_KEY for auth tests. Default URL is http://localhost:8080.
+ * Requires FORBOCAI_API_KEY for auth tests.
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 
-#include "API/APICodecs.h"
+#include "Features/API/APIAdapters.h"
 #include "Features/API/APIApi.h"
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"

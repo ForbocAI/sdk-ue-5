@@ -52,7 +52,7 @@ NPC reasoning is hosted on the ForbocAI API; the plugin handles local capabiliti
 | macOS | UE 5.8, Xcode 15+ |
 | Linux | UE 5.8, Clang 16+ |
 
-The plugin reaches an API endpoint at runtime. By default it tries `http://localhost:8080`, then uses `https://api.forboc.ai` when localhost is unavailable. Override with `FAgentConfig::ApiUrl` or via the SDK config.
+The plugin uses `https://api.forboc.ai` by default. Override it explicitly with `FORBOCAI_API_URL`, `FAgentConfig::ApiUrl`, or the SDK config file.
 
 ---
 
@@ -146,7 +146,7 @@ scripts/forbocai-ue-test-game contract
 scripts/forbocai-ue-test-game --mode autoplay
 ```
 
-On Windows, use `scripts\forbocai-ue-test-game.cmd` with the same arguments. Set `FORBOCAI_API_URL` and `FORBOCAI_API_KEY` before running against the hosted API.
+On Windows, use `scripts\forbocai-ue-test-game.cmd` with the same arguments. The runner loads `FORBOCAI_API_KEY` from the process environment or `FORBOCAI_TEST_ENV_FILE` (defaulting to `~/.config/forbocai/test-api.env`) and uses `https://api.forboc.ai` when `FORBOCAI_API_URL` is unset.
 
 ---
 

@@ -1,7 +1,7 @@
 #include "CLI/RuntimeCommandlet.h"
-#include "CLI/CliCommandMatrix.h"
+#include "Features/CLI/CLIAdapters.h"
 #include "CLI/CLIModule.h"
-#include "Core/ue_fp.hpp"
+#include "Core/fp.hpp"
 #include "Misc/Parse.h"
 #include "Features/Config/ConfigAdapters.h"
 

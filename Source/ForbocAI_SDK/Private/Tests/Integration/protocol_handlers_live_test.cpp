@@ -11,7 +11,7 @@
 #include "HAL/PlatformProcess.h"
 #include "Misc/AutomationTest.h"
 #include "Features/Config/ConfigAdapters.h"
-#include "RuntimeStore.h"
+#include "Store.h"
 
 using namespace rtk;
 
@@ -100,8 +100,8 @@ bool FProcessLiveStepWait::Update() {
       ActorObj->SetStringField(TEXT("npcId"), TEXT("live_npc_1"));
       ActorObj->SetObjectField(TEXT("data"), MakeShared<FJsonObject>());
       ActorRes->SetObjectField(TEXT("actor"), ActorObj);
-      Req.LastResult = LastResultJson(ActorRes);
-      Req.bHasLastResult = true;
+      Req.PreviousResult = LastResultJson(ActorRes);
+      Req.bHasPreviousResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
       auto GetState = [this]() -> const FRuntimeState & { return State->Store->getState(); };
@@ -134,8 +134,8 @@ bool FProcessLiveStepWait::Update() {
       TSharedPtr<FJsonObject> QueryRes = MakeShared<FJsonObject>();
       QueryRes->SetStringField(TEXT("type"), TEXT("QueryVectorResult"));
       QueryRes->SetArrayField(TEXT("memories"), TArray<TSharedPtr<FJsonValue>>());
-      Req.LastResult = LastResultJson(QueryRes);
-      Req.bHasLastResult = true;
+      Req.PreviousResult = LastResultJson(QueryRes);
+      Req.bHasPreviousResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
       auto GetState = [this]() -> const FRuntimeState & { return State->Store->getState(); };
@@ -171,8 +171,8 @@ bool FProcessLiveStepWait::Update() {
       IntentObj->SetStringField(TEXT("goal"), TEXT("test"));
       IntentObj->SetStringField(TEXT("actionType"), TEXT("SPEAK"));
       DecRes->SetObjectField(TEXT("decisionIntent"), IntentObj);
-      Req.LastResult = LastResultJson(DecRes);
-      Req.bHasLastResult = true;
+      Req.PreviousResult = LastResultJson(DecRes);
+      Req.bHasPreviousResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
       auto GetState = [this]() -> const FRuntimeState & { return State->Store->getState(); };
@@ -214,8 +214,8 @@ bool FProcessLiveStepWait::Update() {
       OutObj->SetStringField(TEXT("reasoningText"), TEXT("I think"));
       OutObj->SetStringField(TEXT("responseText"), TEXT("I speak"));
       RsgRes->SetObjectField(TEXT("reasoningOutput"), OutObj);
-      Req.LastResult = LastResultJson(RsgRes);
-      Req.bHasLastResult = true;
+      Req.PreviousResult = LastResultJson(RsgRes);
+      Req.bHasPreviousResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
       auto GetState = [this]() -> const FRuntimeState & { return State->Store->getState(); };

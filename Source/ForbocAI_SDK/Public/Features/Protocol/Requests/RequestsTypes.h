@@ -1,16 +1,16 @@
 #pragma once
 
 #include "Core/rtk.hpp"
-#include "Core/ue_fp.hpp"
+#include "Core/fp.hpp"
 
 // clang-format off
 #include "CoreMinimal.h"
-#include "Protocol/ProtocolTypes.h"
-#include "ProtocolRequestTypes.generated.h"
+#include "Features/Protocol/ProtocolTypes.h"
+#include "RequestsTypes.generated.h"
 // clang-format on
 
 namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
-typedef func::Maybe<FString> FForbocAISDKPublicProtocolProtocolRequestTypesHOptionalDomainId;
+typedef func::Maybe<FString> FForbocAISDKPublicFeaturesProtocolRequestsRequestsTypesHOptionalDomainId;
 } } }
 
 
@@ -27,7 +27,6 @@ struct FNPCActorInfo {
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FAgentState Data;
 };
-
 USTRUCT(BlueprintType)
 struct FDecisionIntent {
   GENERATED_BODY()
@@ -43,7 +42,6 @@ struct FDecisionIntent {
 
   FDecisionIntent() : Goal(TEXT("")), ActionType(TEXT("SPEAK")), Target(TEXT("")) {}
 };
-
 USTRUCT(BlueprintType)
 struct FReasoningOutput {
   GENERATED_BODY()
@@ -117,12 +115,12 @@ struct FNPCProcessRequest {
   FNPCProcessTape Tape;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString LastResult;
+  FString PreviousResult;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  bool bHasLastResult;
+  bool bHasPreviousResult;
 
-  FNPCProcessRequest() : bHasLastResult(false) {}
+  FNPCProcessRequest() : bHasPreviousResult(false) {}
 };
 
 USTRUCT(BlueprintType)
@@ -185,39 +183,3 @@ struct FVerdictResponse {
 
   FVerdictResponse() : bValid(true), bHasAction(false) {}
 };
-
-namespace TypeFactory {
-
-/**
- * Builds the process tape payload for the NPC process endpoint.
- * User Story: As protocol turn assembly, I need one factory for process tapes
- * so observation, context, and NPC state are packaged consistently.
- */
-inline FNPCProcessTape ProcessTape(const FString &Observation,
-                                   const FString &ContextJson,
-                                   const FAgentState &NpcState,
-                                   const FString &Persona) {
-  FNPCProcessTape Tape;
-  Tape.Observation = Observation;
-  Tape.ContextJson = ContextJson;
-  Tape.NpcState = NpcState;
-  Tape.Persona = Persona;
-  return Tape;
-}
-
-/**
- * Builds the directive request payload for a protocol turn.
- * User Story: As directive composition, I need a factory that packages the
- * observation, NPC state, and context into one request object.
- */
-inline FDirectiveRequest DirectiveRequest(const FString &Observation,
-                                          const FAgentState &NpcState,
-                                          const FString &ContextJson) {
-  FDirectiveRequest Request;
-  Request.Observation = Observation;
-  Request.NpcState = NpcState;
-  Request.ContextJson = ContextJson;
-  return Request;
-}
-
-} // namespace TypeFactory
