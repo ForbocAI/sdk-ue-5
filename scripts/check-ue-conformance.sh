@@ -37,6 +37,13 @@ mapfile -t PUBLIC_ROOTS < <(existing_dirs "$SRC/Public" "$SDK_CLI_SRC/Public" "$
 
 echo "[check] UE SDK conformance guardrails"
 
+if PYTHONDONTWRITEBYTECODE=1 python3 "$ROOT/scripts/cpp/source_structure.py"; then
+  echo "[ok] C++ namespaces, braces, header guards, and companion includes"
+else
+  echo "[fail] C++ source structure violations found"
+  STATUS=1
+fi
+
 # 1a) No C++17 features in first-party source (excluding ThirdParty).
 C17_HITS="$(rg -n 'if constexpr|std::is_same_v|std::decay_t|std::optional|std::variant|std::any' \
   "${FIRST_PARTY_ROOTS[@]}" \
