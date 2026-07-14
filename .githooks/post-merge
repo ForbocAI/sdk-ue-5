@@ -1,10 +1,13 @@
 #!/bin/sh
 # Syncs the demo repo's submodule pin after a pull/merge.
 # Configure with: git config forboc.demoPath /path/to/demo-ue-5
-DEMO=$(git config forboc.demoPath)
+DEMO=$(git config --get forboc.demoPath || true)
 [ -z "$DEMO" ] && exit 0
 [ -d "$DEMO" ] || { echo "[forboc] demo path not found: $DEMO"; exit 0; }
-git -C "$DEMO" submodule update --remote Plugins/ForbocAI_SDK && \
-git -C "$DEMO" add Plugins/ForbocAI_SDK && \
-git -C "$DEMO" diff --cached --quiet || \
-git -C "$DEMO" commit -m "chore: update SDK submodule to latest"
+
+git -C "$DEMO" submodule update --remote -- Plugins/ForbocAI_SDK || exit $?
+git -C "$DEMO" diff --quiet HEAD -- Plugins/ForbocAI_SDK && exit 0
+
+# Commit only the submodule pointer. Preserve every other staged demo change.
+git -C "$DEMO" commit --only -m "chore: update SDK submodule to latest" -- \
+  Plugins/ForbocAI_SDK
