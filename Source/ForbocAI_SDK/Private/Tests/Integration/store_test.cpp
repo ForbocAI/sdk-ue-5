@@ -1,5 +1,6 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
+#include "Features/Logging/LoggingSelectors.h"
 #include "Misc/AutomationTest.h"
 #include "Store.h"
 
@@ -245,13 +246,13 @@ bool FRuntimeProtocolLoggerSummaryTest::RunTest(const FString &Parameters) {
 
   FRuntimeState Before;
   FRuntimeState After = StoreReducer(Before, SetActiveAction);
-  const FString Delta = StoreInternal::DescribeStateDelta(Before, After);
+  const FString Delta = LoggingSelectors::describeStateDelta(Before, After);
 
   TestTrue("Delta includes NPC slice summary", Delta.Contains(TEXT("NPCs{")));
   TestTrue("Delta includes active npc id",
            Delta.Contains(TEXT("logger_npc")));
   TestEqual("No-change deltas collapse to <none>",
-            StoreInternal::DescribeStateDelta(After, After),
+            LoggingSelectors::describeStateDelta(After, After),
             FString(TEXT("<none>")));
 
   return true;

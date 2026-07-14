@@ -237,6 +237,33 @@ STORE_CONFIGURE = register(
     )
 )
 
+STORE_CONFIGURE_OUTSIDE_ROOT = register(
+    Rule(
+        id="RTK-STORE-007",
+        severity=Severity.CRITICAL,
+        summary="configureStore is assembled outside the program root store",
+        guidance=(
+            "Each stateful program has one root *Store boundary. Route runtime, "
+            "CLI, view, and test behavior through that root; test feature reducers "
+            "as pure transitions when a separate store is unnecessary."
+        ),
+        skill="build-modern-redux-apps-modern-redux: create and provide one app store at the root",
+    )
+)
+
+STORE_MULTIPLE_ROOTS = register(
+    Rule(
+        id="RTK-STORE-008",
+        severity=Severity.CRITICAL,
+        summary="program declares more than one logical root store",
+        guidance=(
+            "Keep one root *Store per stateful program. A header/source pair with "
+            "the same stem is one boundary; distinct store stems are competing roots."
+        ),
+        skill="model-redux-state-design-state-ownership: keep one authority for each state domain",
+    )
+)
+
 PURE_ROLE = register(
     Rule(
         id="RTK-PURE-001",
@@ -350,6 +377,7 @@ CREATE_API = re.compile(r"\bcreateApi\s*<")
 STORE_LEGACY_RE = re.compile(r"\bcreateStore\s*\(|\bapplyMiddleware\s*\(")
 STORE_ARRAY_MW_RE = re.compile(r"\bmiddleware\s*[:=]\s*\[")
 CONFIGURE_STORE_RE = re.compile(r"\brtk::configureStore\s*<|(?<!create)configureStore\s*\(")
+APPLICATION_CONFIGURE_STORE_RE = re.compile(r"\brtk::configureStore\s*<")
 SUPPRESSION_RE = re.compile(
     r"\b(?:rtk:suppress|boundary-allow|NOLINT|eslint-disable|ts-ignore|@ts-ignore|noinspection)"
     r"|\bpragma\s+warning\s*\(\s*disable",
@@ -615,6 +643,27 @@ def check_root_role_boundaries(project_root: Path) -> list[Finding]:
 def check_store_boundary(project_root: Path) -> list[Finding]:
     findings: list[Finding] = []
     store_paths = discover_store_paths(project_root)
+    store_path_set = {path.resolve() for path in store_paths}
+    source_root = project_root / "Source"
+    if source_root.is_dir():
+        for path in sorted(source_root.rglob("*")):
+            if not path.is_file() or path.suffix.lower() not in SOURCE_SUFFIXES:
+                continue
+            if {"Binaries", "Intermediate"}.intersection(path.parts):
+                continue
+            text = path.read_text(encoding="utf-8", errors="replace")
+            if path.resolve() in store_path_set:
+                continue
+            for match in APPLICATION_CONFIGURE_STORE_RE.finditer(text):
+                findings.append(
+                    Finding(
+                        path,
+                        line_number(text, match.start()),
+                        STORE_CONFIGURE_OUTSIDE_ROOT.id,
+                        STORE_CONFIGURE_OUTSIDE_ROOT.severity,
+                        STORE_CONFIGURE_OUTSIDE_ROOT.summary,
+                    )
+                )
     for path in store_paths:
         text = path.read_text(encoding="utf-8", errors="replace")
         for match in STORE_LEGACY_RE.finditer(text):
@@ -623,6 +672,17 @@ def check_store_boundary(project_root: Path) -> list[Finding]:
             findings.append(Finding(path, line_number(text, match.start()), STORE_ARRAY_MW.id, STORE_ARRAY_MW.severity, STORE_ARRAY_MW.summary))
     for root in sorted({path.parent for path in store_paths}):
         root_stores = [path for path in store_paths if path.parent == root]
+        logical_stores = sorted({path.stem.lower() for path in root_stores})
+        if len(logical_stores) > 1:
+            findings.append(
+                Finding(
+                    root_stores[0],
+                    1,
+                    STORE_MULTIPLE_ROOTS.id,
+                    STORE_MULTIPLE_ROOTS.severity,
+                    "competing root stores: " + ", ".join(logical_stores),
+                )
+            )
         combined = "\n".join(
             path.read_text(encoding="utf-8", errors="replace")
             for path in root_stores

@@ -387,35 +387,10 @@ TArray<FMemoryItem> SearchRows(DB Database, const TArray<float> &Vector,
  */
 bool Upsert(DB Database, const FMemoryItem &Item) {
 #if WITH_FORBOC_SQLITE_VEC
-  return Upsert(Database, Item, Item.Embedding);
-#else
-  (void)Database;
-  (void)Item;
-  return false;
-#endif
-}
-
-/**
- * Searches the vector store for the nearest memory rows.
- * User Story: As local-memory recall, I need a public search helper so higher
- * layers can run similarity lookup without touching sqlite directly.
- */
-TArray<FMemoryItem> Search(DB Database, const TArray<float> &Vector,
-                           int32 TopK) {
-  return SearchRows(Database, Vector, TopK);
-}
-
-/**
- * Upserts a memory item with an explicitly supplied embedding vector.
- * User Story: As local-memory writes, I need an explicit-vector upsert so
- * callers can persist precomputed embeddings without recomputing them.
- */
-bool Upsert(DB Database, const FMemoryItem &Item, const TArray<float> &Vector) {
-#if WITH_FORBOC_SQLITE_VEC
   sqlite3 *Handle = reinterpret_cast<sqlite3 *>(Database);
   return !Handle
              ? false
-             : Vector.Num() == 0
+             : Item.Embedding.Num() == 0
                    ? false
                    : [&]() -> bool {
                        const char *Sql =
@@ -431,7 +406,7 @@ bool Upsert(DB Database, const FMemoryItem &Item, const TArray<float> &Vector) {
                                       const FMemoryItem StoredItem =
                                           PrepareStoredItem(Item);
                                       const FString JsonVec =
-                                          BuildJsonVector(Vector);
+                                          BuildJsonVector(StoredItem.Embedding);
 
                                       sqlite3_bind_text(
                                           Stmt, 1,
@@ -467,9 +442,18 @@ bool Upsert(DB Database, const FMemoryItem &Item, const TArray<float> &Vector) {
 #else
   (void)Database;
   (void)Item;
-  (void)Vector;
   return false;
 #endif
+}
+
+/**
+ * Searches the vector store for the nearest memory rows.
+ * User Story: As local-memory recall, I need a public search helper so higher
+ * layers can run similarity lookup without touching sqlite directly.
+ */
+TArray<FMemoryItem> Search(DB Database, const TArray<float> &Vector,
+                           int32 TopK) {
+  return SearchRows(Database, Vector, TopK);
 }
 
 } // namespace Sqlite

@@ -89,5 +89,41 @@ class MatrixDiscoveryTests(unittest.TestCase):
                 )
 
 
+class CppSymbolDiscoveryTests(unittest.TestCase):
+    def test_finds_reference_returning_functions_without_namespace_symbols(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "FeatureSelectors.h"
+            source.write_text(
+                """\
+#pragma once
+
+namespace FeatureSelectors {
+
+inline const FString &selectFeatureError(const FFeatureState &State) {
+  return State.Error;
+}
+
+template <typename RootState>
+inline const FFeatureState &selectFeatureState(const RootState &State) {
+  return State.Feature;
+}
+
+} // namespace FeatureSelectors
+""",
+                encoding="utf-8",
+            )
+
+            symbols = PARITY.extract_ue_symbols(source, root)
+
+            self.assertEqual(
+                [(symbol.name, symbol.kind) for symbol in symbols],
+                [
+                    ("selectFeatureError", "function"),
+                    ("selectFeatureState", "function"),
+                ],
+            )
+
+
 if __name__ == "__main__":
     unittest.main()

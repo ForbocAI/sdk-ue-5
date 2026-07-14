@@ -14,7 +14,7 @@
 // @covers:coreThunk:deleteRulesetThunk
 // @covers:coreThunk:doctorThunk
 // @covers:coreThunk:exportSoulThunk
-// @covers:coreThunk:generateNodeEmbeddingThunk
+// @covers:coreThunk:generateEmbeddingThunk
 // @covers:coreThunk:getBridgeRulesThunk
 // @covers:coreThunk:getGhostHistoryThunk
 // @covers:coreThunk:getGhostResultsThunk
@@ -24,7 +24,7 @@
 // @covers:coreThunk:importSoulFromArweaveThunk
 // @covers:coreThunk:importSoulThunk
 // @covers:coreThunk:initNodeMemoryThunk
-// @covers:coreThunk:initNodeVectorThunk
+// @covers:coreThunk:initVectorThunk
 // @covers:coreThunk:listMemoryRemoteThunk
 // @covers:coreThunk:listRulePresetsThunk
 // @covers:coreThunk:listRulesetsThunk

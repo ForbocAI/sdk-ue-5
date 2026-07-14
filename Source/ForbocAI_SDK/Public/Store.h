@@ -5,11 +5,14 @@
 #include "CoreMinimal.h"
 #include "Core/fp.hpp"
 #include "Features/Directive/DirectiveSlice.h"
-#include "Features/Logging/LoggingTypes.h"
+#include "Features/Logging/LoggingListeners.h"
 #include "Features/Ghost/GhostSlice.h"
 #include "Features/Memory/MemorySlice.h"
 #include "Features/NPC/NPCSlice.h"
+#include "Features/NPC/NPCListeners.h"
+#include "Features/Dependencies/DependenciesSlice.h"
 #include "Features/Soul/SoulSlice.h"
+#include "Features/Vector/VectorSlice.h"
 
 struct FRuntimeState {
   NPCSlice::FNPCSliceState NPCs;
@@ -18,6 +21,8 @@ struct FRuntimeState {
   BridgeSlice::FBridgeSliceState Bridge;
   SoulSlice::FSoulSliceState Soul;
   GhostSlice::FGhostSliceState Ghost;
+  FVectorState Vector;
+  FDependenciesState Dependencies;
 
   /**
    * G8: Generic state bag for game-specific slices.
@@ -98,6 +103,18 @@ inline const rtk::Slice<GhostSlice::FGhostSliceState> &GetGhostSlice() {
   return func::eval(Slice);
 }
 
+inline const rtk::Slice<FVectorState> &GetVectorSlice() {
+  static const func::Lazy<rtk::Slice<FVectorState>> Slice = func::lazy(
+      []() { return VectorSlice::createVectorSlice(); });
+  return func::eval(Slice);
+}
+
+inline const rtk::Slice<FDependenciesState> &GetDependenciesSlice() {
+  static const func::Lazy<rtk::Slice<FDependenciesState>> Slice =
+      func::lazy([]() { return DependenciesSlice::createDependenciesSlice(); });
+  return func::eval(Slice);
+}
+
 } // namespace StoreInternal
 
 /**
@@ -123,87 +140,6 @@ inline std::vector<ExtraReducerFn> &ExtraReducers() {
   return Reducers;
 }
 
-inline FString SummarizeNPCState(const NPCSlice::FNPCSliceState &State) {
-  return FString::Printf(TEXT("ids=%d active=%s"), State.Entities.ids.Num(),
-                         *State.ActiveNpcId);
-}
-
-inline FString SummarizeMemoryState(const MemorySlice::FMemorySliceState &State) {
-  return FString::Printf(TEXT("ids=%d store=%s recall=%s recalled=%d error=%s"),
-                         State.Entities.ids.Num(), *State.StorageStatus,
-                         *State.RecallStatus, State.LastRecalledIds.Num(),
-                         *State.Error);
-}
-
-inline FString
-SummarizeDirectiveState(const DirectiveSlice::FDirectiveSliceState &State) {
-  return FString::Printf(TEXT("ids=%d active=%s"), State.Entities.ids.Num(),
-                         *State.ActiveDirectiveId);
-}
-
-inline FString SummarizeBridgeState(const BridgeSlice::FBridgeSliceState &State) {
-  return FString::Printf(
-      TEXT("status=%s presets=%d rulesets=%d presetIds=%d validated=%s error=%s"),
-      *State.Status, State.ActivePresets.Num(), State.AvailableRulesets.Num(),
-      State.AvailablePresetIds.Num(),
-      State.bHasLastValidation ? TEXT("true") : TEXT("false"), *State.Error);
-}
-
-inline FString SummarizeSoulState(const SoulSlice::FSoulSliceState &State) {
-  return FString::Printf(
-      TEXT("export=%s import=%s hasExport=%s hasImport=%s available=%d error=%s"),
-      *State.ExportStatus, *State.ImportStatus,
-      State.bHasLastExport ? TEXT("true") : TEXT("false"),
-      State.bHasLastImport ? TEXT("true") : TEXT("false"),
-      State.AvailableSouls.Num(), *State.Error);
-}
-
-inline FString SummarizeGhostState(const GhostSlice::FGhostSliceState &State) {
-  return FString::Printf(
-      TEXT("session=%s status=%s progress=%.2f hasResults=%s history=%d loading=%s error=%s"),
-      *State.ActiveSessionId, *State.Status, State.Progress,
-      State.bHasResults ? TEXT("true") : TEXT("false"), State.History.Num(),
-      State.bLoading ? TEXT("true") : TEXT("false"), *State.Error);
-}
-
-inline FString SummarizeExtraState(const TMap<FString, FString> &Extra) {
-  return FString::Printf(TEXT("entries=%d"), Extra.Num());
-}
-
-inline void AppendDeltaIfChanged(TArray<FString> &Changes, const FString &Label,
-                                 const FString &Before, const FString &After) {
-  Before == After
-      ? void()
-      : (Changes.Add(FString::Printf(TEXT("%s{%s -> %s}"), *Label, *Before,
-                                     *After)),
-         void());
-}
-
-inline FString DescribeStateDelta(const FRuntimeState &Before,
-                                  const FRuntimeState &After) {
-  TArray<FString> Changes;
-  AppendDeltaIfChanged(Changes, TEXT("NPCs"), SummarizeNPCState(Before.NPCs),
-                       SummarizeNPCState(After.NPCs));
-  AppendDeltaIfChanged(Changes, TEXT("Memory"),
-                       SummarizeMemoryState(Before.Memory),
-                       SummarizeMemoryState(After.Memory));
-  AppendDeltaIfChanged(Changes, TEXT("Directives"),
-                       SummarizeDirectiveState(Before.Directives),
-                       SummarizeDirectiveState(After.Directives));
-  AppendDeltaIfChanged(Changes, TEXT("Bridge"),
-                       SummarizeBridgeState(Before.Bridge),
-                       SummarizeBridgeState(After.Bridge));
-  AppendDeltaIfChanged(Changes, TEXT("Soul"), SummarizeSoulState(Before.Soul),
-                       SummarizeSoulState(After.Soul));
-  AppendDeltaIfChanged(Changes, TEXT("Ghost"),
-                       SummarizeGhostState(Before.Ghost),
-                       SummarizeGhostState(After.Ghost));
-  AppendDeltaIfChanged(Changes, TEXT("Extra"),
-                       SummarizeExtraState(Before.Extra),
-                       SummarizeExtraState(After.Extra));
-  return Changes.Num() == 0 ? TEXT("<none>") : FString::Join(Changes, TEXT("; "));
-}
-
 } // namespace StoreInternal (extension)
 
 /**
@@ -221,6 +157,8 @@ inline FRuntimeState StoreReducer(const FRuntimeState &State,
   Next.Bridge = StoreInternal::GetBridgeSlice().Reducer(State.Bridge, Action);
   Next.Soul = StoreInternal::GetSoulSlice().Reducer(State.Soul, Action);
   Next.Ghost = StoreInternal::GetGhostSlice().Reducer(State.Ghost, Action);
+  Next.Vector = StoreInternal::GetVectorSlice().Reducer(State.Vector, Action);
+  Next.Dependencies = StoreInternal::GetDependenciesSlice().Reducer(State.Dependencies, Action);
 
   /**
    * G8: Run extra reducers (game slices) — recursive application.
@@ -245,62 +183,6 @@ inline FRuntimeState StoreReducer(const FRuntimeState &State,
  * User Story: As NPC teardown, I need dependent slices cleaned up
  * automatically so removed NPCs do not leave stale state behind.
  */
-inline rtk::Middleware<FRuntimeState> createNpcRemovalListener() {
-  return [](const rtk::MiddlewareApi<FRuntimeState> &Api)
-             -> std::function<rtk::Dispatcher(rtk::Dispatcher)> {
-    return [Api](rtk::Dispatcher Next) -> rtk::Dispatcher {
-      return [Api, Next](const rtk::AnyAction &Action) -> rtk::AnyAction {
-        const FString ActiveNpcIdBefore = Api.getState().NPCs.ActiveNpcId;
-        const rtk::AnyAction Result = Next(Action);
-
-        NPCSlice::Actions::removeNPCActionCreator().match(Action)
-            ? [&]() {
-                const auto RemovedNpcId =
-                    NPCSlice::Actions::removeNPCActionCreator().extract(Action);
-                RemovedNpcId.hasValue
-                    ? (Api.dispatch(
-                           DirectiveSlice::Actions::clearDirectivesForNpc(
-                               RemovedNpcId.value)),
-                       Api.dispatch(
-                           BridgeSlice::Actions::clearBridgeValidation()),
-                       Api.dispatch(
-                           GhostSlice::Actions::clearGhostSession()),
-                       Api.dispatch(SoulSlice::Actions::clearSoulState()),
-                       Api.dispatch(
-                           NPCSlice::Actions::clearBlock(RemovedNpcId.value)),
-                       RemovedNpcId.value == ActiveNpcIdBefore
-                           ? (Api.dispatch(
-                                  MemorySlice::Actions::memoryClear()),
-                              void())
-                           : void(),
-                       void())
-                    : void();
-              }()
-            : void();
-
-        return Result;
-      };
-    };
-  };
-}
-
-inline rtk::Middleware<FRuntimeState> createProtocolLoggerMiddleware() {
-  return [](const rtk::MiddlewareApi<FRuntimeState> &Api)
-             -> std::function<rtk::Dispatcher(rtk::Dispatcher)> {
-    return [Api](rtk::Dispatcher Next) -> rtk::Dispatcher {
-      return [Api, Next](const rtk::AnyAction &Action) -> rtk::AnyAction {
-        const FRuntimeState Before = Api.getState();
-        const rtk::AnyAction Result = Next(Action);
-        const FString Delta = StoreInternal::DescribeStateDelta(Before, Api.getState());
-        UE_LOG(LogForbocAIProtocol, Display,
-               TEXT("[ForbocAI][Protocol] action=%s payload=%s delta=%s"),
-               *Action.Type, *Action.describePayload(), *Delta);
-        return Result;
-      };
-    };
-  };
-}
-
 /**
  * G8: Register an extra reducer before store creation.
  * User Story: As game integration, I need a registration hook so custom game
@@ -331,8 +213,9 @@ createRuntimeStore(func::Maybe<FRuntimeState> PreloadedState =
                    std::vector<rtk::Middleware<FRuntimeState>> ExtraMiddlewares =
                        {}) {
   std::vector<rtk::Middleware<FRuntimeState>> Middlewares;
-  Middlewares.push_back(createProtocolLoggerMiddleware());
-  Middlewares.push_back(createNpcRemovalListener());
+  Middlewares.push_back(
+      LoggingListeners::createProtocolLoggerMiddleware<FRuntimeState>());
+  Middlewares.push_back(NPCListeners::createNpcRemovalListener<FRuntimeState>());
 
   /**
    * G8: Append game-provided middleware — recursive merge.

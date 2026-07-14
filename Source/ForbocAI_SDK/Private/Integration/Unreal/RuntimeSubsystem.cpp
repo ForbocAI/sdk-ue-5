@@ -16,8 +16,6 @@ void UForbocAISubsystem::Initialize(FSubsystemCollectionBase &Collection) {
   Super::Initialize(Collection);
 
   std::vector<rtk::Middleware<FRuntimeState>> Middlewares;
-  Middlewares.push_back(createNpcRemovalListener());
-
   Middlewares.push_back([this](const rtk::MiddlewareApi<FRuntimeState> &Api)
                             -> std::function<rtk::Dispatcher(rtk::Dispatcher)> {
     return [this](rtk::Dispatcher Next) -> rtk::Dispatcher {
@@ -29,8 +27,7 @@ void UForbocAISubsystem::Initialize(FSubsystemCollectionBase &Collection) {
   });
 
   Store = MakeShared<rtk::EnhancedStore<FRuntimeState>>(
-      rtk::configureStore<FRuntimeState>(&StoreReducer, FRuntimeState(),
-                                       Middlewares));
+      createRuntimeStore(func::nothing<FRuntimeState>(), Middlewares));
 }
 
 /**

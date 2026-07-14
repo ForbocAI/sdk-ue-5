@@ -79,13 +79,5 @@ FORBOCAI_SDK_API bool Upsert(DB Database, const FMemoryItem &Item);
 FORBOCAI_SDK_API TArray<FMemoryItem>
 Search(DB Database, const TArray<float> &Vector, int32 TopK = 5);
 
-/**
- * Provides the row/vector upsert overload during migration.
- * User Story: As SDK storage migration, I need the prior upsert overload so
- * existing callers continue working while full-row APIs are adopted.
- */
-FORBOCAI_SDK_API bool Upsert(DB Database, const FMemoryItem &Item,
-                             const TArray<float> &Vector);
-
 } // namespace Sqlite
 } // namespace Native

@@ -148,12 +148,14 @@ fi
 
 # 5) No FPlatformProcess::CreateProc outside approved CLI/setup code.
 #    Approved locations (Public + Private):
-#      CLI/              — CLI command handlers (setup, build, etc.)
+#      CLI/                         — CLI command handlers (build, host tools)
+#      Features/Dependencies/**/Adapters   — portable native dependency processes
 #    The retired TestGame/TestGameLib.h scenario command runner was removed
 #    in favor of TestGame::CommandSurface — no test-game exemption remains.
 DIRECT_PROC="$(rg -n 'FPlatformProcess::CreateProc' \
   "${FIRST_PARTY_ROOTS[@]}" \
   --glob '!**/CLI/**' \
+  --glob '!**/Features/Dependencies/**/*Adapters.cpp' \
   --glob '!**/Tests/**' \
   2>/dev/null | normalize_crlf || true)"
 if [ -n "$DIRECT_PROC" ]; then

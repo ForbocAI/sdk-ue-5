@@ -566,6 +566,8 @@ def extract_ue_symbols(path: Path, root: Path) -> list[Symbol]:
         stripped = strip_leading_template_declaration(line)
         if not stripped or stripped.startswith("#") or stripped.startswith("template"):
             continue
+        if re.match(r"namespace(?:\s+[A-Za-z_][A-Za-z0-9_]*)?\s*\{", stripped):
+            continue
 
         type_match = re.match(r"(?:USTRUCT\([^)]*\)\s*)?(?:struct|class)\s+(?:FORBOCAI_SDK_API\s+)?([A-Za-z_][A-Za-z0-9_]*)", stripped)
         enum_match = re.match(r"enum\s+class\s+([A-Za-z_][A-Za-z0-9_]*)", stripped)
@@ -593,7 +595,8 @@ def extract_ue_symbols(path: Path, root: Path) -> list[Symbol]:
 
         function_match = re.match(
             r"(?:FORBOCAI_SDK_API\s+)?(?:virtual\s+)?(?:static\s+)?(?:inline\s+)?"
-            r"(?:[A-Za-z_][A-Za-z0-9_:<>*&,\s]*\s+)+([A-Za-z_][A-Za-z0-9_]*)\s*\(",
+            r"(?:constexpr\s+)?[A-Za-z_][A-Za-z0-9_:<>*&,\s]*?"
+            r"(?:\s|[*&])([A-Za-z_][A-Za-z0-9_]*)\s*\(",
             declaration,
         )
         if function_match:

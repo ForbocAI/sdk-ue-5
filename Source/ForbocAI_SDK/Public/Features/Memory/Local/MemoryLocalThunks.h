@@ -79,8 +79,7 @@ nodeMemoryStoreThunk(const FMemoryItem &Item) {
                         Stored.Embedding.Num() > 0
                             ? Stored.Embedding
                             : ForbocAI::SDK::Vectorizer::Embed(Stored.Text);
-                    const bool bStored =
-                        Native::Sqlite::Upsert(Db, Stored, Stored.Embedding);
+                    const bool bStored = Native::Sqlite::Upsert(Db, Stored);
 
                     AsyncTask(
                         ENamedThreads::GameThread,
