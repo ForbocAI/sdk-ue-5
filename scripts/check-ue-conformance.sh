@@ -101,13 +101,13 @@ fi
 
 # 3) No direct FHttpModule::Get().CreateRequest() outside approved adapter layer.
 #    Approved locations (Public + Private):
-#      rtk.hpp           — canonical Redux Toolkit / RTK Query fetchBaseQuery adapter
+#      Core/RTK/Query/   — canonical Redux Toolkit / RTK Query fetchBaseQuery implementation
 #      Feature Thunks    — non-Forboc external transport (binary payloads, retries, custom timeouts)
 #      BridgeModule.cpp  — lazy HTTP wrapper for bridge rules
 #      Memory/Local/**/Adapters.cpp — binary download for native dependencies
 DIRECT_HTTP="$(rg -n 'FHttpModule::Get\(\)\.CreateRequest\(\)' \
   "${FIRST_PARTY_ROOTS[@]}" \
-  --glob '!**/Core/rtk.hpp' \
+  --glob '!**/Core/RTK/Query/**' \
   --glob '!**/Features/Soul/SoulThunks.h' \
   --glob '!**/Bridge/BridgeModule.cpp' \
   --glob '!**/Features/Memory/Local/**/*Adapters.cpp' \

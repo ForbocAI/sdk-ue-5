@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPTS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+ROOT="$(cd "$SCRIPTS_DIR/.." && pwd)"
+FILTER="${1:-ForbocAI}"
+
+# shellcheck source=../lib/test-environment.sh
+source "$SCRIPTS_DIR/lib/test-environment.sh"
+forbocai_load_test_environment optional
+# shellcheck source=../lib/plugin-host.sh
+source "$SCRIPTS_DIR/lib/plugin-host.sh"
+
+append_wsl_env_entry() {
+  local current="${WSLENV:-}"
+  local entry="$1"
+  case ":$current:" in
+    *":$entry:"*) printf '%s' "$current" ;;
+    *) printf '%s' "${current:+$current:}$entry" ;;
+  esac
+}
+
+if grep -qi microsoft /proc/version 2>/dev/null && command -v powershell.exe >/dev/null 2>&1; then
+  WSLENV="$(append_wsl_env_entry "FORBOCAI_UE_SKIP_BUILD")"
+  export WSLENV
+  powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
+    -File "$(wslpath -w "$SCRIPT_DIR/run-ue-automation-tests.ps1")" \
+    -Filter "$FILTER"
+  exit $?
+fi
+
+PROJECT="$ROOT/test-game-cli/ForbocAI_SDK.uproject"
+forbocai_prepare_plugin_host "$ROOT"
+case "$(uname -s)" in
+  Darwin)
+    UE_ROOT="${UE_ROOT:-/Users/Shared/Epic Games/UE_5.8}"
+    BUILD="$UE_ROOT/Engine/Build/BatchFiles/Mac/Build.sh"
+    EDITOR_CMD="$UE_ROOT/Engine/Binaries/Mac/UnrealEditor-Cmd"
+    PLATFORM="Mac"
+    ;;
+  Linux)
+    UE_ROOT="${UE_ROOT:-/opt/UnrealEngine}"
+    BUILD="$UE_ROOT/Engine/Build/BatchFiles/Linux/Build.sh"
+    EDITOR_CMD="$UE_ROOT/Engine/Binaries/Linux/UnrealEditor-Cmd"
+    PLATFORM="Linux"
+    ;;
+  *)
+    echo "Unsupported platform. On Windows, run run-ue-automation-tests.cmd or run-ue-automation-tests.ps1." >&2
+    exit 2
+    ;;
+esac
+
+if [[ ! -f "$PROJECT" ]]; then
+  echo "UE test-game host project not found: $PROJECT" >&2
+  exit 1
+fi
+if [[ ! -x "$BUILD" && ! -f "$BUILD" ]]; then
+  echo "Unreal build script not found: $BUILD. Set UE_ROOT to your UE 5.8 install." >&2
+  exit 1
+fi
+if [[ ! -x "$EDITOR_CMD" && ! -f "$EDITOR_CMD" ]]; then
+  echo "UnrealEditor-Cmd not found: $EDITOR_CMD. Set UE_ROOT to your UE 5.8 install." >&2
+  exit 1
+fi
+
+if [[ "${FORBOCAI_UE_SKIP_BUILD:-0}" != "1" ]]; then
+  "$BUILD" ForbocAI_SDK_Editor "$PLATFORM" Development \
+    -Project="$PROJECT" -WaitMutex -NoHotReloadFromIDE
+fi
+
+OUTPUT="$(mktemp)"
+trap 'rm -f "$OUTPUT"' EXIT
+set +e
+"$EDITOR_CMD" "$PROJECT" \
+  "-ExecCmds=Automation RunTests $FILTER" \
+  "-TestExit=Automation Test Queue Empty" \
+  -nosplash -nopause -unattended -NoSound -NoRHI -NullRHI \
+  -stdout -FullStdOutLogOutput -FORCELOGFLUSH 2>&1 | tee "$OUTPUT"
+STATUS=${PIPESTATUS[0]}
+set -e
+
+if [[ "$STATUS" -ne 0 ]]; then
+  echo "Unreal automation exited with status $STATUS." >&2
+  exit "$STATUS"
+fi
+if ! grep -Fq "Automation Test Queue Empty" "$OUTPUT"; then
+  echo "Unreal exited without completing the automation queue." >&2
+  exit 1
+fi
+if grep -Eq 'Test Completed\. Result=\{(Fail|NotRun)\}' "$OUTPUT"; then
+  echo "One or more Unreal automation tests did not pass." >&2
+  exit 1
+fi
+
+FOUND="$(sed -nE 's/.*Found ([0-9]+) automation tests based on.*/\1/p' "$OUTPUT" | tail -n 1)"
+PERFORMED="$(sed -nE 's/.*Automation Test Queue Empty ([0-9]+) tests performed.*/\1/p' "$OUTPUT" | tail -n 1)"
+SUCCESSFUL="$(grep -Ec 'Test Completed\. Result=\{Success\}' "$OUTPUT" || :)"
+
+if [[ -z "$FOUND" || "$FOUND" -eq 0 ]]; then
+  echo "No Unreal automation tests matched '$FILTER'." >&2
+  exit 1
+fi
+if [[ -z "$PERFORMED" || "$PERFORMED" -eq 0 ]]; then
+  echo "Unreal completed the queue without performing a test for '$FILTER'." >&2
+  exit 1
+fi
+if [[ "$FOUND" -ne "$PERFORMED" || "$SUCCESSFUL" -ne "$PERFORMED" ]]; then
+  echo "Unreal automation accounting mismatch: found=$FOUND performed=$PERFORMED successful=$SUCCESSFUL." >&2
+  exit 1
+fi
+
+printf 'Unreal automation verified: %s/%s tests passed for %s.\n' "$SUCCESSFUL" "$FOUND" "$FILTER"

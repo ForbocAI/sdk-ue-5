@@ -64,7 +64,7 @@ void UForbocAISubsystem::ProcessNPC(FString NpcId, FString Input) {
          Store
              ->dispatch(rtk::processNPC(NpcId, Input, TEXT("{}"), TEXT(""),
                                         FAgentState(),
-                                        rtk::LocalProtocolRuntime()))
+                                        rtk::LocalProtocolHandlerContext()))
              .then([this](const FAgentResponse &Result) {
                !Result.Dialogue.IsEmpty()
                    ? (OnMessageReceived.Broadcast(Result.Dialogue),

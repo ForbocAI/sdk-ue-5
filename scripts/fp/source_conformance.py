@@ -91,6 +91,7 @@ TS_REQUIRED_FP_EXPORTS = (
     "just", "nothing", "fmap", "mbind", "match", "orElse", "isJust",
     "isNothing", "fromNullable", "requireJust", "left", "right", "efmap",
     "ebind", "ematch", "isLeft", "isRight", "compose", "curry",
+    "fold", "filter", "traverse",
     "createDispatcher", "multiMatch", "_",
 )
 
@@ -491,6 +492,28 @@ def missing_ue_surface_names(text: str) -> list[str]:
     return [name for name in UE_REQUIRED_FP_SURFACE if not re.search(rf"\b{re.escape(name)}\b", text)]
 
 
+def cpp_include_closure(entry_path: Path, include_root: Path) -> str:
+    visited: set[Path] = set()
+    exposed_source: list[str] = []
+
+    def visit(path: Path) -> None:
+        resolved = path.resolve()
+        if resolved in visited or not resolved.is_file():
+            return
+        try:
+            resolved.relative_to(include_root.resolve())
+        except ValueError:
+            return
+        visited.add(resolved)
+        text = resolved.read_text(encoding="utf-8", errors="replace")
+        exposed_source.append(text)
+        for include in re.findall(r'^\s*#include\s+"([^"]+)"', text, flags=re.MULTILINE):
+            visit(include_root / include)
+
+    visit(entry_path)
+    return "\n".join(exposed_source)
+
+
 def ts_export_names(text: str) -> set[str]:
     names = set(re.findall(r"\bexport\s+(?:const|function|interface|type)\s+([A-Za-z_$][A-Za-z0-9_$]*)", text))
     names.update(
@@ -512,14 +535,15 @@ def scan_fp_core_surface() -> list[Finding]:
     if SDK_SOURCE_ROOT.exists():
         core_path = PUBLIC_ROOT / "Core" / "fp.hpp"
         if core_path.exists():
-            missing = missing_ue_surface_names(core_path.read_text(encoding="utf-8", errors="replace"))
+            exposed_source = cpp_include_closure(core_path, PUBLIC_ROOT)
+            missing = missing_ue_surface_names(exposed_source)
             if missing:
                 findings.append(Finding(
                     core_path,
                     1,
                     FP_CORE_SURFACE.id,
                     FP_CORE_SURFACE.severity,
-                    f"fp.hpp missing documented FP primitives: {', '.join(missing)}",
+                    f"fp.hpp include graph missing documented FP primitives: {', '.join(missing)}",
                 ))
     if PACKAGES_ROOT.exists():
         core_path = PROJECT_ROOT / "packages" / "core" / "src" / "core" / "fp.ts"

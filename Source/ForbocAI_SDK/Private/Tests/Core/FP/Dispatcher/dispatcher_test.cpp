@@ -1,6 +1,30 @@
 #include "Core/fp.hpp"
-#include "CoreMinimal.h"
+#include "Features/Testing/FP/Dispatcher/DispatcherAdapters.h"
 #include "Misc/AutomationTest.h"
+
+namespace {
+
+template <typename EntryType>
+std::vector<std::pair<std::string, std::function<int()>>>
+BuildEntries(const TArray<EntryType> &Fixtures) {
+  std::vector<std::pair<std::string, std::function<int()>>> Entries;
+  for (const EntryType &Fixture : Fixtures) {
+    const std::string Key = TCHAR_TO_UTF8(*Fixture.Key);
+    const int Value = Fixture.Value;
+    Entries.push_back(std::make_pair(
+        Key, [Value]() { return Value; }));
+  }
+  return Entries;
+}
+
+std::vector<std::pair<std::string, std::function<int()>>>
+BuildEntry(const Testing::FP::Dispatcher::FEntryFixture &Fixture) {
+  const std::string Key = TCHAR_TO_UTF8(*Fixture.Key);
+  const int Value = Fixture.Value;
+  return {std::make_pair(Key, [Value]() { return Value; })};
+}
+
+} // namespace
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FDispatcherKeyLookupTest,
@@ -8,21 +32,16 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 bool FDispatcherKeyLookupTest::RunTest(const FString &Parameters) {
-  std::vector<std::pair<std::string, std::function<int()>>> entries;
-  entries.push_back(std::make_pair(std::string("a"), []() { return 1; }));
-  entries.push_back(std::make_pair(std::string("b"), []() { return 2; }));
-  entries.push_back(std::make_pair(std::string("c"), []() { return 3; }));
-
-  auto d = func::createDispatcher<std::string, int>(entries);
-  auto resultA = func::dispatch(d, std::string("a"));
-  TestTrue("Key 'a' found", resultA.hasValue);
-  TestEqual("Key 'a' returns 1", resultA.value, 1);
-  auto resultB = func::dispatch(d, std::string("b"));
-  TestTrue("Key 'b' found", resultB.hasValue);
-  TestEqual("Key 'b' returns 2", resultB.value, 2);
-  auto resultC = func::dispatch(d, std::string("c"));
-  TestTrue("Key 'c' found", resultC.hasValue);
-  TestEqual("Key 'c' returns 3", resultC.value, 3);
+  const auto &Fixture =
+      Testing::FP::Dispatcher::DispatcherFixtures().KeyLookup;
+  const auto Dispatcher = func::createDispatcher<std::string, int>(
+      BuildEntries(Fixture.Entries));
+  for (const auto &Entry : Fixture.Entries) {
+    const auto Result =
+        func::dispatch(Dispatcher, std::string(TCHAR_TO_UTF8(*Entry.Key)));
+    TestTrue(*Entry.PresentLabel, Result.hasValue);
+    TestEqual(*Entry.ValueLabel, Result.value, Entry.Value);
+  }
   return true;
 }
 
@@ -32,11 +51,13 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 bool FDispatcherMissingKeyTest::RunTest(const FString &Parameters) {
-  std::vector<std::pair<std::string, std::function<int()>>> entries;
-  entries.push_back(std::make_pair(std::string("a"), []() { return 1; }));
-  auto d = func::createDispatcher<std::string, int>(entries);
-  auto result = func::dispatch(d, std::string("z"));
-  TestFalse("Missing key returns nothing", result.hasValue);
+  const auto &Fixture =
+      Testing::FP::Dispatcher::DispatcherFixtures().MissingKey;
+  const auto Dispatcher =
+      func::createDispatcher<std::string, int>(BuildEntry(Fixture.Entry));
+  const auto Result = func::dispatch(
+      Dispatcher, std::string(TCHAR_TO_UTF8(*Fixture.MissingKey)));
+  TestFalse(*Fixture.Label, Result.hasValue);
   return true;
 }
 
@@ -46,15 +67,21 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 bool FDispatcherHasAndKeysTest::RunTest(const FString &Parameters) {
-  std::vector<std::pair<std::string, std::function<int()>>> entries;
-  entries.push_back(std::make_pair(std::string("x"), []() { return 10; }));
-  entries.push_back(std::make_pair(std::string("y"), []() { return 20; }));
-  auto d = func::createDispatcher<std::string, int>(entries);
-  TestTrue("has('x') is true", func::has(d, std::string("x")));
-  TestTrue("has('y') is true", func::has(d, std::string("y")));
-  TestFalse("has('z') is false", func::has(d, std::string("z")));
-  auto k = func::keys(d);
-  TestEqual("keys() has 2 entries", static_cast<int>(k.size()), 2);
+  const auto &Fixture =
+      Testing::FP::Dispatcher::DispatcherFixtures().HasAndKeys;
+  const auto Dispatcher = func::createDispatcher<std::string, int>(
+      BuildEntries(Fixture.Entries));
+  for (const auto &Entry : Fixture.Entries) {
+    TestTrue(*Entry.PresentLabel,
+             func::has(Dispatcher,
+                       std::string(TCHAR_TO_UTF8(*Entry.Key))));
+  }
+  TestFalse(*Fixture.MissingLabel,
+            func::has(Dispatcher,
+                      std::string(TCHAR_TO_UTF8(*Fixture.MissingKey))));
+  TestEqual(*Fixture.CountLabel,
+            static_cast<int>(func::keys(Dispatcher).size()),
+            Fixture.ExpectedCount);
   return true;
 }
 
@@ -64,17 +91,20 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 bool FDispatcherEitherMissTest::RunTest(const FString &Parameters) {
-  std::vector<std::pair<std::string, std::function<int()>>> entries;
-  entries.push_back(std::make_pair(std::string("ready"), []() { return 7; }));
-  auto dispatcher = func::createDispatcher<std::string, int>(entries);
-  auto hit = func::dispatch_either<std::string, std::string, int>(
-      dispatcher, std::string("ready"), std::string("missing"));
-  TestFalse("Existing key returns Right", hit.isLeft);
-  TestEqual("Existing key result", hit.right, 7);
-  auto miss = func::dispatch_either<std::string, std::string, int>(
-      dispatcher, std::string("absent"), std::string("missing"));
-  TestTrue("Missing key returns Left", miss.isLeft);
-  TestEqual("Missing key error", miss.left, std::string("missing"));
+  const auto &Fixture =
+      Testing::FP::Dispatcher::DispatcherFixtures().EitherMiss;
+  const auto Dispatcher =
+      func::createDispatcher<std::string, int>(BuildEntry(Fixture.Entry));
+  const std::string Error = TCHAR_TO_UTF8(*Fixture.Error);
+  const auto Hit = func::dispatch_either<std::string, std::string, int>(
+      Dispatcher, std::string(TCHAR_TO_UTF8(*Fixture.Entry.Key)), Error);
+  TestFalse(*Fixture.Labels.HitSide, Hit.isLeft);
+  TestEqual(*Fixture.Labels.HitValue, Hit.right, Fixture.Entry.Value);
+
+  const auto Miss = func::dispatch_either<std::string, std::string, int>(
+      Dispatcher, std::string(TCHAR_TO_UTF8(*Fixture.MissingKey)), Error);
+  TestTrue(*Fixture.Labels.MissSide, Miss.isLeft);
+  TestEqual(*Fixture.Labels.MissError, Miss.left, Error);
   return true;
 }
 
@@ -84,28 +114,41 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 bool FArgDispatcherStrictTest::RunTest(const FString &Parameters) {
+  const auto &Fixture =
+      Testing::FP::Dispatcher::DispatcherFixtures().ArgStrict;
   typedef func::ArgDispatcher<std::string, int, std::string> FTestDispatcher;
-  FTestDispatcher dispatcher =
+  FTestDispatcher Dispatcher =
       func::create_arg_dispatcher<std::string, int, std::string>();
-  dispatcher = func::arg_dispatcher_register<std::string, int, std::string>(
-      dispatcher, std::string("double"),
-      [](const int &value) { return std::string(value == 4 ? "eight" : "x"); });
-  std::string key = "double";
-  int arg = 4;
-  auto hit = func::arg_dispatcher_dispatch_maybe<std::string, int, std::string>(
-      func::ArgDispatcherDispatch<std::string, int, std::string>{
-          &dispatcher, &key, &arg});
-  TestTrue("Argument dispatcher hit returns Just", hit.hasValue);
-  TestEqual("Argument dispatcher hit value", hit.value, std::string("eight"));
-  std::string missing = "triple";
-  auto miss =
+  const std::string RegisteredKey =
+      TCHAR_TO_UTF8(*Fixture.RegisteredKey);
+  const std::string MatchedOutput =
+      TCHAR_TO_UTF8(*Fixture.MatchedOutput);
+  const std::string OtherOutput = TCHAR_TO_UTF8(*Fixture.OtherOutput);
+  Dispatcher = func::arg_dispatcher_register<std::string, int, std::string>(
+      Dispatcher, RegisteredKey,
+      [&Fixture, MatchedOutput, OtherOutput](const int &Value) {
+        return Value == Fixture.MatchedInput ? MatchedOutput : OtherOutput;
+      });
+
+  std::string Key = RegisteredKey;
+  int Argument = Fixture.Input;
+  const auto Hit =
+      func::arg_dispatcher_dispatch_maybe<std::string, int, std::string>(
+          func::ArgDispatcherDispatch<std::string, int, std::string>{
+              &Dispatcher, &Key, &Argument});
+  TestTrue(*Fixture.Labels.HitPresent, Hit.hasValue);
+  TestEqual(*Fixture.Labels.HitValue, Hit.value, MatchedOutput);
+
+  std::string MissingKey = TCHAR_TO_UTF8(*Fixture.MissingKey);
+  const std::string MissingError =
+      TCHAR_TO_UTF8(*Fixture.MissingError);
+  const auto Miss =
       func::arg_dispatcher_dispatch_either<std::string, std::string, int,
                                            std::string>(
           func::ArgDispatcherDispatch<std::string, int, std::string>{
-              &dispatcher, &missing, &arg},
-          std::string("missing-handler"));
-  TestTrue("Argument dispatcher miss returns Left", miss.isLeft);
-  TestEqual("Argument dispatcher miss error", miss.left,
-            std::string("missing-handler"));
+              &Dispatcher, &MissingKey, &Argument},
+          MissingError);
+  TestTrue(*Fixture.Labels.MissSide, Miss.isLeft);
+  TestEqual(*Fixture.Labels.MissError, Miss.left, MissingError);
   return true;
 }

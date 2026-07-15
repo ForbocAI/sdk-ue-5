@@ -1,7 +1,7 @@
 // User Story: As a developer, I need this module to function.
 #include "CLI/CliHandlers.h"
 #include "Features/CLI/Bridge/CLIBridgeThunks.h"
-#include "Core/JsonInterop.h"
+#include "Features/API/Serialization/APISerializationAdapters.h"
 #include "Store.h"
 
 namespace {

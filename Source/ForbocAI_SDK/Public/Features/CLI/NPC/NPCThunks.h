@@ -52,7 +52,7 @@ inline FAgentResponse processNpc(rtk::EnhancedStore<RuntimeState> &Store,
   return AsyncAdapters::waitForResult(
       Store.dispatch(rtk::processNPC(NpcId, Text, TEXT("{}"), TEXT(""),
                                      FAgentState(),
-                                     rtk::InMemoryProtocolRuntime())));
+                                     rtk::InMemoryProtocolHandlerContext())));
 }
 
 template <typename RuntimeState = FRuntimeState>

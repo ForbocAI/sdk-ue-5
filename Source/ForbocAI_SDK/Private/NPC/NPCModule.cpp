@@ -144,7 +144,7 @@ AgentOps::Process(const FAgent &Agent, const FString &Input,
         Store->dispatch(rtk::processNPC(Agent.Id, Input,
                                         SerializeContextMap(Context),
                                         Agent.Persona, Agent.State,
-                                        rtk::LocalProtocolRuntime()))
+                                        rtk::LocalProtocolHandlerContext()))
             .then([resolve, Store](const FAgentResponse &Response) {
               resolve(Response);
             })

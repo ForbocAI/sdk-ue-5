@@ -1,6 +1,6 @@
 #include "Features/API/APIApi.h"
-#include "Core/JsonInterop.h"
-#include "CoreMinimal.h"
+#include "Features/API/Serialization/APISerializationAdapters.h"
+#include "Features/Testing/API/Codec/APICodecAdapters.h"
 #include "Misc/AutomationTest.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -11,15 +11,15 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FApiCodecSoulVerifyAliasTest::RunTest(const FString &Parameters) {
-  const FString Json = TEXT(
-      R"({"verifyValid":true,"verifyReason":"signature_ok"})");
+  const Testing::API::Codec::FSoulVerifyFixture &Fixture =
+      Testing::API::Codec::CodecFixtures().SoulVerify;
 
   FSoulVerifyResult Result;
-  TestTrue("Soul verify aliases decode",
-           APISlice::Detail::DecodeSoulVerifyResponse(Json, Result));
-  TestTrue("Alias validity mapped", Result.bValid);
-  TestEqual("Alias reason mapped", Result.Reason,
-            FString(TEXT("signature_ok")));
+  TestTrue(*Fixture.Labels.Decode,
+           APISlice::Detail::DecodeSoulVerifyResponse(Fixture.ResponseJson,
+                                                      Result));
+  TestEqual(*Fixture.Labels.Valid, Result.bValid, Fixture.bExpectedValid);
+  TestEqual(*Fixture.Labels.Reason, Result.Reason, Fixture.ExpectedReason);
   return true;
 }
 
@@ -31,24 +31,21 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FApiCodecBridgeRulesAliasTest::RunTest(const FString &Parameters) {
-  const FString Json = TEXT(R"([
-    {
-      "brRuleId": "rule_no_self_harm",
-      "ruleDescription": "No self harm",
-      "affectedActions": ["deny", "warn"]
-    }
-  ])");
+  const Testing::API::Codec::FBridgeRulesFixture &Fixture =
+      Testing::API::Codec::CodecFixtures().BridgeRules;
 
   TArray<FBridgeRule> Rules;
-  TestTrue("Bridge rule aliases decode",
-           APISlice::Detail::DecodeBridgeRulesResponse(Json, Rules));
-  TestEqual("One rule decoded", Rules.Num(), 1);
-  if (Rules.Num() == 1) {
-    TestEqual("Rule name uses alias when primary field is absent", Rules[0].RuleName,
-              FString(TEXT("rule_no_self_harm")));
-    TestEqual("Rule description preserved", Rules[0].RuleDescription,
-              FString(TEXT("No self harm")));
-    TestEqual("Affected actions preserved", Rules[0].RuleActionTypes.Num(), 2);
+  TestTrue(*Fixture.Labels.Decode,
+           APISlice::Detail::DecodeBridgeRulesResponse(Fixture.ResponseJson,
+                                                       Rules));
+  TestEqual(*Fixture.Labels.Count, Rules.Num(), Fixture.ExpectedCount);
+  if (Rules.IsValidIndex(Fixture.FirstIndex)) {
+    const FBridgeRule &Rule = Rules[Fixture.FirstIndex];
+    TestEqual(*Fixture.Labels.Name, Rule.RuleName, Fixture.ExpectedName);
+    TestEqual(*Fixture.Labels.Description, Rule.RuleDescription,
+              Fixture.ExpectedDescription);
+    TestEqual(*Fixture.Labels.ActionCount, Rule.RuleActionTypes.Num(),
+              Fixture.ExpectedActionCount);
   }
   return true;
 }
@@ -61,35 +58,28 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FApiCodecRulesetAliasTest::RunTest(const FString &Parameters) {
-  const FString Json = TEXT(R"({
-    "rulesetId": "preset_rpg",
-    "rulesetRules": [
-      {
-        "drRuleId": "rule_1",
-        "ruleName": "Stay in character",
-        "ruleAction": "speak",
-        "ruleReason": "Keep voice consistent"
-      }
-    ]
-  })");
+  const Testing::API::Codec::FRulesetFixture &Fixture =
+      Testing::API::Codec::CodecFixtures().Ruleset;
 
   FDirectiveRuleSet Ruleset;
-  TestTrue("Ruleset aliases decode",
-           APISlice::Detail::DecodeDirectiveRuleSetResponse(Json, Ruleset));
-  TestEqual("Ruleset id mapped to local id", Ruleset.Id,
-            FString(TEXT("preset_rpg")));
-  TestEqual("RulesetId preserved", Ruleset.RulesetId,
-            FString(TEXT("preset_rpg")));
-  TestEqual("One nested rule decoded", Ruleset.RulesetRules.Num(), 1);
-  if (Ruleset.RulesetRules.Num() == 1) {
-    TestEqual("Nested rule name mapped", Ruleset.RulesetRules[0].RuleName,
-              FString(TEXT("Stay in character")));
-    TestEqual("Nested rule has one action",
-              Ruleset.RulesetRules[0].RuleActionTypes.Num(), 1);
-    if (Ruleset.RulesetRules[0].RuleActionTypes.Num() == 1) {
-      TestEqual("Nested rule action mapped",
-                Ruleset.RulesetRules[0].RuleActionTypes[0],
-                FString(TEXT("speak")));
+  TestTrue(*Fixture.Labels.Decode,
+           APISlice::Detail::DecodeDirectiveRuleSetResponse(
+               Fixture.ResponseJson, Ruleset));
+  TestEqual(*Fixture.Labels.Id, Ruleset.Id, Fixture.ExpectedId);
+  TestEqual(*Fixture.Labels.RulesetId, Ruleset.RulesetId,
+            Fixture.ExpectedRulesetId);
+  TestEqual(*Fixture.Labels.RuleCount, Ruleset.RulesetRules.Num(),
+            Fixture.ExpectedRuleCount);
+  if (Ruleset.RulesetRules.IsValidIndex(Fixture.FirstRuleIndex)) {
+    const auto &Rule = Ruleset.RulesetRules[Fixture.FirstRuleIndex];
+    TestEqual(*Fixture.Labels.RuleName, Rule.RuleName,
+              Fixture.ExpectedRuleName);
+    TestEqual(*Fixture.Labels.ActionCount, Rule.RuleActionTypes.Num(),
+              Fixture.ExpectedActionCount);
+    if (Rule.RuleActionTypes.IsValidIndex(Fixture.FirstActionIndex)) {
+      TestEqual(*Fixture.Labels.Action,
+                Rule.RuleActionTypes[Fixture.FirstActionIndex],
+                Fixture.ExpectedAction);
     }
   }
   return true;
@@ -104,34 +94,17 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FApiCodecNullableProtocolFieldsTest::RunTest(const FString &Parameters) {
-  const FString Json = TEXT(R"({
-    "instruction": {
-      "type": "Finalize",
-      "valid": true,
-      "signature": null,
-      "memoryStore": [],
-      "stateTransform": {},
-      "action": null,
-      "dialogue": "hello there"
-    },
-    "tape": {
-      "observation": "look around",
-      "context": {},
-      "npcState": {},
-      "persona": null,
-      "memories": [],
-      "rulesetId": null,
-      "vectorQueried": true
-    }
-  })");
+  const Testing::API::Codec::FNullableProtocolFixture &Fixture =
+      Testing::API::Codec::CodecFixtures().NullableProtocol;
 
   FNPCProcessResponse Response;
-  TestTrue("Nullable protocol fields decode",
-           APISlice::Detail::DecodeNpcProcessResponse(Json, Response));
-  TestTrue("Nullable finalize signature becomes empty",
+  TestTrue(*Fixture.Labels.Decode,
+           APISlice::Detail::DecodeNpcProcessResponse(Fixture.ResponseJson,
+                                                      Response));
+  TestTrue(*Fixture.Labels.Signature,
            Response.Instruction.Signature.IsEmpty());
-  TestTrue("Nullable tape persona becomes empty", Response.Tape.Persona.IsEmpty());
-  TestTrue("Nullable ruleset id becomes empty",
+  TestTrue(*Fixture.Labels.Persona, Response.Tape.Persona.IsEmpty());
+  TestTrue(*Fixture.Labels.RulesetId,
            Response.Tape.RulesetId.IsEmpty());
   return true;
 }
@@ -145,14 +118,15 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FApiCodecBridgeValidationWrapperTest::RunTest(const FString &Parameters) {
-  const FString Json = TEXT(
-      R"({"brResult":{"valid":false,"reason":"blocked"}})");
+  const Testing::API::Codec::FBridgeValidationFixture &Fixture =
+      Testing::API::Codec::CodecFixtures().BridgeValidation;
 
   FValidationResult Result;
-  TestTrue("Wrapped bridge result decodes",
-           APISlice::Detail::DecodeValidationResult(Json, Result));
-  TestFalse("Wrapped validity mapped", Result.bValid);
-  TestEqual("Wrapped reason mapped", Result.Reason, FString(TEXT("blocked")));
+  TestTrue(*Fixture.Labels.Decode,
+           APISlice::Detail::DecodeValidationResult(Fixture.ResponseJson,
+                                                    Result));
+  TestEqual(*Fixture.Labels.Valid, Result.bValid, Fixture.bExpectedValid);
+  TestEqual(*Fixture.Labels.Reason, Result.Reason, Fixture.ExpectedReason);
   return true;
 }
 
@@ -170,16 +144,13 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
  */
 bool FApiCodecActionFromObjectGaTypeTest::RunTest(const FString &Parameters) {
-  TSharedPtr<FJsonObject> Obj = MakeShared<FJsonObject>();
-  Obj->SetStringField(TEXT("gaType"), TEXT("speak"));
-  Obj->SetStringField(TEXT("actionTarget"), TEXT("player"));
-  Obj->SetStringField(TEXT("actionReason"), TEXT("greeting"));
+  const Testing::API::Codec::FActionAliasesFixture &Fixture =
+      Testing::API::Codec::CodecFixtures().ActionAliases;
 
-  FAgentAction Action = JsonInterop::ActionFromObject(Obj);
+  const FAgentAction Action = JsonInterop::ActionFromObject(Fixture.Input);
 
-  TestEqual("gaType maps to Type", Action.Type, FString(TEXT("speak")));
-  TestEqual("actionTarget maps to Target", Action.Target, FString(TEXT("player")));
-  TestEqual("actionReason maps to Reason", Action.Reason,
-            FString(TEXT("greeting")));
+  TestEqual(*Fixture.Labels.Type, Action.Type, Fixture.ExpectedType);
+  TestEqual(*Fixture.Labels.Target, Action.Target, Fixture.ExpectedTarget);
+  TestEqual(*Fixture.Labels.Reason, Action.Reason, Fixture.ExpectedReason);
   return true;
 }

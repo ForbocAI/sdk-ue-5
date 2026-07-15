@@ -19,5 +19,9 @@ To run the test scenarios, including the parity verifier, contract harness, and 
    ```bash
    scripts/forbocai-ue-test-game --mode autoplay
    ```
+4. Run the SDK automation tests, optionally narrowed to a test prefix:
+   ```bash
+   scripts/testing/run-ue-automation-tests ForbocAI.Core.FunctionalCore
+   ```
 
 The commandlet is `ForbocAITestGame`. It lives in this test-game module and delegates scenario commands through `TestGame::CommandSurface`, which calls the SDK `CLIOps` command boundary.

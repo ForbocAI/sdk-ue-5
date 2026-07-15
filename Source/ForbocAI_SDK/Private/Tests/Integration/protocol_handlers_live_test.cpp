@@ -7,7 +7,7 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "Features/API/APIApi.h"
-#include "Core/JsonInterop.h"
+#include "Features/API/Serialization/APISerializationAdapters.h"
 #include "HAL/PlatformProcess.h"
 #include "Misc/AutomationTest.h"
 #include "Features/Config/ConfigAdapters.h"

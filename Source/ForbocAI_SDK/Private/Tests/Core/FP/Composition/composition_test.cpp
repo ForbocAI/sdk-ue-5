@@ -1,5 +1,5 @@
 #include "Core/fp.hpp"
-#include "CoreMinimal.h"
+#include "Features/Testing/FP/Composition/CompositionAdapters.h"
 #include "Misc/AutomationTest.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -8,25 +8,37 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 bool FFunctionalCookbookCollectionsTest::RunTest(const FString &Parameters) {
-  std::vector<int> values{1, 2, 2, 3};
-  int sum = func::fold_vector<int, int>(
-      values, 0, [](int acc, const int &value) { return acc + value; });
-  TestEqual("fold_vector sums values", sum, 8);
+  const auto &Fixture =
+      Testing::FP::Composition::CompositionFixtures().Collections;
+  const std::vector<int> &Values = Fixture.Values;
 
-  std::vector<int> twos = func::filter_vector<int>(
-      values, [](const int &value) { return value == 2; });
-  TestEqual("filter_vector keeps matching values",
-            static_cast<int>(twos.size()), 2);
-  auto found = func::find_vector<int>(
-      values, [](const int &value) { return value == 3; });
-  TestTrue("find_vector returns Just on hit", found.hasValue);
-  TestEqual("find_vector hit value", found.value, 3);
-  std::vector<int> unique = func::unique_by<int>(
-      values, [](const int &value) { return value; });
-  TestEqual("unique_by keeps first values", static_cast<int>(unique.size()),
-            3);
-  TestTrue("contains_value finds existing value",
-           func::contains_value<int>(unique, 2));
+  const int Sum = func::fold<int, int>(
+      Values, Fixture.FoldSeed,
+      [](const int Accumulator, const int &Value) {
+        return Accumulator + Value;
+      });
+  TestEqual(*Fixture.Labels.Fold, Sum, Fixture.FoldExpected);
+
+  const std::vector<int> Filtered = func::filter<int>(
+      Values, [&Fixture](const int &Value) {
+        return Value == Fixture.FilterValue;
+      });
+  TestEqual(*Fixture.Labels.Filter, static_cast<int>(Filtered.size()),
+            Fixture.FilterExpectedCount);
+
+  const auto Found = func::find_vector<int>(
+      Values, [&Fixture](const int &Value) {
+        return Value == Fixture.FindValue;
+      });
+  TestTrue(*Fixture.Labels.FindPresent, Found.hasValue);
+  TestEqual(*Fixture.Labels.FindValue, Found.value, Fixture.FindValue);
+
+  const std::vector<int> Unique = func::unique_by<int>(
+      Values, [](const int &Value) { return Value; });
+  TestEqual(*Fixture.Labels.Unique, static_cast<int>(Unique.size()),
+            Fixture.UniqueExpectedCount);
+  TestTrue(*Fixture.Labels.Contains,
+           func::contains_value<int>(Unique, Fixture.ContainsValue));
   return true;
 }
 
@@ -36,65 +48,94 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 bool FFunctionalCookbookMaybeEitherTest::RunTest(const FString &Parameters) {
-  std::vector<int> values{2, 4};
-  auto traversed = func::traverse_maybe<int>(
-      values, [](const int &value) { return func::just(value * 2); });
-  TestTrue("traverse_maybe succeeds when all values exist",
-           traversed.hasValue);
-  TestEqual("traverse_maybe maps two values",
-            static_cast<int>(traversed.value.size()), 2);
-  TestEqual("traverse_maybe first mapped value", traversed.value[0], 4);
+  const auto &Fixture =
+      Testing::FP::Composition::CompositionFixtures().MaybeEither;
+  const std::vector<int> &Values = Fixture.Values;
 
-  std::vector<func::Maybe<int>> optionalValues{
-      func::just(1), func::nothing<int>()};
-  auto sequenced = func::sequence_maybe<int>(optionalValues);
-  TestFalse("sequence_maybe fails when any value is Nothing",
-            sequenced.hasValue);
-  auto lifted = func::lift3<int, int, int>(
-      func::just(1), func::just(2), func::just(3),
-      [](int a, int b, int c) { return a + b + c; });
-  TestTrue("lift3 succeeds with all values", lifted.hasValue);
-  TestEqual("lift3 combines values", lifted.value, 6);
-
-  auto folded = func::fold_either<std::string, int, int>(
-      values, 0,
-      [](int acc, const int &value) -> func::Either<std::string, int> {
-        return value < 5 ? func::make_right<std::string, int>(acc + value)
-                         : func::make_left<std::string, int>(
-                               std::string("too-large"));
+  const auto Traversed = func::traverse<int>(
+      Values, [&Fixture](const int &Value) {
+        return func::just(Value * Fixture.TraverseMultiplier);
       });
-  TestFalse("fold_either succeeds while steps succeed", folded.isLeft);
-  TestEqual("fold_either accumulated value", folded.right, 6);
+  TestTrue(*Fixture.Labels.TraversePresent, Traversed.hasValue);
+  TestEqual(*Fixture.Labels.TraverseCount,
+            static_cast<int>(Traversed.value.size()),
+            Fixture.TraverseExpectedCount);
+  TestEqual(*Fixture.Labels.TraverseFirst,
+            Traversed.value[Fixture.FirstIndex],
+            Fixture.TraverseFirstExpected);
 
-  int indexedEffectTotal = 0;
-  func::for_each_indexed(values, values.size(),
-                         [&indexedEffectTotal](const int &value) {
-                           indexedEffectTotal += value;
-                         });
-  TestEqual("for_each_indexed visits values", indexedEffectTotal, 6);
-  const int indexedSum = func::fold_indexed(
-      values, values.size(), 0,
-      [](const int &acc, const int &value) { return acc + value; });
-  TestEqual("fold_indexed accumulates values", indexedSum, 6);
+  const std::vector<func::Maybe<int>> OptionalValues{
+      func::just(Fixture.OptionalPresent), func::nothing<int>()};
+  const auto Sequenced = func::sequence_maybe<int>(OptionalValues);
+  TestFalse(*Fixture.Labels.SequenceMissing, Sequenced.hasValue);
 
-  auto indexedFind = func::find_indexed(
-      values, values.size(), [](const int &value) { return value == 2; });
-  TestTrue("find_indexed finds matching value", indexedFind.hasValue);
-  TestEqual("find_indexed returns matching value", indexedFind.value, 2);
-  TestTrue("any_indexed finds matching predicate",
-           func::any_indexed(values, values.size(),
-                             [](const int &value) { return value > 2; }));
-  TestTrue("all_indexed validates all values",
-           func::all_indexed(values, values.size(),
-                             [](const int &value) { return value > 0; }));
-
-  const std::vector<int> grid =
-      func::map_grid<int>(2, 3, [](const func::GridIndex &index) {
-        return static_cast<int>(index.Row * 10 + index.Column);
+  const auto Lifted = func::lift3<int, int, int>(
+      func::just(Fixture.LiftFirst), func::just(Fixture.LiftSecond),
+      func::just(Fixture.LiftThird),
+      [](const int First, const int Second, const int Third) {
+        return First + Second + Third;
       });
-  TestEqual("map_grid output size", static_cast<int>(grid.size()), 6);
-  TestEqual("map_grid first value", grid[0], 0);
-  TestEqual("map_grid row-major value", grid[4], 11);
+  TestTrue(*Fixture.Labels.LiftPresent, Lifted.hasValue);
+  TestEqual(*Fixture.Labels.LiftValue, Lifted.value, Fixture.LiftExpected);
+
+  const auto Folded = func::fold_either<std::string, int, int>(
+      Values, Fixture.FoldSeed,
+      [&Fixture](const int Accumulator,
+                 const int &Value) -> func::Either<std::string, int> {
+        return Value < Fixture.FoldLimit
+                   ? func::make_right<std::string, int>(Accumulator + Value)
+                   : func::make_left<std::string, int>(
+                         std::string(TCHAR_TO_UTF8(*Fixture.FoldError)));
+      });
+  TestFalse(*Fixture.Labels.FoldRight, Folded.isLeft);
+  TestEqual(*Fixture.Labels.FoldValue, Folded.right, Fixture.FoldExpected);
+
+  int IndexedEffectTotal = Fixture.IndexedSeed;
+  func::for_each_indexed(
+      Values, Values.size(), [&IndexedEffectTotal](const int &Value) {
+        IndexedEffectTotal += Value;
+      });
+  TestEqual(*Fixture.Labels.ForEach, IndexedEffectTotal,
+            Fixture.IndexedExpected);
+
+  const int IndexedSum = func::fold_indexed(
+      Values, Values.size(), Fixture.IndexedSeed,
+      [](const int &Accumulator, const int &Value) {
+        return Accumulator + Value;
+      });
+  TestEqual(*Fixture.Labels.FoldIndexed, IndexedSum,
+            Fixture.IndexedExpected);
+
+  const auto IndexedFind = func::find_indexed(
+      Values, Values.size(), [&Fixture](const int &Value) {
+        return Value == Fixture.IndexedFindValue;
+      });
+  TestTrue(*Fixture.Labels.FindPresent, IndexedFind.hasValue);
+  TestEqual(*Fixture.Labels.FindValue, IndexedFind.value,
+            Fixture.IndexedFindValue);
+  TestTrue(*Fixture.Labels.Any,
+           func::any_indexed(Values, Values.size(),
+                             [&Fixture](const int &Value) {
+                               return Value > Fixture.AnyThreshold;
+                             }));
+  TestTrue(*Fixture.Labels.All,
+           func::all_indexed(Values, Values.size(),
+                             [&Fixture](const int &Value) {
+                               return Value > Fixture.AllThreshold;
+                             }));
+
+  const std::vector<int> Grid = func::map_grid<int>(
+      Fixture.GridRows, Fixture.GridColumns,
+      [&Fixture](const func::GridIndex &Index) {
+        return static_cast<int>(Index.Row * Fixture.GridRowMultiplier +
+                                Index.Column);
+      });
+  TestEqual(*Fixture.Labels.GridCount, static_cast<int>(Grid.size()),
+            Fixture.GridExpectedCount);
+  TestEqual(*Fixture.Labels.GridFirst, Grid[Fixture.GridFirstIndex],
+            Fixture.GridFirstExpected);
+  TestEqual(*Fixture.Labels.GridRowMajor, Grid[Fixture.GridRowMajorIndex],
+            Fixture.GridRowMajorExpected);
   return true;
 }
 
@@ -104,67 +145,101 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 bool FFunctionalCoreTsNameParityTest::RunTest(const FString &Parameters) {
-  auto present = func::just(5);
-  auto missing = func::nothing<int>();
-  TestTrue("isJust mirrors TS", func::isJust(present));
-  TestFalse("isJust rejects missing values", func::isJust(missing));
-  TestTrue("isNothing mirrors TS", func::isNothing(missing));
-  TestEqual("orElse mirrors TS", func::orElse(missing, 9), 9);
-  TestEqual("requireJust mirrors TS", func::requireJust(present, "missing"), 5);
+  const auto &Fixture =
+      Testing::FP::Composition::CompositionFixtures().NameParity;
 
-  int raw = 11;
-  auto pointerValue = func::fromNullable(&raw);
-  TestTrue("fromNullable pointer returns Just", func::isJust(pointerValue));
-  TestEqual("fromNullable pointer value", pointerValue.value, 11);
-  auto flaggedValue = func::fromNullable(std::string("ready"), true);
-  TestTrue("fromNullable value flag returns Just", func::isJust(flaggedValue));
-  TestEqual("fromNullable value flag content", flaggedValue.value,
-            std::string("ready"));
-  auto flaggedMissing = func::fromNullable(std::string(""), false);
-  TestTrue("fromNullable false flag returns Nothing",
-           func::isNothing(flaggedMissing));
+  const auto Present = func::just(Fixture.PresentValue);
+  const auto Missing = func::nothing<int>();
+  TestTrue(*Fixture.Labels.IsJust, func::isJust(Present));
+  TestFalse(*Fixture.Labels.IsJustMissing, func::isJust(Missing));
+  TestTrue(*Fixture.Labels.IsNothing, func::isNothing(Missing));
+  TestEqual(*Fixture.Labels.OrElse,
+            func::orElse(Missing, Fixture.OrElseFallback),
+            Fixture.OrElseFallback);
+  TestEqual(*Fixture.Labels.RequireJust,
+            func::requireJust(
+                Present, std::string(TCHAR_TO_UTF8(*Fixture.MissingMessage))),
+            Fixture.PresentValue);
 
-  auto failure = func::left<std::string, int>(std::string("bad"));
-  auto success = func::right<std::string, int>(3);
-  TestTrue("isLeft mirrors TS", func::isLeft(failure));
-  TestFalse("isRight rejects Left", func::isRight(failure));
-  TestTrue("isRight mirrors TS", func::isRight(success));
-  auto mapped = func::efmap<std::string, int>(
-      success, [](int value) { return value + 2; });
-  TestTrue("efmap keeps Right", func::isRight(mapped));
-  TestEqual("efmap maps right payload", mapped.right, 5);
+  int Raw = Fixture.PointerValue;
+  const auto PointerValue = func::fromNullable(&Raw);
+  TestTrue(*Fixture.Labels.PointerPresent, func::isJust(PointerValue));
+  TestEqual(*Fixture.Labels.PointerValue, PointerValue.value,
+            Fixture.PointerValue);
 
-  func::Predicate<int> isEven = [](const int &value) {
-    return value % 2 == 0;
-  };
-  auto predicateCase = func::testCase<int, std::string>(
-      6, isEven, [](const int &) { return std::string("even"); });
-  TestTrue("testCase predicate returns Just", func::isJust(predicateCase));
-  TestEqual("testCase predicate payload", predicateCase.value,
-            std::string("even"));
-  auto literalCase = func::testCase<int, std::string>(
-      4, 4, [](const int &) { return std::string("literal"); });
-  TestTrue("testCase literal returns Just", func::isJust(literalCase));
-  auto wildcardCase = func::testCase<int, std::string>(
-      9, func::_, [](const int &value) {
-        return std::string("got ") + std::to_string(value);
+  const std::string FlaggedText = TCHAR_TO_UTF8(*Fixture.FlaggedValue);
+  const auto FlaggedValue =
+      func::fromNullable(FlaggedText, Fixture.bFlaggedPresent);
+  TestTrue(*Fixture.Labels.FlaggedPresent, func::isJust(FlaggedValue));
+  TestEqual(*Fixture.Labels.FlaggedValue, FlaggedValue.value, FlaggedText);
+
+  const std::string FlaggedMissingText =
+      TCHAR_TO_UTF8(*Fixture.FlaggedMissingValue);
+  const auto FlaggedMissing =
+      func::fromNullable(FlaggedMissingText, Fixture.bFlaggedMissingPresent);
+  TestTrue(*Fixture.Labels.FlaggedMissing, func::isNothing(FlaggedMissing));
+
+  const std::string FailureText = TCHAR_TO_UTF8(*Fixture.FailureValue);
+  const auto Failure = func::left<std::string, int>(FailureText);
+  const auto Success = func::right<std::string, int>(Fixture.SuccessValue);
+  TestTrue(*Fixture.Labels.IsLeft, func::isLeft(Failure));
+  TestFalse(*Fixture.Labels.IsRightRejectsLeft, func::isRight(Failure));
+  TestTrue(*Fixture.Labels.IsRight, func::isRight(Success));
+
+  const auto Mapped = func::efmap<std::string, int>(
+      Success, [&Fixture](const int Value) {
+        return Value + Fixture.MapDelta;
       });
-  TestTrue("testCase wildcard returns Just", func::isJust(wildcardCase));
-  TestEqual("testCase wildcard payload", wildcardCase.value,
-            std::string("got 9"));
+  TestTrue(*Fixture.Labels.EfmapRight, func::isRight(Mapped));
+  TestEqual(*Fixture.Labels.EfmapValue, Mapped.right, Fixture.MapExpected);
 
-  std::vector<func::MatchCase<int, std::string>> cases;
-  cases.push_back(func::when<int, std::string>(
-      func::equals<int>(2), [](const int &) { return std::string("two"); }));
-  cases.push_back(func::when<int, std::string>(
+  func::Predicate<int> IsEven = [&Fixture](const int &Value) {
+    return Value % Fixture.EvenDivisor == Fixture.EvenRemainder;
+  };
+  const std::string PredicateText = TCHAR_TO_UTF8(*Fixture.PredicateValue);
+  const auto PredicateCase = func::testCase<int, std::string>(
+      Fixture.PredicateInput, IsEven,
+      [PredicateText](const int &) { return PredicateText; });
+  TestTrue(*Fixture.Labels.PredicatePresent, func::isJust(PredicateCase));
+  TestEqual(*Fixture.Labels.PredicateValue, PredicateCase.value,
+            PredicateText);
+
+  const std::string LiteralText = TCHAR_TO_UTF8(*Fixture.LiteralValue);
+  const auto LiteralCase = func::testCase<int, std::string>(
+      Fixture.LiteralInput, Fixture.LiteralExpected,
+      [LiteralText](const int &) { return LiteralText; });
+  TestTrue(*Fixture.Labels.LiteralPresent, func::isJust(LiteralCase));
+
+  const std::string WildcardPrefix = TCHAR_TO_UTF8(*Fixture.WildcardPrefix);
+  const std::string WildcardExpected =
+      TCHAR_TO_UTF8(*Fixture.WildcardExpected);
+  const auto WildcardCase = func::testCase<int, std::string>(
+      Fixture.WildcardInput, func::_,
+      [WildcardPrefix](const int &Value) {
+        return WildcardPrefix + std::to_string(Value);
+      });
+  TestTrue(*Fixture.Labels.WildcardPresent, func::isJust(WildcardCase));
+  TestEqual(*Fixture.Labels.WildcardValue, WildcardCase.value,
+            WildcardExpected);
+
+  const std::string ExactText = TCHAR_TO_UTF8(*Fixture.ExactValue);
+  const std::string FallbackText = TCHAR_TO_UTF8(*Fixture.FallbackValue);
+  std::vector<func::MatchCase<int, std::string>> Cases;
+  Cases.push_back(func::when<int, std::string>(
+      func::equals<int>(Fixture.ExactInput),
+      [ExactText](const int &) { return ExactText; }));
+  Cases.push_back(func::when<int, std::string>(
       func::wildcard<int>(),
-      [](const int &) { return std::string("fallback"); }));
-  auto matched = func::multiMatch<int, std::string>(2, cases);
-  TestTrue("multiMatch returns Just", func::isJust(matched));
-  TestEqual("multiMatch exact payload", matched.value, std::string("two"));
-  auto fallback = func::multiMatch<int, std::string>(7, cases);
-  TestTrue("multiMatch wildcard returns Just", func::isJust(fallback));
-  TestEqual("multiMatch fallback payload", fallback.value,
-            std::string("fallback"));
+      [FallbackText](const int &) { return FallbackText; }));
+
+  const auto Matched =
+      func::multiMatch<int, std::string>(Fixture.MatchInput, Cases);
+  TestTrue(*Fixture.Labels.MatchPresent, func::isJust(Matched));
+  TestEqual(*Fixture.Labels.MatchValue, Matched.value, ExactText);
+
+  const auto Fallback =
+      func::multiMatch<int, std::string>(Fixture.FallbackInput, Cases);
+  TestTrue(*Fixture.Labels.FallbackPresent, func::isJust(Fallback));
+  TestEqual(*Fixture.Labels.FallbackValue, Fallback.value, FallbackText);
   return true;
 }

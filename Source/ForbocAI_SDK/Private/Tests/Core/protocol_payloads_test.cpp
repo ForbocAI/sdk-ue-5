@@ -5,7 +5,7 @@
 
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
-#include "Core/JsonInterop.h"
+#include "Features/API/Serialization/APISerializationAdapters.h"
 #include "Features/Protocol/ProtocolThunks.h"
 #include "Features/Protocol/Requests/RequestsTypes.h"
 #include "Features/API/APIAdapters.h"

@@ -18,7 +18,7 @@ forbocai_run_commandlet() {
     return "$command_status"
   fi
 
-  if ! grep -Fq "$success_marker" "$output_file"; then
+  if [[ -n "$success_marker" ]] && ! grep -Fq "$success_marker" "$output_file"; then
     echo "Unreal exited without the required commandlet success marker: $success_marker" >&2
     rm -f "$output_file"
     return 1

@@ -1,0 +1,69 @@
+#pragma once
+
+#include "Core/RTK/Query/Prelude.hpp"
+#include "Core/RTK/Query/Types/Types.hpp"
+
+namespace rtk {
+namespace detail {
+template <typename T, typename = void> struct HasEqualOperator : std::false_type {};
+
+template <typename T>
+struct HasEqualOperator<
+    T, typename std::enable_if<
+           std::is_convertible<decltype(std::declval<const T &>() ==
+                                        std::declval<const T &>()),
+                               bool>::value>::type> : std::true_type {};
+
+template <typename T>
+T copyWithStructuralSharingImpl(const T &OldValue, const T &NewValue,
+                                std::true_type) {
+  return OldValue == NewValue ? OldValue : NewValue;
+}
+
+template <typename T>
+T copyWithStructuralSharingImpl(const T &, const T &NewValue,
+                                std::false_type) {
+  return NewValue;
+}
+
+template <typename T, typename Enable = void> struct JsonDeserializer;
+
+template <typename JsonValueT>
+bool deserializeStringArrayRecursive(
+    const TArray<TSharedPtr<JsonValueT>> &JsonValues, int32 Index,
+    TArray<FString> &OutValue) {
+  return Index == JsonValues.Num()
+             ? true
+             : !JsonValues[Index].IsValid()
+                   ? false
+                   : (OutValue.Add(JsonValues[Index]->AsString()),
+                      deserializeStringArrayRecursive(JsonValues, Index + 1,
+                                                      OutValue));
+}
+
+template <typename T, typename JsonValueT>
+bool deserializeStructArrayRecursive(
+    const TArray<TSharedPtr<JsonValueT>> &JsonValues, int32 Index,
+    TArray<T> &OutValue) {
+  const TSharedPtr<FJsonObject> JsonObject =
+      Index == JsonValues.Num()
+          ? TSharedPtr<FJsonObject>()
+          : (JsonValues[Index].IsValid() ? JsonValues[Index]->AsObject()
+                                         : TSharedPtr<FJsonObject>());
+  T Item;
+  return Index == JsonValues.Num()
+             ? true
+             : !JsonValues[Index].IsValid()
+                   ? false
+                   : !JsonObject.IsValid()
+                         ? false
+                         : !FJsonObjectConverter::JsonObjectToUStruct(
+                               JsonObject.ToSharedRef(), T::StaticStruct(),
+                               &Item, 0, 0)
+                               ? false
+                               : (OutValue.Add(Item),
+                                  deserializeStructArrayRecursive<T>(
+                                      JsonValues, Index + 1, OutValue));
+}
+} // namespace detail
+} // namespace rtk

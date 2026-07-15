@@ -1,4 +1,4 @@
-#include "Features/Dependencies/Process/ProcessAdapters.h"
+#include "Features/Dependencies/Process/DependenciesProcessAdapters.h"
 #include "HAL/PlatformFileManager.h"
 #include "HAL/PlatformProcess.h"
 #include "Misc/Paths.h"

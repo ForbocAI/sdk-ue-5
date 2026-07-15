@@ -578,6 +578,7 @@ def check_unit(unit: SourceUnit, plugins: dict[str, object]) -> list[Finding]:
 # --- Global checks ---------------------------------------------------------
 
 SOURCE_SUFFIXES = {".c", ".cc", ".cpp", ".cxx", ".h", ".hh", ".hpp", ".hxx"}
+NON_PROGRAM_STORE_DIRS = {"Core", "Features", "Views", "Tests", "Intermediate"}
 
 
 def discover_store_paths(project_root: Path) -> list[Path]:
@@ -590,7 +591,9 @@ def discover_store_paths(project_root: Path) -> list[Path]:
         if path.is_file()
         and path.suffix.lower() in SOURCE_SUFFIXES
         and path.stem.lower().endswith("store")
-        and not {"Features", "Views", "Tests", "Intermediate"}.intersection(path.parts)
+        and not NON_PROGRAM_STORE_DIRS.intersection(
+            path.relative_to(source_root).parts[:-1]
+        )
     )
 
 

@@ -1,0 +1,79 @@
+{
+  "keyLookup": {
+    "entries": [
+      {
+        "key": "a",
+        "value": 1,
+        "presentLabel": "Key 'a' found",
+        "valueLabel": "Key 'a' returns 1"
+      },
+      {
+        "key": "b",
+        "value": 2,
+        "presentLabel": "Key 'b' found",
+        "valueLabel": "Key 'b' returns 2"
+      },
+      {
+        "key": "c",
+        "value": 3,
+        "presentLabel": "Key 'c' found",
+        "valueLabel": "Key 'c' returns 3"
+      }
+    ]
+  },
+  "missingKey": {
+    "entry": {
+      "key": "a",
+      "value": 1
+    },
+    "missingKey": "z",
+    "label": "Missing key returns nothing"
+  },
+  "hasAndKeys": {
+    "entries": [
+      {
+        "key": "x",
+        "value": 10,
+        "presentLabel": "has('x') is true"
+      },
+      {
+        "key": "y",
+        "value": 20,
+        "presentLabel": "has('y') is true"
+      }
+    ],
+    "missingKey": "z",
+    "missingLabel": "has('z') is false",
+    "expectedCount": 2,
+    "countLabel": "keys() has 2 entries"
+  },
+  "eitherMiss": {
+    "entry": {
+      "key": "ready",
+      "value": 7
+    },
+    "missingKey": "absent",
+    "error": "missing",
+    "labels": {
+      "hitSide": "Existing key returns Right",
+      "hitValue": "Existing key result",
+      "missSide": "Missing key returns Left",
+      "missError": "Missing key error"
+    }
+  },
+  "argStrict": {
+    "registeredKey": "double",
+    "missingKey": "triple",
+    "input": 4,
+    "matchedInput": 4,
+    "matchedOutput": "eight",
+    "otherOutput": "x",
+    "missingError": "missing-handler",
+    "labels": {
+      "hitPresent": "Argument dispatcher hit returns Just",
+      "hitValue": "Argument dispatcher hit value",
+      "missSide": "Argument dispatcher miss returns Left",
+      "missError": "Argument dispatcher miss error"
+    }
+  }
+}

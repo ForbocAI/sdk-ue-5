@@ -1,0 +1,134 @@
+{
+  "soulVerify": {
+    "response": {
+      "verifyValid": true,
+      "verifyReason": "signature_ok"
+    },
+    "expected": {
+      "valid": true,
+      "reason": "signature_ok"
+    },
+    "labels": {
+      "decode": "Soul verify aliases decode",
+      "valid": "Alias validity mapped",
+      "reason": "Alias reason mapped"
+    }
+  },
+  "bridgeRules": {
+    "response": [
+      {
+        "brRuleId": "rule_no_self_harm",
+        "ruleDescription": "No self harm",
+        "affectedActions": ["deny", "warn"]
+      }
+    ],
+    "expected": {
+      "count": 1,
+      "firstIndex": 0,
+      "name": "rule_no_self_harm",
+      "description": "No self harm",
+      "actionCount": 2
+    },
+    "labels": {
+      "decode": "Bridge rule aliases decode",
+      "count": "One rule decoded",
+      "name": "Rule name uses alias when primary field is absent",
+      "description": "Rule description preserved",
+      "actionCount": "Affected actions preserved"
+    }
+  },
+  "ruleset": {
+    "response": {
+      "rulesetId": "preset_rpg",
+      "rulesetRules": [
+        {
+          "drRuleId": "rule_1",
+          "ruleName": "Stay in character",
+          "ruleAction": "speak",
+          "ruleReason": "Keep voice consistent"
+        }
+      ]
+    },
+    "expected": {
+      "id": "preset_rpg",
+      "rulesetId": "preset_rpg",
+      "ruleCount": 1,
+      "firstRuleIndex": 0,
+      "ruleName": "Stay in character",
+      "actionCount": 1,
+      "firstActionIndex": 0,
+      "action": "speak"
+    },
+    "labels": {
+      "decode": "Ruleset aliases decode",
+      "id": "Ruleset id mapped to local id",
+      "rulesetId": "RulesetId preserved",
+      "ruleCount": "One nested rule decoded",
+      "ruleName": "Nested rule name mapped",
+      "actionCount": "Nested rule has one action",
+      "action": "Nested rule action mapped"
+    }
+  },
+  "nullableProtocol": {
+    "response": {
+      "instruction": {
+        "type": "Finalize",
+        "valid": true,
+        "signature": null,
+        "memoryStore": [],
+        "stateTransform": {},
+        "action": null,
+        "dialogue": "hello there"
+      },
+      "tape": {
+        "observation": "look around",
+        "context": {},
+        "npcState": {},
+      "structuredPersona": null,
+        "memories": [],
+        "rulesetId": null,
+        "vectorQueried": true
+      }
+    },
+    "labels": {
+      "decode": "Nullable protocol fields decode",
+      "signature": "Nullable finalize signature becomes empty",
+      "persona": "Nullable tape persona becomes empty",
+      "rulesetId": "Nullable ruleset id becomes empty"
+    }
+  },
+  "bridgeValidation": {
+    "response": {
+      "brResult": {
+        "valid": false,
+        "reason": "blocked"
+      }
+    },
+    "expected": {
+      "valid": false,
+      "reason": "blocked"
+    },
+    "labels": {
+      "decode": "Wrapped bridge result decodes",
+      "valid": "Wrapped validity mapped",
+      "reason": "Wrapped reason mapped"
+    }
+  },
+  "actionAliases": {
+    "input": {
+      "gaType": "speak",
+      "actionTarget": "player",
+      "actionReason": "greeting"
+    },
+    "expected": {
+      "type": "speak",
+      "target": "player",
+      "reason": "greeting"
+    },
+    "labels": {
+      "type": "gaType maps to Type",
+      "target": "actionTarget maps to Target",
+      "reason": "actionReason maps to Reason"
+    }
+  }
+}

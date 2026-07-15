@@ -1,0 +1,100 @@
+{
+  "predicate": {
+    "pivot": 0,
+    "negative": {
+      "input": -5,
+      "expected": "negative",
+      "labels": {
+        "present": "Negative matched",
+        "value": "Negative result"
+      }
+    },
+    "zero": {
+      "input": 0,
+      "expected": "zero",
+      "labels": {
+        "present": "Zero matched",
+        "value": "Zero result"
+      }
+    },
+    "positive": {
+      "input": 42,
+      "expected": "positive",
+      "labels": {
+        "present": "Positive matched",
+        "value": "Positive result"
+      }
+    }
+  },
+  "wildcard": {
+    "exactInput": 1,
+    "exactExpected": "one",
+    "fallbackInput": 99,
+    "fallbackExpected": "default",
+    "labels": {
+      "exactPresent": "Exact match found",
+      "exactValue": "Exact match result",
+      "fallbackPresent": "Wildcard matched",
+      "fallbackValue": "Wildcard result"
+    }
+  },
+  "noMatch": {
+    "registeredInput": 1,
+    "registeredResult": "one",
+    "missingInput": 99,
+    "label": "No match returns nothing"
+  },
+  "equals": {
+    "first": {
+      "input": "alpha",
+      "result": 1,
+      "labels": {
+        "present": "alpha matched",
+        "value": "alpha returns 1"
+      }
+    },
+    "second": {
+      "input": "beta",
+      "result": 2,
+      "labels": {
+        "present": "beta matched",
+        "value": "beta returns 2"
+      }
+    },
+    "third": {
+      "input": "gamma",
+      "result": 3
+    },
+    "missingInput": "delta",
+    "missingLabel": "delta not matched"
+  },
+  "nullablePointer": {
+    "value": 42,
+    "labels": {
+      "present": "Non-null pointer is just",
+      "value": "Value from pointer",
+      "missing": "Null pointer is nothing"
+    }
+  },
+  "nullableValue": {
+    "validValue": "hello",
+    "emptyValue": "",
+    "validFlag": true,
+    "invalidFlag": false,
+    "labels": {
+      "present": "Valid value is just",
+      "value": "Valid value content",
+      "missing": "Invalid value is nothing"
+    }
+  },
+  "requireJust": {
+    "value": 42,
+    "successMessage": "should not throw",
+    "failureMessage": "expected failure",
+    "labels": {
+      "value": "require_just extracts value",
+      "error": "Error message matches",
+      "throws": "require_just throws on nothing"
+    }
+  }
+}

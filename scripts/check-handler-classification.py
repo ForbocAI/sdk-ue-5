@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
-"""
-check-handler-classification.py
+"""Enforce UE handler ownership, behavior, and TS classification parity."""
 
-Enforces the handler classification rules in ProtocolThunks.h:
-1. Pass-through handlers must not import/use local inference.
-2. Local-capability handlers must return their required result type.
-3. The UE classification table must match the TS table (if the SDK repo is cloned alongside).
-"""
-
-import sys
-import os
 import re
+import sys
 from pathlib import Path
+
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPT_DIR.parent
-PROTOCOL_THUNKS = SCRIPT_DIR.parent / "Source" / "ForbocAI_SDK" / "Public" / "Features" / "Protocol" / "ProtocolThunks.h"
-TS_SDK_HANDLER_ROOT = (
+UE_PROTOCOL_ROOT = (
+    ROOT_DIR
+    / "Source"
+    / "ForbocAI_SDK"
+    / "Public"
+    / "Features"
+    / "Protocol"
+)
+TS_HANDLER_ROOT = (
     ROOT_DIR.parent
     / "sdk"
     / "packages"
@@ -27,162 +27,155 @@ TS_SDK_HANDLER_ROOT = (
     / "handlers"
 )
 
-def parse_md_table(text):
-    classifications = {}
-    lines = text.split('\n')
-    in_table = False
-    for line in lines:
-        if line.strip().startswith('// | Instruction'):
-            in_table = True
-            continue
-        if in_table and line.strip().startswith('// | ---'):
-            continue
-        if in_table and line.strip().startswith('// |'):
-            parts = [p.strip() for p in line.strip().split('|')]
-            if len(parts) >= 3:
-                instruction = parts[1]
-                classification = parts[2]
-                classifications[instruction] = classification
-        elif in_table and not line.strip().startswith('// |'):
-            break
-    return classifications
 
-
-def parse_ts_table(text):
-    classifications = {}
+def parse_table(text: str, prefix: str) -> dict[str, str]:
+    classifications: dict[str, str] = {}
     in_table = False
-    for line in text.split('\n'):
+    for line in text.splitlines():
         stripped = line.strip()
-        if stripped.startswith('* | Instruction'):
+        if stripped.startswith(f"{prefix} | Instruction"):
             in_table = True
             continue
-        if in_table and stripped.startswith('* | ---'):
+        if in_table and stripped.startswith(f"{prefix} | ---"):
             continue
-        if in_table and stripped.startswith('* |'):
-            parts = [part.strip() for part in stripped.split('|')]
+        if in_table and stripped.startswith(f"{prefix} |"):
+            parts = [part.strip() for part in stripped.split("|")]
             if len(parts) >= 3:
                 classifications[parts[1]] = parts[2]
-        elif in_table and not stripped.startswith('* |'):
+            continue
+        if in_table:
             break
     return classifications
 
 
-def discover_ts_classification_table():
-    if not TS_SDK_HANDLER_ROOT.is_dir():
+def discover_table(
+    root: Path, pattern: str, prefix: str
+) -> tuple[Path | None, dict[str, str]]:
+    if not root.is_dir():
         return None, {}
-    discovered = []
-    for path in sorted(TS_SDK_HANDLER_ROOT.rglob("*.ts")):
-        classifications = parse_ts_table(path.read_text(encoding="utf-8"))
-        if classifications:
-            discovered.append((path, classifications))
+    discovered = [
+        (path, table)
+        for path in sorted(root.rglob(pattern))
+        if (table := parse_table(path.read_text(encoding="utf-8"), prefix))
+    ]
     return discovered[0] if len(discovered) == 1 else (None, {})
 
-def extract_function_body(text, func_name):
-    # Very rudimentary extraction for C++ functions
-    pattern = rf'inline func::AsyncResult<FAgentResponse>\s*Handle{func_name}\b.*?\{{'
-    match = re.search(pattern, text, re.DOTALL)
-    if not match:
-        return ""
-    start = match.end()
-    brace_count = 1
-    i = start
-    while i < len(text):
-        if text[i] == '{':
-            brace_count += 1
-        elif text[i] == '}':
-            brace_count -= 1
-            if brace_count == 0:
-                return text[start:i]
-        i += 1
-    return ""
 
-def main():
-    if not PROTOCOL_THUNKS.exists():
-        print(f"Error: {PROTOCOL_THUNKS} not found.")
-        return 1
+def extract_function_body(text: str, function_name: str) -> str | None:
+    for match in re.finditer(rf"\b{re.escape(function_name)}\s*\(", text):
+        index = match.end()
+        parentheses = 1
+        while index < len(text) and parentheses:
+            parentheses += (text[index] == "(") - (text[index] == ")")
+            index += 1
+        if parentheses:
+            continue
+        while index < len(text) and text[index].isspace():
+            index += 1
+        if index >= len(text) or text[index] != "{":
+            continue
+        body_start = index + 1
+        braces = 1
+        index = body_start
+        while index < len(text) and braces:
+            braces += (text[index] == "{") - (text[index] == "}")
+            if braces == 0:
+                return text[body_start:index]
+            index += 1
+    return None
 
-    with open(PROTOCOL_THUNKS, "r", encoding="utf-8") as f:
-        ue_code = f.read()
 
-    ue_classifications = parse_md_table(ue_code)
-    if not ue_classifications:
-        print("Error: Could not parse classification table from ProtocolThunks.h")
+def discover_handler(function_name: str) -> list[tuple[Path, str]]:
+    discovered: list[tuple[Path, str]] = []
+    for path in sorted(UE_PROTOCOL_ROOT.rglob("*.h")):
+        body = extract_function_body(path.read_text(encoding="utf-8"), function_name)
+        if body is not None:
+            discovered.append((path, body))
+    return discovered
+
+
+def main() -> int:
+    ue_table_path, ue_classifications = discover_table(
+        UE_PROTOCOL_ROOT, "*.h", "//"
+    )
+    if ue_table_path is None:
+        print(
+            f"[FAIL] Expected exactly one UE classification table under "
+            f"{UE_PROTOCOL_ROOT}."
+        )
         return 1
 
     failures = 0
+    required_symbols = {
+        "IdentifyActor": "SerializeIdentifyActorResult",
+        "QueryVector": "SerializeQueryVectorResult",
+        "Decision": "SerializeDecisionResult",
+        "Reasoning": "SerializeReasoningResult",
+        "Finalize": "BuildAgentResponse",
+    }
 
-    # 1 & 2: Check each handler
     for instruction, classification in ue_classifications.items():
-        body = extract_function_body(ue_code, instruction)
-        if not body:
-            print(f"Error: Could not find function Handle{instruction} in ProtocolThunks.h")
+        function_name = f"Handle{instruction}"
+        handlers = discover_handler(function_name)
+        if len(handlers) != 1:
+            print(
+                f"[FAIL] Expected exactly one {function_name} definition; "
+                f"found {len(handlers)}."
+            )
             failures += 1
             continue
 
-        if classification == "Pass-through":
-            forbidden_local_inference = ("CompleteInference", "nodeCortexThunk")
-            if any(symbol in body for symbol in forbidden_local_inference):
-                print(f"[FAIL] Pass-through handler Handle{instruction} uses local inference.")
-                failures += 1
-            else:
-                print(f"[OK] Pass-through handler Handle{instruction} stays clear of inference.")
+        path, body = handlers[0]
+        if classification not in {"Local", "Pass-through"}:
+            print(
+                f"[FAIL] {instruction} has unsupported classification "
+                f"{classification!r} in {ue_table_path}."
+            )
+            failures += 1
+            continue
 
-            if instruction == "Reasoning":
-                if "SerializeReasoningResult" not in body:
-                    print(f"[FAIL] Handle{instruction} missing SerializeReasoningResult.")
-                    failures += 1
-                else:
-                    print(f"[OK] Handle{instruction} returns correct result type.")
+        forbidden_local_inference = ("CompleteInference", "nodeCortexThunk")
+        if classification == "Pass-through" and any(
+            symbol in body for symbol in forbidden_local_inference
+        ):
+            print(f"[FAIL] {function_name} uses local inference in {path}.")
+            failures += 1
+        elif classification == "Pass-through":
+            print(f"[OK] {function_name} stays clear of local inference ({path}).")
 
-        elif classification == "Local":
-            if instruction == "IdentifyActor":
-                if "SerializeIdentifyActorResult" not in body:
-                    print(f"[FAIL] Local handler Handle{instruction} missing SerializeIdentifyActorResult.")
-                    failures += 1
-                else:
-                    print(f"[OK] Local handler Handle{instruction} returns correct result type.")
-            elif instruction == "QueryVector":
-                if "SerializeQueryVectorResult" not in body:
-                    print(f"[FAIL] Local handler Handle{instruction} missing SerializeQueryVectorResult.")
-                    failures += 1
-                else:
-                    print(f"[OK] Local handler Handle{instruction} returns correct result type.")
-            elif instruction == "Decision":
-                if "SerializeDecisionResult" not in body:
-                    print(f"[FAIL] Local handler Handle{instruction} missing SerializeDecisionResult.")
-                    failures += 1
-                else:
-                    print(f"[OK] Local handler Handle{instruction} returns correct result type.")
-            elif instruction == "Finalize":
-                if "BuildAgentResponse" not in body:
-                    print(f"[FAIL] Local handler Handle{instruction} missing BuildAgentResponse.")
-                    failures += 1
-                else:
-                    print(f"[OK] Local handler Handle{instruction} returns correct result type.")
-
-    # 3: Divergence check
-    ts_table_path, ts_classifications = discover_ts_classification_table()
-    if ts_table_path is not None:
-        if ue_classifications != ts_classifications:
-            print(f"[FAIL] UE and TS classification tables diverge!")
-            print(f"  UE: {ue_classifications}")
-            print(f"  TS: {ts_classifications}")
+        required = required_symbols.get(instruction)
+        if required is None:
+            print(f"[FAIL] No result contract is defined for {instruction}.")
+            failures += 1
+        elif required not in body:
+            print(f"[FAIL] {function_name} does not call {required} in {path}.")
             failures += 1
         else:
-            print(f"[OK] UE and TS classification tables match ({ts_table_path}).")
-    else:
+            print(f"[OK] {function_name} returns through {required} ({path}).")
+
+    ts_table_path, ts_classifications = discover_table(
+        TS_HANDLER_ROOT, "*.ts", "*"
+    )
+    if ts_table_path is None:
         print(
             f"[FAIL] Expected exactly one TS classification table under "
-            f"{TS_SDK_HANDLER_ROOT}."
+            f"{TS_HANDLER_ROOT}."
         )
         failures += 1
+    elif ue_classifications != ts_classifications:
+        print("[FAIL] UE and TS classification tables diverge.")
+        print(f"  UE ({ue_table_path}): {ue_classifications}")
+        print(f"  TS ({ts_table_path}): {ts_classifications}")
+        failures += 1
+    else:
+        print(f"[OK] UE and TS classification tables match ({ts_table_path}).")
 
-    if failures > 0:
-        print(f"\nFailed {failures} checks.")
+    if failures:
+        print(f"\nFailed {failures} handler classification checks.")
         return 1
-    
     print("\nAll handler classification checks passed.")
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

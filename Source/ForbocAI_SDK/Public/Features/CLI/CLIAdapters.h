@@ -24,7 +24,9 @@ inline bool HasNodeSurface(const TSharedPtr<FJsonObject> &Command) {
 
 inline TArray<FCommandRoute> ReadNodeParityRoutes() {
   const TSharedRef<FJsonObject> Root =
-      SDKData::LoadObject(TEXT("cli/commands.json"));
+      DataAdapters::SettingsSource(TEXT("ForbocAI_SDK"),
+                                   TEXT("Data/cli/commands.json"))
+          .Root;
   const TSharedPtr<FJsonObject> Commands =
       Root->GetObjectField(TEXT("commands"));
   const TArray<FJsonObject::FStringType> StoredKeys =

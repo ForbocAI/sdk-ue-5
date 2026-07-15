@@ -115,6 +115,69 @@ def run_case(root: Path, plugins: dict, case: Case) -> list[str]:
     ]
 
 
+def write_source(project: Path, relative_path: str, body: str) -> Path:
+    path = project / relative_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(body, encoding="utf-8")
+    return path
+
+
+def run_store_discovery_cases(root: Path) -> list[str]:
+    failures: list[str] = []
+
+    core_project = root / "core_store_is_not_program_store"
+    program_store = write_source(
+        core_project,
+        "Source/Store.h",
+        "auto BuildStore(){ return rtk::configureStore<FState>(Reducer, State); }",
+    )
+    write_source(
+        core_project,
+        "Source/Core/RTK/Store/Store.hpp",
+        "auto createStore(State s, Reducer r){ return Store(s, r); }",
+    )
+    write_source(
+        core_project,
+        "Source/Core/RTK/ConfigureStore/ConfigureStore.hpp",
+        "auto configureStore(){ return applyMiddleware(createStore()); }",
+    )
+    discovered = check_redux.discover_store_paths(core_project)
+    if discovered != [program_store]:
+        failures.append(
+            "core-store-exclusion: expected only Source/Store.h, got "
+            + repr([path.relative_to(core_project).as_posix() for path in discovered])
+        )
+    core_rules = {
+        finding.rule_id for finding in check_redux.check_store_boundary(core_project)
+    }
+    unexpected_core_rules = {"RTK-STORE-004", "RTK-STORE-008"} & core_rules
+    if unexpected_core_rules:
+        failures.append(
+            "core-store-exclusion: framework implementation triggered "
+            + repr(sorted(unexpected_core_rules))
+        )
+
+    competing_project = root / "competing_program_stores"
+    write_source(
+        competing_project,
+        "Source/Store.h",
+        "auto BuildStore(){ return rtk::configureStore<FState>(Reducer, State); }",
+    )
+    write_source(
+        competing_project,
+        "Source/SessionStore.h",
+        "auto BuildSessionStore(){ return rtk::configureStore<FState>(Reducer, State); }",
+    )
+    competing_rules = {
+        finding.rule_id
+        for finding in check_redux.check_store_boundary(competing_project)
+    }
+    if "RTK-STORE-008" not in competing_rules:
+        failures.append("competing-program-stores: RTK-STORE-008 did not fire")
+
+    return failures
+
+
 def main() -> int:
     plugins = check_redux.discover_role_plugins()
     failures: list[str] = []
@@ -128,6 +191,7 @@ def main() -> int:
                 failures.append(f"{case.name}: expected {sorted(missing)} to fire, got {sorted(fired)}")
             if unexpected:
                 failures.append(f"{case.name}: {sorted(unexpected)} fired but is forbidden")
+        failures += run_store_discovery_cases(root)
 
     if failures:
         print(f"Boundary fixtures FAILED: {len(failures)} case(s).")

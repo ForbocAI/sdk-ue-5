@@ -1,7 +1,7 @@
 #include "Features/Dependencies/DependenciesAdapters.h"
 #include "Features/Async/AsyncAdapters.h"
 #include "Features/Memory/Local/Storage/StorageAdapters.h"
-#include "Features/Dependencies/Process/ProcessAdapters.h"
+#include "Features/Dependencies/Process/DependenciesProcessAdapters.h"
 #include "Features/Vector/VectorAdapters.h"
 #include "HAL/PlatformFileManager.h"
 #include "Misc/Paths.h"
