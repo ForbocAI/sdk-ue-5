@@ -1,0 +1,248 @@
+[
+  {
+    "name": "RunStarted",
+    "actions": [
+      {
+        "kind": 0,
+        "id": "dir_1",
+        "npcId": "npc_a",
+        "observation": "An event occurred"
+      }
+    ],
+    "expected": {
+      "directiveCount": 1,
+      "activeId": "dir_1",
+      "runs": [
+        {
+          "id": "dir_1",
+          "exists": true,
+          "status": 0,
+          "npcId": "npc_a",
+          "observation": "An event occurred"
+        }
+      ]
+    }
+  },
+  {
+    "name": "DirectiveReceived",
+    "actions": [
+      {
+        "kind": 0,
+        "id": "dir_recv",
+        "npcId": "npc_b",
+        "observation": "A question was asked"
+      },
+      {
+        "kind": 1,
+        "id": "dir_recv",
+        "query": "relevant context",
+        "limit": 5,
+        "threshold": 0.8
+      }
+    ],
+    "expected": {
+      "directiveCount": 1,
+      "activeId": "dir_recv",
+      "runs": [
+        {
+          "id": "dir_recv",
+          "exists": true,
+          "status": 0,
+          "recallQuery": "relevant context",
+          "recallLimit": 5,
+          "recallThreshold": 0.8
+        }
+      ]
+    }
+  },
+  {
+    "name": "VerdictValidated",
+    "actions": [
+      {
+        "kind": 0,
+        "id": "dir_v",
+        "npcId": "npc_c",
+        "observation": "A response is needed"
+      },
+      {
+        "kind": 2,
+        "id": "dir_v",
+        "verdictValid": true,
+        "dialogue": "I acknowledge that.",
+        "hasAction": false
+      }
+    ],
+    "expected": {
+      "directiveCount": 1,
+      "activeId": "dir_v",
+      "runs": [
+        {
+          "id": "dir_v",
+          "exists": true,
+          "status": 1,
+          "verdictValid": true,
+          "dialogue": "I acknowledge that.",
+          "actionType": ""
+        }
+      ]
+    }
+  },
+  {
+    "name": "RunFailed",
+    "actions": [
+      {
+        "kind": 0,
+        "id": "dir_fail",
+        "npcId": "npc_d",
+        "observation": "Process an event"
+      },
+      {
+        "kind": 3,
+        "id": "dir_fail",
+        "error": "API timeout"
+      }
+    ],
+    "expected": {
+      "directiveCount": 1,
+      "activeId": "dir_fail",
+      "runs": [
+        {
+          "id": "dir_fail",
+          "exists": true,
+          "status": 2,
+          "error": "API timeout"
+        }
+      ]
+    }
+  },
+  {
+    "name": "ClearForNpc",
+    "actions": [
+      {
+        "kind": 0,
+        "id": "d1",
+        "npcId": "npc_x",
+        "observation": "Observation one"
+      },
+      {
+        "kind": 0,
+        "id": "d2",
+        "npcId": "npc_y",
+        "observation": "Observation two"
+      },
+      {
+        "kind": 0,
+        "id": "d3",
+        "npcId": "npc_x",
+        "observation": "Observation three"
+      },
+      {
+        "kind": 4,
+        "npcId": "npc_x"
+      }
+    ],
+    "expected": {
+      "directiveCount": 1,
+      "activeId": "",
+      "runs": [
+        {
+          "id": "d1",
+          "exists": false
+        },
+        {
+          "id": "d2",
+          "exists": true,
+          "npcId": "npc_y"
+        },
+        {
+          "id": "d3",
+          "exists": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "Selectors",
+    "actions": [
+      {
+        "kind": 0,
+        "id": "sel_1",
+        "npcId": "n1",
+        "observation": "A"
+      },
+      {
+        "kind": 0,
+        "id": "sel_2",
+        "npcId": "n2",
+        "observation": "B"
+      }
+    ],
+    "expected": {
+      "directiveCount": 2,
+      "activeId": "sel_2",
+      "runs": [
+        {
+          "id": "ghost",
+          "exists": false
+        },
+        {
+          "id": "sel_1",
+          "exists": true,
+          "npcId": "n1"
+        },
+        {
+          "id": "sel_2",
+          "exists": true,
+          "npcId": "n2"
+        }
+      ]
+    }
+  },
+  {
+    "name": "HappyPath",
+    "actions": [
+      {
+        "kind": 0,
+        "id": "hp_1",
+        "npcId": "npc_primary",
+        "observation": "A nearby event requires a response"
+      },
+      {
+        "kind": 1,
+        "id": "hp_1",
+        "query": "recent event context",
+        "limit": 5,
+        "threshold": 0.6
+      },
+      {
+        "kind": 2,
+        "id": "hp_1",
+        "verdictValid": true,
+        "dialogue": "I will respond.",
+        "hasAction": true,
+        "actionType": "INTERACT",
+        "actionTarget": "nearby_entity",
+        "actionReason": "Respond to the event"
+      }
+    ],
+    "expected": {
+      "directiveCount": 1,
+      "activeId": "hp_1",
+      "runs": [
+        {
+          "id": "hp_1",
+          "exists": true,
+          "status": 1,
+          "npcId": "npc_primary",
+          "observation": "A nearby event requires a response",
+          "recallQuery": "recent event context",
+          "recallLimit": 5,
+          "recallThreshold": 0.6,
+          "verdictValid": true,
+          "dialogue": "I will respond.",
+          "actionType": "INTERACT"
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "labels": {
+    "requiredField": "Required directive scenario field is missing",
+    "scenarioPresent": "Directive scenario exists",
+    "directiveCount": "Directive count",
+    "activeId": "Active directive id",
+    "activePresence": "Active directive presence",
+    "runPresence": "Directive run presence",
+    "status": "Directive status",
+    "npcId": "NPC id",
+    "observation": "Observation",
+    "error": "Error",
+    "recallQuery": "Recall query",
+    "recallLimit": "Recall limit",
+    "recallThreshold": "Recall threshold",
+    "verdictValid": "Verdict validity",
+    "dialogue": "Dialogue",
+    "actionType": "Action type"
+  }
+}

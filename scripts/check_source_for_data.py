@@ -48,11 +48,13 @@ UNREAL_REFLECTION_MACRO = re.compile(
 )
 JSON_SCHEMA_FIELD_CALL = re.compile(
     r"\b(?:[A-Za-z_][A-Za-z0-9_]*::)?(?:"
-    r"Field|ReadBooleanField|ReadNumberField|ReadStringField|"
+    r"Field|ReadBooleanField|ReadNumberField|ReadStringField|ReadFloatField|"
+    r"ReadOptionalBooleanField|ReadOptionalNumberField|"
+    r"ReadOptionalStringField|ReadOptionalFloatField|"
     r"ReadStringArrayField|ReadArrayField|ReadObjectField|ReadObjectArrayField|"
     r"ReadRequiredField|RequiredField|"
     r"RequiredFieldName|FindRequiredJsonField|ReadSettingsObjectArrayField|"
-    r"SettingsSource|SettingsSourceKey|SettingsFieldName"
+    r"ArraySource|SettingsSource|SettingsSourceKey|SettingsFieldName"
     r")\s*(?:<[^;{}()]*>)?\s*\("
 )
 SETTINGS_SOURCE_GROUPS = re.compile(
