@@ -1,0 +1,44 @@
+[
+  {
+    "name": "ImportFailureRecovery",
+    "steps": [
+      {"action":{"kind":3,"txId":null,"soulId":null,"persona":null,"error":null,"txIds":[]},"expected":{"exportStatus":null,"importStatus":null,"hasLastExport":null,"lastExportTxId":null,"hasLastImport":null,"lastImportId":null,"lastImportPersona":null,"availableSoulCount":null,"availableSoulFirstTxId":null,"error":null}},
+      {"action":{"kind":5,"txId":null,"soulId":null,"persona":null,"error":"temporary failure","txIds":[]},"expected":{"exportStatus":null,"importStatus":"failed","hasLastExport":null,"lastExportTxId":null,"hasLastImport":null,"lastImportId":null,"lastImportPersona":null,"availableSoulCount":null,"availableSoulFirstTxId":null,"error":"temporary failure"}},
+      {"action":{"kind":3,"txId":null,"soulId":null,"persona":null,"error":null,"txIds":[]},"expected":{"exportStatus":null,"importStatus":"importing","hasLastExport":null,"lastExportTxId":null,"hasLastImport":null,"lastImportId":null,"lastImportPersona":null,"availableSoulCount":null,"availableSoulFirstTxId":null,"error":""}},
+      {"action":{"kind":4,"txId":null,"soulId":"soul-recovered","persona":"persona-recovered","error":null,"txIds":[]},"expected":{"exportStatus":null,"importStatus":"success","hasLastExport":null,"lastExportTxId":null,"hasLastImport":true,"lastImportId":"soul-recovered","lastImportPersona":null,"availableSoulCount":null,"availableSoulFirstTxId":null,"error":null}}
+    ]
+  },
+  {
+    "name": "ExportFailureRecovery",
+    "steps": [
+      {"action":{"kind":0,"txId":null,"soulId":null,"persona":null,"error":null,"txIds":[]},"expected":{"exportStatus":null,"importStatus":null,"hasLastExport":null,"lastExportTxId":null,"hasLastImport":null,"lastImportId":null,"lastImportPersona":null,"availableSoulCount":null,"availableSoulFirstTxId":null,"error":null}},
+      {"action":{"kind":2,"txId":null,"soulId":null,"persona":null,"error":"temporary failure","txIds":[]},"expected":{"exportStatus":"failed","importStatus":null,"hasLastExport":null,"lastExportTxId":null,"hasLastImport":null,"lastImportId":null,"lastImportPersona":null,"availableSoulCount":null,"availableSoulFirstTxId":null,"error":null}},
+      {"action":{"kind":0,"txId":null,"soulId":null,"persona":null,"error":null,"txIds":[]},"expected":{"exportStatus":"exporting","importStatus":null,"hasLastExport":null,"lastExportTxId":null,"hasLastImport":null,"lastImportId":null,"lastImportPersona":null,"availableSoulCount":null,"availableSoulFirstTxId":null,"error":""}},
+      {"action":{"kind":1,"txId":"export-recovered","soulId":null,"persona":null,"error":null,"txIds":[]},"expected":{"exportStatus":"success","importStatus":null,"hasLastExport":null,"lastExportTxId":"export-recovered","hasLastImport":null,"lastImportId":null,"lastImportPersona":null,"availableSoulCount":null,"availableSoulFirstTxId":null,"error":null}}
+    ]
+  },
+  {
+    "name": "EmptyList",
+    "steps": [
+      {"action":{"kind":6,"txId":null,"soulId":null,"persona":null,"error":null,"txIds":[]},"expected":{"exportStatus":null,"importStatus":null,"hasLastExport":null,"lastExportTxId":null,"hasLastImport":null,"lastImportId":null,"lastImportPersona":null,"availableSoulCount":0,"availableSoulFirstTxId":null,"error":null}},
+      {"action":{"kind":6,"txId":null,"soulId":null,"persona":null,"error":null,"txIds":["catalog-a"]},"expected":{"exportStatus":null,"importStatus":null,"hasLastExport":null,"lastExportTxId":null,"hasLastImport":null,"lastImportId":null,"lastImportPersona":null,"availableSoulCount":1,"availableSoulFirstTxId":null,"error":null}},
+      {"action":{"kind":6,"txId":null,"soulId":null,"persona":null,"error":null,"txIds":[]},"expected":{"exportStatus":null,"importStatus":null,"hasLastExport":null,"lastExportTxId":null,"hasLastImport":null,"lastImportId":null,"lastImportPersona":null,"availableSoulCount":0,"availableSoulFirstTxId":null,"error":null}}
+    ]
+  },
+  {
+    "name": "ListReplacement",
+    "steps": [
+      {"action":{"kind":6,"txId":null,"soulId":null,"persona":null,"error":null,"txIds":["catalog-old"]},"expected":{"exportStatus":null,"importStatus":null,"hasLastExport":null,"lastExportTxId":null,"hasLastImport":null,"lastImportId":null,"lastImportPersona":null,"availableSoulCount":1,"availableSoulFirstTxId":null,"error":null}},
+      {"action":{"kind":6,"txId":null,"soulId":null,"persona":null,"error":null,"txIds":["catalog-new-a","catalog-new-b"]},"expected":{"exportStatus":null,"importStatus":null,"hasLastExport":null,"lastExportTxId":null,"hasLastImport":null,"lastImportId":null,"lastImportPersona":null,"availableSoulCount":2,"availableSoulFirstTxId":"catalog-new-a","error":null}}
+    ]
+  },
+  {
+    "name": "ClearThenSet",
+    "steps": [
+      {"action":{"kind":0,"txId":null,"soulId":null,"persona":null,"error":null,"txIds":[]},"expected":{"exportStatus":null,"importStatus":null,"hasLastExport":null,"lastExportTxId":null,"hasLastImport":null,"lastImportId":null,"lastImportPersona":null,"availableSoulCount":null,"availableSoulFirstTxId":null,"error":null}},
+      {"action":{"kind":1,"txId":"export-before-clear","soulId":null,"persona":null,"error":null,"txIds":[]},"expected":{"exportStatus":null,"importStatus":null,"hasLastExport":true,"lastExportTxId":null,"hasLastImport":null,"lastImportId":null,"lastImportPersona":null,"availableSoulCount":null,"availableSoulFirstTxId":null,"error":null}},
+      {"action":{"kind":7,"txId":null,"soulId":null,"persona":null,"error":null,"txIds":[]},"expected":{"exportStatus":"idle","importStatus":null,"hasLastExport":false,"lastExportTxId":null,"hasLastImport":false,"lastImportId":null,"lastImportPersona":null,"availableSoulCount":null,"availableSoulFirstTxId":null,"error":null}},
+      {"action":{"kind":6,"txId":null,"soulId":null,"persona":null,"error":null,"txIds":["catalog-after-clear"]},"expected":{"exportStatus":null,"importStatus":null,"hasLastExport":null,"lastExportTxId":null,"hasLastImport":null,"lastImportId":null,"lastImportPersona":null,"availableSoulCount":1,"availableSoulFirstTxId":null,"error":null}}
+    ]
+  }
+]

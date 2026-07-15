@@ -1,0 +1,17 @@
+{
+  "labels": {
+    "suite": "Ghost slice scenarios",
+    "caseName": "$name",
+    "requiredField": "Required Ghost scenario field is missing",
+    "scenarioPresent": "Ghost scenario exists",
+    "activeSessionId": "Active Ghost session id",
+    "status": "Ghost status",
+    "progress": "Ghost progress",
+    "hasResults": "Ghost has results",
+    "resultCount": "Ghost result count",
+    "historyCount": "Ghost history count",
+    "historyFirstSessionId": "First Ghost history session id",
+    "loading": "Ghost loading state",
+    "error": "Ghost error"
+  }
+}

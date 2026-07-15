@@ -139,6 +139,14 @@ ReadStringArrayField(const TSharedRef<FJsonObject> &Object,
       [](const TSharedPtr<FJsonValue> &Value) { return Value->AsString(); });
 }
 
+inline func::Maybe<TArray<FString>>
+ReadOptionalStringArrayField(const TSharedRef<FJsonObject> &Object,
+                             const FString &Field) {
+  return Object->HasField(Field)
+             ? func::just<TArray<FString>>(ReadStringArrayField(Object, Field))
+             : func::nothing<TArray<FString>>();
+}
+
 inline TArray<TSharedPtr<FJsonObject>>
 ReadObjectArrayField(const TSharedRef<FJsonObject> &Object,
                      const FString &Field) {

@@ -1,0 +1,36 @@
+[
+  {
+    "name": "SessionStarted",
+    "steps": [
+      {"action":{"kind":6,"sessionId":null,"status":null,"progress":null,"error":null,"resultScenarios":[],"historySessionIds":[]},"expected":{"activeSessionId":null,"status":"idle","progress":null,"hasResults":null,"resultCount":null,"historyCount":null,"historyFirstSessionId":null,"loading":null,"error":null}},
+      {"action":{"kind":0,"sessionId":"session-a","status":"running","progress":null,"error":null,"resultScenarios":[],"historySessionIds":[]},"expected":{"activeSessionId":"session-a","status":"running","progress":0.0,"hasResults":false,"resultCount":null,"historyCount":null,"historyFirstSessionId":null,"loading":null,"error":""}}
+    ]
+  },
+  {
+    "name": "Progress",
+    "steps": [
+      {"action":{"kind":0,"sessionId":"session-progress","status":"running","progress":null,"error":null,"resultScenarios":[],"historySessionIds":[]},"expected":{"activeSessionId":null,"status":null,"progress":null,"hasResults":null,"resultCount":null,"historyCount":null,"historyFirstSessionId":null,"loading":null,"error":null}},
+      {"action":{"kind":1,"sessionId":"session-progress","status":"running","progress":0.5,"error":null,"resultScenarios":[],"historySessionIds":[]},"expected":{"activeSessionId":"session-progress","status":"running","progress":0.5,"hasResults":null,"resultCount":null,"historyCount":null,"historyFirstSessionId":null,"loading":null,"error":null}}
+    ]
+  },
+  {
+    "name": "SessionCompleted",
+    "steps": [
+      {"action":{"kind":0,"sessionId":"session-complete","status":"running","progress":null,"error":null,"resultScenarios":[],"historySessionIds":[]},"expected":{"activeSessionId":null,"status":null,"progress":null,"hasResults":null,"resultCount":null,"historyCount":null,"historyFirstSessionId":null,"loading":null,"error":null}},
+      {"action":{"kind":2,"sessionId":"session-complete","status":null,"progress":null,"error":null,"resultScenarios":["case-a"],"historySessionIds":[]},"expected":{"activeSessionId":null,"status":"completed","progress":1.0,"hasResults":true,"resultCount":1,"historyCount":null,"historyFirstSessionId":null,"loading":false,"error":null}}
+    ]
+  },
+  {
+    "name": "SessionFailed",
+    "steps": [
+      {"action":{"kind":0,"sessionId":"session-fail","status":"running","progress":null,"error":null,"resultScenarios":[],"historySessionIds":[]},"expected":{"activeSessionId":null,"status":null,"progress":null,"hasResults":null,"resultCount":null,"historyCount":null,"historyFirstSessionId":null,"loading":null,"error":null}},
+      {"action":{"kind":3,"sessionId":"session-fail","status":null,"progress":null,"error":"scenario failed","resultScenarios":[],"historySessionIds":[]},"expected":{"activeSessionId":"session-fail","status":"failed","progress":null,"hasResults":null,"resultCount":null,"historyCount":null,"historyFirstSessionId":null,"loading":false,"error":"scenario failed"}}
+    ]
+  },
+  {
+    "name": "HistoryLoaded",
+    "steps": [
+      {"action":{"kind":4,"sessionId":null,"status":null,"progress":null,"error":null,"resultScenarios":[],"historySessionIds":["history-a"]},"expected":{"activeSessionId":null,"status":null,"progress":null,"hasResults":null,"resultCount":null,"historyCount":1,"historyFirstSessionId":"history-a","loading":null,"error":null}}
+    ]
+  }
+]

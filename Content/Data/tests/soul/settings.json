@@ -1,0 +1,18 @@
+{
+  "labels": {
+    "suite": "Soul slice scenarios",
+    "caseName": "$name",
+    "requiredField": "Required Soul scenario field is missing",
+    "scenarioPresent": "Soul scenario exists",
+    "exportStatus": "Export status",
+    "importStatus": "Import status",
+    "hasLastExport": "Has last export",
+    "lastExportTxId": "Last export transaction id",
+    "hasLastImport": "Has last import",
+    "lastImportId": "Last import id",
+    "lastImportPersona": "Last import persona",
+    "availableSoulCount": "Available Soul count",
+    "availableSoulFirstTxId": "First available Soul transaction id",
+    "error": "Soul error"
+  }
+}
