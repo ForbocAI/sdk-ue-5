@@ -1,0 +1,67 @@
+{
+  "plugin": {
+    "name": "ForbocAI_SDK",
+    "thirdPartyDirectory": "ThirdParty"
+  },
+  "paths": {
+    "infrastructureDirectory": "local_infrastructure",
+    "includeDirectory": "sqlite-vss/include",
+    "sourceDirectory": "sqlite-vss/src",
+    "temporaryDirectory": "tmp",
+    "vectorsDirectory": "vectors",
+    "databaseFile": "forbocai_vectors.db"
+  },
+  "download": {
+    "timeoutSeconds": 120.0,
+    "sqlite": {
+      "archiveVersion": "3460100",
+      "headerFile": "sqlite3.h",
+      "extensionHeaderFile": "sqlite3ext.h",
+      "sourceFile": "sqlite3.c",
+      "archiveFile": "sqlite-amalgamation.zip",
+      "extractDirectory": "sqlite-extract",
+      "urlFormat": "https://www.sqlite.org/2024/sqlite-amalgamation-{0}.zip",
+      "directoryPrefix": "sqlite-amalgamation-"
+    },
+    "sqliteVec": {
+      "release": "v0.1.6",
+      "versionPrefix": "v",
+      "sourceFile": "vec0.c",
+      "headerFile": "sqlite-vec.h",
+      "archiveFile": "sqlite-vec-amalgamation.zip",
+      "extractDirectory": "sqlite-vec-extract",
+      "urlFormat": "https://github.com/asg017/sqlite-vec/releases/download/{0}/sqlite-vec-{1}-amalgamation.zip",
+      "directoryPrefix": "sqlite-vec-",
+      "extractSourceCandidates": [
+        "sqlite-vec.c",
+        "vec0.c"
+      ],
+      "nestedSourceCandidates": [
+        "sqlite-vec.c",
+        "src/sqlite-vec.c"
+      ],
+      "extractHeaderCandidates": [
+        "sqlite-vec.h"
+      ],
+      "nestedHeaderCandidates": [
+        "sqlite-vec.h"
+      ]
+    }
+  },
+  "readiness": {
+    "probe": "vector-readiness",
+    "dimension": 384,
+    "vectorizerName": "SDK native vectorizer",
+    "vectorizerVersion": "deterministic-384",
+    "vectorizerReady": "Vectorizer available",
+    "vectorizerInvalid": "Vectorizer dimension invalid",
+    "vectorDatabaseName": "sqlite-vec",
+    "vectorDatabaseReady": "Vector database available",
+    "vectorDatabaseRebuild": "Native assets installed; rebuild required",
+    "vectorDatabaseMissing": "Native sqlite-vec assets missing",
+    "vectorReady": "SDK vectorizer + sqlite-vec ready",
+    "databaseReadyFormat": "DB ready at {0}",
+    "databaseFailed": "Memory database initialization failed",
+    "downloadFailedFormat": "Dependency download failed: {0}"
+  }
+}

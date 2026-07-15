@@ -97,6 +97,70 @@ struct FActionAliasesFixture {
   FActionAliasesLabels Labels;
 };
 
+struct FIdentifyActorPayloadLabels {
+  FString Payload;
+  FString Type;
+  FString NpcId;
+  FString Persona;
+  FString Health;
+};
+
+struct FIdentifyActorPayloadFixture {
+  FString NpcId;
+  FString Persona;
+  FString DataJson;
+  FString ExpectedType;
+  int32 ExpectedHealth;
+  FIdentifyActorPayloadLabels Labels;
+};
+
+struct FDecisionPayloadLabels {
+  FString Payload;
+  FString Type;
+  FString Goal;
+  FString ActionType;
+  FString Target;
+};
+
+struct FDecisionPayloadFixture {
+  FString Goal;
+  FString ActionType;
+  FString Target;
+  FString ExpectedType;
+  FDecisionPayloadLabels Labels;
+};
+
+struct FReasoningPayloadLabels {
+  FString Payload;
+  FString Type;
+  FString ReasoningText;
+  FString ResponseText;
+};
+
+struct FReasoningPayloadFixture {
+  FString ReasoningText;
+  FString ResponseText;
+  FString ExpectedType;
+  FReasoningPayloadLabels Labels;
+};
+
+struct FProcessTapePayloadLabels {
+  FString Payload;
+  FString Observation;
+  FString Persona;
+  FString ContextTime;
+};
+
+struct FProcessTapePayloadFixture {
+  FString Observation;
+  FString ContextJson;
+  FString NpcStateJson;
+  FString Persona;
+  TArray<FString> ExpectedTraits;
+  FString ExpectedContextTime;
+  FProcessTapePayloadLabels Labels;
+};
+
 struct FCodecFixtures {
   FSoulVerifyFixture SoulVerify;
   FBridgeRulesFixture BridgeRules;
@@ -104,6 +168,10 @@ struct FCodecFixtures {
   FNullableProtocolFixture NullableProtocol;
   FBridgeValidationFixture BridgeValidation;
   FActionAliasesFixture ActionAliases;
+  FIdentifyActorPayloadFixture IdentifyActorPayload;
+  FDecisionPayloadFixture DecisionPayload;
+  FReasoningPayloadFixture ReasoningPayload;
+  FProcessTapePayloadFixture ProcessTapePayload;
 };
 
 } // namespace Testing::API::Codec

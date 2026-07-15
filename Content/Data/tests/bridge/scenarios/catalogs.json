@@ -1,0 +1,47 @@
+[
+  {
+    "name": "ActivePresetUpsert",
+    "steps": [
+      {"action":{"kind":4,"rulesets":[{"id":"active-a","rulesetId":"version-a"}],"presetIds":[],"targetId":null,"valid":null,"reason":null},"expected":{"status":null,"error":null,"hasValidation":null,"validationValid":null,"validationReason":null,"activeCount":1,"activeFirstId":"active-a","availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}},
+      {"action":{"kind":4,"rulesets":[{"id":"active-a","rulesetId":"version-b"}],"presetIds":[],"targetId":null,"valid":null,"reason":null},"expected":{"status":null,"error":null,"hasValidation":null,"validationValid":null,"validationReason":null,"activeCount":1,"activeFirstId":"active-a","availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}}
+    ]
+  },
+  {
+    "name": "ActivePresetsReceived",
+    "steps": [
+      {"action":{"kind":4,"rulesets":[{"id":"old","rulesetId":"old"}],"presetIds":[],"targetId":null,"valid":null,"reason":null},"expected":{"status":null,"error":null,"hasValidation":null,"validationValid":null,"validationReason":null,"activeCount":1,"activeFirstId":null,"availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}},
+      {"action":{"kind":3,"rulesets":[{"id":"active-b","rulesetId":"active-b"},{"id":"active-c","rulesetId":"active-c"}],"presetIds":[],"targetId":null,"valid":null,"reason":null},"expected":{"status":null,"error":null,"hasValidation":null,"validationValid":null,"validationReason":null,"activeCount":2,"activeFirstId":"active-b","availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}}
+    ]
+  },
+  {
+    "name": "RulesetsReceivedAndRegistered",
+    "steps": [
+      {"action":{"kind":5,"rulesets":[{"id":"ruleset-a","rulesetId":"version-a"}],"presetIds":[],"targetId":null,"valid":null,"reason":null},"expected":{"status":null,"error":null,"hasValidation":null,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":1,"availableFirstId":"ruleset-a","availableSelectedRulesetId":null,"presetIdCount":null}},
+      {"action":{"kind":6,"rulesets":[{"id":"ruleset-b","rulesetId":"version-b"}],"presetIds":[],"targetId":"ruleset-b","valid":null,"reason":null},"expected":{"status":null,"error":null,"hasValidation":null,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":2,"availableFirstId":"ruleset-a","availableSelectedRulesetId":"version-b","presetIdCount":null}},
+      {"action":{"kind":6,"rulesets":[{"id":"ruleset-b","rulesetId":"version-c"}],"presetIds":[],"targetId":"ruleset-b","valid":null,"reason":null},"expected":{"status":null,"error":null,"hasValidation":null,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":2,"availableFirstId":null,"availableSelectedRulesetId":"version-c","presetIdCount":null}}
+    ]
+  },
+  {
+    "name": "RulesetDeleted",
+    "steps": [
+      {"action":{"kind":5,"rulesets":[{"id":"ruleset-a","rulesetId":"ruleset-a"},{"id":"ruleset-b","rulesetId":"ruleset-b"}],"presetIds":[],"targetId":null,"valid":null,"reason":null},"expected":{"status":null,"error":null,"hasValidation":null,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":2,"availableFirstId":"ruleset-a","availableSelectedRulesetId":null,"presetIdCount":null}},
+      {"action":{"kind":7,"rulesets":[],"presetIds":[],"targetId":"ruleset-a","valid":null,"reason":null},"expected":{"status":null,"error":null,"hasValidation":null,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":1,"availableFirstId":"ruleset-b","availableSelectedRulesetId":null,"presetIdCount":null}}
+    ]
+  },
+  {
+    "name": "PresetIdsReceived",
+    "steps": [
+      {"action":{"kind":8,"rulesets":[],"presetIds":["preset-a","preset-b"],"targetId":null,"valid":null,"reason":null},"expected":{"status":null,"error":null,"hasValidation":null,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":2}}
+    ]
+  },
+  {
+    "name": "ValidationClearPreservesCatalogs",
+    "steps": [
+      {"action":{"kind":4,"rulesets":[{"id":"active-a","rulesetId":"active-a"}],"presetIds":[],"targetId":null,"valid":null,"reason":null},"expected":{"status":null,"error":null,"hasValidation":null,"validationValid":null,"validationReason":null,"activeCount":1,"activeFirstId":null,"availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}},
+      {"action":{"kind":5,"rulesets":[{"id":"ruleset-a","rulesetId":"ruleset-a"}],"presetIds":[],"targetId":null,"valid":null,"reason":null},"expected":{"status":null,"error":null,"hasValidation":null,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":1,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}},
+      {"action":{"kind":8,"rulesets":[],"presetIds":["preset-a"],"targetId":null,"valid":null,"reason":null},"expected":{"status":null,"error":null,"hasValidation":null,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":1}},
+      {"action":{"kind":1,"rulesets":[],"presetIds":[],"targetId":null,"valid":true,"reason":"accepted"},"expected":{"status":null,"error":null,"hasValidation":true,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}},
+      {"action":{"kind":9,"rulesets":[],"presetIds":[],"targetId":null,"valid":null,"reason":null},"expected":{"status":"idle","error":"","hasValidation":false,"validationValid":null,"validationReason":null,"activeCount":1,"activeFirstId":"active-a","availableCount":1,"availableFirstId":"ruleset-a","availableSelectedRulesetId":null,"presetIdCount":1}}
+    ]
+  }
+]

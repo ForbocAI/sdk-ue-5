@@ -29,11 +29,9 @@ inline rtk::Middleware<State> createNpcRemovalListener() {
                            DirectiveSlice::Actions::clearDirectivesForNpc(
                                RemovedNpcId.value)),
                        Api.dispatch(
-                           BridgeSlice::Actions::clearBridgeValidation()),
+                           BridgeSlice::Actions::validationCleared()),
                        Api.dispatch(GhostSlice::Actions::clearGhostSession()),
                        Api.dispatch(SoulSlice::Actions::clearSoulState()),
-                       Api.dispatch(
-                           NPCActions::clearBlock(RemovedNpcId.value)),
                        RemovedNpcId.value == ActiveNpcIdBefore
                            ? (Api.dispatch(MemorySlice::Actions::memoryClear()),
                               void())

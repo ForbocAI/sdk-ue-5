@@ -1,0 +1,50 @@
+[
+  {
+    "name": "InitialState",
+    "steps": [
+      {"action":{"kind":7,"items":[],"error":null,"targetId":null},"expected":{"storageStatus":"idle","recallStatus":"idle","error":"","memoryCount":0,"recalledCount":0,"firstRecalledId":null,"selectedText":null}}
+    ]
+  },
+  {
+    "name": "StoreSucceeded",
+    "steps": [
+      {"action":{"kind":0,"items":[],"error":null,"targetId":null},"expected":{"storageStatus":"storing","recallStatus":null,"error":"","memoryCount":null,"recalledCount":null,"firstRecalledId":null,"selectedText":null}},
+      {"action":{"kind":1,"items":[{"id":"memory-a","text":"observation-a","timestamp":1,"type":"observation","importance":0.5}],"error":null,"targetId":"memory-a"},"expected":{"storageStatus":"idle","recallStatus":null,"error":"","memoryCount":1,"recalledCount":null,"firstRecalledId":null,"selectedText":"observation-a"}}
+    ]
+  },
+  {
+    "name": "StoreFailed",
+    "steps": [
+      {"action":{"kind":0,"items":[],"error":null,"targetId":null},"expected":{"storageStatus":"storing","recallStatus":null,"error":null,"memoryCount":null,"recalledCount":null,"firstRecalledId":null,"selectedText":null}},
+      {"action":{"kind":2,"items":[],"error":"storage unavailable","targetId":null},"expected":{"storageStatus":"error","recallStatus":null,"error":"storage unavailable","memoryCount":0,"recalledCount":null,"firstRecalledId":null,"selectedText":null}}
+    ]
+  },
+  {
+    "name": "StoreStartClearsError",
+    "steps": [
+      {"action":{"kind":2,"items":[],"error":"previous error","targetId":null},"expected":{"storageStatus":"error","recallStatus":null,"error":"previous error","memoryCount":null,"recalledCount":null,"firstRecalledId":null,"selectedText":null}},
+      {"action":{"kind":0,"items":[],"error":null,"targetId":null},"expected":{"storageStatus":"storing","recallStatus":null,"error":"","memoryCount":null,"recalledCount":null,"firstRecalledId":null,"selectedText":null}}
+    ]
+  },
+  {
+    "name": "RecallSucceeded",
+    "steps": [
+      {"action":{"kind":3,"items":[],"error":null,"targetId":null},"expected":{"storageStatus":null,"recallStatus":"recalling","error":"","memoryCount":null,"recalledCount":null,"firstRecalledId":null,"selectedText":null}},
+      {"action":{"kind":4,"items":[{"id":"memory-b","text":"observation-b","timestamp":2,"type":"observation","importance":0.6},{"id":"memory-c","text":"observation-c","timestamp":3,"type":"observation","importance":0.7}],"error":null,"targetId":"memory-c"},"expected":{"storageStatus":null,"recallStatus":"idle","error":"","memoryCount":2,"recalledCount":2,"firstRecalledId":"memory-b","selectedText":"observation-c"}}
+    ]
+  },
+  {
+    "name": "RecallFailed",
+    "steps": [
+      {"action":{"kind":3,"items":[],"error":null,"targetId":null},"expected":{"storageStatus":null,"recallStatus":"recalling","error":null,"memoryCount":null,"recalledCount":null,"firstRecalledId":null,"selectedText":null}},
+      {"action":{"kind":5,"items":[],"error":"recall unavailable","targetId":null},"expected":{"storageStatus":null,"recallStatus":"error","error":"recall unavailable","memoryCount":0,"recalledCount":0,"firstRecalledId":null,"selectedText":null}}
+    ]
+  },
+  {
+    "name": "RecallStartClearsError",
+    "steps": [
+      {"action":{"kind":5,"items":[],"error":"previous error","targetId":null},"expected":{"storageStatus":null,"recallStatus":"error","error":"previous error","memoryCount":null,"recalledCount":null,"firstRecalledId":null,"selectedText":null}},
+      {"action":{"kind":3,"items":[],"error":null,"targetId":null},"expected":{"storageStatus":null,"recallStatus":"recalling","error":"","memoryCount":null,"recalledCount":null,"firstRecalledId":null,"selectedText":null}}
+    ]
+  }
+]

@@ -29,7 +29,7 @@
 // @covers:coreThunk:loadBridgePresetThunk
 // @covers:coreThunk:localExportSoulThunk
 // @covers:coreThunk:localImportSoulThunk
-// @covers:coreThunk:localValidateBridgeThunk
+// @covers:coreThunk:validateBridgeThunk
 // @covers:coreThunk:MakeDelete
 // @covers:coreThunk:MakeEndpoint
 // @covers:coreThunk:MakeGet

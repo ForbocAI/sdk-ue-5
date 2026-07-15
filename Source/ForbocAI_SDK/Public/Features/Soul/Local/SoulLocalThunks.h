@@ -4,7 +4,7 @@
 
 #include "Core/rtk.hpp"
 #include "Core/fp.hpp"
-#include "Features/Memory/MemorySlice.h"
+#include "Features/Memory/MemorySelectors.h"
 #include "Features/NPC/NPCActions.h"
 #include "Features/NPC/NPCSelectors.h"
 #include "Features/NPC/NPCSlice.h"
@@ -26,7 +26,7 @@ localExportSoulThunk(const FString &NpcId = TEXT("")) {
         : detail::ResolveAsync(TypeFactory::Soul(
               TargetNpcId, TEXT("1.0.0"), TEXT("NPC"), Npc.value.Persona,
               Npc.value.State,
-              MemorySlice::selectAllMemories(GetState().Memory)));
+              MemorySelectors::selectAllMemories(GetState().Memory)));
   };
 }
 

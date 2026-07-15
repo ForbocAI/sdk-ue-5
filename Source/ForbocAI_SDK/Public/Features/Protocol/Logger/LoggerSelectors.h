@@ -2,11 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
-#include "Features/Bridge/BridgeSlice.h"
+#include "Features/Bridge/BridgeSelectors.h"
 #include "Features/Dependencies/DependenciesTypes.h"
 #include "Features/Directive/DirectiveSlice.h"
 #include "Features/Ghost/GhostSlice.h"
-#include "Features/Memory/MemorySlice.h"
+#include "Features/Memory/MemorySelectors.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Soul/SoulSlice.h"
 #include "Features/Vector/VectorTypes.h"
@@ -51,7 +51,9 @@ inline FString summarizeBridgeState(
     const BridgeSlice::FBridgeSliceState &State) {
   return FString::Printf(
       TEXT("status=%s presets=%d rulesets=%d presetIds=%d validated=%s error=%s"),
-      *State.Status, State.ActivePresets.Num(), State.AvailableRulesets.Num(),
+      *BridgeSelectors::selectBridgeStatus(State),
+      BridgeSelectors::selectActivePresets(State).Num(),
+      BridgeSelectors::selectAvailableRulesets(State).Num(),
       State.AvailablePresetIds.Num(),
       State.bHasLastValidation ? TEXT("true") : TEXT("false"), *State.Error);
 }

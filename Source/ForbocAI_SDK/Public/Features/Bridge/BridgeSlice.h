@@ -1,149 +1,135 @@
 #pragma once
-/**
- * ᚱ bridge traffic should never hide who said what and when
- * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
- */
 
 #include "Core/rtk.hpp"
-#include "Core/fp.hpp"
-#include "CoreMinimal.h"
-#include "Features/Contracts/ContractsTypes.h"
 #include "Features/Bridge/BridgeActions.h"
-
-namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
-typedef func::Maybe<FString> FForbocAISDKPublicBridgeBridgeSliceHOptionalDomainId;
-} } }
+#include "Features/Bridge/BridgeAdapters.h"
 
 namespace BridgeSlice {
 
-using namespace rtk;
-using namespace func;
-
 struct FBridgeSliceState {
-  TArray<FDirectiveRuleSet> ActivePresets;
-  TArray<FDirectiveRuleSet> AvailableRulesets;
+  rtk::EntityState<FDirectiveRuleSet> ActivePresets;
+  rtk::EntityState<FDirectiveRuleSet> AvailableRulesets;
   TArray<FString> AvailablePresetIds;
   FValidationResult LastValidation;
   bool bHasLastValidation;
   FString Status;
   FString Error;
 
-  FBridgeSliceState() : bHasLastValidation(false), Status(TEXT("idle")) {}
+  FBridgeSliceState()
+      : ActivePresets(bridgeRulesetAdapter().getInitialState()),
+        AvailableRulesets(bridgeRulesetAdapter().getInitialState()),
+        bHasLastValidation(false),
+        Status(bridgeStatuses()[static_cast<int32>(EBridgeStatus::Idle)]) {}
 };
 
-/**
- * Builds the bridge slice reducer and extra cases.
- * User Story: As bridge runtime setup, I need one slice factory so validation,
- * rulesets, and presets share a single reducer definition.
- */
-inline Slice<FBridgeSliceState> createBridgeSlice() {
+inline rtk::Slice<FBridgeSliceState> createBridgeSlice() {
   return rtk::createSlice<FBridgeSliceState>(
-  TEXT("bridge"), FBridgeSliceState(),
-  [](rtk::ActionReducerMapBuilder<FBridgeSliceState> &Builder) {
-    Builder.addCase(Actions::bridgeValidationPendingActionCreator(),
-      [](const FBridgeSliceState &State,
-                   const Action<rtk::FEmptyPayload> &Action) -> FBridgeSliceState {
-                  FBridgeSliceState Next = State;
-                  Next.Status = TEXT("validating");
-                  Next.Error.Empty();
-                  return Next;
-                });
-    Builder.addCase(Actions::bridgeValidationSuccessActionCreator(),
-      [](const FBridgeSliceState &State,
-                   const Action<FValidationResult> &Action) -> FBridgeSliceState {
-                  FBridgeSliceState Next = State;
-                  Next.Status = TEXT("idle");
-                  Next.LastValidation = Action.PayloadValue;
-                  Next.bHasLastValidation = true;
-                  return Next;
-                });
-    Builder.addCase(Actions::bridgeValidationFailedActionCreator(),
-      [](const FBridgeSliceState &State,
-                             const Action<FString> &Action) -> FBridgeSliceState {
-                            FBridgeSliceState Next = State;
-                            Next.Status = TEXT("error");
-                            Next.Error = Action.PayloadValue;
-                            Next.LastValidation =
-                                TypeFactory::Invalid(Action.PayloadValue);
-                            Next.bHasLastValidation = true;
-                            return Next;
-                          });
-    Builder.addCase(Actions::setActivePresetsActionCreator(),
-      [](const FBridgeSliceState &State,
-                             const Action<TArray<FDirectiveRuleSet>> &Action)
-                              -> FBridgeSliceState {
-                            FBridgeSliceState Next = State;
-                            Next.ActivePresets = Action.PayloadValue;
-                            return Next;
-                          });
-    Builder.addCase(Actions::addActivePresetActionCreator(),
-      [](const FBridgeSliceState &State,
-                   const Action<FDirectiveRuleSet> &Action) -> FBridgeSliceState {
-                  FBridgeSliceState Next = State;
-                  const FString TargetId = Action.PayloadValue.Id.IsEmpty()
-                                               ? Action.PayloadValue.RulesetId
-                                               : Action.PayloadValue.Id;
-                  return (Next.ActivePresets.IndexOfByPredicate(
-                              [&TargetId](const FDirectiveRuleSet &Preset) {
-                                const FString ExistingId =
-                                    Preset.Id.IsEmpty() ? Preset.RulesetId
-                                                        : Preset.Id;
-                                return ExistingId == TargetId;
-                              }) == INDEX_NONE
-                              ? (Next.ActivePresets.Add(Action.PayloadValue), void())
-                              : void(),
-                          Next);
-                });
-    Builder.addCase(Actions::setAvailableRulesetsActionCreator(),
-      [](const FBridgeSliceState &State,
-                             const Action<TArray<FDirectiveRuleSet>> &Action)
-                              -> FBridgeSliceState {
-                            FBridgeSliceState Next = State;
-                            Next.AvailableRulesets = Action.PayloadValue;
-                            return Next;
-                          });
-    Builder.addCase(Actions::setAvailablePresetIdsActionCreator(),
-      [](const FBridgeSliceState &State,
-                   const Action<TArray<FString>> &Action) -> FBridgeSliceState {
-                  FBridgeSliceState Next = State;
-                  Next.AvailablePresetIds = Action.PayloadValue;
-                  return Next;
-                });
-    Builder.addCase(Actions::clearBridgeValidationActionCreator(),
-      [](const FBridgeSliceState &State,
-                   const Action<rtk::FEmptyPayload> &Action) -> FBridgeSliceState {
-                  FBridgeSliceState Next = State;
-                  Next.LastValidation = FValidationResult();
-                  Next.bHasLastValidation = false;
-                  Next.Status = TEXT("idle");
-                  Next.Error.Empty();
-                  return Next;
-                });
-  });
-}
-
-inline FString activePresetId(const FDirectiveRuleSet &Preset) {
-  return Preset.Id.IsEmpty() ? Preset.RulesetId : Preset.Id;
-}
-
-inline func::Maybe<FDirectiveRuleSet>
-selectActivePresetByIdRecursive(const TArray<FDirectiveRuleSet> &Presets,
-                                const FString &Id, int32 Index) {
-  return Index >= Presets.Num()
-             ? func::nothing<FDirectiveRuleSet>()
-             : activePresetId(Presets[Index]) == Id
-                   ? func::just(Presets[Index])
-                   : selectActivePresetByIdRecursive(Presets, Id, Index + 1);
-}
-
-inline TArray<FDirectiveRuleSet>
-selectActivePresets(const FBridgeSliceState &State) {
-  return State.ActivePresets;
-}
-
-inline func::Maybe<FDirectiveRuleSet>
-selectActivePresetById(const FBridgeSliceState &State, const FString &Id) {
-  return selectActivePresetByIdRecursive(State.ActivePresets, Id, 0);
+      TEXT("bridge"), FBridgeSliceState(),
+      [](rtk::ActionReducerMapBuilder<FBridgeSliceState> &Builder) {
+        Builder.addCase(
+            Actions::validationRequestedActionCreator(),
+            [](const FBridgeSliceState &State,
+               const rtk::Action<rtk::FEmptyPayload> &) {
+              FBridgeSliceState Next = State;
+              Next.Status = bridgeStatuses()[
+                  static_cast<int32>(EBridgeStatus::Validating)];
+              Next.Error.Empty();
+              Next.LastValidation = FValidationResult();
+              Next.bHasLastValidation = false;
+              return Next;
+            });
+        Builder.addCase(
+            Actions::validationSucceededActionCreator(),
+            [](const FBridgeSliceState &State,
+               const rtk::Action<FValidationResult> &Action) {
+              FBridgeSliceState Next = State;
+              Next.Status = bridgeStatuses()[
+                  static_cast<int32>(EBridgeStatus::Idle)];
+              Next.Error.Empty();
+              Next.LastValidation = Action.PayloadValue;
+              Next.bHasLastValidation = true;
+              return Next;
+            });
+        Builder.addCase(
+            Actions::validationFailedActionCreator(),
+            [](const FBridgeSliceState &State,
+               const rtk::Action<FString> &Action) {
+              FBridgeSliceState Next = State;
+              Next.Status = bridgeStatuses()[
+                  static_cast<int32>(EBridgeStatus::Error)];
+              Next.Error = Action.PayloadValue;
+              Next.LastValidation = FValidationResult();
+              Next.bHasLastValidation = false;
+              return Next;
+            });
+        Builder.addCase(
+            Actions::activePresetsReceivedActionCreator(),
+            [](const FBridgeSliceState &State,
+               const rtk::Action<TArray<FDirectiveRuleSet>> &Action) {
+              FBridgeSliceState Next = State;
+              Next.ActivePresets = bridgeRulesetAdapter().setAll(
+                  Next.ActivePresets, Action.PayloadValue);
+              return Next;
+            });
+        Builder.addCase(
+            Actions::activePresetAddedActionCreator(),
+            [](const FBridgeSliceState &State,
+               const rtk::Action<FDirectiveRuleSet> &Action) {
+              FBridgeSliceState Next = State;
+              Next.Status = bridgeStatuses()[
+                  static_cast<int32>(EBridgeStatus::Idle)];
+              Next.ActivePresets = bridgeRulesetAdapter().upsertOne(
+                  Next.ActivePresets, Action.PayloadValue);
+              return Next;
+            });
+        Builder.addCase(
+            Actions::rulesetsReceivedActionCreator(),
+            [](const FBridgeSliceState &State,
+               const rtk::Action<TArray<FDirectiveRuleSet>> &Action) {
+              FBridgeSliceState Next = State;
+              Next.AvailableRulesets = bridgeRulesetAdapter().setAll(
+                  Next.AvailableRulesets, Action.PayloadValue);
+              return Next;
+            });
+        Builder.addCase(
+            Actions::rulesetRegisteredActionCreator(),
+            [](const FBridgeSliceState &State,
+               const rtk::Action<FDirectiveRuleSet> &Action) {
+              FBridgeSliceState Next = State;
+              Next.AvailableRulesets = bridgeRulesetAdapter().upsertOne(
+                  Next.AvailableRulesets, Action.PayloadValue);
+              return Next;
+            });
+        Builder.addCase(
+            Actions::rulesetDeletedActionCreator(),
+            [](const FBridgeSliceState &State,
+               const rtk::Action<FString> &Action) {
+              FBridgeSliceState Next = State;
+              Next.AvailableRulesets = bridgeRulesetAdapter().removeOne(
+                  Next.AvailableRulesets, Action.PayloadValue);
+              return Next;
+            });
+        Builder.addCase(
+            Actions::presetIdsReceivedActionCreator(),
+            [](const FBridgeSliceState &State,
+               const rtk::Action<TArray<FString>> &Action) {
+              FBridgeSliceState Next = State;
+              Next.AvailablePresetIds = Action.PayloadValue;
+              return Next;
+            });
+        Builder.addCase(
+            Actions::validationClearedActionCreator(),
+            [](const FBridgeSliceState &State,
+               const rtk::Action<rtk::FEmptyPayload> &) {
+              FBridgeSliceState Next = State;
+              Next.LastValidation = FValidationResult();
+              Next.bHasLastValidation = false;
+              Next.Status = bridgeStatuses()[
+                  static_cast<int32>(EBridgeStatus::Idle)];
+              Next.Error.Empty();
+              return Next;
+            });
+      });
 }
 
 } // namespace BridgeSlice

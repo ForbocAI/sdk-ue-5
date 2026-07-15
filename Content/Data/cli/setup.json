@@ -1,0 +1,19 @@
+{
+  "detailFormat": "       {0}",
+  "dependencyFormat": "  [{0}] {1}{2}{3}",
+  "availableMarker": "OK",
+  "unavailableMarker": "--",
+  "versionPrefix": " (",
+  "versionSuffixFormat": "{0})",
+  "checkTitle": "ForbocAI Native Dependency Check",
+  "readyMessage": "Native dependencies are ready",
+  "notReadyMessage": "Native dependencies are not ready",
+  "forceFlag": "--force",
+  "verboseFlag": "--verbose",
+  "setupTitleFormat": "ForbocAI Native Setup{0}",
+  "forceSuffix": " (force)",
+  "vectorFormat": "  [{0}] Vector: {1}",
+  "memoryFormat": "  [{0}] Memory: {1}",
+  "completedMessage": "Native dependency setup completed",
+  "failedMessage": "Native dependency setup did not complete"
+}

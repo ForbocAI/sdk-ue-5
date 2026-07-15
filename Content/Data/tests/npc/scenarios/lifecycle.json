@@ -1,0 +1,44 @@
+[
+  {
+    "name": "InitialSelectors",
+    "steps": [
+      {"action":{"kind":9,"id":null,"persona":null,"stateJson":null,"deltaJson":null,"role":null,"content":null,"reason":null,"history":[]},"expected":{"activeId":"","npcCount":0,"hasNpc":null,"selectedPersona":null,"selectedStateJson":null,"historyCount":null,"blocked":null,"blockReason":null,"stateLogCount":null,"activeExists":false,"idCount":0,"entityCount":0}}
+    ]
+  },
+  {
+    "name": "InfoReceived",
+    "steps": [
+      {"action":{"kind":0,"id":"npc-a","persona":"persona-a","stateJson":"{\"mode\":\"idle\"}","deltaJson":null,"role":null,"content":null,"reason":null,"history":[]},"expected":{"activeId":"npc-a","npcCount":1,"hasNpc":true,"selectedPersona":"persona-a","selectedStateJson":"{\"mode\":\"idle\"}","historyCount":0,"blocked":false,"blockReason":null,"stateLogCount":1,"activeExists":true,"idCount":1,"entityCount":1}}
+    ]
+  },
+  {
+    "name": "SecondInfoBecomesActive",
+    "steps": [
+      {"action":{"kind":0,"id":"npc-a","persona":"persona-a","stateJson":"{}","deltaJson":null,"role":null,"content":null,"reason":null,"history":[]},"expected":{"activeId":null,"npcCount":1,"hasNpc":null,"selectedPersona":null,"selectedStateJson":null,"historyCount":null,"blocked":null,"blockReason":null,"stateLogCount":null,"activeExists":null,"idCount":null,"entityCount":null}},
+      {"action":{"kind":0,"id":"npc-b","persona":"persona-b","stateJson":"{}","deltaJson":null,"role":null,"content":null,"reason":null,"history":[]},"expected":{"activeId":"npc-b","npcCount":2,"hasNpc":true,"selectedPersona":"persona-b","selectedStateJson":null,"historyCount":null,"blocked":null,"blockReason":null,"stateLogCount":1,"activeExists":true,"idCount":2,"entityCount":2}}
+    ]
+  },
+  {
+    "name": "ActiveChanged",
+    "steps": [
+      {"action":{"kind":0,"id":"npc-a","persona":"persona-a","stateJson":"{}","deltaJson":null,"role":null,"content":null,"reason":null,"history":[]},"expected":{"activeId":null,"npcCount":null,"hasNpc":null,"selectedPersona":null,"selectedStateJson":null,"historyCount":null,"blocked":null,"blockReason":null,"stateLogCount":null,"activeExists":null,"idCount":null,"entityCount":null}},
+      {"action":{"kind":0,"id":"npc-b","persona":"persona-b","stateJson":"{}","deltaJson":null,"role":null,"content":null,"reason":null,"history":[]},"expected":{"activeId":"npc-b","npcCount":null,"hasNpc":null,"selectedPersona":null,"selectedStateJson":null,"historyCount":null,"blocked":null,"blockReason":null,"stateLogCount":null,"activeExists":null,"idCount":null,"entityCount":null}},
+      {"action":{"kind":1,"id":"npc-a","persona":null,"stateJson":null,"deltaJson":null,"role":null,"content":null,"reason":null,"history":[]},"expected":{"activeId":"npc-a","npcCount":2,"hasNpc":true,"selectedPersona":"persona-a","selectedStateJson":null,"historyCount":null,"blocked":null,"blockReason":null,"stateLogCount":null,"activeExists":true,"idCount":null,"entityCount":null}}
+    ]
+  },
+  {
+    "name": "ActiveRemovalClearsSelection",
+    "steps": [
+      {"action":{"kind":0,"id":"npc-a","persona":"persona-a","stateJson":"{}","deltaJson":null,"role":null,"content":null,"reason":null,"history":[]},"expected":{"activeId":"npc-a","npcCount":1,"hasNpc":null,"selectedPersona":null,"selectedStateJson":null,"historyCount":null,"blocked":null,"blockReason":null,"stateLogCount":null,"activeExists":null,"idCount":null,"entityCount":null}},
+      {"action":{"kind":8,"id":"npc-a","persona":null,"stateJson":null,"deltaJson":null,"role":null,"content":null,"reason":null,"history":[]},"expected":{"activeId":"","npcCount":0,"hasNpc":false,"selectedPersona":null,"selectedStateJson":null,"historyCount":null,"blocked":null,"blockReason":null,"stateLogCount":null,"activeExists":false,"idCount":0,"entityCount":0}}
+    ]
+  },
+  {
+    "name": "InactiveRemovalPreservesSelection",
+    "steps": [
+      {"action":{"kind":0,"id":"npc-a","persona":"persona-a","stateJson":"{}","deltaJson":null,"role":null,"content":null,"reason":null,"history":[]},"expected":{"activeId":null,"npcCount":null,"hasNpc":null,"selectedPersona":null,"selectedStateJson":null,"historyCount":null,"blocked":null,"blockReason":null,"stateLogCount":null,"activeExists":null,"idCount":null,"entityCount":null}},
+      {"action":{"kind":0,"id":"npc-b","persona":"persona-b","stateJson":"{}","deltaJson":null,"role":null,"content":null,"reason":null,"history":[]},"expected":{"activeId":"npc-b","npcCount":2,"hasNpc":null,"selectedPersona":null,"selectedStateJson":null,"historyCount":null,"blocked":null,"blockReason":null,"stateLogCount":null,"activeExists":null,"idCount":null,"entityCount":null}},
+      {"action":{"kind":8,"id":"npc-a","persona":null,"stateJson":null,"deltaJson":null,"role":null,"content":null,"reason":null,"history":[]},"expected":{"activeId":"npc-b","npcCount":1,"hasNpc":false,"selectedPersona":null,"selectedStateJson":null,"historyCount":null,"blocked":null,"blockReason":null,"stateLogCount":null,"activeExists":true,"idCount":1,"entityCount":1}}
+    ]
+  }
+]

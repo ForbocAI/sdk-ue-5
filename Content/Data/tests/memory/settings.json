@@ -1,0 +1,15 @@
+{
+  "labels": {
+    "suite": "Memory slice scenarios",
+    "caseName": "$name",
+    "requiredField": "Required Memory scenario field is missing",
+    "scenarioPresent": "Memory scenario exists",
+    "storageStatus": "Memory storage status",
+    "recallStatus": "Memory recall status",
+    "error": "Memory error",
+    "memoryCount": "Memory entity count",
+    "recalledCount": "Last recalled count",
+    "firstRecalledId": "First recalled id",
+    "selectedText": "Selected memory text"
+  }
+}

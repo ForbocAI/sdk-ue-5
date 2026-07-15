@@ -1,5 +1,6 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
+#include "Features/Memory/MemorySelectors.h"
 #include "Features/Memory/MemorySlice.h"
 #include "Misc/AutomationTest.h"
 #include "Store.h"
@@ -46,7 +47,7 @@ bool FProtocolMemoryLifecycleTest::RunTest(const FString &Parameters) {
   TestEqual("Recall status idle", State.Memory.RecallStatus,
             FString(TEXT("idle")));
   TArray<FMemoryItem> LastRecalled =
-      MemorySlice::selectLastRecalledMemories(State.Memory);
+      MemorySelectors::selectLastRecalledMemories(State.Memory);
   TestEqual("One recalled memory", LastRecalled.Num(), 1);
   TestEqual("Recalled text", LastRecalled[0].Text,
             FString(TEXT("The player found a key")));
@@ -68,6 +69,6 @@ bool FProtocolMemoryLifecycleTest::RunTest(const FString &Parameters) {
   TestStore.dispatch(MemorySlice::Actions::memoryClear());
   State = TestStore.getState();
   TestEqual("Memories cleared",
-            MemorySlice::selectAllMemories(State.Memory).Num(), 0);
+            MemorySelectors::selectAllMemories(State.Memory).Num(), 0);
   return true;
 }

@@ -1,0 +1,19 @@
+{
+  "labels": {
+    "suite": "Bridge slice scenarios",
+    "caseName": "$name",
+    "requiredField": "Required Bridge scenario field is missing",
+    "scenarioPresent": "Bridge scenario exists",
+    "status": "Bridge status",
+    "error": "Bridge error",
+    "hasValidation": "Bridge has validation",
+    "validationValid": "Bridge validation valid",
+    "validationReason": "Bridge validation reason",
+    "activeCount": "Active preset count",
+    "activeFirstId": "First active preset id",
+    "availableCount": "Available ruleset count",
+    "availableFirstId": "First available ruleset id",
+    "availableSelectedRulesetId": "Selected available ruleset id",
+    "presetIdCount": "Available preset id count"
+  }
+}

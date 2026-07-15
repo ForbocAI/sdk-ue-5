@@ -42,4 +42,44 @@ selectActiveNPC(const NPCSlice::FNPCSliceState &State) {
              : selectNPCById(State, State.ActiveNpcId);
 }
 
+inline func::Maybe<FAgentState>
+selectNPCState(const NPCSlice::FNPCSliceState &State, const FString &Id) {
+  return func::fmap(
+      selectNPCById(State, Id),
+      [](const FNPCInternalState &Npc) { return Npc.State; });
+}
+
+inline func::Maybe<TArray<FNPCHistoryEntry>>
+selectNPCHistory(const NPCSlice::FNPCSliceState &State, const FString &Id) {
+  return func::fmap(
+      selectNPCById(State, Id),
+      [](const FNPCInternalState &Npc) { return Npc.History; });
+}
+
+inline bool selectNPCBlocked(const NPCSlice::FNPCSliceState &State,
+                             const FString &Id) {
+  return func::match(
+      selectNPCById(State, Id),
+      [](const FNPCInternalState &Npc) { return Npc.bIsBlocked; },
+      []() { return false; });
+}
+
+inline func::Maybe<FString>
+selectNPCBlockReason(const NPCSlice::FNPCSliceState &State,
+                     const FString &Id) {
+  return func::mbind(
+      selectNPCById(State, Id), [](const FNPCInternalState &Npc) {
+        return Npc.BlockReason.IsEmpty() ? func::nothing<FString>()
+                                         : func::just(Npc.BlockReason);
+      });
+}
+
+inline func::Maybe<TArray<FNPCStateLogEntry>>
+selectNPCStateLog(const NPCSlice::FNPCSliceState &State,
+                  const FString &Id) {
+  return func::fmap(
+      selectNPCById(State, Id),
+      [](const FNPCInternalState &Npc) { return Npc.StateLog; });
+}
+
 } // namespace NPCSelectors

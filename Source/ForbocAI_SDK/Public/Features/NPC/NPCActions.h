@@ -11,10 +11,10 @@ namespace NPCActions {
  * User Story: As NPC lifecycle flows, I need a cached action creator so new or
  * updated NPC records dispatch through one contract.
  */
-inline const rtk::ActionCreator<FNPCInternalState> &setNPCInfoActionCreator() {
-  static const func::Lazy<rtk::ActionCreator<FNPCInternalState>> ActionCreator =
-      func::lazy([]() -> rtk::ActionCreator<FNPCInternalState> {
-        return rtk::createAction<FNPCInternalState>(TEXT("npc/setNPCInfo"));
+inline const rtk::ActionCreator<FSetNPCInfoPayload> &setNPCInfoActionCreator() {
+  static const func::Lazy<rtk::ActionCreator<FSetNPCInfoPayload>> ActionCreator =
+      func::lazy([]() -> rtk::ActionCreator<FSetNPCInfoPayload> {
+        return rtk::createAction<FSetNPCInfoPayload>(TEXT("npc/setNPCInfo"));
       });
   return func::eval(ActionCreator);
 }
@@ -147,7 +147,8 @@ inline const rtk::ActionCreator<FString> &removeNPCActionCreator() {
  * records can be inserted or refreshed without manual payload wiring.
  */
 inline rtk::AnyAction setNPCInfo(const FNPCInternalState &Info) {
-  return setNPCInfoActionCreator()(Info);
+  return setNPCInfoActionCreator()(
+      FSetNPCInfoPayload{Info, FDateTime::UtcNow().ToUnixTimestamp()});
 }
 
 /**
@@ -165,7 +166,8 @@ inline rtk::AnyAction setActiveNPC(const FString &Id) {
  * state blobs can be dispatched consistently.
  */
 inline rtk::AnyAction setNPCState(const FString &Id, const FAgentState &State) {
-  return setNPCStateActionCreator()(FSetNPCStatePayload{Id, State});
+  return setNPCStateActionCreator()(FSetNPCStatePayload{
+      Id, State, FDateTime::UtcNow().ToUnixTimestamp()});
 }
 
 /**
@@ -175,7 +177,8 @@ inline rtk::AnyAction setNPCState(const FString &Id, const FAgentState &State) {
  */
 inline rtk::AnyAction updateNPCState(const FString &Id,
                                      const FAgentState &Delta) {
-  return updateNPCStateActionCreator()(FUpdateNPCStatePayload{Id, Delta});
+  return updateNPCStateActionCreator()(FUpdateNPCStatePayload{
+      Id, Delta, FDateTime::UtcNow().ToUnixTimestamp()});
 }
 
 /**

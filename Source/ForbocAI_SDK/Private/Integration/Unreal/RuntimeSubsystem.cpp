@@ -1,4 +1,6 @@
 #include "Integration/Unreal/RuntimeSubsystem.h"
+#include "Features/Bridge/BridgeSelectors.h"
+#include "Features/Memory/MemorySelectors.h"
 #include "Features/NPC/NPCActions.h"
 #include "Features/NPC/NPCSelectors.h"
 #include "Features/NPC/NPCSlice.h"
@@ -148,7 +150,7 @@ bool UForbocAISubsystem::GetActiveNPC(FNPCInternalState &OutNPC) const {
 TArray<FMemoryItem> UForbocAISubsystem::GetLastRecalledMemories() const {
   return !Store.IsValid()
              ? TArray<FMemoryItem>()
-             : MemorySlice::selectLastRecalledMemories(
+             : MemorySelectors::selectLastRecalledMemories(
                    Store->getState().Memory);
 }
 
@@ -159,13 +161,16 @@ TArray<FMemoryItem> UForbocAISubsystem::GetLastRecalledMemories() const {
  */
 bool UForbocAISubsystem::GetLastBridgeValidation(
     FValidationResult &OutResult) const {
-  return !Store.IsValid() ? false
-                          : [this, &OutResult]() -> bool {
-    const FRuntimeState State = Store->getState();
-    return State.Bridge.bHasLastValidation
-               ? (OutResult = State.Bridge.LastValidation, true)
-               : false;
-  }();
+  return !Store.IsValid()
+             ? false
+             : func::match(
+                   BridgeSelectors::selectBridgeLastValidation(
+                       Store->getState().Bridge),
+                   [&OutResult](const FValidationResult &Result) {
+                     OutResult = Result;
+                     return true;
+                   },
+                   []() { return false; });
 }
 
 /**

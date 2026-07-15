@@ -1,60 +1,14 @@
 #pragma once
 
-#include "Core/rtk.hpp"
 #include "Core/fp.hpp"
-
-#include "Bridge/BridgeModule.h"
-#include "Features/Errors/ErrorsAdapters.h"
+#include "Core/rtk.hpp"
 #include "Features/API/APIApi.h"
 #include "Features/Bridge/BridgeSlice.h"
 #include "Features/Config/ConfigAdapters.h"
-
-namespace BridgeHelpers {
-/**
- * Runs the pure local bridge validation path.
- * User Story: As offline bridge validation, I need a local validator so rule
- * checks can run without depending on the remote API.
- */
-FValidationResult RunLocalBridgeValidation(const FAgentAction &Action,
-                                          const TArray<FValidationRule> &Rules,
-                                          const FBridgeRuleContext &Context);
-} // namespace BridgeHelpers
+#include "Features/Errors/ErrorsAdapters.h"
 
 namespace rtk {
 
-/**
- * Builds the thunk that performs local rule-based bridge validation.
- * User Story: As bridge validation flows, I need a local thunk so actions can
- * be validated and reflected in slice state without remote calls.
- */
-inline ThunkAction<FValidationResult, FRuntimeState>
-localValidateBridgeThunk(const FAgentAction &Action,
-                         const TArray<FValidationRule> &Rules,
-                         const FBridgeRuleContext &Context) {
-  return [Action, Rules, Context](
-             std::function<AnyAction(const AnyAction &)> Dispatch,
-             std::function<const FRuntimeState &()> GetState)
-             -> func::AsyncResult<FValidationResult> {
-    Dispatch(BridgeSlice::Actions::bridgeValidationPending());
-
-    FValidationResult Result =
-        BridgeHelpers::RunLocalBridgeValidation(Action, Rules, Context);
-
-    Result.bValid
-        ? (Dispatch(BridgeSlice::Actions::bridgeValidationSuccess(Result)),
-           void())
-        : (Dispatch(
-               BridgeSlice::Actions::bridgeValidationFailure(Result.Reason)),
-           void());
-    return detail::ResolveAsync(Result);
-  };
-}
-
-/**
- * Builds the thunk that validates a bridge action through the API.
- * User Story: As remote bridge validation, I need a thunk that checks API
- * prerequisites and stores the resulting validation outcome.
- */
 inline ThunkAction<FValidationResult, FRuntimeState>
 validateBridgeThunk(const FAgentAction &Action,
                     const FBridgeValidationContext &Context,
@@ -63,32 +17,31 @@ validateBridgeThunk(const FAgentAction &Action,
              std::function<AnyAction(const AnyAction &)> Dispatch,
              std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FValidationResult> {
+    Dispatch(BridgeSlice::Actions::validationRequested());
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
     return ApiKeyError.hasValue
-        ? detail::RejectAsync<FValidationResult>(ApiKeyError.value)
-        : (Dispatch(BridgeSlice::Actions::bridgeValidationPending()),
-           func::AsyncChain::then<FValidationResult, FValidationResult>(
-               APISlice::Endpoints::postBridgeValidate(
-                   NpcId, TypeFactory::BridgeValidateRequest(Action, Context))(
-                   Dispatch, GetState),
-               [Dispatch](const FValidationResult &Result) {
-                 Dispatch(
-                     BridgeSlice::Actions::bridgeValidationSuccess(Result));
-                 return detail::ResolveAsync(Result);
-               })
-               .catch_([Dispatch](std::string Error) {
-                 Dispatch(BridgeSlice::Actions::bridgeValidationFailure(
-                     FString(UTF8_TO_TCHAR(Error.c_str()))));
-               }));
+               ? (Dispatch(BridgeSlice::Actions::validationFailed(
+                      ApiKeyError.value)),
+                  detail::RejectAsync<FValidationResult>(ApiKeyError.value))
+               : func::AsyncChain::then<FValidationResult,
+                                        FValidationResult>(
+                     APISlice::Endpoints::postBridgeValidate(
+                         NpcId,
+                         TypeFactory::BridgeValidateRequest(Action, Context))(
+                         Dispatch, GetState),
+                     [Dispatch](const FValidationResult &Result) {
+                       Dispatch(
+                           BridgeSlice::Actions::validationSucceeded(Result));
+                       return detail::ResolveAsync(Result);
+                     })
+                     .catch_([Dispatch](std::string Error) {
+                       Dispatch(BridgeSlice::Actions::validationFailed(
+                           FString(UTF8_TO_TCHAR(Error.c_str()))));
+                     });
   };
 }
 
-/**
- * Builds the thunk that loads and activates one named bridge preset.
- * User Story: As bridge preset selection, I need a thunk that fetches preset
- * rules and stores them as active rules for the current runtime.
- */
 inline ThunkAction<FDirectiveRuleSet, FRuntimeState>
 loadBridgePresetThunk(const FString &PresetName) {
   return [PresetName](std::function<AnyAction(const AnyAction &)> Dispatch,
@@ -97,26 +50,23 @@ loadBridgePresetThunk(const FString &PresetName) {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
     return ApiKeyError.hasValue
-        ? detail::RejectAsync<FDirectiveRuleSet>(ApiKeyError.value)
-        : func::AsyncChain::then<FDirectiveRuleSet, FDirectiveRuleSet>(
-              APISlice::Endpoints::postBridgePreset(PresetName)(Dispatch,
-                                                                GetState),
-              [Dispatch, PresetName](const FDirectiveRuleSet &Ruleset) {
-                FDirectiveRuleSet ActiveRuleset = Ruleset;
-                ActiveRuleset.Id = ActiveRuleset.Id.IsEmpty()
-                                       ? PresetName
-                                       : ActiveRuleset.Id;
-                Dispatch(BridgeSlice::Actions::addActivePreset(ActiveRuleset));
-                return detail::ResolveAsync(Ruleset);
-              });
+               ? detail::RejectAsync<FDirectiveRuleSet>(ApiKeyError.value)
+               : func::AsyncChain::then<FDirectiveRuleSet,
+                                        FDirectiveRuleSet>(
+                     APISlice::Endpoints::postBridgePreset(PresetName)(
+                         Dispatch, GetState),
+                     [Dispatch, PresetName](const FDirectiveRuleSet &Ruleset) {
+                       FDirectiveRuleSet ActiveRuleset = Ruleset;
+                       ActiveRuleset.Id = ActiveRuleset.Id.IsEmpty()
+                                              ? PresetName
+                                              : ActiveRuleset.Id;
+                       Dispatch(BridgeSlice::Actions::activePresetAdded(
+                           ActiveRuleset));
+                       return detail::ResolveAsync(Ruleset);
+                     });
   };
 }
 
-/**
- * Builds the thunk that fetches the available bridge rules.
- * User Story: As bridge rule inspection, I need a thunk that loads rule
- * metadata so tools can display server-provided validation rules.
- */
 inline ThunkAction<TArray<FBridgeRule>, FRuntimeState> getBridgeRulesThunk() {
   return [](std::function<AnyAction(const AnyAction &)> Dispatch,
             std::function<const FRuntimeState &()> GetState)
@@ -124,40 +74,32 @@ inline ThunkAction<TArray<FBridgeRule>, FRuntimeState> getBridgeRulesThunk() {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
     return ApiKeyError.hasValue
-        ? detail::RejectAsync<TArray<FBridgeRule>>(ApiKeyError.value)
-        : APISlice::Endpoints::getBridgeRules()(Dispatch, GetState);
+               ? detail::RejectAsync<TArray<FBridgeRule>>(ApiKeyError.value)
+               : APISlice::Endpoints::getBridgeRules()(Dispatch, GetState);
   };
 }
 
-/**
- * Builds the thunk that loads all registered bridge rulesets.
- * User Story: As bridge ruleset management, I need a thunk that refreshes the
- * ruleset catalog so the slice reflects current server state.
- */
-inline ThunkAction<TArray<FDirectiveRuleSet>, FRuntimeState> listRulesetsThunk() {
+inline ThunkAction<TArray<FDirectiveRuleSet>, FRuntimeState>
+listRulesetsThunk() {
   return [](std::function<AnyAction(const AnyAction &)> Dispatch,
             std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<TArray<FDirectiveRuleSet>> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
     return ApiKeyError.hasValue
-        ? detail::RejectAsync<TArray<FDirectiveRuleSet>>(ApiKeyError.value)
-        : func::AsyncChain::then<TArray<FDirectiveRuleSet>,
-                                  TArray<FDirectiveRuleSet>>(
-              APISlice::Endpoints::getRulesets()(Dispatch, GetState),
-              [Dispatch](const TArray<FDirectiveRuleSet> &Rulesets) {
-                Dispatch(
-                    BridgeSlice::Actions::setAvailableRulesets(Rulesets));
-                return detail::ResolveAsync(Rulesets);
-              });
+               ? detail::RejectAsync<TArray<FDirectiveRuleSet>>(
+                     ApiKeyError.value)
+               : func::AsyncChain::then<TArray<FDirectiveRuleSet>,
+                                        TArray<FDirectiveRuleSet>>(
+                     APISlice::Endpoints::getRulesets()(Dispatch, GetState),
+                     [Dispatch](const TArray<FDirectiveRuleSet> &Rulesets) {
+                       Dispatch(
+                           BridgeSlice::Actions::rulesetsReceived(Rulesets));
+                       return detail::ResolveAsync(Rulesets);
+                     });
   };
 }
 
-/**
- * Builds the thunk that loads available bridge preset ids.
- * User Story: As preset pickers, I need a thunk that fetches preset ids so the
- * UI can offer the current list of server-defined presets.
- */
 inline ThunkAction<TArray<FString>, FRuntimeState> listRulePresetsThunk() {
   return [](std::function<AnyAction(const AnyAction &)> Dispatch,
             std::function<const FRuntimeState &()> GetState)
@@ -165,22 +107,18 @@ inline ThunkAction<TArray<FString>, FRuntimeState> listRulePresetsThunk() {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
     return ApiKeyError.hasValue
-        ? detail::RejectAsync<TArray<FString>>(ApiKeyError.value)
-        : func::AsyncChain::then<TArray<FString>, TArray<FString>>(
-              APISlice::Endpoints::getRulePresets()(Dispatch, GetState),
-              [Dispatch](const TArray<FString> &PresetIds) {
-                Dispatch(
-                    BridgeSlice::Actions::setAvailablePresetIds(PresetIds));
-                return detail::ResolveAsync(PresetIds);
-              });
+               ? detail::RejectAsync<TArray<FString>>(ApiKeyError.value)
+               : func::AsyncChain::then<TArray<FString>, TArray<FString>>(
+                     APISlice::Endpoints::getRulePresets()(Dispatch,
+                                                           GetState),
+                     [Dispatch](const TArray<FString> &PresetIds) {
+                       Dispatch(BridgeSlice::Actions::presetIdsReceived(
+                           PresetIds));
+                       return detail::ResolveAsync(PresetIds);
+                     });
   };
 }
 
-/**
- * Builds the thunk that registers or updates a bridge ruleset.
- * User Story: As bridge ruleset editing, I need a thunk that persists a ruleset
- * and refreshes local state with the saved server version.
- */
 inline ThunkAction<FDirectiveRuleSet, FRuntimeState>
 registerRulesetThunk(const FDirectiveRuleSet &Ruleset) {
   return [Ruleset](std::function<AnyAction(const AnyAction &)> Dispatch,
@@ -189,34 +127,19 @@ registerRulesetThunk(const FDirectiveRuleSet &Ruleset) {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
     return ApiKeyError.hasValue
-        ? detail::RejectAsync<FDirectiveRuleSet>(ApiKeyError.value)
-        : func::AsyncChain::then<FDirectiveRuleSet, FDirectiveRuleSet>(
-              APISlice::Endpoints::postRuleRegister(Ruleset)(Dispatch,
-                                                             GetState),
-              [Dispatch, GetState](const FDirectiveRuleSet &Registered) {
-                const TArray<FDirectiveRuleSet> Updated = [&]() {
-                  TArray<FDirectiveRuleSet> R =
-                      GetState().Bridge.AvailableRulesets;
-                  const int32 Found = R.IndexOfByPredicate(
-                      [&Registered](const FDirectiveRuleSet &X) {
-                        return X.Id == Registered.Id;
-                      });
-                  Found != INDEX_NONE ? (void)(R[Found] = Registered)
-                                      : (void)R.Add(Registered);
-                  return R;
-                }();
-                Dispatch(
-                    BridgeSlice::Actions::setAvailableRulesets(Updated));
-                return detail::ResolveAsync(Registered);
-              });
+               ? detail::RejectAsync<FDirectiveRuleSet>(ApiKeyError.value)
+               : func::AsyncChain::then<FDirectiveRuleSet,
+                                        FDirectiveRuleSet>(
+                     APISlice::Endpoints::postRuleRegister(Ruleset)(Dispatch,
+                                                                    GetState),
+                     [Dispatch](const FDirectiveRuleSet &Registered) {
+                       Dispatch(BridgeSlice::Actions::rulesetRegistered(
+                           Registered));
+                       return detail::ResolveAsync(Registered);
+                     });
   };
 }
 
-/**
- * Builds the thunk that deletes a bridge ruleset.
- * User Story: As bridge ruleset maintenance, I need a thunk that removes a
- * ruleset remotely and updates the local cache to match.
- */
 inline ThunkAction<rtk::FEmptyPayload, FRuntimeState>
 deleteRulesetThunk(const FString &RulesetId) {
   return [RulesetId](std::function<AnyAction(const AnyAction &)> Dispatch,
@@ -225,22 +148,17 @@ deleteRulesetThunk(const FString &RulesetId) {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
         SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
     return ApiKeyError.hasValue
-        ? detail::RejectAsync<rtk::FEmptyPayload>(ApiKeyError.value)
-        : func::AsyncChain::then<rtk::FEmptyPayload, rtk::FEmptyPayload>(
-              APISlice::Endpoints::deleteRule(RulesetId)(Dispatch, GetState),
-              [Dispatch, GetState,
-               RulesetId](const rtk::FEmptyPayload &Payload) {
-                TArray<FDirectiveRuleSet> Rulesets =
-                    GetState().Bridge.AvailableRulesets;
-                Rulesets.RemoveAll(
-                    [RulesetId](const FDirectiveRuleSet &Ruleset) {
-                      return Ruleset.Id == RulesetId ||
-                             Ruleset.RulesetId == RulesetId;
-                    });
-                Dispatch(
-                    BridgeSlice::Actions::setAvailableRulesets(Rulesets));
-                return detail::ResolveAsync(Payload);
-              });
+               ? detail::RejectAsync<rtk::FEmptyPayload>(ApiKeyError.value)
+               : func::AsyncChain::then<rtk::FEmptyPayload,
+                                        rtk::FEmptyPayload>(
+                     APISlice::Endpoints::deleteRule(RulesetId)(Dispatch,
+                                                                 GetState),
+                     [Dispatch, RulesetId](
+                         const rtk::FEmptyPayload &Payload) {
+                       Dispatch(
+                           BridgeSlice::Actions::rulesetDeleted(RulesetId));
+                       return detail::ResolveAsync(Payload);
+                     });
   };
 }
 

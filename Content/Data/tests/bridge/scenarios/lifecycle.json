@@ -1,0 +1,29 @@
+[
+  {
+    "name": "InitialState",
+    "steps": [
+      {"action":{"kind":10,"rulesets":[],"presetIds":[],"targetId":null,"valid":null,"reason":null},"expected":{"status":"idle","error":"","hasValidation":false,"validationValid":null,"validationReason":null,"activeCount":0,"activeFirstId":null,"availableCount":0,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":0}}
+    ]
+  },
+  {
+    "name": "ValidationSucceeded",
+    "steps": [
+      {"action":{"kind":0,"rulesets":[],"presetIds":[],"targetId":null,"valid":null,"reason":null},"expected":{"status":"validating","error":"","hasValidation":false,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}},
+      {"action":{"kind":1,"rulesets":[],"presetIds":[],"targetId":null,"valid":true,"reason":"accepted"},"expected":{"status":"idle","error":"","hasValidation":true,"validationValid":true,"validationReason":"accepted","activeCount":null,"activeFirstId":null,"availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}}
+    ]
+  },
+  {
+    "name": "ValidationFailedWithoutFabricatedResult",
+    "steps": [
+      {"action":{"kind":0,"rulesets":[],"presetIds":[],"targetId":null,"valid":null,"reason":null},"expected":{"status":"validating","error":null,"hasValidation":null,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}},
+      {"action":{"kind":2,"rulesets":[],"presetIds":[],"targetId":null,"valid":null,"reason":"transport unavailable"},"expected":{"status":"error","error":"transport unavailable","hasValidation":false,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}}
+    ]
+  },
+  {
+    "name": "PendingClearsPreviousValidation",
+    "steps": [
+      {"action":{"kind":1,"rulesets":[],"presetIds":[],"targetId":null,"valid":false,"reason":"rejected"},"expected":{"status":null,"error":null,"hasValidation":true,"validationValid":false,"validationReason":"rejected","activeCount":null,"activeFirstId":null,"availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}},
+      {"action":{"kind":0,"rulesets":[],"presetIds":[],"targetId":null,"valid":null,"reason":null},"expected":{"status":"validating","error":"","hasValidation":false,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}}
+    ]
+  }
+]

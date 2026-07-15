@@ -143,6 +143,109 @@ ReadActionAliasesFixture(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+inline FIdentifyActorPayloadFixture
+ReadIdentifyActorPayloadFixture(const DataAdapters::FSettingsSource &Source) {
+  const TSharedRef<FJsonObject> Object =
+      DataAdapters::ReadObjectField(Source, TEXT("identifyActorPayload"));
+  const TSharedRef<FJsonObject> Input =
+      DataAdapters::ReadObjectField(Object, TEXT("input"));
+  const TSharedRef<FJsonObject> Expected =
+      DataAdapters::ReadObjectField(Object, TEXT("expected"));
+  const TSharedRef<FJsonObject> Labels =
+      DataAdapters::ReadObjectField(Object, TEXT("labels"));
+  return {
+      DataAdapters::ReadStringField(Input, TEXT("npcId")),
+      DataAdapters::ReadStringField(Input, TEXT("persona")),
+      DataAdapters::SerializeObject(
+          DataAdapters::ReadObjectField(Input, TEXT("data"))),
+      DataAdapters::ReadStringField(Expected, TEXT("type")),
+      DataAdapters::ReadNumberField(Expected, TEXT("health")),
+      {
+          DataAdapters::ReadStringField(Labels, TEXT("payload")),
+          DataAdapters::ReadStringField(Labels, TEXT("type")),
+          DataAdapters::ReadStringField(Labels, TEXT("npcId")),
+          DataAdapters::ReadStringField(Labels, TEXT("persona")),
+          DataAdapters::ReadStringField(Labels, TEXT("health")),
+      },
+  };
+}
+
+inline FDecisionPayloadFixture
+ReadDecisionPayloadFixture(const DataAdapters::FSettingsSource &Source) {
+  const TSharedRef<FJsonObject> Object =
+      DataAdapters::ReadObjectField(Source, TEXT("decisionPayload"));
+  const TSharedRef<FJsonObject> Input =
+      DataAdapters::ReadObjectField(Object, TEXT("input"));
+  const TSharedRef<FJsonObject> Expected =
+      DataAdapters::ReadObjectField(Object, TEXT("expected"));
+  const TSharedRef<FJsonObject> Labels =
+      DataAdapters::ReadObjectField(Object, TEXT("labels"));
+  return {
+      DataAdapters::ReadStringField(Input, TEXT("goal")),
+      DataAdapters::ReadStringField(Input, TEXT("actionType")),
+      DataAdapters::ReadStringField(Input, TEXT("target")),
+      DataAdapters::ReadStringField(Expected, TEXT("type")),
+      {
+          DataAdapters::ReadStringField(Labels, TEXT("payload")),
+          DataAdapters::ReadStringField(Labels, TEXT("type")),
+          DataAdapters::ReadStringField(Labels, TEXT("goal")),
+          DataAdapters::ReadStringField(Labels, TEXT("actionType")),
+          DataAdapters::ReadStringField(Labels, TEXT("target")),
+      },
+  };
+}
+
+inline FReasoningPayloadFixture
+ReadReasoningPayloadFixture(const DataAdapters::FSettingsSource &Source) {
+  const TSharedRef<FJsonObject> Object =
+      DataAdapters::ReadObjectField(Source, TEXT("reasoningPayload"));
+  const TSharedRef<FJsonObject> Input =
+      DataAdapters::ReadObjectField(Object, TEXT("input"));
+  const TSharedRef<FJsonObject> Expected =
+      DataAdapters::ReadObjectField(Object, TEXT("expected"));
+  const TSharedRef<FJsonObject> Labels =
+      DataAdapters::ReadObjectField(Object, TEXT("labels"));
+  return {
+      DataAdapters::ReadStringField(Input, TEXT("reasoningText")),
+      DataAdapters::ReadStringField(Input, TEXT("responseText")),
+      DataAdapters::ReadStringField(Expected, TEXT("type")),
+      {
+          DataAdapters::ReadStringField(Labels, TEXT("payload")),
+          DataAdapters::ReadStringField(Labels, TEXT("type")),
+          DataAdapters::ReadStringField(Labels, TEXT("reasoningText")),
+          DataAdapters::ReadStringField(Labels, TEXT("responseText")),
+      },
+  };
+}
+
+inline FProcessTapePayloadFixture
+ReadProcessTapePayloadFixture(const DataAdapters::FSettingsSource &Source) {
+  const TSharedRef<FJsonObject> Object =
+      DataAdapters::ReadObjectField(Source, TEXT("processTapePayload"));
+  const TSharedRef<FJsonObject> Input =
+      DataAdapters::ReadObjectField(Object, TEXT("input"));
+  const TSharedRef<FJsonObject> Expected =
+      DataAdapters::ReadObjectField(Object, TEXT("expected"));
+  const TSharedRef<FJsonObject> Labels =
+      DataAdapters::ReadObjectField(Object, TEXT("labels"));
+  return {
+      DataAdapters::ReadStringField(Input, TEXT("observation")),
+      DataAdapters::SerializeObject(
+          DataAdapters::ReadObjectField(Input, TEXT("context"))),
+      DataAdapters::SerializeObject(
+          DataAdapters::ReadObjectField(Input, TEXT("npcState"))),
+      DataAdapters::ReadStringField(Input, TEXT("persona")),
+      DataAdapters::ReadStringArrayField(Expected, TEXT("traits")),
+      DataAdapters::ReadStringField(Expected, TEXT("contextTime")),
+      {
+          DataAdapters::ReadStringField(Labels, TEXT("payload")),
+          DataAdapters::ReadStringField(Labels, TEXT("observation")),
+          DataAdapters::ReadStringField(Labels, TEXT("persona")),
+          DataAdapters::ReadStringField(Labels, TEXT("contextTime")),
+      },
+  };
+}
+
 inline const FCodecFixtures &CodecFixtures() {
   static const DataAdapters::FSettingsSource Source =
       DataAdapters::SettingsSource(TEXT("ForbocAI_SDK"),
@@ -154,6 +257,10 @@ inline const FCodecFixtures &CodecFixtures() {
       ReadNullableProtocolFixture(Source),
       ReadBridgeValidationFixture(Source),
       ReadActionAliasesFixture(Source),
+      ReadIdentifyActorPayloadFixture(Source),
+      ReadDecisionPayloadFixture(Source),
+      ReadReasoningPayloadFixture(Source),
+      ReadProcessTapePayloadFixture(Source),
   };
   return Fixtures;
 }

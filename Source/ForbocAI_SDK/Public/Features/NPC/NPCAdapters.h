@@ -62,9 +62,10 @@ inline FAgentState updateNPCStateLocally(const FAgentState &Current,
 }
 
 inline FNPCStateLogEntry makeStateLogEntry(const FAgentState &Delta,
-                                           const FAgentState &State) {
+                                           const FAgentState &State,
+                                           int64 Timestamp) {
   FNPCStateLogEntry Entry;
-  Entry.Timestamp = FDateTime::UtcNow().ToUnixTimestamp();
+  Entry.Timestamp = Timestamp;
   Entry.Delta = Delta;
   Entry.State = State;
   return Entry;

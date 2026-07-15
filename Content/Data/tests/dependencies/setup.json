@@ -1,0 +1,19 @@
+{
+  "commands": [
+    {
+      "key": "setup_check",
+      "arguments": [],
+      "label": "setup_check"
+    },
+    {
+      "key": "setup",
+      "arguments": [],
+      "label": "setup"
+    },
+    {
+      "key": "setup",
+      "arguments": ["--force"],
+      "label": "setup --force"
+    }
+  ]
+}

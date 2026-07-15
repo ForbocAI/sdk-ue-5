@@ -1,5 +1,7 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
+#include "Features/Bridge/BridgeSelectors.h"
+#include "Features/Memory/MemorySelectors.h"
 #include "Features/NPC/NPCActions.h"
 #include "Features/NPC/NPCSelectors.h"
 #include "Features/Protocol/Logger/LoggerSelectors.h"
@@ -83,7 +85,7 @@ bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
   MemItem.Text = TEXT("Important memory");
   MemItem.Importance = 0.9f;
   Store.dispatch(MemorySlice::Actions::memoryStoreSuccess(MemItem));
-  TestEqual("Memory exists", MemorySlice::selectAllMemories(
+  TestEqual("Memory exists", MemorySelectors::selectAllMemories(
                                   Store.getState().Memory)
                                   .Num(),
             1);
@@ -92,24 +94,24 @@ bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
    * Add bridge validation
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  Store.dispatch(BridgeSlice::Actions::bridgeValidationPending());
+  Store.dispatch(BridgeSlice::Actions::validationRequested());
   TestEqual("Bridge validating", Store.getState().Bridge.Status,
             FString(TEXT("validating")));
 
   FDirectiveRuleSet Preset;
   Preset.Id = TEXT("preset_keep");
-  Store.dispatch(BridgeSlice::Actions::addActivePreset(Preset));
+  Store.dispatch(BridgeSlice::Actions::activePresetAdded(Preset));
 
   TArray<FDirectiveRuleSet> Rulesets;
   FDirectiveRuleSet Ruleset;
   Ruleset.Id = TEXT("ruleset_keep");
   Ruleset.RulesetId = TEXT("ruleset_keep");
   Rulesets.Add(Ruleset);
-  Store.dispatch(BridgeSlice::Actions::setAvailableRulesets(Rulesets));
+  Store.dispatch(BridgeSlice::Actions::rulesetsReceived(Rulesets));
 
   TArray<FString> PresetIds;
   PresetIds.Add(TEXT("preset_keep"));
-  Store.dispatch(BridgeSlice::Actions::setAvailablePresetIds(PresetIds));
+  Store.dispatch(BridgeSlice::Actions::presetIdsReceived(PresetIds));
 
   /**
    * Start ghost session
@@ -144,13 +146,17 @@ bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
   TestEqual("Memory cleared after active NPC removal",
-            MemorySlice::selectAllMemories(Store.getState().Memory).Num(), 0);
+            MemorySelectors::selectAllMemories(Store.getState().Memory).Num(),
+            0);
   TestEqual("Bridge reset", Store.getState().Bridge.Status,
             FString(TEXT("idle")));
   TestEqual("Bridge active presets preserved",
-            Store.getState().Bridge.ActivePresets.Num(), 1);
+            BridgeSelectors::selectActivePresets(Store.getState().Bridge).Num(),
+            1);
   TestEqual("Bridge rulesets preserved",
-            Store.getState().Bridge.AvailableRulesets.Num(), 1);
+            BridgeSelectors::selectAvailableRulesets(Store.getState().Bridge)
+                .Num(),
+            1);
   TestEqual("Bridge preset ids preserved",
             Store.getState().Bridge.AvailablePresetIds.Num(), 1);
   TestEqual("Ghost reset", Store.getState().Ghost.Status,
@@ -221,7 +227,8 @@ bool FStoreRemoveNonActiveTest::RunTest(const FString &Parameters) {
   TestEqual("Active still B", Store.getState().NPCs.ActiveNpcId,
             FString(TEXT("npc_b")));
   TestEqual("Memory preserved",
-            MemorySlice::selectAllMemories(Store.getState().Memory).Num(), 1);
+            MemorySelectors::selectAllMemories(Store.getState().Memory).Num(),
+            1);
 
   return true;
 }

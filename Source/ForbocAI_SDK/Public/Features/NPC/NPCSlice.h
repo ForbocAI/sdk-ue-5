@@ -29,11 +29,12 @@ inline Slice<FNPCSliceState> createNPCSlice() {
         Builder.addCase(
             NPCActions::setNPCInfoActionCreator(),
             [](const FNPCSliceState &State,
-               const Action<FNPCInternalState> &Action) -> FNPCSliceState {
+               const Action<FSetNPCInfoPayload> &Action) -> FNPCSliceState {
               FNPCSliceState Next = State;
-              FNPCInternalState NewNPC = Action.PayloadValue;
+              FNPCInternalState NewNPC = Action.PayloadValue.Info;
               NewNPC.StateLog.Empty();
-              NewNPC.StateLog.Add(NPCAdapters::makeStateLogEntry(NewNPC.State, NewNPC.State));
+              NewNPC.StateLog.Add(NPCAdapters::makeStateLogEntry(
+                  NewNPC.State, NewNPC.State, Action.PayloadValue.Timestamp));
               Next.Entities = NPCAdapters::npcAdapter().upsertOne(Next.Entities, NewNPC);
               Next.ActiveNpcId = NewNPC.Id;
               return Next;
@@ -56,8 +57,8 @@ inline Slice<FNPCSliceState> createNPCSlice() {
                   [Payload](const FNPCInternalState &Existing) {
                     FNPCInternalState Updated = Existing;
                     Updated.State = Payload.State;
-                    Updated.StateLog.Add(
-                        NPCAdapters::makeStateLogEntry(Payload.State, Payload.State));
+                    Updated.StateLog.Add(NPCAdapters::makeStateLogEntry(
+                        Payload.State, Payload.State, Payload.Timestamp));
                     return Updated;
                   });
               return Next;
@@ -74,8 +75,8 @@ inline Slice<FNPCSliceState> createNPCSlice() {
                     FNPCInternalState Updated = Existing;
                     Updated.State =
                         NPCAdapters::updateNPCStateLocally(Existing.State, Payload.Delta);
-                    Updated.StateLog.Add(
-                        NPCAdapters::makeStateLogEntry(Payload.Delta, Updated.State));
+                    Updated.StateLog.Add(NPCAdapters::makeStateLogEntry(
+                        Payload.Delta, Updated.State, Payload.Timestamp));
                     return Updated;
                   });
               return Next;

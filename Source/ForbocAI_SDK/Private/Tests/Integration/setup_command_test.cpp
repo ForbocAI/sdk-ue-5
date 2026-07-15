@@ -1,12 +1,45 @@
 #include "CLI/CliHandlers.h"
 #include "CoreMinimal.h"
 #include "Features/Async/AsyncAdapters.h"
+#include "Features/Testing/Dependencies/Command/CommandAdapters.h"
 #include "Misc/AutomationTest.h"
 #include "CLI/RuntimeCommandlet.h"
 #include "Store.h"
 
 // @covers:cli:setup
 // @covers:cli:setup_check
+// @covers:cliOp:checkNativeDependencies
+// @covers:cliOp:setupNativeDependencies
+// @covers:cliOp:refreshNativeDependencies
+
+namespace {
+
+struct FCommandOutcome {
+  bool bCompleted = false;
+  FString Error;
+};
+
+FCommandOutcome RunCommand(UForbocAICommandlet &Commandlet,
+                           const FString &Command,
+                           const TArray<FString> &Arguments) {
+  FCommandOutcome Outcome;
+  Commandlet.createCommandPipeline(Command, Arguments)
+      .then([&Outcome]() { Outcome.bCompleted = true; })
+      .catch_([&Outcome](std::string Message) {
+        Outcome.Error = UTF8_TO_TCHAR(Message.c_str());
+      })
+      .execute();
+  return Outcome;
+}
+
+void TestSuccessfulOutcome(FAutomationTestBase &Test,
+                           const FString &Command,
+                           const FCommandOutcome &Outcome) {
+  Test.TestTrue(Command, Outcome.bCompleted);
+  Test.TestTrue(Command, Outcome.Error.IsEmpty());
+}
+
+} // namespace
 
 /**
  * Test: setup_check passes commandlet validation and executes.
@@ -23,18 +56,14 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  */
 bool FSetupCommandletValidationTest::RunTest(const FString &Parameters) {
   UForbocAICommandlet *Commandlet = NewObject<UForbocAICommandlet>();
-  bool bCompleted = false;
-  FString Error;
-
-  Commandlet->createCommandPipeline(TEXT("setup_check"), TArray<FString>())
-      .then([&bCompleted]() { bCompleted = true; })
-      .catch_([&Error](std::string Message) {
-        Error = UTF8_TO_TCHAR(Message.c_str());
-      })
-      .execute();
-
-  TestTrue("setup_check completed through commandlet pipeline", bCompleted);
-  TestTrue("setup_check did not fail validation", Error.IsEmpty());
+  func::for_each_array<Testing::Dependencies::Command::FSetupTestCommand>(
+      Testing::Dependencies::Command::SetupTestFixtures().Commands,
+      [this, Commandlet](
+          const Testing::Dependencies::Command::FSetupTestCommand &Command) {
+        TestSuccessfulOutcome(
+            *this, Command.Label,
+            RunCommand(*Commandlet, Command.Key, Command.Arguments));
+      });
   return true;
 }
 

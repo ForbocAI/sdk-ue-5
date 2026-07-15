@@ -130,5 +130,77 @@
       "target": "actionTarget maps to Target",
       "reason": "actionReason maps to Reason"
     }
+  },
+  "identifyActorPayload": {
+    "input": {
+      "npcId": "npc_test_1",
+      "persona": "Tester",
+      "data": {
+        "health": 100
+      }
+    },
+    "expected": {
+      "type": "IdentifyActorResult",
+      "health": 100
+    },
+    "labels": {
+      "payload": "Identify actor payload parses",
+      "type": "Identify actor payload type",
+      "npcId": "Identify actor NPC id",
+      "persona": "Identify actor persona",
+      "health": "Identify actor health"
+    }
+  },
+  "decisionPayload": {
+    "input": {
+      "goal": "Respond",
+      "actionType": "SPEAK",
+      "target": "Player"
+    },
+    "expected": {
+      "type": "Decision"
+    },
+    "labels": {
+      "payload": "Decision payload parses",
+      "type": "Decision payload type",
+      "goal": "Decision goal",
+      "actionType": "Decision action type",
+      "target": "Decision target"
+    }
+  },
+  "reasoningPayload": {
+    "input": {
+      "reasoningText": "Thinking...",
+      "responseText": "Hello there"
+    },
+    "expected": {
+      "type": "Reasoning"
+    },
+    "labels": {
+      "payload": "Reasoning payload parses",
+      "type": "Reasoning payload type",
+      "reasoningText": "Reasoning text",
+      "responseText": "Reasoning response text"
+    }
+  },
+  "processTapePayload": {
+    "input": {
+      "observation": "Saw player",
+      "context": {
+        "time": "day"
+      },
+      "npcState": {},
+      "persona": "Guard"
+    },
+    "expected": {
+      "traits": ["Guard"],
+      "contextTime": "day"
+    },
+    "labels": {
+      "payload": "Process tape payload parses",
+      "observation": "Process tape observation",
+      "persona": "Process tape structured persona",
+      "contextTime": "Process tape context time"
+    }
   }
 }

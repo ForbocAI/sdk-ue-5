@@ -2,14 +2,13 @@
 #include "Features/Async/AsyncAdapters.h"
 #include "Features/Memory/Local/Storage/StorageAdapters.h"
 #include "Features/Dependencies/Process/DependenciesProcessAdapters.h"
+#include "Features/Dependencies/Manifest/ManifestAdapters.h"
 #include "Features/Vector/VectorAdapters.h"
 #include "HAL/PlatformFileManager.h"
+#include "Interfaces/IPluginManager.h"
 #include "Misc/Paths.h"
 
 namespace {
-
-const TCHAR *SQLITE_ARCHIVE_VERSION = TEXT("3460100");
-const TCHAR *SQLITE_VEC_RELEASE = TEXT("v0.1.6");
 
 struct FDependenciesPaths {
   FString ThirdParty;
@@ -20,15 +19,20 @@ struct FDependenciesPaths {
 };
 
 FDependenciesPaths dependenciesPaths() {
+  const Dependencies::Manifest::FManifest &Settings =
+      Dependencies::Manifest::manifest();
+  const TSharedPtr<IPlugin> Plugin =
+      IPluginManager::Get().FindPlugin(Settings.PluginName);
+  check(Plugin.IsValid());
   const FString ThirdParty =
-      FPaths::ProjectPluginsDir() / TEXT("ForbocAI_SDK/ThirdParty");
+      Plugin->GetBaseDir() / Settings.ThirdPartyDirectory;
   const FString Infrastructure =
-      FPaths::ProjectDir() / TEXT("local_infrastructure");
+      FPaths::ProjectDir() / Settings.InfrastructureDirectory;
   return {ThirdParty,
-          ThirdParty / TEXT("sqlite-vss/include"),
-          ThirdParty / TEXT("sqlite-vss/src"),
-          Infrastructure / TEXT("tmp"),
-          Infrastructure / TEXT("vectors")};
+          ThirdParty / Settings.IncludeDirectory,
+          ThirdParty / Settings.SourceDirectory,
+          Infrastructure / Settings.TemporaryDirectory,
+          Infrastructure / Settings.VectorsDirectory};
 }
 
 bool copyFile(const FString &Source, const FString &Destination) {
@@ -36,6 +40,8 @@ bool copyFile(const FString &Source, const FString &Destination) {
 }
 
 bool downloadArchive(const FString &Url, const FString &Destination) {
+  const Dependencies::Manifest::FManifest &Settings =
+      Dependencies::Manifest::manifest();
   IPlatformFile &PlatformFile =
       FPlatformFileManager::Get().GetPlatformFile();
   return PlatformFile.FileExists(*Destination)
@@ -43,33 +49,36 @@ bool downloadArchive(const FString &Url, const FString &Destination) {
              : [&]() {
                  try {
                    AsyncAdapters::waitForResult(
-                       Native::File::DownloadBinary(Url, Destination), 120.0);
+                       Native::File::DownloadBinary(Url, Destination),
+                       Settings.DownloadTimeoutSeconds);
                    return true;
                  } catch (const std::exception &Error) {
-                   UE_LOG(LogTemp, Warning, TEXT("Dependency download failed: %s"),
-                          UTF8_TO_TCHAR(Error.what()));
+                   const FString Message = FString::Format(
+                       *Settings.Readiness.DownloadFailedFormat,
+                       {FString(UTF8_TO_TCHAR(Error.what()))});
+                   UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
                    return false;
                  }
                }();
 }
 
 bool installSqlite(const FDependenciesPaths &Paths) {
+  const Dependencies::Manifest::FSqlite &Settings =
+      Dependencies::Manifest::manifest().Sqlite;
   IPlatformFile &PlatformFile =
       FPlatformFileManager::Get().GetPlatformFile();
-  const FString Header = Paths.Include / TEXT("sqlite3.h");
-  const FString ExtensionHeader = Paths.Include / TEXT("sqlite3ext.h");
-  const FString Source = Paths.Source / TEXT("sqlite3.c");
+  const FString Header = Paths.Include / Settings.HeaderFile;
+  const FString ExtensionHeader = Paths.Include / Settings.ExtensionHeaderFile;
+  const FString Source = Paths.Source / Settings.SourceFile;
   return PlatformFile.FileExists(*Header) && PlatformFile.FileExists(*Source)
              ? true
              : [&]() {
                  const FString Archive =
-                     Paths.Temporary / TEXT("sqlite-amalgamation.zip");
+                     Paths.Temporary / Settings.ArchiveFile;
                  const FString Extracted =
-                     Paths.Temporary / TEXT("sqlite-extract");
-                 const FString Url = FString::Printf(
-                     TEXT("https://www.sqlite.org/2024/"
-                          "sqlite-amalgamation-%s.zip"),
-                     SQLITE_ARCHIVE_VERSION);
+                     Paths.Temporary / Settings.ExtractDirectory;
+                 const FString Url = FString::Format(
+                     *Settings.UrlFormat, {Settings.ArchiveVersion});
                  return !downloadArchive(Url, Archive) ||
                                 !DependenciesProcessAdapters::extractZip(Archive,
                                                                  Extracted)
@@ -78,45 +87,55 @@ bool installSqlite(const FDependenciesPaths &Paths) {
                                 const FString Inner =
                                     DependenciesProcessAdapters::findSubdirWithPrefix(
                                         Extracted,
-                                        TEXT("sqlite-amalgamation-"));
+                                        Settings.DirectoryPrefix);
                                 return !Inner.IsEmpty() &&
-                                       copyFile(Inner / TEXT("sqlite3.h"),
+                                       copyFile(Inner / Settings.HeaderFile,
                                                 Header) &&
-                                       copyFile(Inner / TEXT("sqlite3ext.h"),
+                                       copyFile(Inner / Settings.ExtensionHeaderFile,
                                                 ExtensionHeader) &&
-                                       copyFile(Inner / TEXT("sqlite3.c"),
+                                       copyFile(Inner / Settings.SourceFile,
                                                 Source);
                               }();
                }();
 }
 
-FString firstExistingPath(const TArray<FString> &Candidates, int32 Index) {
-  return Index >= Candidates.Num()
-             ? FString()
-             : FPlatformFileManager::Get().GetPlatformFile().FileExists(
-                   *Candidates[Index])
-                   ? Candidates[Index]
-                   : firstExistingPath(Candidates, Index + 1);
+TArray<FString> resolveCandidatePaths(const FString &Root,
+                                      const TArray<FString> &Candidates) {
+  return func::map_array<FString, FString>(
+      Candidates, [&Root](const FString &Candidate) {
+        return Root / Candidate;
+      });
+}
+
+FString firstExistingPath(const TArray<FString> &Candidates) {
+  return func::match(
+      func::find_array<FString>(Candidates, [](const FString &Candidate) {
+        return FPlatformFileManager::Get().GetPlatformFile().FileExists(
+            *Candidate);
+      }),
+      [](const FString &Candidate) { return Candidate; },
+      []() { return FString(); });
 }
 
 bool installSqliteVec(const FDependenciesPaths &Paths) {
+  const Dependencies::Manifest::FSqliteVec &Settings =
+      Dependencies::Manifest::manifest().SqliteVec;
   IPlatformFile &PlatformFile =
       FPlatformFileManager::Get().GetPlatformFile();
-  const FString Source = Paths.Source / TEXT("vec0.c");
-  const FString Header = Paths.Include / TEXT("sqlite-vec.h");
+  const FString Source = Paths.Source / Settings.SourceFile;
+  const FString Header = Paths.Include / Settings.HeaderFile;
   return PlatformFile.FileExists(*Source) && PlatformFile.FileExists(*Header)
              ? true
              : [&]() {
                  const FString Version =
-                     FString(SQLITE_VEC_RELEASE).Replace(TEXT("v"), TEXT(""));
-                 const FString Url = FString::Printf(
-                     TEXT("https://github.com/asg017/sqlite-vec/releases/"
-                          "download/%s/sqlite-vec-%s-amalgamation.zip"),
-                     SQLITE_VEC_RELEASE, *Version);
+                     FString(Settings.Release)
+                         .Replace(*Settings.VersionPrefix, *FString());
+                 const FString Url = FString::Format(
+                     *Settings.UrlFormat, {Settings.Release, Version});
                  const FString Archive =
-                     Paths.Temporary / TEXT("sqlite-vec-amalgamation.zip");
+                     Paths.Temporary / Settings.ArchiveFile;
                  const FString Extracted =
-                     Paths.Temporary / TEXT("sqlite-vec-extract");
+                     Paths.Temporary / Settings.ExtractDirectory;
                  return !downloadArchive(Url, Archive) ||
                                 !DependenciesProcessAdapters::extractZip(Archive,
                                                                  Extracted)
@@ -124,19 +143,25 @@ bool installSqliteVec(const FDependenciesPaths &Paths) {
                             : [&]() {
                                 const FString Nested =
                                     DependenciesProcessAdapters::findSubdirWithPrefix(
-                                        Extracted, TEXT("sqlite-vec-"));
-                                const FString SourceCandidate =
-                                    firstExistingPath(
-                                        {Extracted / TEXT("sqlite-vec.c"),
-                                         Extracted / TEXT("vec0.c"),
-                                         Nested / TEXT("sqlite-vec.c"),
-                                         Nested / TEXT("src/sqlite-vec.c")},
-                                        0);
-                                const FString HeaderCandidate =
-                                    firstExistingPath(
-                                        {Extracted / TEXT("sqlite-vec.h"),
-                                         Nested / TEXT("sqlite-vec.h")},
-                                        0);
+                                        Extracted, Settings.DirectoryPrefix);
+                                const FString SourceCandidate = firstExistingPath(
+                                    func::concat_arrays<FString>({
+                                        resolveCandidatePaths(
+                                            Extracted,
+                                            Settings.ExtractSourceCandidates),
+                                        resolveCandidatePaths(
+                                            Nested,
+                                            Settings.NestedSourceCandidates),
+                                    }));
+                                const FString HeaderCandidate = firstExistingPath(
+                                    func::concat_arrays<FString>({
+                                        resolveCandidatePaths(
+                                            Extracted,
+                                            Settings.ExtractHeaderCandidates),
+                                        resolveCandidatePaths(
+                                            Nested,
+                                            Settings.NestedHeaderCandidates),
+                                    }));
                                 return !SourceCandidate.IsEmpty() &&
                                        !HeaderCandidate.IsEmpty() &&
                                        copyFile(SourceCandidate, Source) &&
@@ -161,29 +186,32 @@ bool installNativeAssets(const FDependenciesPaths &Paths) {
 namespace DependenciesAdapters {
 
 FNativeDependenciesReport checkNativeDependenciesAdapter() {
+  const Dependencies::Manifest::FManifest &Settings =
+      Dependencies::Manifest::manifest();
   const FDependenciesPaths Paths = dependenciesPaths();
   IPlatformFile &PlatformFile =
       FPlatformFileManager::Get().GetPlatformFile();
   const bool bVectorizer =
-      VectorAdapters::embedVectorAdapter(TEXT("vector-readiness")).Num() ==
-      384;
+      VectorAdapters::embedVectorAdapter(Settings.Readiness.Probe).Num() ==
+      Settings.Readiness.Dimension;
   const bool bAssets =
-      PlatformFile.FileExists(*(Paths.Include / TEXT("sqlite3.h"))) &&
-      PlatformFile.FileExists(*(Paths.Include / TEXT("sqlite-vec.h"))) &&
-      PlatformFile.FileExists(*(Paths.Source / TEXT("sqlite3.c"))) &&
-      PlatformFile.FileExists(*(Paths.Source / TEXT("vec0.c")));
+      PlatformFile.FileExists(*(Paths.Include / Settings.Sqlite.HeaderFile)) &&
+      PlatformFile.FileExists(*(Paths.Include / Settings.SqliteVec.HeaderFile)) &&
+      PlatformFile.FileExists(*(Paths.Source / Settings.Sqlite.SourceFile)) &&
+      PlatformFile.FileExists(*(Paths.Source / Settings.SqliteVec.SourceFile));
   const bool bVectorDb = bAssets && WITH_FORBOC_SQLITE_VEC;
 
   FNativeDependenciesReport Report;
-  Report.Vectorizer = {TEXT("SDK native vectorizer"), bVectorizer,
-                       TEXT("deterministic-384"),
-                       bVectorizer ? TEXT("Vectorizer available")
-                                   : TEXT("Vectorizer dimension invalid")};
+  Report.Vectorizer = {Settings.Readiness.VectorizerName, bVectorizer,
+                       Settings.Readiness.VectorizerVersion,
+                       bVectorizer ? Settings.Readiness.VectorizerReady
+                                   : Settings.Readiness.VectorizerInvalid};
   Report.VectorDb = {
-      TEXT("sqlite-vec"), bVectorDb, FString(SQLITE_VEC_RELEASE),
-      bVectorDb ? TEXT("Vector database available")
-                : bAssets ? TEXT("Native assets installed; rebuild required")
-                          : TEXT("Native sqlite-vec assets missing")};
+      Settings.Readiness.VectorDatabaseName, bVectorDb,
+      Settings.SqliteVec.Release,
+      bVectorDb ? Settings.Readiness.VectorDatabaseReady
+                : bAssets ? Settings.Readiness.VectorDatabaseRebuild
+                          : Settings.Readiness.VectorDatabaseMissing};
   return Report;
 }
 
@@ -198,6 +226,8 @@ FString clearVectorArtifactsAdapter() {
 }
 
 FDependenciesResult setupNativeDependenciesAdapter(const FDependenciesOptions &Options) {
+  const Dependencies::Manifest::FManifest &Settings =
+      Dependencies::Manifest::manifest();
   const FDependenciesPaths Paths = dependenciesPaths();
   Options.bForce ? (static_cast<void>(clearVectorArtifactsAdapter()), void())
                  : void();
@@ -209,18 +239,20 @@ FDependenciesResult setupNativeDependenciesAdapter(const FDependenciesOptions &O
                       Report.VectorDb.bAvailable;
   Result.Vector.Detail =
       Result.Vector.bOk
-          ? TEXT("SDK vectorizer + sqlite-vec ready")
+          ? Settings.Readiness.VectorReady
           : Report.VectorDb.Detail;
 
   FPlatformFileManager::Get().GetPlatformFile().CreateDirectoryTree(
       *Paths.Vectors);
-  const FString DatabasePath = Paths.Vectors / TEXT("forbocai_vectors.db");
+  const FString DatabasePath = Paths.Vectors / Settings.DatabaseFile;
   Native::Sqlite::DB Database =
       Result.Vector.bOk ? Native::Sqlite::Open(DatabasePath) : nullptr;
   Result.Memory.bOk = Database != nullptr;
   Result.Memory.Detail =
-      Result.Memory.bOk ? FString::Printf(TEXT("DB ready at %s"), *DatabasePath)
-                        : TEXT("Memory database initialization failed");
+      Result.Memory.bOk
+          ? FString::Format(*Settings.Readiness.DatabaseReadyFormat,
+                            {DatabasePath})
+          : Settings.Readiness.DatabaseFailed;
   Database ? (Native::Sqlite::Close(Database), void()) : void();
   return Result;
 }

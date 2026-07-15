@@ -1,0 +1,20 @@
+{
+  "labels": {
+    "suite": "NPC slice scenarios",
+    "caseName": "$name",
+    "requiredField": "Required NPC scenario field is missing",
+    "scenarioPresent": "NPC scenario exists",
+    "activeId": "Active NPC id",
+    "npcCount": "NPC count",
+    "hasNpc": "Selected NPC exists",
+    "selectedPersona": "Selected NPC persona",
+    "selectedStateJson": "Selected NPC state",
+    "historyCount": "Selected NPC history count",
+    "blocked": "Selected NPC blocked state",
+    "blockReason": "Selected NPC block reason",
+    "stateLogCount": "Selected NPC state log count",
+    "activeExists": "Active NPC exists",
+    "idCount": "NPC id count",
+    "entityCount": "NPC entity count"
+  }
+}

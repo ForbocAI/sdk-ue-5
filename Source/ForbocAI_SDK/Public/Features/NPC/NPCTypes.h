@@ -69,14 +69,21 @@ struct FNPCInternalState {
   FNPCInternalState() : bIsBlocked(false) {}
 };
 
+struct FSetNPCInfoPayload {
+  FNPCInternalState Info;
+  int64 Timestamp;
+};
+
 struct FSetNPCStatePayload {
   FString Id;
   FAgentState State;
+  int64 Timestamp;
 };
 
 struct FUpdateNPCStatePayload {
   FString Id;
   FAgentState Delta;
+  int64 Timestamp;
 };
 
 struct FAddToHistoryPayload {

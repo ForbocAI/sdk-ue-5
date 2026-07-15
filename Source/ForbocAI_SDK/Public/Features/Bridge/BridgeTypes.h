@@ -13,6 +13,14 @@ namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
 typedef func::Maybe<FString> FForbocAISDKPublicBridgeBridgeTypesHOptionalDomainId;
 } } }
 
+enum class EBridgeStatus : uint8 {
+  Idle,
+  Validating,
+  LoadingPreset,
+  Error,
+  Count
+};
+
 
 /**
  * Validation Result — Immutable data.
@@ -32,7 +40,7 @@ struct FValidationResult {
   UPROPERTY(BlueprintReadOnly, Category = "Bridge")
   FAgentAction CorrectedAction;
 
-  FValidationResult() : bValid(true) {}
+  FValidationResult() : bValid(false) {}
 };
 
 /**

@@ -1,8 +1,56 @@
 #include "ApiEndpointTestAdapters.h"
 
 #include "Features/Config/ConfigAdapters.h"
+#include "Features/API/Endpoints/Arweave/ArweaveApi.h"
+#include "Store.h"
 
 // @covers:api:getApiStatus
+// @covers:api:postArweaveUpload
+// @covers:api:postArweaveDownload
+
+namespace {
+
+void TestArweaveMissingUrls(FAutomationTestBase &Test) {
+  rtk::EnhancedStore<FRuntimeState> Store = createRuntimeStore();
+  bool bUploadResolved = false;
+  bool bUploadRejected = false;
+  bool bDownloadResolved = false;
+  bool bDownloadRejected = false;
+  FString UploadError;
+  FString DownloadError;
+  FArweaveUploadInstruction UploadInstruction;
+  FArweaveDownloadInstruction DownloadInstruction;
+
+  Store.dispatch(APISlice::Endpoints::postArweaveUpload(
+                     UploadInstruction, FString()))
+      .then([&bUploadResolved](const FArweaveUploadResult &) {
+        bUploadResolved = true;
+      })
+      .catch_([&bUploadRejected, &UploadError](std::string Message) {
+        bUploadRejected = true;
+        UploadError = UTF8_TO_TCHAR(Message.c_str());
+      })
+      .execute();
+  Store.dispatch(
+           APISlice::Endpoints::postArweaveDownload(DownloadInstruction))
+      .then([&bDownloadResolved](const FArweaveDownloadResult &) {
+        bDownloadResolved = true;
+      })
+      .catch_([&bDownloadRejected, &DownloadError](std::string Message) {
+        bDownloadRejected = true;
+        DownloadError = UTF8_TO_TCHAR(Message.c_str());
+      })
+      .execute();
+
+  const FString Label(ANSI_TO_TCHAR(__FUNCTION__));
+  Test.TestFalse(Label, bUploadResolved);
+  Test.TestTrue(Label, bUploadRejected && !UploadError.IsEmpty());
+  Test.TestFalse(Label, bDownloadResolved);
+  Test.TestTrue(Label, bDownloadRejected && !DownloadError.IsEmpty());
+}
+
+} // namespace
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FApiEndpointStatusNoAuthTest,
     "ForbocAI.Integration.API.Endpoint.StatusNoAuth",
@@ -10,6 +58,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         EAutomationTestFlags::EngineFilter)
 
 bool FApiEndpointStatusNoAuthTest::RunTest(const FString &Parameters) {
+  TestArweaveMissingUrls(*this);
   if (ApiEndpointTests::ShouldSkip()) {
     return true;
   }
