@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
-#include "TestGame/Features/Entities/Spatial/SpatialTypes.h"
+#include "TestGame/Features/Components/Spatial/SpatialTypes.h"
 
 namespace TestGame {
 

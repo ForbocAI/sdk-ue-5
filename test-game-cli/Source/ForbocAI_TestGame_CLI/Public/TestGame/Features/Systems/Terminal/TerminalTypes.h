@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TestGame/Features/Systems/Harness/Commands/CommandsTypes.h"
+#include "TestGame/Features/Systems/Harness/Command/CommandTypes.h"
 
 namespace TestGame {
 

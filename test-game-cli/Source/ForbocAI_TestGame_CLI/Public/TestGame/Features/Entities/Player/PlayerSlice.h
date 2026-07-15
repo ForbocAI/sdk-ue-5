@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
 #include "TestGame/Features/Entities/Player/PlayerActions.h"
+#include "TestGame/Features/Entities/Player/PlayerAdapters.h"
 
 namespace TestGame {
 
@@ -20,7 +21,7 @@ inline TArray<FString> SelectPlayerInventory(const FPlayerState &S) {
 
 inline rtk::Slice<FPlayerState> CreatePlayerSlice() {
   return rtk::createSlice<FPlayerState>(
-      TEXT("testgame/player"), FPlayerState(),
+      TEXT("testgame/player"), CreatePlayerInitialState(),
       [](rtk::ActionReducerMapBuilder<FPlayerState> &Builder) {
         Builder.addCase(
             setPositionActionCreator(),

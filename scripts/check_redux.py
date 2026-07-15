@@ -643,6 +643,17 @@ def check_root_role_boundaries(project_root: Path) -> list[Finding]:
 def check_store_boundary(project_root: Path) -> list[Finding]:
     findings: list[Finding] = []
     store_paths = discover_store_paths(project_root)
+    if not store_paths:
+        source_root = project_root / "Source"
+        return [
+            Finding(
+                source_root if source_root.exists() else project_root,
+                1,
+                STORE_CONFIGURE.id,
+                STORE_CONFIGURE.severity,
+                "stateful program has no root store boundary",
+            )
+        ]
     store_path_set = {path.resolve() for path in store_paths}
     source_root = project_root / "Source"
     if source_root.is_dir():
@@ -670,25 +681,23 @@ def check_store_boundary(project_root: Path) -> list[Finding]:
             findings.append(Finding(path, line_number(text, match.start()), STORE_LEGACY.id, STORE_LEGACY.severity, STORE_LEGACY.summary))
         for match in STORE_ARRAY_MW_RE.finditer(text):
             findings.append(Finding(path, line_number(text, match.start()), STORE_ARRAY_MW.id, STORE_ARRAY_MW.severity, STORE_ARRAY_MW.summary))
-    for root in sorted({path.parent for path in store_paths}):
-        root_stores = [path for path in store_paths if path.parent == root]
-        logical_stores = sorted({path.stem.lower() for path in root_stores})
-        if len(logical_stores) > 1:
-            findings.append(
-                Finding(
-                    root_stores[0],
-                    1,
-                    STORE_MULTIPLE_ROOTS.id,
-                    STORE_MULTIPLE_ROOTS.severity,
-                    "competing root stores: " + ", ".join(logical_stores),
-                )
+    logical_stores = sorted({path.stem.lower() for path in store_paths})
+    if len(logical_stores) > 1:
+        findings.append(
+            Finding(
+                store_paths[0],
+                1,
+                STORE_MULTIPLE_ROOTS.id,
+                STORE_MULTIPLE_ROOTS.severity,
+                "competing root stores: " + ", ".join(logical_stores),
             )
-        combined = "\n".join(
-            path.read_text(encoding="utf-8", errors="replace")
-            for path in root_stores
         )
-        if not CONFIGURE_STORE_RE.search(combined):
-            findings.append(Finding(root_stores[0], 1, STORE_CONFIGURE.id, STORE_CONFIGURE.severity, STORE_CONFIGURE.summary))
+    combined = "\n".join(
+        path.read_text(encoding="utf-8", errors="replace")
+        for path in store_paths
+    )
+    if not CONFIGURE_STORE_RE.search(combined):
+        findings.append(Finding(store_paths[0], 1, STORE_CONFIGURE.id, STORE_CONFIGURE.severity, STORE_CONFIGURE.summary))
     return findings
 
 

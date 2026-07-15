@@ -1,0 +1,10 @@
+{
+  "initialState": {
+    "doorOpen": false,
+    "alertLevel": 0
+  },
+  "alertBounds": {
+    "minimum": 0,
+    "maximum": 100
+  }
+}

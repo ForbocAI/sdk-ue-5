@@ -2,7 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
-#include "TestGame/Features/Systems/Grid/GridActions.h"
+#include "TestGame/Features/Components/Spatial/Grid/GridActions.h"
+#include "TestGame/Features/Components/Spatial/Grid/GridAdapters.h"
 
 namespace TestGame {
 
@@ -16,7 +17,7 @@ inline TArray<FPosition> SelectGridBlocked(const FGridState &S) {
 
 inline rtk::Slice<FGridState> CreateGridSlice() {
   return rtk::createSlice<FGridState>(
-      TEXT("testgame/grid"), FGridState(),
+      TEXT("testgame/grid"), CreateGridInitialState(),
       [](rtk::ActionReducerMapBuilder<FGridState> &Builder) {
         Builder.addCase(
             GridActions::setGridSizeActionCreator(),

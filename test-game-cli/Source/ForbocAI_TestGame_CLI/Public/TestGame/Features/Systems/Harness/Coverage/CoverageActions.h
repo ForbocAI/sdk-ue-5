@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
-#include "TestGame/Features/Systems/Harness/Commands/CommandsTypes.h"
+#include "TestGame/Features/Systems/Harness/Command/CommandTypes.h"
 
 namespace TestGame {
 namespace HarnessActions {

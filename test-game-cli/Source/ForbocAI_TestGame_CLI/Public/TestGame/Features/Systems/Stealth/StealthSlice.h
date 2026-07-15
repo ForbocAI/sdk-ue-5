@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
 #include "TestGame/Features/Systems/Stealth/StealthActions.h"
+#include "TestGame/Features/Systems/Stealth/StealthAdapters.h"
 #include "TestGame/Features/Systems/Stealth/StealthTypes.h"
 
 namespace TestGame {
@@ -18,7 +19,7 @@ inline int32 SelectStealthAlertLevel(const FStealthState &S) {
 
 inline rtk::Slice<FStealthState> CreateStealthSlice() {
   return rtk::createSlice<FStealthState>(
-      TEXT("testgame/stealth"), FStealthState(),
+      TEXT("testgame/stealth"), CreateStealthInitialState(),
       [](rtk::ActionReducerMapBuilder<FStealthState> &Builder) {
         Builder.addCase(
             StealthActions::setDoorOpenActionCreator(),
@@ -34,7 +35,7 @@ inline rtk::Slice<FStealthState> CreateStealthSlice() {
                const rtk::Action<int32> &A) -> FStealthState {
               FStealthState Next = S;
               Next.AlertLevel =
-                  FMath::Clamp(Next.AlertLevel + A.PayloadValue, 0, 100);
+                  ClampStealthAlertLevel(Next.AlertLevel + A.PayloadValue);
               return Next;
             });
       });

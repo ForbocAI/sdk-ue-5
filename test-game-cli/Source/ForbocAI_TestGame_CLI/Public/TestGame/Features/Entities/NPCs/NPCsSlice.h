@@ -59,7 +59,7 @@ inline rtk::Slice<FNPCsSliceState> CreateNPCsSlice() {
                   Next.Entities, P.Id, [&P](const FGameNPC &Existing) {
                     FGameNPC Updated = PatchNpc(Existing, P.StateDelta);
                     Updated.Position =
-                        P.Action.Type == TEXT("MOVE") && P.Action.bHasTargetHex
+                        IsMoveVerdictAction(P.Action.Type) && P.Action.bHasTargetHex
                             ? P.Action.TargetHex
                             : Updated.Position;
                     return Updated;

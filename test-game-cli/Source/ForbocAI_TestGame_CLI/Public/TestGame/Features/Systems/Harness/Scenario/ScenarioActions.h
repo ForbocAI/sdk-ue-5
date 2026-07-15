@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/rtk.hpp"
-#include "TestGame/Features/Systems/Scenario/ScenarioTypes.h"
+#include "TestGame/Features/Systems/Harness/Scenario/ScenarioTypes.h"
 
 namespace TestGame {
 namespace ScenarioActions {

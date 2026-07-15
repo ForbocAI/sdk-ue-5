@@ -1,0 +1,9 @@
+{
+  "initialState": {
+    "name": "Scout",
+    "hp": 100,
+    "hidden": true,
+    "position": { "x": 1, "y": 1 },
+    "inventory": ["coin-pouch"]
+  }
+}

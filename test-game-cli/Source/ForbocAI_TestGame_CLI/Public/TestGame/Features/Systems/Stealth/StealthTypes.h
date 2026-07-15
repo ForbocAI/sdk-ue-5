@@ -5,10 +5,8 @@
 namespace TestGame {
 
 struct FStealthState {
-  bool bDoorOpen;
-  int32 AlertLevel;
-
-  FStealthState() : bDoorOpen(false), AlertLevel(0) {}
+  bool bDoorOpen{};
+  int32 AlertLevel{};
 };
 
 } // namespace TestGame

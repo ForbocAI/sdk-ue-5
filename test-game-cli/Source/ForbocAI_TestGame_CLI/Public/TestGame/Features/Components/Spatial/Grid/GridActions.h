@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
-#include "TestGame/Features/Systems/Grid/GridTypes.h"
+#include "TestGame/Features/Components/Spatial/Grid/GridTypes.h"
 
 namespace TestGame {
 

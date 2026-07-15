@@ -1,26 +1,72 @@
 #pragma once
 
+#include "Core/rtk.hpp"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "TestGame/Features/Data/DataAdapters.h"
 #include "TestGame/Features/Systems/Contract/ContractTypes.h"
-#include "TestGame/Features/Systems/Harness/Commands/CommandsTypes.h"
-#include "TestGame/Features/Systems/Scenario/ScenarioTypes.h"
+#include "TestGame/Features/Systems/Harness/Command/CommandTypes.h"
+#include "TestGame/Features/Systems/Harness/Scenario/ScenarioTypes.h"
 
 namespace TestGame {
 namespace Contract {
 
+inline const DataAdapters::FSettingsSource &ContractSettingsSource() {
+  static const DataAdapters::FSettingsSource Source =
+      DataAdapters::SettingsSource(TEXT("systems/contract.json"));
+  return Source;
+}
+
 inline FString resolveTestGameApiUrl(const FString &ApiUrl) {
-  return ApiUrl.EndsWith(TEXT("/")) ? ApiUrl.LeftChop(1) : ApiUrl;
+  const DataAdapters::FSettingsSource &Source = ContractSettingsSource();
+  const TSharedRef<FJsonObject> Separators =
+      DataAdapters::ReadObjectField(Source, TEXT("separators"));
+  FString Resolved = ApiUrl.TrimStartAndEnd();
+  Resolved = Resolved.IsEmpty()
+                 ? DataAdapters::ReadStringField(Source.Root,
+                                                 TEXT("defaultApiUrl"))
+                 : Resolved;
+  Resolved.RemoveFromEnd(
+      DataAdapters::ReadStringField(Separators, TEXT("trailingUrl")));
+  return Resolved;
 }
 
 inline TMap<FString, FString>
 createTestGameAuthHeaders(const FString &ApiKey) {
+  return func::match(
+      func::fromNullable(ApiKey, !ApiKey.IsEmpty()),
+      [](const FString &ValidApiKey) {
+        const TSharedRef<FJsonObject> Authorization =
+            DataAdapters::ReadObjectField(ContractSettingsSource(),
+                                          TEXT("authorization"));
+        const FString Header = DataAdapters::ReadStringField(
+            Authorization, TEXT("header"));
+        const FString Value = FString::Format(
+            *DataAdapters::ReadStringField(Authorization, TEXT("template")),
+            {ValidApiKey});
+        return func::upsert_map_value<FString, FString>(
+            TMap<FString, FString>(), Header, FString(),
+            [Value](const FString &) { return Value; });
+      },
+      []() { return TMap<FString, FString>(); });
+}
+
+struct FTestGameContractRequest {
+  rtk::FetchArgs Args;
   TMap<FString, FString> Headers;
-  return ApiKey.IsEmpty()
-             ? Headers
-             : (Headers.Add(TEXT("Authorization"),
-                            FString(TEXT("Bearer ")) + ApiKey),
-                Headers);
+};
+
+inline FTestGameContractRequest createTestGameContractRequest(
+    const FString &ApiUrl, const FString &ApiKey) {
+  const TSharedRef<FJsonObject> Request = DataAdapters::ReadObjectField(
+      ContractSettingsSource(), TEXT("request"));
+  FTestGameContractRequest Result;
+  Result.Args.url = resolveTestGameApiUrl(ApiUrl) +
+                    DataAdapters::ReadStringField(Request, TEXT("path"));
+  Result.Args.method =
+      DataAdapters::ReadStringField(Request, TEXT("method"));
+  Result.Headers = createTestGameAuthHeaders(ApiKey);
+  return Result;
 }
 
 namespace detail {

@@ -29,13 +29,11 @@ inline rtk::ApiEndpoint<FString, FString> contractEndpoint() {
   Endpoint.RequestBuilder = [](const FString &ApiUrl) {
     rtk::FetchBaseQueryArgs Options;
     const FString ApiKey = SDKConfig::GetApiKey();
-    Options.headers = Contract::createTestGameAuthHeaders(ApiKey);
-    rtk::FetchArgs Args;
-    const FString BaseUrl = Contract::resolveTestGameApiUrl(ApiUrl);
-    Args.url = BaseUrl + TEXT("/test-game/contract");
-    Args.method = TEXT("GET");
+    const Contract::FTestGameContractRequest Request =
+        Contract::createTestGameContractRequest(ApiUrl, ApiKey);
+    Options.headers = Request.Headers;
     return rtk::fetchBaseQuery<FString>(Options)(
-        Args, rtk::BaseQueryApi(), rtk::FEmptyPayload{});
+        Request.Args, rtk::BaseQueryApi(), rtk::FEmptyPayload{});
   };
   check(providesTags(Endpoint));
   return Endpoint;

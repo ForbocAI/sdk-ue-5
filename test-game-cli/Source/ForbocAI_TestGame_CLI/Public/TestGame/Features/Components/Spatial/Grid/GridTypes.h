@@ -5,12 +5,10 @@
 
 namespace TestGame {
 
-struct FPlayerState {
-  FString Name;
-  int32 Hp{};
-  bool bHidden{};
-  FPosition Position;
-  TArray<FString> Inventory;
+struct FGridState {
+  int32 Width{};
+  int32 Height{};
+  TArray<FPosition> Blocked;
 };
 
 } // namespace TestGame

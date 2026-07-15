@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
 #include "TestGame/Features/Systems/Bridge/BridgeActions.h"
+#include "TestGame/Features/Systems/Bridge/BridgeAdapters.h"
 
 namespace TestGame {
 
@@ -20,7 +21,7 @@ inline FString SelectBridgeActivePreset(const FBridgeRulesState &S) {
 
 inline rtk::Slice<FBridgeRulesState> CreateGameBridgeSlice() {
   return rtk::createSlice<FBridgeRulesState>(
-      TEXT("testgame/bridge"), FBridgeRulesState(),
+      TEXT("testgame/bridge"), CreateBridgeInitialState(),
       [](rtk::ActionReducerMapBuilder<FBridgeRulesState> &Builder) {
         Builder.addCase(
             GameBridgeActions::setBridgeRulesActionCreator(),
@@ -45,9 +46,10 @@ inline rtk::Slice<FBridgeRulesState> CreateGameBridgeSlice() {
                const rtk::Action<FString> &A) -> FBridgeRulesState {
               FBridgeRulesState Next = S;
               Next.ActivePreset = A.PayloadValue;
-              Next.MaxMoveDistance = A.PayloadValue == TEXT("social") ? 1
-                                    : A.PayloadValue == TEXT("default") ? 2
-                                                                         : Next.MaxMoveDistance;
+              const TOptional<int32> Distance =
+                  ResolveBridgePresetMoveDistance(A.PayloadValue);
+              Next.MaxMoveDistance =
+                  Distance.IsSet() ? Distance.GetValue() : Next.MaxMoveDistance;
               return Next;
             });
       });

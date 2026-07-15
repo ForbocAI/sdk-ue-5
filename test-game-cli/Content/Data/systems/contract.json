@@ -1,0 +1,14 @@
+{
+  "defaultApiUrl": "https://api.forboc.ai",
+  "authorization": {
+    "header": "Authorization",
+    "template": "Bearer {0}"
+  },
+  "request": {
+    "path": "/test-game/contract",
+    "method": "GET"
+  },
+  "separators": {
+    "trailingUrl": "/"
+  }
+}

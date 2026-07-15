@@ -2,8 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
-#include "TestGame/Features/Systems/Inventory/InventoryActions.h"
-#include "TestGame/Features/Systems/Inventory/InventoryTypes.h"
+#include "TestGame/Features/Components/Inventory/InventoryActions.h"
+#include "TestGame/Features/Components/Inventory/InventoryTypes.h"
 
 namespace TestGame {
 

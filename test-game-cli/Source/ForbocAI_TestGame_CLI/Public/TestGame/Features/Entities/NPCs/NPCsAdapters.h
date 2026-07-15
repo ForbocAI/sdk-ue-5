@@ -6,9 +6,19 @@
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
 #include "Core/fp.hpp"
+#include "TestGame/Features/Data/DataAdapters.h"
 #include "TestGame/Features/Entities/NPCs/NPCsTypes.h"
 
 namespace TestGame {
+
+inline bool IsMoveVerdictAction(const FString &ActionType) {
+  static const DataAdapters::FSettingsSource Source =
+      DataAdapters::SettingsSource(TEXT("entities/npcs.json"));
+  const TSharedRef<FJsonObject> Actions =
+      DataAdapters::ReadObjectField(Source, TEXT("verdictActions"));
+  return ActionType ==
+         DataAdapters::ReadStringField(Actions, TEXT("move"));
+}
 
 /**
  * Returns the entity adapter used for test-game NPC state.

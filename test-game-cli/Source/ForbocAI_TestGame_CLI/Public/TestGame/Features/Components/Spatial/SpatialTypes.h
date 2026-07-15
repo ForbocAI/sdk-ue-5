@@ -8,7 +8,7 @@ struct FPosition {
   int32 X;
   int32 Y;
 
-  FPosition() : X(0), Y(0) {}
+  FPosition() = default;
   FPosition(int32 InX, int32 InY) : X(InX), Y(InY) {}
 
   bool operator==(const FPosition &Other) const {

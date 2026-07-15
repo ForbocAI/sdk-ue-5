@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TestGame/Features/Systems/Scenario/ScenarioTypes.h"
+#include "TestGame/Features/Systems/Harness/Scenario/ScenarioTypes.h"
 
 namespace TestGame {
 namespace ScenarioSelectors {

@@ -365,6 +365,10 @@ def normalize_name(name: str) -> str:
     return re.sub(r"[^a-z0-9]", "", without_unreal_prefix.lower())
 
 
+def normalize_path_name(name: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", name.lower())
+
+
 def path_name(path: str) -> str:
     return Path(path).stem if Path(path).suffix else Path(path).name
 
@@ -383,7 +387,7 @@ def ts_path_signature(path: str, source_roots: Sequence[Path]) -> str:
 
     relative_path = Path(path).relative_to(source_root).as_posix()
     if relative_path == ".":
-        return normalize_name(package_for_ts_path(path))
+        return normalize_path_name(package_for_ts_path(path))
     return normalize_path_signature(relative_path)
 
 
@@ -391,7 +395,7 @@ def normalized_path_segments(path: str) -> tuple[str, ...]:
     raw_parts = Path(path).parts
     if Path(path).suffix:
         raw_parts = (*raw_parts[:-1], Path(path).stem)
-    return tuple(segment for segment in (normalize_name(part) for part in raw_parts) if segment)
+    return tuple(segment for segment in (normalize_path_name(part) for part in raw_parts) if segment)
 
 
 def normalize_path_signature(path: str) -> str:

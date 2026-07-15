@@ -101,6 +101,14 @@ class MatrixDiscoveryTests(unittest.TestCase):
                 )
 
 
+class PathNormalizationTests(unittest.TestCase):
+    def test_preserves_ui_path_atoms_without_unreal_type_prefix_rules(self) -> None:
+        self.assertEqual(
+            PARITY.normalize_path_signature("Features/Systems/Terminal/UI/UISlice.h"),
+            "features/systems/terminal/ui/uislice",
+        )
+
+
 class CppSymbolDiscoveryTests(unittest.TestCase):
     def test_finds_reference_returning_functions_without_namespace_symbols(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

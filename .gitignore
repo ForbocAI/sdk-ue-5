@@ -5,6 +5,10 @@ Saved/
 DerivedDataCache/
 Build/
 Content/
+!test-game-cli/Content/
+!test-game-cli/Content/Data/
+!test-game-cli/Content/Data/**/
+!test-game-cli/Content/Data/**/*.json
 Releases/
 Collections/
 Developers/

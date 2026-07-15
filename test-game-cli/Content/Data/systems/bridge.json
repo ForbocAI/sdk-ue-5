@@ -1,0 +1,14 @@
+{
+  "initialState": {
+    "maxJumpForce": 500,
+    "maxMoveDistance": 2,
+    "activePreset": "default"
+  },
+  "presetMoveDistances": {
+    "social": 1,
+    "default": 2
+  },
+  "messages": {
+    "jumpForceExceeded": "Jump force {0} exceeds {1}"
+  }
+}
