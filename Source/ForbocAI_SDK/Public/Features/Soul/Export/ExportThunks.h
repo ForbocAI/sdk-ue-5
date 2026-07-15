@@ -4,6 +4,7 @@
 #include "Core/fp.hpp"
 #include "Features/Errors/ErrorsAdapters.h"
 #include "Features/API/APIApi.h"
+#include "Features/NPC/NPCSelectors.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Soul/SoulSlice.h"
 #include "Features/Soul/Transport/TransportAdapters.h"
@@ -21,7 +22,7 @@ exportSoulThunk(const FString &NpcId) {
     return ApiKeyError.hasValue
         ? detail::RejectAsync<FSoulExportResult>(ApiKeyError.value)
         : [&]() -> func::AsyncResult<FSoulExportResult> {
-            const auto Npc = NPCSlice::selectNPCById(GetState().NPCs, NpcId);
+            const auto Npc = NPCSelectors::selectNPCById(GetState().NPCs, NpcId);
             return !Npc.hasValue
                 ? detail::RejectAsync<FSoulExportResult>(
                       TEXT("NPC not found"))
@@ -142,7 +143,7 @@ remoteExportSoulThunk(const FString &NpcId = TEXT("")) {
                  std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FSoulExportResult> {
     const FString TargetNpcId =
-        NpcId.IsEmpty() ? NPCSlice::selectActiveNpcId(GetState().NPCs) : NpcId;
+        NpcId.IsEmpty() ? NPCSelectors::selectActiveNpcId(GetState().NPCs) : NpcId;
     return exportSoulThunk(TargetNpcId)(Dispatch, GetState);
   };
 }

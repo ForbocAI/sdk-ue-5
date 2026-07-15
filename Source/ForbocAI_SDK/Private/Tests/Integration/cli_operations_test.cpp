@@ -10,6 +10,7 @@
 #include "Store.h"
 #include "Features/CLI/Config/ConfigThunks.h"
 #include "Features/CLI/NPC/NPCThunks.h"
+#include "Features/NPC/NPCActions.h"
 
 // @covers:cliOp:loadBridgePreset
 // @covers:cliOp:getBridgeRules
@@ -219,7 +220,7 @@ bool FOpsCreateAndRemoveTest::RunTest(const FString &Parameters) {
 
   TestTrue("Created NPC exists", Ops::getNpc(Store, NpcId).hasValue);
 
-  Store.dispatch(NPCSlice::Actions::removeNPC(NpcId));
+  Store.dispatch(NPCActions::removeNPC(NpcId));
 
   TestFalse("Removed NPC no longer exists", Ops::getNpc(Store, NpcId).hasValue);
 

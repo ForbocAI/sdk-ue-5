@@ -1,8 +1,9 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "Misc/AutomationTest.h"
+#include "Features/NPC/NPCActions.h"
+#include "Features/NPC/NPCSelectors.h"
 #include "Features/NPC/NPCSlice.h"
-#include "Features/NPC/Events/EventsActions.h"
 
 using namespace rtk;
 using namespace NPCSlice;
@@ -26,11 +27,11 @@ bool FNPCSliceSetInfoTest::RunTest(const FString &Parameters) {
   Info.Id = TEXT("npc_001");
   Info.Persona = TEXT("A brave knight");
 
-  State = NpcSlice.Reducer(State, NPCSlice::Actions::setNPCInfo(Info));
+  State = NpcSlice.Reducer(State, NPCActions::setNPCInfo(Info));
 
   TestEqual("ActiveNpcId set", State.ActiveNpcId, FString(TEXT("npc_001")));
 
-  func::Maybe<FNPCInternalState> Found = selectNPCById(State, TEXT("npc_001"));
+  func::Maybe<FNPCInternalState> Found = NPCSelectors::selectNPCById(State, TEXT("npc_001"));
   TestTrue("NPC found in entities", Found.hasValue);
   if (Found.hasValue) {
     TestEqual("NPC Id matches", Found.value.Id, FString(TEXT("npc_001")));
@@ -46,12 +47,12 @@ bool FNPCSliceSetInfoTest::RunTest(const FString &Parameters) {
   FNPCInternalState Info2;
   Info2.Id = TEXT("npc_002");
   Info2.Persona = TEXT("A sly rogue");
-  State = NpcSlice.Reducer(State, NPCSlice::Actions::setNPCInfo(Info2));
+  State = NpcSlice.Reducer(State, NPCActions::setNPCInfo(Info2));
 
   TestEqual("ActiveNpcId updated to second", State.ActiveNpcId,
             FString(TEXT("npc_002")));
 
-  TArray<FNPCInternalState> AllNpcs = selectAllNPCs(State);
+  TArray<FNPCInternalState> AllNpcs = NPCSelectors::selectAllNPCs(State);
   TestEqual("Two NPCs in state", AllNpcs.Num(), 2);
 
   return true;
@@ -75,27 +76,27 @@ bool FNPCSliceRemoveTest::RunTest(const FString &Parameters) {
   FNPCInternalState Info;
   Info.Id = TEXT("npc_rm");
   Info.Persona = TEXT("Doomed NPC");
-  State = NpcSlice.Reducer(State, NPCSlice::Actions::setNPCInfo(Info));
+  State = NpcSlice.Reducer(State, NPCActions::setNPCInfo(Info));
 
   TestTrue("NPC exists before removal",
-           selectNPCById(State, TEXT("npc_rm")).hasValue);
+           NPCSelectors::selectNPCById(State, TEXT("npc_rm")).hasValue);
   TestEqual("ActiveNpcId is npc_rm", State.ActiveNpcId,
             FString(TEXT("npc_rm")));
 
-  State = NpcSlice.Reducer(State, NPCSlice::Actions::removeNPC(TEXT("npc_rm")));
+  State = NpcSlice.Reducer(State, NPCActions::removeNPC(TEXT("npc_rm")));
 
   TestFalse("NPC removed from entities",
-            selectNPCById(State, TEXT("npc_rm")).hasValue);
+            NPCSelectors::selectNPCById(State, TEXT("npc_rm")).hasValue);
   TestTrue("ActiveNpcId cleared", State.ActiveNpcId.IsEmpty());
 
-  TArray<FNPCInternalState> AllNpcs = selectAllNPCs(State);
+  TArray<FNPCInternalState> AllNpcs = NPCSelectors::selectAllNPCs(State);
   TestEqual("No NPCs remain", AllNpcs.Num(), 0);
 
   return true;
 }
 
 /**
- * Test: Selectors — selectActiveNPC, selectAllNPCs, selectNPCById
+ * Test: Selectors — NPCSelectors::selectActiveNPC, NPCSelectors::selectAllNPCs, NPCSelectors::selectNPCById
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FNPCSliceSelectorsTest,
@@ -113,14 +114,14 @@ bool FNPCSliceSelectorsTest::RunTest(const FString &Parameters) {
    * Empty state selectors
    * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
    */
-  func::Maybe<FNPCInternalState> EmptyActive = selectActiveNPC(State);
+  func::Maybe<FNPCInternalState> EmptyActive = NPCSelectors::selectActiveNPC(State);
   TestFalse("No active NPC on empty state", EmptyActive.hasValue);
-  TestEqual("selectAllNPCs empty", selectAllNPCs(State).Num(), 0);
-  TestEqual("selectNPCIds empty", selectNPCIds(State).Num(), 0);
-  TestEqual("selectNPCEntities empty", selectNPCEntities(State).Num(), 0);
-  TestEqual("selectTotalNPCs empty", selectTotalNPCs(State), 0);
-  TestFalse("selectNPCById returns nothing on empty",
-            selectNPCById(State, TEXT("ghost")).hasValue);
+  TestEqual("NPCSelectors::selectAllNPCs empty", NPCSelectors::selectAllNPCs(State).Num(), 0);
+  TestEqual("NPCSelectors::selectNPCIds empty", NPCSelectors::selectNPCIds(State).Num(), 0);
+  TestEqual("NPCSelectors::selectNPCEntities empty", NPCSelectors::selectNPCEntities(State).Num(), 0);
+  TestEqual("NPCSelectors::selectTotalNPCs empty", NPCSelectors::selectTotalNPCs(State), 0);
+  TestFalse("NPCSelectors::selectNPCById returns nothing on empty",
+            NPCSelectors::selectNPCById(State, TEXT("ghost")).hasValue);
 
   /**
    * Add NPCs
@@ -129,42 +130,42 @@ bool FNPCSliceSelectorsTest::RunTest(const FString &Parameters) {
   FNPCInternalState A;
   A.Id = TEXT("sel_a");
   A.Persona = TEXT("Alpha");
-  State = NpcSlice.Reducer(State, NPCSlice::Actions::setNPCInfo(A));
+  State = NpcSlice.Reducer(State, NPCActions::setNPCInfo(A));
 
   FNPCInternalState B;
   B.Id = TEXT("sel_b");
   B.Persona = TEXT("Beta");
-  State = NpcSlice.Reducer(State, NPCSlice::Actions::setNPCInfo(B));
+  State = NpcSlice.Reducer(State, NPCActions::setNPCInfo(B));
 
   /**
    * Active should be last set
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  func::Maybe<FNPCInternalState> Active = selectActiveNPC(State);
+  func::Maybe<FNPCInternalState> Active = NPCSelectors::selectActiveNPC(State);
   TestTrue("Active NPC exists", Active.hasValue);
   if (Active.hasValue) {
     TestEqual("Active is sel_b", Active.value.Id, FString(TEXT("sel_b")));
   }
 
   /**
-   * selectNPCById for first NPC
+   * NPCSelectors::selectNPCById for first NPC
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  func::Maybe<FNPCInternalState> FoundA = selectNPCById(State, TEXT("sel_a"));
+  func::Maybe<FNPCInternalState> FoundA = NPCSelectors::selectNPCById(State, TEXT("sel_a"));
   TestTrue("sel_a found", FoundA.hasValue);
   if (FoundA.hasValue) {
     TestEqual("sel_a persona", FoundA.value.Persona, FString(TEXT("Alpha")));
   }
 
   /**
-   * selectAllNPCs
+   * NPCSelectors::selectAllNPCs
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  TestEqual("Two NPCs total", selectAllNPCs(State).Num(), 2);
-  TestEqual("Two NPC ids", selectNPCIds(State).Num(), 2);
-  TestEqual("Total NPC selector count", selectTotalNPCs(State), 2);
+  TestEqual("Two NPCs total", NPCSelectors::selectAllNPCs(State).Num(), 2);
+  TestEqual("Two NPC ids", NPCSelectors::selectNPCIds(State).Num(), 2);
+  TestEqual("Total NPC selector count", NPCSelectors::selectTotalNPCs(State), 2);
 
-  TMap<FString, FNPCInternalState> Entities = selectNPCEntities(State);
+  TMap<FString, FNPCInternalState> Entities = NPCSelectors::selectNPCEntities(State);
   TestEqual("Two NPC entities", Entities.Num(), 2);
   TestTrue("sel_a entity mapped", Entities.Find(TEXT("sel_a")) != nullptr);
   TestTrue("sel_b entity mapped", Entities.Find(TEXT("sel_b")) != nullptr);
@@ -173,8 +174,8 @@ bool FNPCSliceSelectorsTest::RunTest(const FString &Parameters) {
    * setActiveNPC to sel_a
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  State = NpcSlice.Reducer(State, NPCSlice::Actions::setActiveNPC(TEXT("sel_a")));
-  TestEqual("Active switched to sel_a", selectActiveNpcId(State),
+  State = NpcSlice.Reducer(State, NPCActions::setActiveNPC(TEXT("sel_a")));
+  TestEqual("Active switched to sel_a", NPCSelectors::selectActiveNpcId(State),
             FString(TEXT("sel_a")));
 
   return true;

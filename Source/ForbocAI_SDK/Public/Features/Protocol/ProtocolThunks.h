@@ -21,6 +21,8 @@
 #include "Core/JsonInterop.h"
 #include "Features/Directive/DirectiveSlice.h"
 #include "Features/Memory/MemoryThunks.h"
+#include "Features/NPC/NPCActions.h"
+#include "Features/NPC/NPCSelectors.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Protocol/Requests/RequestsAdapters.h"
 #include <memory>
@@ -509,7 +511,7 @@ HandleFinalize(const FNPCInstruction &Instruction,
   Dispatch(DirectiveSlice::Actions::verdictValidated(RunId, Verdict));
 
   return !Instruction.bValid
-             ? (Dispatch(NPCSlice::Actions::blockAction(
+             ? (Dispatch(NPCActions::blockAction(
                     NpcId, Instruction.Dialogue.IsEmpty()
                                ? FString(TEXT("Validation failed"))
                                : Instruction.Dialogue)),
@@ -520,17 +522,20 @@ HandleFinalize(const FNPCInstruction &Instruction,
                    [NpcId, Input, Instruction, Dispatch,
                     GetState](const rtk::FEmptyPayload &) {
                      HasStatePayload(Instruction.StateTransform)
-                         ? (Dispatch(NPCSlice::Actions::updateNPCState(
+                         ? (Dispatch(NPCActions::updateNPCState(
                                 NpcId, Instruction.StateTransform)),
                             void())
                          : void();
 
-                     Dispatch(NPCSlice::Actions::setLastAction(
-                         NpcId, Instruction.Action, Instruction.bHasAction));
+                     Instruction.bHasAction
+                         ? (Dispatch(NPCActions::actionReceived(
+                                NpcId, Instruction.Action)),
+                            void())
+                         : void();
 
-                     Dispatch(NPCSlice::Actions::addToHistory(
+                     Dispatch(NPCActions::addToHistory(
                          NpcId, TEXT("user"), Input));
-                     Dispatch(NPCSlice::Actions::addToHistory(
+                     Dispatch(NPCActions::addToHistory(
                          NpcId, TEXT("assistant"), Instruction.Dialogue));
 
                      return ResolveAsync(BuildAgentResponse(Instruction));
@@ -644,7 +649,7 @@ processNPC(const FString &NpcId, const FString &Input = TEXT(""),
              std::function<AnyAction(const AnyAction &)> Dispatch,
              std::function<const RuntimeState &()> GetState)
              -> func::AsyncResult<FAgentResponse> {
-    const auto ExistingNpc = NPCSlice::selectNPCById(GetState().NPCs, NpcId);
+    const auto ExistingNpc = NPCSelectors::selectNPCById(GetState().NPCs, NpcId);
     const bool bHasExplicitState =
         !InitialState.JsonData.IsEmpty() && InitialState.JsonData != TEXT("{}");
 
@@ -665,10 +670,10 @@ processNPC(const FString &NpcId, const FString &Input = TEXT(""),
               Info.Id = NpcId;
               Info.Persona = ResolvedPersona;
               Info.State = InitialState;
-              Dispatch(NPCSlice::Actions::setNPCInfo(Info));
+              Dispatch(NPCActions::setNPCInfo(Info));
             }()
-          : (NPCSlice::selectActiveNpcId(GetState().NPCs) != NpcId
-                 ? (Dispatch(NPCSlice::Actions::setActiveNPC(NpcId)), void())
+          : (NPCSelectors::selectActiveNpcId(GetState().NPCs) != NpcId
+                 ? (Dispatch(NPCActions::setActiveNPC(NpcId)), void())
                  : void());
 
       const FString RunId = FString::Printf(

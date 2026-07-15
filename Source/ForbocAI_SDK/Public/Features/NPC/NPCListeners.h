@@ -5,6 +5,7 @@
 #include "Features/Directive/DirectiveSlice.h"
 #include "Features/Ghost/GhostSlice.h"
 #include "Features/Memory/MemorySlice.h"
+#include "Features/NPC/NPCActions.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Soul/SoulSlice.h"
 
@@ -19,10 +20,10 @@ inline rtk::Middleware<State> createNpcRemovalListener() {
         const FString ActiveNpcIdBefore = Api.getState().NPCs.ActiveNpcId;
         const rtk::AnyAction Result = Next(Action);
 
-        NPCSlice::Actions::removeNPCActionCreator().match(Action)
+        NPCActions::removeNPCActionCreator().match(Action)
             ? [&]() {
                 const auto RemovedNpcId =
-                    NPCSlice::Actions::removeNPCActionCreator().extract(Action);
+                    NPCActions::removeNPCActionCreator().extract(Action);
                 RemovedNpcId.hasValue
                     ? (Api.dispatch(
                            DirectiveSlice::Actions::clearDirectivesForNpc(
@@ -32,7 +33,7 @@ inline rtk::Middleware<State> createNpcRemovalListener() {
                        Api.dispatch(GhostSlice::Actions::clearGhostSession()),
                        Api.dispatch(SoulSlice::Actions::clearSoulState()),
                        Api.dispatch(
-                           NPCSlice::Actions::clearBlock(RemovedNpcId.value)),
+                           NPCActions::clearBlock(RemovedNpcId.value)),
                        RemovedNpcId.value == ActiveNpcIdBefore
                            ? (Api.dispatch(MemorySlice::Actions::memoryClear()),
                               void())

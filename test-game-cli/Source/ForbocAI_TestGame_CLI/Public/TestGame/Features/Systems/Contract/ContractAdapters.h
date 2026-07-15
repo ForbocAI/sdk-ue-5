@@ -9,6 +9,20 @@
 namespace TestGame {
 namespace Contract {
 
+inline FString resolveTestGameApiUrl(const FString &ApiUrl) {
+  return ApiUrl.EndsWith(TEXT("/")) ? ApiUrl.LeftChop(1) : ApiUrl;
+}
+
+inline TMap<FString, FString>
+createTestGameAuthHeaders(const FString &ApiKey) {
+  TMap<FString, FString> Headers;
+  return ApiKey.IsEmpty()
+             ? Headers
+             : (Headers.Add(TEXT("Authorization"),
+                            FString(TEXT("Bearer ")) + ApiKey),
+                Headers);
+}
+
 namespace detail {
 
 inline ECommandGroup ParseCommandGroup(const FString &Group) {

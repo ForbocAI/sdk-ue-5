@@ -134,11 +134,7 @@ def resolve_ts_root(root: Path, explicit_root: str | None) -> Path:
     for ts_root in roots:
         try:
             source_roots = discover_ts_source_roots(ts_root)
-            find_matrix_source(
-                iter_ts_files(ts_root, source_roots),
-                extract_ts_node_keys,
-                "TS CLI command matrix",
-            )
+            find_ts_cli_data(ts_root, source_roots)
             return ts_root
         except (FileNotFoundError, ValueError, json.JSONDecodeError):
             continue
@@ -452,16 +448,61 @@ def mirror_notes(candidates: Sequence[object], exact: bool) -> str:
     return "No UE item has the same normalized path/name signature; no close dynamic candidate was found."
 
 
-def extract_ts_node_keys(path: Path) -> list[str]:
-    text = read_text(path)
-    match = re.search(
-        r"NODE_CLI_COMMAND_KEYS\s*=\s*\[(?P<body>.*?)\]\s+as\s+const",
-        text,
-        re.S,
+def iter_ts_data_files(ts_root: Path, source_roots: Sequence[Path]) -> tuple[Path, ...]:
+    package_roots = {
+        (ts_root / source_root).parent
+        for source_root in source_roots
+        if source_root.name == "src"
+    }
+    return tuple(
+        sorted(
+            (
+                path
+                for package_root in package_roots
+                for path in (package_root / "data").rglob("*.json")
+                if path.is_file()
+            ),
+            key=lambda path: path.as_posix(),
+        )
     )
-    if not match:
-        raise ValueError(f"Could not find NODE_CLI_COMMAND_KEYS in {path}")
-    return re.findall(r"'([^']+)'", match.group("body"))
+
+
+def extract_ts_node_keys(path: Path) -> list[str]:
+    data = json.loads(read_text(path))
+    if not isinstance(data, dict):
+        raise ValueError(f"Expected object-authored CLI data in {path}")
+
+    commands = data.get("commands")
+    surfaces = data.get("surfaces")
+    if not isinstance(commands, dict) or not isinstance(surfaces, dict) or "node" not in surfaces:
+        raise ValueError(f"Could not find a Node CLI command catalog in {path}")
+
+    keys: list[str] = []
+    for key, command in commands.items():
+        if not isinstance(key, str) or not isinstance(command, dict):
+            raise ValueError(f"Invalid CLI command entry in {path}")
+        command_surfaces = command.get("surfaces")
+        if not isinstance(command_surfaces, list) or not all(
+            isinstance(surface, str) for surface in command_surfaces
+        ):
+            raise ValueError(f"Invalid CLI command surfaces in {path}")
+        if "node" in command_surfaces:
+            keys.append(key)
+
+    if not keys:
+        raise ValueError(f"Node CLI command catalog is empty in {path}")
+    return keys
+
+
+def find_ts_cli_data(
+    ts_root: Path,
+    source_roots: Sequence[Path],
+) -> tuple[Path, list[str]]:
+    return find_matrix_source(
+        iter_ts_data_files(ts_root, source_roots),
+        extract_ts_node_keys,
+        "TS CLI authored-data catalog",
+    )
 
 
 def extract_ue_node_keys(path: Path) -> list[str]:
@@ -485,7 +526,7 @@ def find_matrix_source(
     for path in source_files:
         try:
             keys = extractor(path)
-        except (UnicodeDecodeError, ValueError):
+        except (UnicodeDecodeError, ValueError, json.JSONDecodeError):
             continue
         matches.append((path, keys))
 
@@ -1156,11 +1197,7 @@ def check_cli_command_parity(
     ts_source_roots: Sequence[Path],
     ue_source_roots: Sequence[Path],
 ) -> tuple[int, list[str], list[str]]:
-    ts_matrix, ts_keys = find_matrix_source(
-        iter_ts_files(ts_root, ts_source_roots),
-        extract_ts_node_keys,
-        "TS CLI command matrix",
-    )
+    ts_matrix, ts_keys = find_ts_cli_data(ts_root, ts_source_roots)
     ue_matrix, ue_keys = find_matrix_source(
         tuple(
             path
@@ -1178,7 +1215,7 @@ def check_cli_command_parity(
     print("[check] UE SDK parity")
     print(f"[info] TS SDK root: {ts_root}")
     print(f"[info] UE SDK root: {ue_root}")
-    print(f"[info] TS CLI matrix: {ts_matrix}")
+    print(f"[info] TS CLI authored data: {ts_matrix}")
     print(f"[info] UE CLI matrix: {ue_matrix}")
 
     if not missing and not extra and order_matches:

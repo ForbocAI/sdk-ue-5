@@ -2,44 +2,9 @@
 
 #include "Core/rtk.hpp"
 #include "Core/fp.hpp"
+#include "Features/NPC/NPCTypes.h"
 
-#include "NPC/NPCTypes.h"
-
-namespace NPCSlice {
-
-struct FSetNPCStatePayload {
-  FString Id;
-  FAgentState State;
-};
-
-struct FUpdateNPCStatePayload {
-  FString Id;
-  FAgentState Delta;
-};
-
-struct FAddToHistoryPayload {
-  FString Id;
-  FString Role;
-  FString Content;
-};
-
-struct FSetHistoryPayload {
-  FString Id;
-  TArray<FNPCHistoryEntry> History;
-};
-
-struct FSetLastActionPayload {
-  FString Id;
-  FAgentAction Action;
-  bool bHasAction;
-};
-
-struct FBlockActionPayload {
-  FString Id;
-  FString Reason;
-};
-
-namespace Actions {
+namespace NPCActions {
 
 /**
  * Returns the memoized action creator for inserting or replacing NPC info.
@@ -123,15 +88,15 @@ inline const rtk::ActionCreator<FSetHistoryPayload> &setHistoryActionCreator() {
 }
 
 /**
- * Returns the memoized action creator for recording the last NPC action.
- * User Story: As action tracking, I need a cached action creator so the last
- * emitted action can be updated consistently.
+ * Returns the memoized event creator for an emitted NPC action.
+ * User Story: As action consumers, I need an event action that carries the
+ * emitted action without duplicating transient data in authoritative state.
  */
-inline const rtk::ActionCreator<FSetLastActionPayload> &
-setLastActionActionCreator() {
-  static const func::Lazy<rtk::ActionCreator<FSetLastActionPayload>> ActionCreator =
-      func::lazy([]() -> rtk::ActionCreator<FSetLastActionPayload> {
-        return rtk::createAction<FSetLastActionPayload>(TEXT("npc/setLastAction"));
+inline const rtk::ActionCreator<FNPCActionReceivedPayload> &
+actionReceivedActionCreator() {
+  static const func::Lazy<rtk::ActionCreator<FNPCActionReceivedPayload>> ActionCreator =
+      func::lazy([]() -> rtk::ActionCreator<FNPCActionReceivedPayload> {
+        return rtk::createAction<FNPCActionReceivedPayload>(TEXT("npc/actionReceived"));
       });
   return func::eval(ActionCreator);
 }
@@ -234,15 +199,13 @@ inline rtk::AnyAction setHistory(const FString &Id,
 }
 
 /**
- * Builds the action that records the last NPC action and presence flag.
- * User Story: As last-action tracking, I need an action factory so reducers can
- * update whether an NPC has a recent action in one dispatch.
+ * Builds the event action for an emitted NPC action.
+ * User Story: As action consumers, I need one event payload that identifies
+ * the NPC and emitted action without persisting a derived "last" value.
  */
-inline rtk::AnyAction setLastAction(const FString &Id,
-                                    const FAgentAction &LastAction,
-                                    bool bHasAction = true) {
-  return setLastActionActionCreator()(
-      FSetLastActionPayload{Id, LastAction, bHasAction});
+inline rtk::AnyAction actionReceived(const FString &Id,
+                                     const FAgentAction &Action) {
+  return actionReceivedActionCreator()(FNPCActionReceivedPayload{Id, Action});
 }
 
 /**
@@ -272,6 +235,4 @@ inline rtk::AnyAction removeNPC(const FString &Id) {
   return removeNPCActionCreator()(Id);
 }
 
-} // namespace Actions
-
-} // namespace NPCSlice
+} // namespace NPCActions

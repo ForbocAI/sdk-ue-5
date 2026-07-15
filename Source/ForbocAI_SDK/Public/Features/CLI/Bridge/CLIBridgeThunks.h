@@ -1,6 +1,6 @@
 #pragma once
 
-// Parent-domain qualification disambiguates CLI orchestration from Bridge thunks.
+// The CLI/Bridge folders own the domain; the filename carries only its role.
 
 #include "Core/rtk.hpp"
 #include "Features/Async/AsyncAdapters.h"

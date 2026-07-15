@@ -1,6 +1,8 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
-#include "Features/Logging/LoggingSelectors.h"
+#include "Features/NPC/NPCActions.h"
+#include "Features/NPC/NPCSelectors.h"
+#include "Features/Protocol/Logger/LoggerSelectors.h"
 #include "Misc/AutomationTest.h"
 #include "Store.h"
 
@@ -24,12 +26,12 @@ bool FStoreNPCCreationTest::RunTest(const FString &Parameters) {
   Info.Id = TEXT("int_npc_1");
   Info.Persona = TEXT("Test NPC");
 
-  State = StoreReducer(State, NPCSlice::Actions::setNPCInfo(Info));
+  State = StoreReducer(State, NPCActions::setNPCInfo(Info));
 
   TestEqual("NPC active", State.NPCs.ActiveNpcId,
             FString(TEXT("int_npc_1")));
   TestTrue("NPC in entities",
-           NPCSlice::selectNPCById(State.NPCs, TEXT("int_npc_1")).hasValue);
+           NPCSelectors::selectNPCById(State.NPCs, TEXT("int_npc_1")).hasValue);
 
   /**
    * Other slices remain at initial state
@@ -67,7 +69,7 @@ bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
   FNPCInternalState Info;
   Info.Id = TEXT("cascade_npc");
   Info.Persona = TEXT("Cascade test");
-  Store.dispatch(NPCSlice::Actions::setNPCInfo(Info));
+  Store.dispatch(NPCActions::setNPCInfo(Info));
 
   TestEqual("NPC active before removal", Store.getState().NPCs.ActiveNpcId,
             FString(TEXT("cascade_npc")));
@@ -129,10 +131,10 @@ bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
    * Remove NPC — should cascade clear
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  Store.dispatch(NPCSlice::Actions::removeNPC(TEXT("cascade_npc")));
+  Store.dispatch(NPCActions::removeNPC(TEXT("cascade_npc")));
 
   TestTrue("NPC removed",
-           !NPCSlice::selectNPCById(Store.getState().NPCs, TEXT("cascade_npc"))
+           !NPCSelectors::selectNPCById(Store.getState().NPCs, TEXT("cascade_npc"))
                 .hasValue);
   TestTrue("ActiveNpcId cleared",
            Store.getState().NPCs.ActiveNpcId.IsEmpty());
@@ -183,12 +185,12 @@ bool FStoreRemoveNonActiveTest::RunTest(const FString &Parameters) {
   FNPCInternalState A;
   A.Id = TEXT("npc_a");
   A.Persona = TEXT("Alpha");
-  Store.dispatch(NPCSlice::Actions::setNPCInfo(A));
+  Store.dispatch(NPCActions::setNPCInfo(A));
 
   FNPCInternalState B;
   B.Id = TEXT("npc_b");
   B.Persona = TEXT("Beta");
-  Store.dispatch(NPCSlice::Actions::setNPCInfo(B));
+  Store.dispatch(NPCActions::setNPCInfo(B));
 
   /**
    * Active is now B
@@ -211,10 +213,10 @@ bool FStoreRemoveNonActiveTest::RunTest(const FString &Parameters) {
    * Remove A (not active) — memory should NOT be cleared
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  Store.dispatch(NPCSlice::Actions::removeNPC(TEXT("npc_a")));
+  Store.dispatch(NPCActions::removeNPC(TEXT("npc_a")));
 
   TestFalse("A removed",
-            NPCSlice::selectNPCById(Store.getState().NPCs, TEXT("npc_a"))
+            NPCSelectors::selectNPCById(Store.getState().NPCs, TEXT("npc_a"))
                 .hasValue);
   TestEqual("Active still B", Store.getState().NPCs.ActiveNpcId,
             FString(TEXT("npc_b")));
@@ -240,20 +242,30 @@ bool FRuntimeProtocolLoggerSummaryTest::RunTest(const FString &Parameters) {
   (void)Parameters;
 
   const rtk::AnyAction SetActiveAction =
-      NPCSlice::Actions::setActiveNPC(TEXT("logger_npc"));
+      NPCActions::setActiveNPC(TEXT("logger_npc"));
   TestEqual("String payloads are preserved for logger output",
             SetActiveAction.describePayload(), FString(TEXT("logger_npc")));
 
   FRuntimeState Before;
   FRuntimeState After = StoreReducer(Before, SetActiveAction);
-  const FString Delta = LoggingSelectors::describeStateDelta(Before, After);
+  const FString Delta =
+      LoggerSelectors::describeStateDelta(Before, After);
 
   TestTrue("Delta includes NPC slice summary", Delta.Contains(TEXT("NPCs{")));
   TestTrue("Delta includes active npc id",
            Delta.Contains(TEXT("logger_npc")));
   TestEqual("No-change deltas collapse to <none>",
-            LoggingSelectors::describeStateDelta(After, After),
+            LoggerSelectors::describeStateDelta(After, After),
             FString(TEXT("<none>")));
+
+  rtk::AnyAction ProtocolAction;
+  ProtocolAction.Type = TEXT("protocol/test");
+  rtk::AnyAction UnrelatedAction;
+  UnrelatedAction.Type = TEXT("counter/test");
+  TestTrue("Default selector includes protocol actions",
+           LoggerSelectors::selectIsProtocolAction(ProtocolAction));
+  TestFalse("Default selector excludes unrelated actions",
+            LoggerSelectors::selectIsProtocolAction(UnrelatedAction));
 
   return true;
 }

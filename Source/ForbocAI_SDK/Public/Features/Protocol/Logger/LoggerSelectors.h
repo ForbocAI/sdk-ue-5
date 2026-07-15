@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Core/rtk.hpp"
 #include "Features/Bridge/BridgeSlice.h"
 #include "Features/Dependencies/DependenciesTypes.h"
 #include "Features/Directive/DirectiveSlice.h"
@@ -10,9 +11,22 @@
 #include "Features/Soul/SoulSlice.h"
 #include "Features/Vector/VectorTypes.h"
 
-namespace LoggingSelectors {
+namespace LoggerSelectors {
+
+static const TArray<FString> DEFAULT_PROTOCOL_ACTION_PREFIXES = {
+    TEXT("api/"),       TEXT("npc/process"), TEXT("protocol/"),
+    TEXT("directive/"), TEXT("soul/"),       TEXT("memory/"),
+    TEXT("bridge/"),    TEXT("ghost/")};
 
 namespace Internal {
+
+inline bool startsWithProtocolPrefix(const FString &ActionType, int32 Index) {
+  return Index >= DEFAULT_PROTOCOL_ACTION_PREFIXES.Num()
+             ? false
+             : ActionType.StartsWith(DEFAULT_PROTOCOL_ACTION_PREFIXES[Index])
+                   ? true
+                   : startsWithProtocolPrefix(ActionType, Index + 1);
+}
 
 inline FString summarizeNPCState(const NPCSlice::FNPCSliceState &State) {
   return FString::Printf(TEXT("ids=%d active=%s"), State.Entities.ids.Num(),
@@ -90,6 +104,10 @@ inline void appendDeltaIfChanged(TArray<FString> &Changes,
 
 } // namespace Internal
 
+inline bool selectIsProtocolAction(const rtk::AnyAction &Action) {
+  return Internal::startsWithProtocolPrefix(Action.Type, 0);
+}
+
 template <typename State>
 inline FString describeStateDelta(const State &Before, const State &After) {
   TArray<FString> Changes;
@@ -125,4 +143,4 @@ inline FString describeStateDelta(const State &Before, const State &After) {
   return Changes.Num() == 0 ? TEXT("<none>") : FString::Join(Changes, TEXT("; "));
 }
 
-} // namespace LoggingSelectors
+} // namespace LoggerSelectors

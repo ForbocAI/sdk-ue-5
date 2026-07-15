@@ -2,10 +2,19 @@
 
 #include "Core/rtk.hpp"
 #include "Features/Config/ConfigAdapters.h"
-#include "TestGame/Features/Systems/API/APIApi.h"
+#include "TestGame/Features/Systems/Contract/ContractAdapters.h"
 
 namespace TestGame {
+struct FTestGameState;
+
 namespace ContractApi {
+
+inline rtk::Api<FTestGameState> testGameApi = []() {
+  rtk::Api<FTestGameState> ApiDefinition = rtk::createApi<FTestGameState>(
+      TEXT("testGameApi"), TArray<FString>{TEXT("TestGameContract")});
+  check(ApiDefinition.TagTypes.Num() > 0);
+  return ApiDefinition;
+}();
 
 inline bool providesTags(
     const rtk::ApiEndpoint<FString, FString> &EndpointDefinition) {
@@ -20,14 +29,9 @@ inline rtk::ApiEndpoint<FString, FString> contractEndpoint() {
   Endpoint.RequestBuilder = [](const FString &ApiUrl) {
     rtk::FetchBaseQueryArgs Options;
     const FString ApiKey = SDKConfig::GetApiKey();
-    !ApiKey.IsEmpty()
-        ? (Options.headers.Add(TEXT("Authorization"),
-                               FString(TEXT("Bearer ")) + ApiKey),
-           void())
-        : void();
+    Options.headers = Contract::createTestGameAuthHeaders(ApiKey);
     rtk::FetchArgs Args;
-    const FString BaseUrl =
-        ApiUrl.EndsWith(TEXT("/")) ? ApiUrl.LeftChop(1) : ApiUrl;
+    const FString BaseUrl = Contract::resolveTestGameApiUrl(ApiUrl);
     Args.url = BaseUrl + TEXT("/test-game/contract");
     Args.method = TEXT("GET");
     return rtk::fetchBaseQuery<FString>(Options)(
@@ -39,7 +43,7 @@ inline rtk::ApiEndpoint<FString, FString> contractEndpoint() {
 
 inline rtk::ThunkAction<FString, FTestGameState>
 getTestGameContractThunk(const FString &ApiUrl) {
-  return rtk::injectEndpoints(APISlice::api, contractEndpoint())(ApiUrl);
+  return rtk::injectEndpoints(testGameApi, contractEndpoint())(ApiUrl);
 }
 
 } // namespace ContractApi

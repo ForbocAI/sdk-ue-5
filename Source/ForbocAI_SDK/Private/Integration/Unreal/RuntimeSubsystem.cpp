@@ -1,4 +1,6 @@
 #include "Integration/Unreal/RuntimeSubsystem.h"
+#include "Features/NPC/NPCActions.h"
+#include "Features/NPC/NPCSelectors.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Config/ConfigAdapters.h"
 #include "Store.h"
@@ -105,7 +107,7 @@ FAgentState UForbocAISubsystem::GetNPCState(FString NpcId) const {
              ? FAgentState()
              : func::or_else(
                    func::fmap(
-                       NPCSlice::selectNPCById(Store->getState().NPCs, NpcId),
+                       NPCSelectors::selectNPCById(Store->getState().NPCs, NpcId),
                        [](const FNPCInternalState &Npc) { return Npc.State; }),
                    FAgentState());
 }
@@ -118,7 +120,7 @@ FAgentState UForbocAISubsystem::GetNPCState(FString NpcId) const {
 FString UForbocAISubsystem::GetActiveNPCId() const {
   return !Store.IsValid()
              ? FString()
-             : NPCSlice::selectActiveNpcId(Store->getState().NPCs);
+             : NPCSelectors::selectActiveNpcId(Store->getState().NPCs);
 }
 
 /**
@@ -130,7 +132,7 @@ bool UForbocAISubsystem::GetActiveNPC(FNPCInternalState &OutNPC) const {
   return !Store.IsValid()
              ? false
              : func::match(
-                   NPCSlice::selectActiveNPC(Store->getState().NPCs),
+                   NPCSelectors::selectActiveNPC(Store->getState().NPCs),
                    [&OutNPC](const FNPCInternalState &Active) {
                      OutNPC = Active;
                      return true;
@@ -187,10 +189,10 @@ bool UForbocAISubsystem::GetLastImportedSoul(FSoul &OutSoul) const {
  * into delegates so blueprint and C++ subscribers can react to runtime changes.
  */
 void UForbocAISubsystem::HandleAction(const rtk::AnyAction &Action) {
-  NPCSlice::Actions::setLastActionActionCreator().match(Action)
+  NPCActions::actionReceivedActionCreator().match(Action)
       ? [this, &Action]() {
           const auto Payload =
-              NPCSlice::Actions::setLastActionActionCreator().extract(Action);
+              NPCActions::actionReceivedActionCreator().extract(Action);
           Payload.hasValue
               ? (OnNPCActionReceived.Broadcast(Payload.value.Action), void())
               : void();

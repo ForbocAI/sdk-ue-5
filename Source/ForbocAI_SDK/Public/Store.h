@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Core/fp.hpp"
 #include "Features/Directive/DirectiveSlice.h"
-#include "Features/Logging/LoggingListeners.h"
+#include "Features/Protocol/Logger/LoggerListeners.h"
 #include "Features/Ghost/GhostSlice.h"
 #include "Features/Memory/MemorySlice.h"
 #include "Features/NPC/NPCSlice.h"
@@ -214,7 +214,7 @@ createRuntimeStore(func::Maybe<FRuntimeState> PreloadedState =
                        {}) {
   std::vector<rtk::Middleware<FRuntimeState>> Middlewares;
   Middlewares.push_back(
-      LoggingListeners::createProtocolLoggerMiddleware<FRuntimeState>());
+      LoggerListeners::createProtocolLoggerMiddleware<FRuntimeState>());
   Middlewares.push_back(NPCListeners::createNpcRemovalListener<FRuntimeState>());
 
   /**

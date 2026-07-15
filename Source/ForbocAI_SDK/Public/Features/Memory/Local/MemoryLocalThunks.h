@@ -78,7 +78,7 @@ nodeMemoryStoreThunk(const FMemoryItem &Item) {
                     Stored.Embedding =
                         Stored.Embedding.Num() > 0
                             ? Stored.Embedding
-                            : ForbocAI::SDK::Vectorizer::Embed(Stored.Text);
+                            : MemoryVectorAdapters::embed(Stored.Text);
                     const bool bStored = Native::Sqlite::Upsert(Db, Stored);
 
                     AsyncTask(
@@ -128,7 +128,7 @@ nodeMemoryRecallThunk(const FMemoryRecallRequest &Request) {
                   }()
                 : [&]() {
                     const TArray<float> QueryEmbedding =
-                        ForbocAI::SDK::Vectorizer::Embed(Request.Query);
+                        MemoryVectorAdapters::embed(Request.Query);
                     TArray<FMemoryItem> Results =
                         Native::Sqlite::Search(Db, QueryEmbedding,
                                                Request.Limit);

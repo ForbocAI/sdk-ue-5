@@ -3,6 +3,8 @@
 #include "Core/fp.hpp"
 #include "Core/rtk.hpp"
 #include "Features/Async/AsyncAdapters.h"
+#include "Features/NPC/NPCActions.h"
+#include "Features/NPC/NPCSelectors.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Protocol/ProtocolThunks.h"
 #include "Features/Soul/SoulThunks.h"
@@ -18,30 +20,30 @@ inline FNPCInternalState createNpc(rtk::EnhancedStore<RuntimeState> &Store,
   FNPCInternalState Info;
   Info.Id = NPCId::GenerateNPCId();
   Info.Persona = Persona;
-  Store.dispatch(NPCSlice::Actions::setNPCInfo(Info));
+  Store.dispatch(NPCActions::setNPCInfo(Info));
   const func::Maybe<FNPCInternalState> Active =
-      NPCSlice::selectActiveNPC(Store.getState().NPCs);
+      NPCSelectors::selectActiveNPC(Store.getState().NPCs);
   return Active.hasValue ? Active.value : Info;
 }
 
 template <typename RuntimeState = FRuntimeState>
 inline func::Maybe<FNPCInternalState>
 getActiveNpc(rtk::EnhancedStore<RuntimeState> &Store) {
-  return NPCSlice::selectActiveNPC(Store.getState().NPCs);
+  return NPCSelectors::selectActiveNPC(Store.getState().NPCs);
 }
 
 template <typename RuntimeState = FRuntimeState>
 inline func::Maybe<FNPCInternalState>
 getNpc(rtk::EnhancedStore<RuntimeState> &Store, const FString &NpcId) {
-  return NPCSlice::selectNPCById(Store.getState().NPCs, NpcId);
+  return NPCSelectors::selectNPCById(Store.getState().NPCs, NpcId);
 }
 
 template <typename RuntimeState = FRuntimeState>
 inline func::Maybe<FNPCInternalState>
 updateNpc(rtk::EnhancedStore<RuntimeState> &Store, const FString &NpcId,
           const FAgentState &Delta) {
-  Store.dispatch(NPCSlice::Actions::updateNPCState(NpcId, Delta));
-  return NPCSlice::selectNPCById(Store.getState().NPCs, NpcId);
+  Store.dispatch(NPCActions::updateNPCState(NpcId, Delta));
+  return NPCSelectors::selectNPCById(Store.getState().NPCs, NpcId);
 }
 
 template <typename RuntimeState = FRuntimeState>

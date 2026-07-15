@@ -49,34 +49,46 @@ class ParityProgramDiscoveryTests(unittest.TestCase):
 
 
 class MatrixDiscoveryTests(unittest.TestCase):
-    def test_finds_matrix_by_declaration_content(self) -> None:
+    def test_finds_node_keys_from_authored_data_schema(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            ordinary = root / "ordinary.ts"
-            matrix = root / "commands.ts"
-            ordinary.write_text("export const unrelated = true;\n", encoding="utf-8")
-            matrix.write_text(
-                "export const NODE_CLI_COMMAND_KEYS = ['status', 'npc process'] as const;\n",
+            ordinary = root / "ordinary.json"
+            catalog = root / "catalog.json"
+            ordinary.write_text('{"unrelated": true}\n', encoding="utf-8")
+            catalog.write_text(
+                """{
+  "surfaces": {"node": {}, "browser": {}},
+  "commands": {
+    "status": {"surfaces": ["node", "browser"]},
+    "npc process": {"surfaces": ["node"]},
+    "browser only": {"surfaces": ["browser"]}
+  }
+}
+""",
                 encoding="utf-8",
             )
 
             source, keys = PARITY.find_matrix_source(
-                (ordinary, matrix),
+                (ordinary, catalog),
                 PARITY.extract_ts_node_keys,
-                "TS CLI command matrix",
+                "TS CLI authored-data catalog",
             )
 
-            self.assertEqual(source, matrix)
+            self.assertEqual(source, catalog)
             self.assertEqual(keys, ["status", "npc process"])
 
-    def test_rejects_ambiguous_matrix_owners(self) -> None:
+    def test_rejects_ambiguous_catalog_owners(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             sources = []
-            for name in ("first.ts", "second.ts"):
+            for name in ("first.json", "second.json"):
                 source = root / name
                 source.write_text(
-                    "export const NODE_CLI_COMMAND_KEYS = ['status'] as const;\n",
+                    """{
+  "surfaces": {"node": {}},
+  "commands": {"status": {"surfaces": ["node"]}}
+}
+""",
                     encoding="utf-8",
                 )
                 sources.append(source)
@@ -85,7 +97,7 @@ class MatrixDiscoveryTests(unittest.TestCase):
                 PARITY.find_matrix_source(
                     sources,
                     PARITY.extract_ts_node_keys,
-                    "TS CLI command matrix",
+                    "TS CLI authored-data catalog",
                 )
 
 

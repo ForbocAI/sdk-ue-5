@@ -1,10 +1,10 @@
 #include "Features/Vector/VectorAdapters.h"
-#include "Core/SdkVectorizer.h"
+#include "Features/Memory/Vector/MemoryVectorAdapters.h"
 
 namespace VectorAdapters {
 
 TArray<float> embedVectorAdapter(const FString &Text) {
-  return ForbocAI::SDK::Vectorizer::Embed(Text);
+  return MemoryVectorAdapters::embed(Text);
 }
 
 } // namespace VectorAdapters

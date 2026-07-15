@@ -9,6 +9,7 @@
 #include "Features/Directive/DirectiveSlice.h"
 #include "HAL/PlatformProcess.h"
 #include "Misc/AutomationTest.h"
+#include "Features/NPC/NPCSelectors.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Protocol/ProtocolThunks.h"
 #include "Features/Config/ConfigAdapters.h"
@@ -147,7 +148,7 @@ bool FProcessNPCLiveFinalizeValidTest::RunTest(const FString &Parameters) {
         }
 
         auto Npc =
-            NPCSlice::selectNPCById(StoreState.NPCs, TEXT("npc_valid_1"));
+            NPCSelectors::selectNPCById(StoreState.NPCs, TEXT("npc_valid_1"));
         TestTrue("NPC exists", Npc.hasValue);
         if (Npc.hasValue) {
           TestTrue("History has entries", Npc.value.History.Num() >= 1);
@@ -208,7 +209,7 @@ bool FProcessNPCLiveFinalizeInvalidTest::RunTest(const FString &Parameters) {
 
         FRuntimeState StoreState = State->Store->getState();
         auto Npc =
-            NPCSlice::selectNPCById(StoreState.NPCs, TEXT("npc_block_1"));
+            NPCSelectors::selectNPCById(StoreState.NPCs, TEXT("npc_block_1"));
         TestTrue("NPC exists", Npc.hasValue);
         if (Npc.hasValue && Npc.value.bIsBlocked) {
           TestTrue("Block reason set when blocked",

@@ -3,6 +3,8 @@
 #include "Features/Directive/DirectiveSlice.h"
 #include "Features/Memory/MemorySlice.h"
 #include "Misc/AutomationTest.h"
+#include "Features/NPC/NPCActions.h"
+#include "Features/NPC/NPCSelectors.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Protocol/Requests/RequestsTypes.h"
 #include "Features/Protocol/ProtocolThunks.h"
@@ -77,8 +79,8 @@ bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
   FNPCInternalState Npc;
   Npc.Id = TEXT("ag_test1");
   Npc.Persona = TEXT("A test knight");
-  TestStore.dispatch(NPCSlice::Actions::setNPCInfo(Npc));
-  TestStore.dispatch(NPCSlice::Actions::setActiveNPC(TEXT("ag_test1")));
+  TestStore.dispatch(NPCActions::setNPCInfo(Npc));
+  TestStore.dispatch(NPCActions::setActiveNPC(TEXT("ag_test1")));
 
   /**
    * Verify NPC exists
@@ -86,13 +88,13 @@ bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
    */
   FRuntimeState State = TestStore.getState();
   func::Maybe<FNPCInternalState> Found =
-      NPCSlice::selectNPCById(State.NPCs, TEXT("ag_test1"));
+      NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_test1"));
   TestTrue("NPC found in store", Found.hasValue);
   if (Found.hasValue) {
     TestEqual("NPC persona", Found.value.Persona,
               FString(TEXT("A test knight")));
   }
-  TestEqual("Active NPC set", NPCSlice::selectActiveNpcId(State.NPCs),
+  TestEqual("Active NPC set", NPCSelectors::selectActiveNpcId(State.NPCs),
             FString(TEXT("ag_test1")));
 
   /**
@@ -101,10 +103,10 @@ bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
    */
   FAgentState NewState;
   NewState.JsonData = FString(TEXT("{") TEXT("\"health\":100}"));
-  TestStore.dispatch(NPCSlice::Actions::updateNPCState(TEXT("ag_test1"), NewState));
+  TestStore.dispatch(NPCActions::updateNPCState(TEXT("ag_test1"), NewState));
 
   State = TestStore.getState();
-  Found = NPCSlice::selectNPCById(State.NPCs, TEXT("ag_test1"));
+  Found = NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_test1"));
   TestTrue("NPC still found", Found.hasValue);
   if (Found.hasValue) {
     TestTrue("State updated",
@@ -115,13 +117,13 @@ bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
    * Add history
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  TestStore.dispatch(NPCSlice::Actions::addToHistory(
+  TestStore.dispatch(NPCActions::addToHistory(
       TEXT("ag_test1"), TEXT("player"), TEXT("Hello")));
-  TestStore.dispatch(NPCSlice::Actions::addToHistory(
+  TestStore.dispatch(NPCActions::addToHistory(
       TEXT("ag_test1"), TEXT("npc"), TEXT("Greetings")));
 
   State = TestStore.getState();
-  Found = NPCSlice::selectNPCById(State.NPCs, TEXT("ag_test1"));
+  Found = NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_test1"));
   TestTrue("NPC found after history", Found.hasValue);
   if (Found.hasValue) {
     TestEqual("Two history entries", Found.value.History.Num(), 2);
@@ -131,35 +133,35 @@ bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
               FString(TEXT("Hello")));
   }
 
-  /**
-   * Set last action
-   * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-   */
+  /** Emitted actions are events and do not duplicate transient state. */
   FAgentAction Attack;
   Attack.Type = TEXT("ATTACK");
   Attack.Target = TEXT("goblin");
   Attack.Reason = TEXT("In combat");
-  TestStore.dispatch(NPCSlice::Actions::setLastAction(TEXT("ag_test1"), Attack));
-
-  State = TestStore.getState();
-  Found = NPCSlice::selectNPCById(State.NPCs, TEXT("ag_test1"));
-  TestTrue("NPC found after action", Found.hasValue);
-  if (Found.hasValue) {
-    TestEqual("LastAction type", Found.value.LastAction.Type,
+  const rtk::AnyAction ActionReceived =
+      NPCActions::actionReceived(TEXT("ag_test1"), Attack);
+  TestTrue("Action event matches",
+           NPCActions::actionReceivedActionCreator().match(ActionReceived));
+  const auto ActionPayload =
+      NPCActions::actionReceivedActionCreator().extract(ActionReceived);
+  TestTrue("Action event has payload", ActionPayload.hasValue);
+  if (ActionPayload.hasValue) {
+    TestEqual("Action event type", ActionPayload.value.Action.Type,
               FString(TEXT("ATTACK")));
-    TestEqual("LastAction target", Found.value.LastAction.Target,
+    TestEqual("Action event target", ActionPayload.value.Action.Target,
               FString(TEXT("goblin")));
   }
+  TestStore.dispatch(ActionReceived);
 
   /**
    * Block action
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  TestStore.dispatch(NPCSlice::Actions::blockAction(
+  TestStore.dispatch(NPCActions::blockAction(
       TEXT("ag_test1"), TEXT("Cannot attack civilians")));
 
   State = TestStore.getState();
-  Found = NPCSlice::selectNPCById(State.NPCs, TEXT("ag_test1"));
+  Found = NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_test1"));
   TestTrue("NPC found after block", Found.hasValue);
   if (Found.hasValue) {
     TestTrue("NPC is blocked", Found.value.bIsBlocked);
@@ -171,9 +173,9 @@ bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
    * Clear block
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  TestStore.dispatch(NPCSlice::Actions::clearBlock(TEXT("ag_test1")));
+  TestStore.dispatch(NPCActions::clearBlock(TEXT("ag_test1")));
   State = TestStore.getState();
-  Found = NPCSlice::selectNPCById(State.NPCs, TEXT("ag_test1"));
+  Found = NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_test1"));
   TestTrue("NPC found after unblock", Found.hasValue);
   if (Found.hasValue) {
     TestFalse("NPC is unblocked", Found.value.bIsBlocked);
@@ -203,8 +205,8 @@ bool FProtocolDirectiveLifecycleTest::RunTest(const FString &Parameters) {
   FNPCInternalState Npc;
   Npc.Id = TEXT("ag_dir_test");
   Npc.Persona = TEXT("A directive test NPC");
-  TestStore.dispatch(NPCSlice::Actions::setNPCInfo(Npc));
-  TestStore.dispatch(NPCSlice::Actions::setActiveNPC(TEXT("ag_dir_test")));
+  TestStore.dispatch(NPCActions::setNPCInfo(Npc));
+  TestStore.dispatch(NPCActions::setActiveNPC(TEXT("ag_dir_test")));
 
   /**
    * Start directive run
@@ -389,13 +391,13 @@ bool FProtocolNpcRemovalCascadeTest::RunTest(const FString &Parameters) {
   FNPCInternalState Npc;
   Npc.Id = TEXT("ag_cascade");
   Npc.Persona = TEXT("Cascade test");
-  TestStore.dispatch(NPCSlice::Actions::setNPCInfo(Npc));
+  TestStore.dispatch(NPCActions::setNPCInfo(Npc));
   TestStore.dispatch(DirectiveSlice::Actions::directiveRunStarted(
       TEXT("dir_cascade"), TEXT("ag_cascade"), TEXT("obs")));
 
   FRuntimeState State = TestStore.getState();
   TestTrue("NPC exists",
-           NPCSlice::selectNPCById(State.NPCs, TEXT("ag_cascade")).hasValue);
+           NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_cascade")).hasValue);
   TestTrue("Directive exists",
            DirectiveSlice::selectDirectiveById(State.Directives,
                                                 TEXT("dir_cascade")).hasValue);
@@ -404,11 +406,11 @@ bool FProtocolNpcRemovalCascadeTest::RunTest(const FString &Parameters) {
    * Remove NPC — listener should cascade-clear directives
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  TestStore.dispatch(NPCSlice::Actions::removeNPC(TEXT("ag_cascade")));
+  TestStore.dispatch(NPCActions::removeNPC(TEXT("ag_cascade")));
 
   State = TestStore.getState();
   TestFalse("NPC removed",
-            NPCSlice::selectNPCById(State.NPCs, TEXT("ag_cascade")).hasValue);
+            NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_cascade")).hasValue);
 
   /**
    * Directive cleanup depends on listener middleware being installed.
@@ -441,13 +443,13 @@ bool FProtocolMultiNpcTest::RunTest(const FString &Parameters) {
   Npc2.Id = TEXT("ag_m2");
   Npc2.Persona = TEXT("Merchant");
 
-  TestStore.dispatch(NPCSlice::Actions::setNPCInfo(Npc1));
-  TestStore.dispatch(NPCSlice::Actions::setNPCInfo(Npc2));
-  TestStore.dispatch(NPCSlice::Actions::setActiveNPC(TEXT("ag_m1")));
+  TestStore.dispatch(NPCActions::setNPCInfo(Npc1));
+  TestStore.dispatch(NPCActions::setNPCInfo(Npc2));
+  TestStore.dispatch(NPCActions::setActiveNPC(TEXT("ag_m1")));
 
   FRuntimeState State = TestStore.getState();
-  TestEqual("Two NPCs", NPCSlice::selectAllNPCs(State.NPCs).Num(), 2);
-  TestEqual("Active is m1", NPCSlice::selectActiveNpcId(State.NPCs),
+  TestEqual("Two NPCs", NPCSelectors::selectAllNPCs(State.NPCs).Num(), 2);
+  TestEqual("Active is m1", NPCSelectors::selectActiveNpcId(State.NPCs),
             FString(TEXT("ag_m1")));
 
   /**
@@ -456,11 +458,11 @@ bool FProtocolMultiNpcTest::RunTest(const FString &Parameters) {
    */
   FAgentState M2State;
   M2State.JsonData = TEXT("{") TEXT("\n\"goods\":[\"sword\",\"potion\"]\n}");
-  TestStore.dispatch(NPCSlice::Actions::updateNPCState(TEXT("ag_m2"), M2State));
+  TestStore.dispatch(NPCActions::updateNPCState(TEXT("ag_m2"), M2State));
 
   State = TestStore.getState();
-  auto M1 = NPCSlice::selectNPCById(State.NPCs, TEXT("ag_m1"));
-  auto M2 = NPCSlice::selectNPCById(State.NPCs, TEXT("ag_m2"));
+  auto M1 = NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_m1"));
+  auto M2 = NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_m2"));
   TestTrue("M1 exists", M1.hasValue);
   TestTrue("M2 exists", M2.hasValue);
   if (M1.hasValue && M2.hasValue) {
@@ -473,12 +475,12 @@ bool FProtocolMultiNpcTest::RunTest(const FString &Parameters) {
    * Switch active
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  TestStore.dispatch(NPCSlice::Actions::setActiveNPC(TEXT("ag_m2")));
+  TestStore.dispatch(NPCActions::setActiveNPC(TEXT("ag_m2")));
   State = TestStore.getState();
-  TestEqual("Active is m2", NPCSlice::selectActiveNpcId(State.NPCs),
+  TestEqual("Active is m2", NPCSelectors::selectActiveNpcId(State.NPCs),
             FString(TEXT("ag_m2")));
 
-  auto Active = NPCSlice::selectActiveNPC(State.NPCs);
+  auto Active = NPCSelectors::selectActiveNPC(State.NPCs);
   TestTrue("Active NPC found", Active.hasValue);
   if (Active.hasValue) {
     TestEqual("Active persona", Active.value.Persona,

@@ -4,6 +4,7 @@
 #include "Core/fp.hpp"
 #include "Features/Errors/ErrorsAdapters.h"
 #include "Features/API/APIApi.h"
+#include "Features/NPC/NPCActions.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Soul/SoulSlice.h"
 #include "Features/Soul/Transport/TransportAdapters.h"
@@ -102,7 +103,7 @@ importNpcFromSoulThunk(const FString &TxId) {
                             Npc.Persona = ImportedNpc.Persona;
                             Npc.State = TypeFactory::AgentState(
                                 ImportedNpc.DataJson);
-                            Dispatch(NPCSlice::Actions::setNPCInfo(Npc));
+                            Dispatch(NPCActions::setNPCInfo(Npc));
                             return detail::ResolveAsync(ImportedNpc);
                           });
                     });

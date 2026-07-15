@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/SdkVectorizer.h"
+#include "Features/Memory/Vector/MemoryVectorAdapters.h"
 #include "Features/Memory/MemorySlice.h"
 #include "Misc/Paths.h"
 #include "Features/Memory/Local/Storage/StorageAdapters.h"
@@ -68,7 +68,7 @@ inline FMemoryItem MakeMemoryItem(const FMemoryStoreInstruction &Instruction) {
                                          : Instruction.Type;
   Item.Importance = Instruction.Importance;
   Item.Timestamp = FDateTime::UtcNow().ToUnixTimestamp();
-  Item.Embedding = ForbocAI::SDK::Vectorizer::Embed(Instruction.Text);
+  Item.Embedding = MemoryVectorAdapters::embed(Instruction.Text);
   return Item;
 }
 

@@ -5,6 +5,8 @@
 #include "Core/rtk.hpp"
 #include "Core/fp.hpp"
 #include "Features/Memory/MemorySlice.h"
+#include "Features/NPC/NPCActions.h"
+#include "Features/NPC/NPCSelectors.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Soul/SoulSlice.h"
 
@@ -16,8 +18,8 @@ localExportSoulThunk(const FString &NpcId = TEXT("")) {
                  std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FSoul> {
     const FString TargetNpcId =
-        NpcId.IsEmpty() ? NPCSlice::selectActiveNpcId(GetState().NPCs) : NpcId;
-    const auto Npc = NPCSlice::selectNPCById(GetState().NPCs, TargetNpcId);
+        NpcId.IsEmpty() ? NPCSelectors::selectActiveNpcId(GetState().NPCs) : NpcId;
+    const auto Npc = NPCSelectors::selectNPCById(GetState().NPCs, TargetNpcId);
     return !Npc.hasValue
         ? detail::RejectAsync<FSoul>(TEXT("NPC not found"))
         : detail::ResolveAsync(TypeFactory::Soul(
@@ -39,7 +41,7 @@ localImportSoulThunk(const FSoul &Soul) {
             Npc.Id = Soul.Id;
             Npc.Persona = Soul.Persona;
             Npc.State = Soul.State;
-            Dispatch(NPCSlice::Actions::setNPCInfo(Npc));
+            Dispatch(NPCActions::setNPCInfo(Npc));
             Dispatch(SoulSlice::Actions::importSoulSuccess(Soul));
             return detail::ResolveAsync(Soul);
           }();
