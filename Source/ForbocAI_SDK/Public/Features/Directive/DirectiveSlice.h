@@ -10,158 +10,18 @@
 #include "Features/Contracts/ContractsTypes.h"
 #include "Features/Directive/DirectiveActions.h"
 #include "Features/Directive/DirectiveAdapters.h"
+#include "Features/Directive/DirectiveTypes.h"
 
 namespace DirectiveSlice {
 
 using namespace rtk;
 using namespace func;
 
-;
-
-struct FDirectiveReceivedPayload {
-  FString Id;
-  FDirectiveResponse Response;
-};
-
-struct FVerdictValidatedPayload {
-  FString Id;
-  FVerdictResponse Verdict;
-};
-
-struct FDirectiveRunFailedPayload {
-  FString Id;
-  FString Error;
-};
-
-struct FDirectiveSliceState {
-  EntityState<FDirectiveRun> Entities;
-  /**
-   * User Story: As directive orchestration state, I need a selector for the
-   * currently active directive run so downstream components can bind to it.
-   * (From TS)
-   */
-  FString ActiveDirectiveId;
-
-  FDirectiveSliceState() : Entities(GetDirectiveAdapter().getInitialState()) {}
-};
-
-namespace Actions {
-
-/**
- * Returns the cached action creator for directive start events.
- * User Story: As directive orchestration, I need a stable start action creator
- * so thunks and reducers share one contract.
- */
-inline const ActionCreator<FDirectiveRunStartedPayload> &
-directiveRunStartedActionCreator() {
-  static const ActionCreator<FDirectiveRunStartedPayload> ActionCreator =
-      createAction<FDirectiveRunStartedPayload>(
-          TEXT("directive/directiveRunStarted"));
-  return ActionCreator;
+inline FDirectiveSliceState createDirectiveInitialState() {
+  FDirectiveSliceState State;
+  State.Entities = GetDirectiveAdapter().getInitialState();
+  return State;
 }
-
-/**
- * Returns the cached action creator for directive receipt events.
- * User Story: As directive processing, I need a reusable action creator so
- * received directive metadata is dispatched consistently.
- */
-inline const ActionCreator<FDirectiveReceivedPayload> &
-directiveReceivedActionCreator() {
-  static const ActionCreator<FDirectiveReceivedPayload> ActionCreator =
-      createAction<FDirectiveReceivedPayload>(
-          TEXT("directive/directiveReceived"));
-  return ActionCreator;
-}
-
-/**
- * Returns the cached action creator for validated verdict payloads.
- * User Story: As verdict validation flows, I need a reusable action creator so
- * verdict results are dispatched consistently.
- */
-inline const ActionCreator<FVerdictValidatedPayload> &
-verdictValidatedActionCreator() {
-  static const ActionCreator<FVerdictValidatedPayload> ActionCreator =
-      createAction<FVerdictValidatedPayload>(
-          TEXT("directive/verdictValidated"));
-  return ActionCreator;
-}
-
-/**
- * Returns the cached action creator for directive failures.
- * User Story: As directive error handling, I need a reusable failure action
- * creator so broken runs are reported through one contract.
- */
-inline const ActionCreator<FDirectiveRunFailedPayload> &
-directiveRunFailedActionCreator() {
-  static const ActionCreator<FDirectiveRunFailedPayload> ActionCreator =
-      createAction<FDirectiveRunFailedPayload>(
-          TEXT("directive/directiveRunFailed"));
-  return ActionCreator;
-}
-
-/**
- * Returns the cached action creator for removing one NPC's directives.
- * User Story: As NPC teardown flows, I need a stable clear action creator so
- * directive runs are removed whenever an NPC is deleted.
- */
-inline const ActionCreator<FString> &clearDirectivesForNpcActionCreator() {
-  static const ActionCreator<FString> ActionCreator =
-      createAction<FString>(TEXT("directive/clearDirectivesForNpc"));
-  return ActionCreator;
-}
-
-/**
- * Creates an action that records a new directive run.
- * User Story: As directive startup, I need each run captured so later steps can
- * update the right directive entity.
- */
-inline AnyAction directiveRunStarted(const FString &Id, const FString &NpcId,
-                                     const FString &Observation) {
-  return directiveRunStartedActionCreator()(
-      FDirectiveRunStartedPayload{Id, NpcId, Observation});
-}
-
-/**
- * Creates an action that stores a received directive response.
- * User Story: As directive processing, I need memory recall metadata stored so
- * later orchestration can use the server response.
- */
-inline AnyAction directiveReceived(const FString &Id,
-                                   const FDirectiveResponse &Response) {
-  return directiveReceivedActionCreator()(
-      FDirectiveReceivedPayload{Id, Response});
-}
-
-/**
- * Creates an action that stores a validated verdict response.
- * User Story: As verdict handling, I need the validated verdict recorded so
- * reducers can mark the run as completed with final output.
- */
-inline AnyAction verdictValidated(const FString &Id,
-                                  const FVerdictResponse &Verdict) {
-  return verdictValidatedActionCreator()(FVerdictValidatedPayload{Id, Verdict});
-}
-
-/**
- * Creates an action that records a directive run failure.
- * User Story: As directive error handling, I need the failure reason stored so
- * operators can inspect why a run stopped.
- */
-inline AnyAction directiveRunFailed(const FString &Id, const FString &Error) {
-  return directiveRunFailedActionCreator()(
-      FDirectiveRunFailedPayload{Id, Error});
-}
-
-/**
- * Creates an action that removes directives for one NPC.
- * User Story: As NPC teardown flows, I need directive cleanup dispatched so
- * deleted NPCs do not leave stale run state behind.
- */
-inline AnyAction clearDirectivesForNpc(const FString &NpcId) {
-  return clearDirectivesForNpcActionCreator()(NpcId);
-}
-
-} // namespace Actions
 
 /**
  * Builds the directive slice reducer and initial state.
@@ -171,7 +31,7 @@ inline AnyAction clearDirectivesForNpc(const FString &NpcId) {
 inline Slice<FDirectiveSliceState> createDirectiveSlice() {
   return rtk::createSlice<FDirectiveSliceState>(
   TEXT("directive"),
-                                                       FDirectiveSliceState(),
+                                                       createDirectiveInitialState(),
   [](rtk::ActionReducerMapBuilder<FDirectiveSliceState> &Builder) {
     Builder.addCase(Actions::directiveRunStartedActionCreator(),
       [](const FDirectiveSliceState &State,
@@ -280,47 +140,6 @@ inline Slice<FDirectiveSliceState> createDirectiveSlice() {
                   return Next;
                 });
   });
-}
-
-/**
- * Returns the directive run with the requested id, if present.
- * User Story: As directive lookups, I need to resolve one run by id so
- * orchestration can update the correct directive entity.
- */
-inline func::Maybe<FDirectiveRun> selectDirectiveById(
-    const FDirectiveSliceState &State, const FString &Id) {
-  return GetDirectiveAdapter().getSelectors().selectById(State.Entities, Id);
-}
-
-/**
- * Returns every directive run currently stored in the slice.
- * User Story: As directive inspection, I need the full run collection so tools
- * and tests can review current directive state.
- */
-inline TArray<FDirectiveRun> selectAllDirectives(
-    const FDirectiveSliceState &State) {
-  return GetDirectiveAdapter().getSelectors().selectAll(State.Entities);
-}
-
-/**
- * Returns the id of the currently active directive run.
- * User Story: As directive UI binding, I need the active run id so views can
- * focus on the current directive turn.
- */
-inline FString selectActiveDirectiveId(const FDirectiveSliceState &State) {
-  return State.ActiveDirectiveId;
-}
-
-/**
- * Returns the active directive run, if one is selected.
- * User Story: As directive orchestration, I need the active run resolved so
- * downstream steps can operate on the current directive entity.
- */
-inline func::Maybe<FDirectiveRun> selectActiveDirective(
-    const FDirectiveSliceState &State) {
-  return State.ActiveDirectiveId.IsEmpty()
-      ? func::nothing<FDirectiveRun>()
-      : selectDirectiveById(State, State.ActiveDirectiveId);
 }
 
 } // namespace DirectiveSlice

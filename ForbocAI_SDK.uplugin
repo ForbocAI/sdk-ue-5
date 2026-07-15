@@ -10,6 +10,7 @@
     "MarketplaceURL": "",
     "SupportURL": "",
     "Description": "Autonomous AI for Unreal Engine 5.8.",
+    "CanContainContent": true,
     "EnabledByDefault": true,
     "Modules": [
         {

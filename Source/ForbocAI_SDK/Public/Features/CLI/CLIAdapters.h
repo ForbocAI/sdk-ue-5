@@ -1,51 +1,53 @@
 #pragma once
 
 #include "Features/CLI/CLITypes.h"
+#include "Core/fp.hpp"
+#include "Features/Data/DataAdapters.h"
 
 namespace ForbocAI {
 namespace CLI {
 
+inline FString ReadSubcommand(const TSharedPtr<FJsonObject> &Command) {
+  FString Subcommand;
+  Command->TryGetStringField(TEXT("subcommand"), Subcommand);
+  return Subcommand;
+}
+
+inline bool HasNodeSurface(const TSharedPtr<FJsonObject> &Command) {
+  const TArray<TSharedPtr<FJsonValue>> &Surfaces =
+      Command->GetArrayField(TEXT("surfaces"));
+  return func::any_array<TSharedPtr<FJsonValue>>(
+      Surfaces, [](const TSharedPtr<FJsonValue> &Surface) {
+        return Surface.IsValid() && Surface->AsString() == TEXT("node");
+      });
+}
+
+inline TArray<FCommandRoute> ReadNodeParityRoutes() {
+  const TSharedRef<FJsonObject> Root =
+      SDKData::LoadObject(TEXT("cli/commands.json"));
+  const TSharedPtr<FJsonObject> Commands =
+      Root->GetObjectField(TEXT("commands"));
+  const TArray<FJsonObject::FStringType> StoredKeys =
+      func::map_keys(Commands->Values);
+  const TArray<FString> Keys = func::map_array(
+      StoredKeys, [](const FJsonObject::FStringType &Key) {
+        return FString(Key.ToView());
+      });
+  const TArray<FString> NodeKeys = func::filter_array<FString>(
+      Keys, [Commands](const FString &Key) {
+        return HasNodeSurface(Commands->GetObjectField(Key));
+      });
+  return func::map_array<FString, FCommandRoute>(
+      NodeKeys, [Commands](const FString &Key) {
+        const TSharedPtr<FJsonObject> Command =
+            Commands->GetObjectField(Key);
+        return FCommandRoute{Key, Command->GetStringField(TEXT("group")),
+                             ReadSubcommand(Command)};
+      });
+}
+
 inline const TArray<FCommandRoute> &NodeParityRoutes() {
-  static const TArray<FCommandRoute> Routes = {
-      // BEGIN_NODE_CLI_COMMAND_KEYS
-      {TEXT("version"), TEXT("version"), TEXT("")},
-      {TEXT("doctor"), TEXT("doctor"), TEXT("")},
-      {TEXT("status"), TEXT("status"), TEXT("")},
-      {TEXT("setup"), TEXT("setup"), TEXT("")},
-      {TEXT("setup_check"), TEXT("setup"), TEXT("check")},
-      {TEXT("config_set"), TEXT("config"), TEXT("set")},
-      {TEXT("config_get"), TEXT("config"), TEXT("get")},
-      {TEXT("config_list"), TEXT("config"), TEXT("list")},
-      {TEXT("npc_create"), TEXT("npc"), TEXT("create")},
-      {TEXT("npc_state"), TEXT("npc"), TEXT("state")},
-      {TEXT("npc_update"), TEXT("npc"), TEXT("update")},
-      {TEXT("npc_process"), TEXT("npc"), TEXT("process")},
-      {TEXT("npc_chat"), TEXT("npc"), TEXT("chat")},
-      {TEXT("npc_import"), TEXT("npc"), TEXT("import")},
-      {TEXT("soul_export"), TEXT("soul"), TEXT("export")},
-      {TEXT("soul_import"), TEXT("soul"), TEXT("import")},
-      {TEXT("soul_list"), TEXT("soul"), TEXT("list")},
-      {TEXT("soul_chat"), TEXT("soul"), TEXT("chat")},
-      {TEXT("soul_verify"), TEXT("soul"), TEXT("verify")},
-      {TEXT("rules_list"), TEXT("rules"), TEXT("list")},
-      {TEXT("rules_presets"), TEXT("rules"), TEXT("presets")},
-      {TEXT("rules_register"), TEXT("rules"), TEXT("register")},
-      {TEXT("rules_delete"), TEXT("rules"), TEXT("delete")},
-      {TEXT("ghost_run"), TEXT("ghost"), TEXT("run")},
-      {TEXT("ghost_status"), TEXT("ghost"), TEXT("status")},
-      {TEXT("ghost_results"), TEXT("ghost"), TEXT("results")},
-      {TEXT("ghost_stop"), TEXT("ghost"), TEXT("stop")},
-      {TEXT("ghost_history"), TEXT("ghost"), TEXT("history")},
-      {TEXT("memory_list"), TEXT("memory"), TEXT("list")},
-      {TEXT("memory_recall"), TEXT("memory"), TEXT("recall")},
-      {TEXT("memory_store"), TEXT("memory"), TEXT("store")},
-      {TEXT("memory_clear"), TEXT("memory"), TEXT("clear")},
-      {TEXT("memory_export"), TEXT("memory"), TEXT("export")},
-      {TEXT("bridge_validate"), TEXT("bridge"), TEXT("validate")},
-      {TEXT("bridge_rules"), TEXT("bridge"), TEXT("rules")},
-      {TEXT("bridge_preset"), TEXT("bridge"), TEXT("preset")},
-      // END_NODE_CLI_COMMAND_KEYS
-  };
+  static const TArray<FCommandRoute> Routes = ReadNodeParityRoutes();
   return Routes;
 }
 

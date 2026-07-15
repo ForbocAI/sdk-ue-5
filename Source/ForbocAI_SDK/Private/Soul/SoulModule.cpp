@@ -7,6 +7,7 @@
 #include "Store.h"
 #include "Serialization/JsonSerializer.h"
 #include "Features/Soul/SoulSlice.h"
+#include "Features/Soul/SoulAdapters.h"
 #include "Features/Soul/SoulThunks.h"
 
 /**

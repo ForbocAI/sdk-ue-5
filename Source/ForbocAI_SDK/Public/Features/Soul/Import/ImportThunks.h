@@ -7,6 +7,7 @@
 #include "Features/NPC/NPCActions.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Soul/SoulSlice.h"
+#include "Features/Soul/SoulAdapters.h"
 #include "Features/Soul/Transport/TransportAdapters.h"
 #include "Features/Config/ConfigAdapters.h"
 

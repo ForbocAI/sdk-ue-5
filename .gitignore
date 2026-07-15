@@ -5,6 +5,10 @@ Saved/
 DerivedDataCache/
 Build/
 Content/
+!Content/
+!Content/Data/
+!Content/Data/**/
+!Content/Data/**/*.json
 !test-game-cli/Content/
 !test-game-cli/Content/Data/
 !test-game-cli/Content/Data/**/
@@ -14,7 +18,7 @@ Collections/
 Developers/
 User/
 
-# Unreal Assets (code-only SDK — no content)
+# Unreal assets remain excluded; authored SDK JSON is tracked above.
 *.uasset
 *.umap
 

@@ -509,16 +509,36 @@ def find_ts_cli_data(
     )
 
 
-def extract_ue_node_keys(path: Path) -> list[str]:
-    text = read_text(path)
-    match = re.search(
-        r"BEGIN_NODE_CLI_COMMAND_KEYS(?P<body>.*?)END_NODE_CLI_COMMAND_KEYS",
-        text,
-        re.S,
+def iter_ue_data_files(
+    ue_root: Path,
+    source_roots: Sequence[Path],
+) -> tuple[Path, ...]:
+    program_roots = {
+        (ue_root / source_root).parent.parent
+        for source_root in source_roots
+    }
+    return tuple(
+        sorted(
+            (
+                path
+                for program_root in program_roots
+                for path in (program_root / "Content" / "Data").rglob("*.json")
+                if path.is_file()
+            ),
+            key=lambda path: path.as_posix(),
+        )
     )
-    if not match:
-        raise ValueError(f"Could not find UE node CLI command marker block in {path}")
-    return re.findall(r'\{\s*TEXT\("([^"]+)"\)', match.group("body"))
+
+
+def find_ue_cli_data(
+    ue_root: Path,
+    source_roots: Sequence[Path],
+) -> tuple[Path, list[str]]:
+    return find_matrix_source(
+        iter_ue_data_files(ue_root, source_roots),
+        extract_ts_node_keys,
+        "UE CLI authored-data catalog",
+    )
 
 
 def find_matrix_source(
@@ -1202,15 +1222,7 @@ def check_cli_command_parity(
     ue_source_roots: Sequence[Path],
 ) -> tuple[int, list[str], list[str]]:
     ts_matrix, ts_keys = find_ts_cli_data(ts_root, ts_source_roots)
-    ue_matrix, ue_keys = find_matrix_source(
-        tuple(
-            path
-            for path in iter_ue_files(ue_root, ue_source_roots)
-            if path.suffix in UE_SOURCE_SUFFIXES
-        ),
-        extract_ue_node_keys,
-        "UE CLI command matrix",
-    )
+    ue_matrix, ue_keys = find_ue_cli_data(ue_root, ue_source_roots)
 
     missing = [key for key in ts_keys if key not in ue_keys]
     extra = [key for key in ue_keys if key not in ts_keys]
@@ -1220,7 +1232,7 @@ def check_cli_command_parity(
     print(f"[info] TS SDK root: {ts_root}")
     print(f"[info] UE SDK root: {ue_root}")
     print(f"[info] TS CLI authored data: {ts_matrix}")
-    print(f"[info] UE CLI matrix: {ue_matrix}")
+    print(f"[info] UE CLI authored data: {ue_matrix}")
 
     if not missing and not extra and order_matches:
         print(f"[ok] UE mirrors TS NODE_CLI_COMMAND_KEYS ({len(ts_keys)} commands)")
@@ -1230,14 +1242,13 @@ def check_cli_command_parity(
         print("[fail] Commands present in TS but missing in UE:")
         print("\n".join(f"  - {value}" for value in missing))
     if extra:
-        print("[fail] Commands present in UE node-parity block but absent from TS:")
+        print("[fail] Commands present in UE authored data but absent from TS:")
         print("\n".join(f"  - {value}" for value in extra))
     if not order_matches and not missing and not extra:
         print("[fail] Command sets match, but order differs from TS matrix.")
 
     print("")
-    print("[hint] Update Source/ForbocAI_SDK/Public/Features/CLI/CLIAdapters.h")
-    print("       so the BEGIN_NODE_CLI_COMMAND_KEYS block mirrors TS exactly.")
+    print("[hint] Update the UE package Content/Data CLI catalog to mirror TS.")
     return 1, ts_keys, ue_keys
 
 

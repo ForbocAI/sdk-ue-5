@@ -7,6 +7,7 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "Features/Directive/DirectiveSlice.h"
+#include "Features/Directive/DirectiveSelectors.h"
 #include "HAL/PlatformProcess.h"
 #include "Misc/AutomationTest.h"
 #include "Features/NPC/NPCSelectors.h"

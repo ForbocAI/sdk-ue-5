@@ -9,6 +9,7 @@
 #include "Features/NPC/NPCSelectors.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Soul/SoulSlice.h"
+#include "Features/Soul/SoulAdapters.h"
 
 namespace rtk {
 

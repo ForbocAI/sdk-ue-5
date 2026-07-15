@@ -42,7 +42,6 @@ struct FGhostTestResult {
 
   FGhostTestResult() : bPassed(false), Iteration(0), Duration(0) {}
 };
-
 USTRUCT(BlueprintType)
 struct FGhostHistoryEntry {
   GENERATED_BODY()
@@ -282,33 +281,3 @@ struct FGhostHistoryResponse {
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
   TArray<FGhostHistoryEntry> Sessions;
 };
-
-namespace TypeFactory {
-
-inline FGhostConfig
-GhostConfig(const FAgent &Agent,
-            const TArray<FString> &Scenarios = TArray<FString>(),
-            int32 MaxIterations = 100, bool bVerbose = false,
-            const FString &ApiUrl = TEXT(""), const FString &ApiKey = TEXT(""),
-            const FString &TestSuite = TEXT(""), int32 Duration = 300) {
-  FGhostConfig Config;
-  Config.Agent = Agent;
-  Config.Scenarios = Scenarios;
-  Config.MaxIterations = MaxIterations;
-  Config.bVerbose = bVerbose;
-  Config.ApiUrl = ApiUrl;
-  Config.ApiKey = ApiKey;
-  Config.TestSuite = TestSuite;
-  Config.Duration = Duration;
-  return Config;
-}
-
-inline FGhostRunRequest GhostRunRequest(const FString &TestSuite,
-                                        int32 Duration = 300) {
-  FGhostRunRequest Request;
-  Request.TestSuite = TestSuite;
-  Request.Duration = Duration;
-  return Request;
-}
-
-} // namespace TypeFactory
