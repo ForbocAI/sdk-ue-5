@@ -136,6 +136,37 @@ inline const FEndpointConfigurationData &endpointData() {
 }
 
 /**
+ * @fn inline TArray<FString> endpointNames(const FEndpointNameData &Names)
+ * User Story: As an API inventory consumer, I need every authored endpoint
+ * name projected from typed configuration so registry completeness is dynamic.
+ */
+inline TArray<FString> endpointNames(const FEndpointNameData &Names) {
+  return {Names.GetApiStatus,
+          Names.PostNpcProcess,
+          Names.GetBridgeValidation,
+          Names.GetBridgeRules,
+          Names.PostGhostRun,
+          Names.GetGhostStatus,
+          Names.GetGhostResults,
+          Names.PostGhostStop,
+          Names.GetGhostHistory,
+          Names.PostBridgePreset,
+          Names.GetRulesets,
+          Names.GetRulePresets,
+          Names.PostSoulExportPreparation,
+          Names.PostSoulExportConfirmation,
+          Names.PostSoulVerification,
+          Names.PostSoulStorageUpload,
+          Names.GetSoulStorageDownload,
+          Names.GetSoulStorageVerification,
+          Names.PostSoulStoragePreparation,
+          Names.DeleteSoulStoragePreparation,
+          Names.PostSoulStorageCommit,
+          Names.GetSoulStorageCatalog,
+          Names.GetSoulStorageEntry};
+}
+
+/**
  * @fn inline FString encodePathSegment(const FString &Value)
  * User Story: As an API endpoint consumer, I need dynamic identifiers encoded before route composition so values cannot alter route structure.
  */

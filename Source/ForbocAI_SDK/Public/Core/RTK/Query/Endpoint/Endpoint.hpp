@@ -28,6 +28,18 @@ template <typename Arg, typename Result> struct ApiEndpoint {
   ApiEndpoint() : Type(DefinitionType::query) {}
 };
 
+/**
+ * Stores type-erased endpoint registration metadata on an API slice.
+ * User Story: As an RTK Query consumer, I need injected endpoint names, kinds,
+ * and cache tags inspectable without erasing their typed request executors.
+ */
+struct FApiEndpointMetadata {
+  FString EndpointName;
+  DefinitionType Type = DefinitionType::query;
+  TArray<FApiEndpointTag> providesTags;
+  TArray<FApiEndpointTag> invalidatesTags;
+};
+
 template <typename Arg, typename Result>
 using BaseEndpointDefinition = ApiEndpoint<Arg, Result>;
 
@@ -171,6 +183,7 @@ template <typename State> struct Api {
   FString ReducerPath;
   TArray<FString> TagTypes;
   ApiModules Modules;
+  TMap<FString, FApiEndpointMetadata> Endpoints;
 };
 
 template <typename State> using CreateApi = Api<State>;

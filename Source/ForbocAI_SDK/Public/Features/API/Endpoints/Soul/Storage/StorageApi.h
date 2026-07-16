@@ -20,7 +20,7 @@ postSoulStoragePreparation(const FSoul &Soul) {
         return SoulStorageEndpoint::storageQueryResult(
             ::SoulStorage::prepareSoulStorageAdapter(Value));
       },
-      {}, {Configuration::endpointTag(Data.Tags.Soul)},
+      {}, {Configuration::endpointTag(Data.Tags.Soul, Soul.Id)},
       rtk::DefinitionType::mutation);
 }
 
@@ -29,6 +29,8 @@ inline Thunk<rtk::FEmptyPayload>
 deleteSoulStoragePreparation(const FString &TxId) {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
+  const Transport::FTransportQueryData &TransportData =
+      Transport::transportQueryData();
   return Detail::MakeEndpoint<FSoulStorageTransactionRequest,
                               rtk::FEmptyPayload>(
       Data.Names.DeleteSoulStoragePreparation, {TxId},
@@ -36,7 +38,8 @@ deleteSoulStoragePreparation(const FString &TxId) {
         return SoulStorageEndpoint::storageQueryResult(
             ::SoulStorage::discardSoulStorageAdapter(Request.TxId));
       },
-      {}, {}, rtk::DefinitionType::mutation);
+      {}, {Configuration::endpointTag(TransportData.Tags.Soul, TxId)},
+      rtk::DefinitionType::mutation);
 }
 
 /** User Story: As a confirmed Soul exporter, I need durable catalog publication represented as an RTK Query mutation. @fn inline Thunk<FSoulCatalogEntry> postSoulStorageCommit(const FSoulStorageCommit &Commit) */
@@ -52,7 +55,11 @@ postSoulStorageCommit(const FSoulStorageCommit &Commit) {
         return SoulStorageEndpoint::storageQueryResult(
             ::SoulStorage::commitSoulStorageAdapter(Value));
       },
-      {}, {Configuration::endpointTag(Data.Tags.Soul)},
+      {}, {Configuration::endpointTag(
+               Data.Tags.Soul,
+               Configuration::endpointData().TagIds.List),
+           Configuration::endpointTag(Data.Tags.Soul,
+                                      Commit.Receipt.TxId)},
       rtk::DefinitionType::mutation);
 }
 

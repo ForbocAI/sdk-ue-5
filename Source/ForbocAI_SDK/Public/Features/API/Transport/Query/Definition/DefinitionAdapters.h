@@ -24,7 +24,9 @@ inline ThunkAction<Result, FRuntimeState> MakeEndpoint(
   Endpoint.providesTags = providesTags;
   Endpoint.invalidatesTags = invalidatesTags;
   Endpoint.RequestBuilder = RequestBuilder;
-  return injectEndpoints(api, Endpoint)(ArgValue);
+  rtk::Api<FRuntimeState> &InjectedApi =
+      rtk::injectEndpoints(api, Endpoint);
+  return rtk::initiate(InjectedApi, Endpoint)(ArgValue);
 }
 
 /**

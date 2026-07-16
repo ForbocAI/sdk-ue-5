@@ -24,7 +24,9 @@ inline Thunk<FSoulExportPreparation> postSoulExportPreparation(
            Data.Segments.Export})),
       Request, Detail::EncodeSoulExportPreparationRequest,
       Detail::DecodeSoulExportPreparationResponse,
-      {Configuration::endpointTag(TransportData.Tags.Soul)});
+      {Configuration::endpointTag(TransportData.Tags.Soul, NpcId),
+       Configuration::endpointTag(TransportData.Tags.Soul,
+                                  Request.TransactionId)});
 }
 
 /**
@@ -46,7 +48,10 @@ inline Thunk<FSoulExportResponse> postSoulExportConfirmation(
            Data.Segments.Confirm})),
       Request, Detail::EncodeSoulExportConfirmationRequest,
       Detail::DecodeSoulExportConfirmationResponse,
-      {Configuration::endpointTag(TransportData.Tags.Soul)});
+      {Configuration::endpointTag(TransportData.Tags.Soul,
+                                  Request.TransactionId),
+       Configuration::endpointTag(TransportData.Tags.Soul,
+                                  Data.TagIds.List)});
 }
 
 /**
@@ -59,13 +64,16 @@ postSoulVerification(const FString &TxId,
                      const FSoulVerificationRequest &Request) {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  return Detail::MakePostWithCodec<FSoulVerificationRequest,
-                                   FSoulVerifyResult>(
+  const Transport::FTransportQueryData &TransportData =
+      Transport::transportQueryData();
+  return Detail::MakePostQueryWithCodec<FSoulVerificationRequest,
+                                        FSoulVerifyResult>(
       Data.Names.PostSoulVerification,
       Configuration::apiEndpoint(Configuration::endpointPath(
           {Data.Segments.Souls, TxId, Data.Segments.Verify})),
       Request, Detail::EncodeSoulVerificationRequest,
-      Detail::DecodeSoulVerifyResponse);
+      Detail::DecodeSoulVerifyResponse,
+      {Configuration::endpointTag(TransportData.Tags.Soul, TxId)});
 }
 
 } // namespace APISlice::Endpoints

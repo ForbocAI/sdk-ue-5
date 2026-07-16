@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/FP/Map/Map.hpp"
 #include "Core/RTK/Query/Endpoint/Endpoint.hpp"
 #include "Core/RTK/Thunk/Thunk.hpp"
 
@@ -84,18 +85,57 @@ unwrapEndpointResult(QueryReturnValue<Result> QueryResult) {
 }
 
 /**
- * @fn template <typename State, typename Arg, typename Result> AsyncThunkConfig<Result, Arg, State> injectEndpoints(const Api<State> &Slice, const ApiEndpoint<Arg, Result> &EndpointDesc)
- * @brief Injects a specific endpoint into an existing API slice definition.
- * @param Slice The base API slice.
- * @param EndpointDesc The endpoint descriptor.
- * @return AsyncThunkConfig<Result, Arg, State> A configured thunk managing the endpoint request lifecycle.
+ * @fn template <typename State, typename Arg, typename Result> Api<State> &injectEndpoints(Api<State> &Slice, const ApiEndpoint<Arg, Result> &EndpointDesc, bool OverrideExisting = false)
+ * @brief Registers a typed endpoint on an existing API slice and returns that same slice.
+ * @param Slice The API slice registry to extend.
+ * @param EndpointDesc The endpoint descriptor to register.
+ * @param OverrideExisting Whether a same-name definition may replace its metadata.
+ * @return Api<State> & The same API slice instance with the endpoint registered.
  *
- * User Story: As an API developer, I need to dynamically inject endpoints into a base API slice without altering the slice core.
+ * User Story: As an API developer, I need injectEndpoints to extend and return
+ * the same API object so registration remains separate from request initiation.
+ */
+template <typename State, typename Arg, typename Result>
+Api<State> &injectEndpoints(Api<State> &Slice,
+                            const ApiEndpoint<Arg, Result> &EndpointDesc,
+                            bool OverrideExisting = false) {
+  check(!EndpointDesc.EndpointName.IsEmpty());
+  const auto IsDeclaredTag = [&Slice](const FApiEndpointTag &Tag) {
+    return Tag.Type.IsEmpty() || Slice.TagTypes.Contains(Tag.Type);
+  };
+  check(func::all_array<FApiEndpointTag>(EndpointDesc.providesTags,
+                                         IsDeclaredTag) &&
+        func::all_array<FApiEndpointTag>(EndpointDesc.invalidatesTags,
+                                         IsDeclaredTag));
+  const FApiEndpointMetadata Metadata{
+      EndpointDesc.EndpointName, EndpointDesc.Type, EndpointDesc.providesTags,
+      EndpointDesc.invalidatesTags};
+  const bool ShouldRegister =
+      OverrideExisting || !Slice.Endpoints.Contains(EndpointDesc.EndpointName);
+  Slice.Endpoints =
+      ShouldRegister
+          ? func::upsert_map_value<FString, FApiEndpointMetadata>(
+                Slice.Endpoints, EndpointDesc.EndpointName, Metadata,
+                [Metadata](const FApiEndpointMetadata &) { return Metadata; })
+          : Slice.Endpoints;
+  return Slice;
+}
+
+/**
+ * @fn template <typename State, typename Arg, typename Result> AsyncThunkConfig<Result, Arg, State> initiate(const Api<State> &Slice, const ApiEndpoint<Arg, Result> &EndpointDesc)
+ * @brief Creates the executable lifecycle thunk for a registered endpoint.
+ * @param Slice The API slice containing the endpoint registration.
+ * @param EndpointDesc The typed endpoint request executor.
+ * @return AsyncThunkConfig<Result, Arg, State> The endpoint initiation thunk.
+ *
+ * User Story: As an RTK Query consumer, I need endpoint initiation separate
+ * from injection so registration and execution have the same roles as RTK Query.
  */
 template <typename State, typename Arg, typename Result>
 AsyncThunkConfig<Result, Arg, State>
-injectEndpoints(const Api<State> &Slice,
-               const ApiEndpoint<Arg, Result> &EndpointDesc) {
+initiate(const Api<State> &Slice,
+         const ApiEndpoint<Arg, Result> &EndpointDesc) {
+  check(Slice.Endpoints.Contains(EndpointDesc.EndpointName));
   const FString ThunkPrefix = Slice.ReducerPath + TEXT("/") + EndpointDesc.EndpointName;
   return createAsyncThunk<Result, Arg, State>(
       ThunkPrefix,

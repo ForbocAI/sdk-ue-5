@@ -5,9 +5,35 @@
 namespace Testing::RTK::ToolkitSurface {
 
 struct FToolkitSurfaceNames {
+  FString Api;
   FString ActionAndUtility;
   FString AutoBatch;
   FString Middleware;
+};
+
+struct FApiFixture {
+  FString EndpointName;
+  FString TagType;
+  FString TagId;
+  FString FailureArgument;
+  FString FailureMessage;
+  FString ReducerPath;
+  FString SuccessArgument;
+  FString PendingActionType;
+  FString FulfilledActionType;
+  FString RejectedActionType;
+  FString SerializedQueryKey;
+  FString RetryFailureMessage;
+  int32 EndpointResult;
+  int32 PendingEventIndex;
+  int32 TerminalEventIndex;
+  int32 InitialRetryAttempts;
+  int32 FirstFailureAttempt;
+  int32 RetryResult;
+  int32 MaxRetries;
+  int32 InitialRetryValue;
+  int32 MissingRetryValue;
+  int32 ExpectedRetryAttempts;
 };
 
 struct FPreparedActionFixture {
@@ -59,6 +85,22 @@ struct FMiddlewareFixture {
 };
 
 struct FToolkitSurfaceLabels {
+  FString ApiEndpointType;
+  FString ApiReducerPath;
+  FString ApiTagTypes;
+  FString ApiIdentity;
+  FString ApiEndpointCount;
+  FString ApiEndpointLookup;
+  FString ApiDefinitionType;
+  FString ApiProvidesTags;
+  FString ApiIdempotence;
+  FString ApiSuccessPending;
+  FString ApiSuccessFulfilled;
+  FString ApiFailurePending;
+  FString ApiFailureRejected;
+  FString ApiSerializedArgs;
+  FString ApiRetryAttempts;
+  FString ApiRetryResult;
   FString PreparedPayload;
   FString PreparedTransform;
   FString PreparedMetadata;
@@ -89,6 +131,7 @@ struct FToolkitSurfaceLabels {
 
 struct FToolkitSurfaceFixtures {
   FToolkitSurfaceNames Names;
+  FApiFixture Api;
   FPreparedActionFixture Prepared;
   FUtilityFixture Utility;
   FAutoBatchFixture AutoBatch;

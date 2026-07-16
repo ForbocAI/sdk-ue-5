@@ -60,6 +60,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  */
 bool FApiEndpointConstructionTest::RunTest(const FString &Parameters) {
   using namespace APISlice::Endpoints;
+  APISlice::api.Endpoints.Empty();
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
   const FString Empty;
@@ -112,6 +113,14 @@ bool FApiEndpointConstructionTest::RunTest(const FString &Parameters) {
                           getSoulStorageCatalog(Data.Defaults.SoulListLimit));
   TestEndpointConstructed(*this, Data.Names.GetSoulStorageEntry,
                           getSoulStorageEntry(Empty));
+
+  const TArray<FString> AuthoredNames =
+      Configuration::endpointNames(Data.Names);
+  TestEqual(Data.Names.GetApiStatus,
+            APISlice::api.Endpoints.Num(), AuthoredNames.Num());
+  for (const FString &EndpointName : AuthoredNames) {
+    TestTrue(EndpointName, APISlice::api.Endpoints.Contains(EndpointName));
+  }
 
   return true;
 }

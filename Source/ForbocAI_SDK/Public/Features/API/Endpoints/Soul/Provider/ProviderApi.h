@@ -67,7 +67,7 @@ postSoulStorageUpload(const FString &TxId) {
                 });
         return SoulStorageEndpoint::storageQueryResult(Operation);
       },
-      {}, {Configuration::endpointTag(TransportData.Tags.Soul)},
+      {}, {Configuration::endpointTag(TransportData.Tags.Soul, TxId)},
       rtk::DefinitionType::mutation);
 }
 

@@ -44,7 +44,10 @@ inline rtk::ApiEndpoint<FString, FString> contractEndpoint() {
 /** User Story: As a features systems contract consumer, I need to invoke get test game contract thunk through a stable signature so the features systems contract workflow remains explicit and composable. @fn inline rtk::ThunkAction<FString, FTestGameState> getTestGameContractThunk(const FString &ApiUrl) */
 inline rtk::ThunkAction<FString, FTestGameState>
 getTestGameContractThunk(const FString &ApiUrl) {
-  return rtk::injectEndpoints(testGameApi, contractEndpoint())(ApiUrl);
+  const rtk::ApiEndpoint<FString, FString> Endpoint = contractEndpoint();
+  rtk::Api<FTestGameState> &InjectedApi =
+      rtk::injectEndpoints(testGameApi, Endpoint);
+  return rtk::initiate(InjectedApi, Endpoint)(ApiUrl);
 }
 
 } // namespace ContractApi

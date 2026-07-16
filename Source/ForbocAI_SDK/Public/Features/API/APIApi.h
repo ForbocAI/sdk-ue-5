@@ -13,7 +13,9 @@ inline bool providesTags(const rtk::Api<FRuntimeState> &apiDefinition) {
   return !apiDefinition.TagTypes.IsEmpty();
 }
 
-inline rtk::Api<FRuntimeState> api = []() {
+namespace Detail {
+
+inline const rtk::Api<FRuntimeState> baseApi = []() {
   const Transport::FTransportQueryData &Data =
       Transport::transportQueryData();
   rtk::Api<FRuntimeState> apiDefinition = rtk::createApi<FRuntimeState>(
@@ -23,6 +25,10 @@ inline rtk::Api<FRuntimeState> api = []() {
   check(providesTags(apiDefinition));
   return apiDefinition;
 }();
+
+} // namespace Detail
+
+inline rtk::Api<FRuntimeState> api = Detail::baseApi;
 
 } // namespace APISlice
 

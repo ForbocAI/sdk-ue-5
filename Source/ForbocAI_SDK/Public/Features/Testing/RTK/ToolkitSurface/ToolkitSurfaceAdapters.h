@@ -11,9 +11,40 @@ ReadNames(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =
       DataAdapters::ReadObjectField(Source, TEXT("names"));
   return {
+      DataAdapters::ReadStringField(Object, TEXT("api")),
       DataAdapters::ReadStringField(Object, TEXT("actionAndUtility")),
       DataAdapters::ReadStringField(Object, TEXT("autoBatch")),
       DataAdapters::ReadStringField(Object, TEXT("middleware")),
+  };
+}
+
+/** User Story: As a testing RTK API consumer, I need typed API fixtures so endpoint registration and initiation tests remain authored-data driven. @fn inline FApiFixture ReadApi(const DataAdapters::FSettingsSource &Source) */
+inline FApiFixture ReadApi(const DataAdapters::FSettingsSource &Source) {
+  const TSharedRef<FJsonObject> Object =
+      DataAdapters::ReadObjectField(Source, TEXT("api"));
+  return {
+      DataAdapters::ReadStringField(Object, TEXT("endpointName")),
+      DataAdapters::ReadStringField(Object, TEXT("tagType")),
+      DataAdapters::ReadStringField(Object, TEXT("tagId")),
+      DataAdapters::ReadStringField(Object, TEXT("failureArgument")),
+      DataAdapters::ReadStringField(Object, TEXT("failureMessage")),
+      DataAdapters::ReadStringField(Object, TEXT("reducerPath")),
+      DataAdapters::ReadStringField(Object, TEXT("successArgument")),
+      DataAdapters::ReadStringField(Object, TEXT("pendingActionType")),
+      DataAdapters::ReadStringField(Object, TEXT("fulfilledActionType")),
+      DataAdapters::ReadStringField(Object, TEXT("rejectedActionType")),
+      DataAdapters::ReadStringField(Object, TEXT("serializedQueryKey")),
+      DataAdapters::ReadStringField(Object, TEXT("retryFailureMessage")),
+      DataAdapters::ReadNumberField(Object, TEXT("endpointResult")),
+      DataAdapters::ReadNumberField(Object, TEXT("pendingEventIndex")),
+      DataAdapters::ReadNumberField(Object, TEXT("terminalEventIndex")),
+      DataAdapters::ReadNumberField(Object, TEXT("initialRetryAttempts")),
+      DataAdapters::ReadNumberField(Object, TEXT("firstFailureAttempt")),
+      DataAdapters::ReadNumberField(Object, TEXT("retryResult")),
+      DataAdapters::ReadNumberField(Object, TEXT("maxRetries")),
+      DataAdapters::ReadNumberField(Object, TEXT("initialRetryValue")),
+      DataAdapters::ReadNumberField(Object, TEXT("missingRetryValue")),
+      DataAdapters::ReadNumberField(Object, TEXT("expectedRetryAttempts")),
   };
 }
 
@@ -97,6 +128,22 @@ ReadLabels(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =
       DataAdapters::ReadObjectField(Source, TEXT("labels"));
   return {
+      DataAdapters::ReadStringField(Object, TEXT("apiEndpointType")),
+      DataAdapters::ReadStringField(Object, TEXT("apiReducerPath")),
+      DataAdapters::ReadStringField(Object, TEXT("apiTagTypes")),
+      DataAdapters::ReadStringField(Object, TEXT("apiIdentity")),
+      DataAdapters::ReadStringField(Object, TEXT("apiEndpointCount")),
+      DataAdapters::ReadStringField(Object, TEXT("apiEndpointLookup")),
+      DataAdapters::ReadStringField(Object, TEXT("apiDefinitionType")),
+      DataAdapters::ReadStringField(Object, TEXT("apiProvidesTags")),
+      DataAdapters::ReadStringField(Object, TEXT("apiIdempotence")),
+      DataAdapters::ReadStringField(Object, TEXT("apiSuccessPending")),
+      DataAdapters::ReadStringField(Object, TEXT("apiSuccessFulfilled")),
+      DataAdapters::ReadStringField(Object, TEXT("apiFailurePending")),
+      DataAdapters::ReadStringField(Object, TEXT("apiFailureRejected")),
+      DataAdapters::ReadStringField(Object, TEXT("apiSerializedArgs")),
+      DataAdapters::ReadStringField(Object, TEXT("apiRetryAttempts")),
+      DataAdapters::ReadStringField(Object, TEXT("apiRetryResult")),
       DataAdapters::ReadStringField(Object, TEXT("preparedPayload")),
       DataAdapters::ReadStringField(Object, TEXT("preparedTransform")),
       DataAdapters::ReadStringField(Object, TEXT("preparedMetadata")),
@@ -132,7 +179,7 @@ inline const FToolkitSurfaceFixtures &ToolkitSurfaceFixtures() {
       DataAdapters::SettingsSource(
           TEXT("ForbocAI_SDK"), TEXT("Data/tests/rtk/toolkit-surface.json"));
   static const FToolkitSurfaceFixtures Fixtures = {
-      ReadNames(Source), ReadPrepared(Source), ReadUtility(Source),
+      ReadNames(Source), ReadApi(Source), ReadPrepared(Source), ReadUtility(Source),
       ReadAutoBatch(Source), ReadMiddleware(Source), ReadLabels(Source),
   };
   return Fixtures;
