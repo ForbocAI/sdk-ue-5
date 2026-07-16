@@ -1,55 +1,8 @@
 #include "ApiEndpointTestAdapters.h"
 
 #include "Features/Config/ConfigAdapters.h"
-#include "Features/API/Endpoints/Arweave/ArweaveApi.h"
-#include "Store.h"
 
 // @covers:api:getApiStatus
-// @covers:api:postArweaveUpload
-// @covers:api:postArweaveDownload
-
-namespace {
-
-void TestArweaveMissingUrls(FAutomationTestBase &Test) {
-  rtk::EnhancedStore<FRuntimeState> Store = createRuntimeStore();
-  bool bUploadResolved = false;
-  bool bUploadRejected = false;
-  bool bDownloadResolved = false;
-  bool bDownloadRejected = false;
-  FString UploadError;
-  FString DownloadError;
-  FArweaveUploadInstruction UploadInstruction;
-  FArweaveDownloadInstruction DownloadInstruction;
-
-  Store.dispatch(APISlice::Endpoints::postArweaveUpload(
-                     UploadInstruction, FString()))
-      .then([&bUploadResolved](const FArweaveUploadResult &) {
-        bUploadResolved = true;
-      })
-      .catch_([&bUploadRejected, &UploadError](std::string Message) {
-        bUploadRejected = true;
-        UploadError = UTF8_TO_TCHAR(Message.c_str());
-      })
-      .execute();
-  Store.dispatch(
-           APISlice::Endpoints::postArweaveDownload(DownloadInstruction))
-      .then([&bDownloadResolved](const FArweaveDownloadResult &) {
-        bDownloadResolved = true;
-      })
-      .catch_([&bDownloadRejected, &DownloadError](std::string Message) {
-        bDownloadRejected = true;
-        DownloadError = UTF8_TO_TCHAR(Message.c_str());
-      })
-      .execute();
-
-  const FString Label(ANSI_TO_TCHAR(__FUNCTION__));
-  Test.TestFalse(Label, bUploadResolved);
-  Test.TestTrue(Label, bUploadRejected && !UploadError.IsEmpty());
-  Test.TestFalse(Label, bDownloadResolved);
-  Test.TestTrue(Label, bDownloadRejected && !DownloadError.IsEmpty());
-}
-
-} // namespace
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FApiEndpointStatusNoAuthTest,
@@ -57,11 +10,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
+/** User Story: As a tests integration api consumer, I need to invoke run test through a stable signature so the tests integration api workflow remains explicit and composable. @fn bool FApiEndpointStatusNoAuthTest::RunTest(const FString &Parameters) */
 bool FApiEndpointStatusNoAuthTest::RunTest(const FString &Parameters) {
-  TestArweaveMissingUrls(*this);
-  if (ApiEndpointTests::ShouldSkip()) {
-    return true;
-  }
   SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(), TEXT(""));
 
   auto State = MakeShared<FApiEndpointTestState>();
@@ -88,15 +38,17 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
+/** User Story: As a tests integration api consumer, I need to invoke run test through a stable signature so the tests integration api workflow remains explicit and composable. @fn bool FApiEndpointNotFoundTest::RunTest(const FString &Parameters) */
 bool FApiEndpointNotFoundTest::RunTest(const FString &Parameters) {
-  if (ApiEndpointTests::ShouldSkip()) {
+  const FString Key = ApiEndpointTests::RequiredApiKey(*this);
+  if (Key.IsEmpty()) {
     return true;
   }
-  SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(), TEXT(""));
+  SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(), Key);
 
   auto State = MakeShared<FApiEndpointTestState>();
   ADD_LATENT_AUTOMATION_COMMAND(FHttpGetWaitComplete(
-      ApiEndpointTests::BaseUrl() + TEXT("/nonexistent-path-404"), TEXT(""),
+      ApiEndpointTests::BaseUrl() + TEXT("/nonexistent-path-404"), Key,
       State));
   ADD_LATENT_AUTOMATION_COMMAND(FDelayedFunctionLatentCommand(
       [this, State]() {

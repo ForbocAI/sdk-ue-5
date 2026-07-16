@@ -20,8 +20,10 @@ struct FTerminalLineViewModel {
   ETerminalLineLevel Level;
   FString Text;
 
+  /** User Story: As a features systems terminal consumer, I need to invoke fterminal line view model through a stable signature so the features systems terminal workflow remains explicit and composable. @fn FTerminalLineViewModel() */
   FTerminalLineViewModel()
       : Level(ETerminalLineLevel::Display) {}
+  /** User Story: As a features systems terminal consumer, I need to invoke fterminal line view model through a stable signature so the features systems terminal workflow remains explicit and composable. @fn FTerminalLineViewModel(ETerminalLineLevel InLevel, FString InText) */
   FTerminalLineViewModel(ETerminalLineLevel InLevel, FString InText)
       : Level(InLevel), Text(MoveTemp(InText)) {}
 };
@@ -31,6 +33,7 @@ struct FTerminalProgressViewModel {
 };
 
 namespace TerminalSelectorsDetail {
+/** User Story: As a features systems terminal consumer, I need to invoke is blocked through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline bool IsBlocked(const TArray<FPosition> &Blocked, const FPosition &Pos, int32 Index) */
 inline bool IsBlocked(const TArray<FPosition> &Blocked, const FPosition &Pos,
                       int32 Index) {
   return Index >= Blocked.Num()
@@ -39,6 +42,7 @@ inline bool IsBlocked(const TArray<FPosition> &Blocked, const FPosition &Pos,
                                       : IsBlocked(Blocked, Pos, Index + 1));
 }
 
+/** User Story: As a features systems terminal consumer, I need to invoke npc cell at through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline TCHAR NpcCellAt(const TArray<FGameNPC> &Npcs, const FPosition &Pos, int32 Index) */
 inline TCHAR NpcCellAt(const TArray<FGameNPC> &Npcs, const FPosition &Pos,
                        int32 Index) {
   return Index >= Npcs.Num()
@@ -51,6 +55,7 @@ inline TCHAR NpcCellAt(const TArray<FGameNPC> &Npcs, const FPosition &Pos,
                     : NpcCellAt(Npcs, Pos, Index + 1));
 }
 
+/** User Story: As a features systems terminal consumer, I need to invoke cell at through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline TCHAR CellAt(const FPosition &Pos, const FTestGameState &State) */
 inline TCHAR CellAt(const FPosition &Pos, const FTestGameState &State) {
   return IsBlocked(State.Grid.Blocked, Pos, 0)
              ? TEXT('#')
@@ -60,6 +65,7 @@ inline TCHAR CellAt(const FPosition &Pos, const FTestGameState &State) {
                                 0));
 }
 
+/** User Story: As a features systems terminal consumer, I need to invoke render row at through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline FString RenderRowAt(const FTestGameState &State, int32 Y, int32 X, int32 Width, const FString &Acc) */
 inline FString RenderRowAt(const FTestGameState &State, int32 Y, int32 X,
                             int32 Width, const FString &Acc) {
   return X >= Width
@@ -69,6 +75,7 @@ inline FString RenderRowAt(const FTestGameState &State, int32 Y, int32 X,
                                CellAt(FPosition(X, Y), State));
 }
 
+/** User Story: As a features systems terminal consumer, I need to invoke render rows through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline FString RenderRows(const FTestGameState &State, int32 Y, int32 Height, const FString &Acc) */
 inline FString RenderRows(const FTestGameState &State, int32 Y, int32 Height,
                            const FString &Acc) {
   return Y >= Height
@@ -80,6 +87,7 @@ inline FString RenderRows(const FTestGameState &State, int32 Y, int32 Height,
 }
 } // namespace TerminalSelectorsDetail
 
+/** User Story: As a features systems terminal consumer, I need to invoke select terminal render state through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline FTerminalRenderState SelectTerminalRenderState( const FTestGameState &State) */
 inline FTerminalRenderState SelectTerminalRenderState(
     const FTestGameState &State) {
   FTerminalRenderState ViewModel;
@@ -91,6 +99,7 @@ inline FTerminalRenderState SelectTerminalRenderState(
 
 namespace TerminalProgressSelectorsDetail {
 
+/** User Story: As a features systems terminal consumer, I need to invoke append transcript lines through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline void AppendTranscriptLines( const TArray<FTranscriptEntry> &Entries, int32 Index, TArray<FTerminalLineViewModel> &Lines) */
 inline void AppendTranscriptLines(
     const TArray<FTranscriptEntry> &Entries, int32 Index,
     TArray<FTerminalLineViewModel> &Lines) {
@@ -113,6 +122,7 @@ inline void AppendTranscriptLines(
 
 } // namespace TerminalProgressSelectorsDetail
 
+/** User Story: As a features systems terminal consumer, I need to invoke select terminal progress view model through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline FTerminalProgressViewModel SelectTerminalProgressViewModel(const FGameProgress &Progress) */
 inline FTerminalProgressViewModel
 SelectTerminalProgressViewModel(const FGameProgress &Progress) {
   FTerminalProgressViewModel ViewModel;
@@ -175,6 +185,7 @@ SelectTerminalProgressViewModel(const FGameProgress &Progress) {
   return ViewModel;
 }
 
+/** User Story: As a features systems terminal consumer, I need to invoke select usage view model through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline FTerminalProgressViewModel SelectUsageViewModel() */
 inline FTerminalProgressViewModel SelectUsageViewModel() {
   FTerminalProgressViewModel ViewModel;
   ViewModel.Lines.Add(FTerminalLineViewModel{
@@ -187,6 +198,7 @@ inline FTerminalProgressViewModel SelectUsageViewModel() {
   return ViewModel;
 }
 
+/** User Story: As a features systems terminal consumer, I need to invoke select contract view model through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline FTerminalProgressViewModel SelectContractViewModel( const Contract::FRawContractResponse &Response) */
 inline FTerminalProgressViewModel SelectContractViewModel(
     const Contract::FRawContractResponse &Response) {
   FTerminalProgressViewModel ViewModel;
@@ -197,6 +209,7 @@ inline FTerminalProgressViewModel SelectContractViewModel(
   return ViewModel;
 }
 
+/** User Story: As a features systems terminal consumer, I need to invoke select invalid mode view model through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline FTerminalProgressViewModel SelectInvalidModeViewModel(const FString &Mode) */
 inline FTerminalProgressViewModel
 SelectInvalidModeViewModel(const FString &Mode) {
   FTerminalProgressViewModel ViewModel;

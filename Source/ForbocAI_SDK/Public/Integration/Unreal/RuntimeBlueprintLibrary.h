@@ -18,6 +18,7 @@ public:
   /**
    * ---- System ----
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
+   * @fn static FString checkApiStatus()
    */
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|System")
@@ -26,17 +27,20 @@ public:
   /**
    * ---- NPC ----
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
+   * @fn static FString createNpc(const FString &Persona)
    */
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|NPC")
   static FString createNpc(const FString &Persona);
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|NPC")
+  /** User Story: As a unreal consumer, I need to invoke process npc through a stable signature so the unreal workflow remains explicit and composable. @fn static FString processNpc(const FString &NpcId, const FString &Text) */
   static FString processNpc(const FString &NpcId, const FString &Text);
 
   /**
    * Sends a chat message to an NPC and returns the dialogue response.
    * Convenience wrapper around processNpc for conversational use.
+   * @fn static FString ChatNpc(const FString &NpcId, const FString &Message)
    * @param NpcId  The NPC to chat with.
    * @param Message  The player's message.
    * @return The NPC's dialogue response.
@@ -47,47 +51,56 @@ public:
   static FString ChatNpc(const FString &NpcId, const FString &Message);
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|NPC")
+  /** User Story: As a unreal consumer, I need to invoke has active npc through a stable signature so the unreal workflow remains explicit and composable. @fn static bool HasActiveNpc() */
   static bool HasActiveNpc();
 
   /**
    * ---- Memory ----
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
+   * @fn static void storeMemory(const FString &NpcId, const FString &Observation)
    */
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Memory")
   static void storeMemory(const FString &NpcId, const FString &Observation);
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Memory")
+  /** User Story: As a unreal consumer, I need to invoke clear memory through a stable signature so the unreal workflow remains explicit and composable. @fn static void clearMemory(const FString &NpcId) */
   static void clearMemory(const FString &NpcId);
 
   /**
    * ---- Ghost ----
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
+   * @fn static FString startGhost(const FString &TestSuite, int32 Duration = 300)
    */
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Ghost")
   static FString startGhost(const FString &TestSuite, int32 Duration = 300);
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Ghost")
+  /** User Story: As a unreal consumer, I need to invoke stop ghost through a stable signature so the unreal workflow remains explicit and composable. @fn static FString stopGhost(const FString &SessionId) */
   static FString stopGhost(const FString &SessionId);
 
   /**
    * ---- Soul ----
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
+   * @fn static FString exportSoul(const FString &NpcId)
    */
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Soul")
   static FString exportSoul(const FString &NpcId);
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Soul")
+  /** User Story: As a unreal consumer, I need to invoke import soul through a stable signature so the unreal workflow remains explicit and composable. @fn static FString importSoul(const FString &TxId) */
   static FString importSoul(const FString &TxId);
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Soul")
+  /** User Story: As a unreal consumer, I need to invoke verify soul through a stable signature so the unreal workflow remains explicit and composable. @fn static bool verifySoul(const FString &TxId) */
   static bool verifySoul(const FString &TxId);
 
   /**
    * ---- Bridge ----
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
+   * @fn static bool ValidateBridgeAction(const FString &ActionJson)
    */
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Bridge")
@@ -96,11 +109,13 @@ public:
   /**
    * ---- Config ----
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
+   * @fn static void setConfigValue(const FString &Key, const FString &Value)
    */
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Config")
   static void setConfigValue(const FString &Key, const FString &Value);
 
   UFUNCTION(BlueprintCallable, Category = "ForbocAI|Config")
+  /** User Story: As a unreal consumer, I need to invoke get config value through a stable signature so the unreal workflow remains explicit and composable. @fn static FString getConfigValue(const FString &Key) */
   static FString getConfigValue(const FString &Key);
 };

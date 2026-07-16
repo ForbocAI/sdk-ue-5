@@ -2,24 +2,24 @@
   {
     "name": "StoreUpsertsExistingMemory",
     "steps": [
-      {"action":{"kind":1,"items":[{"id":"memory-a","text":"version-a","timestamp":1,"type":"observation","importance":0.5}],"error":null,"targetId":"memory-a"},"expected":{"storageStatus":null,"recallStatus":null,"error":null,"memoryCount":1,"recalledCount":null,"firstRecalledId":null,"selectedText":"version-a"}},
-      {"action":{"kind":1,"items":[{"id":"memory-a","text":"version-b","timestamp":2,"type":"observation","importance":0.6}],"error":null,"targetId":"memory-a"},"expected":{"storageStatus":null,"recallStatus":null,"error":null,"memoryCount":1,"recalledCount":null,"firstRecalledId":null,"selectedText":"version-b"}}
+      {"action":{"kind":"StoreSucceeded","items":[{"id":"memory-a","text":"version-a","timestamp":1,"type":"observation","importance":0.5}],"error":null,"targetId":"memory-a"},"expected":{"storageStatus":null,"recallStatus":null,"error":null,"memoryCount":1,"recalledCount":null,"firstRecalledId":null,"selectedText":"version-a"}},
+      {"action":{"kind":"StoreSucceeded","items":[{"id":"memory-a","text":"version-b","timestamp":2,"type":"observation","importance":0.6}],"error":null,"targetId":"memory-a"},"expected":{"storageStatus":null,"recallStatus":null,"error":null,"memoryCount":1,"recalledCount":null,"firstRecalledId":null,"selectedText":"version-b"}}
     ]
   },
   {
     "name": "RecallReplacesIdsAndPreservesEntities",
     "steps": [
-      {"action":{"kind":1,"items":[{"id":"stored","text":"stored observation","timestamp":1,"type":"observation","importance":0.5}],"error":null,"targetId":null},"expected":{"storageStatus":null,"recallStatus":null,"error":null,"memoryCount":1,"recalledCount":0,"firstRecalledId":null,"selectedText":null}},
-      {"action":{"kind":4,"items":[{"id":"recalled-a","text":"recalled observation a","timestamp":2,"type":"observation","importance":0.6},{"id":"recalled-b","text":"recalled observation b","timestamp":3,"type":"observation","importance":0.7}],"error":null,"targetId":null},"expected":{"storageStatus":null,"recallStatus":"idle","error":"","memoryCount":3,"recalledCount":2,"firstRecalledId":"recalled-a","selectedText":null}},
-      {"action":{"kind":4,"items":[{"id":"recalled-c","text":"recalled observation c","timestamp":4,"type":"observation","importance":0.8}],"error":null,"targetId":null},"expected":{"storageStatus":null,"recallStatus":"idle","error":"","memoryCount":4,"recalledCount":1,"firstRecalledId":"recalled-c","selectedText":null}}
+      {"action":{"kind":"StoreSucceeded","items":[{"id":"stored","text":"stored observation","timestamp":1,"type":"observation","importance":0.5}],"error":null,"targetId":null},"expected":{"storageStatus":null,"recallStatus":null,"error":null,"memoryCount":1,"recalledCount":0,"firstRecalledId":null,"selectedText":null}},
+      {"action":{"kind":"RecallSucceeded","items":[{"id":"recalled-a","text":"recalled observation a","timestamp":2,"type":"observation","importance":0.6},{"id":"recalled-b","text":"recalled observation b","timestamp":3,"type":"observation","importance":0.7}],"error":null,"targetId":null},"expected":{"storageStatus":null,"recallStatus":"idle","error":"","memoryCount":3,"recalledCount":2,"firstRecalledId":"recalled-a","selectedText":null}},
+      {"action":{"kind":"RecallSucceeded","items":[{"id":"recalled-c","text":"recalled observation c","timestamp":4,"type":"observation","importance":0.8}],"error":null,"targetId":null},"expected":{"storageStatus":null,"recallStatus":"idle","error":"","memoryCount":4,"recalledCount":1,"firstRecalledId":"recalled-c","selectedText":null}}
     ]
   },
   {
     "name": "ClearRestoresCompleteInitialState",
     "steps": [
-      {"action":{"kind":1,"items":[{"id":"memory-a","text":"observation-a","timestamp":1,"type":"observation","importance":0.5}],"error":null,"targetId":null},"expected":{"storageStatus":null,"recallStatus":null,"error":null,"memoryCount":1,"recalledCount":null,"firstRecalledId":null,"selectedText":null}},
-      {"action":{"kind":5,"items":[],"error":"recall error","targetId":null},"expected":{"storageStatus":null,"recallStatus":"error","error":"recall error","memoryCount":null,"recalledCount":null,"firstRecalledId":null,"selectedText":null}},
-      {"action":{"kind":6,"items":[],"error":null,"targetId":null},"expected":{"storageStatus":"idle","recallStatus":"idle","error":"","memoryCount":0,"recalledCount":0,"firstRecalledId":null,"selectedText":null}}
+      {"action":{"kind":"StoreSucceeded","items":[{"id":"memory-a","text":"observation-a","timestamp":1,"type":"observation","importance":0.5}],"error":null,"targetId":null},"expected":{"storageStatus":null,"recallStatus":null,"error":null,"memoryCount":1,"recalledCount":null,"firstRecalledId":null,"selectedText":null}},
+      {"action":{"kind":"RecallFailed","items":[],"error":"recall error","targetId":null},"expected":{"storageStatus":null,"recallStatus":"error","error":"recall error","memoryCount":null,"recalledCount":null,"firstRecalledId":null,"selectedText":null}},
+      {"action":{"kind":"Cleared","items":[],"error":null,"targetId":null},"expected":{"storageStatus":"idle","recallStatus":"idle","error":"","memoryCount":0,"recalledCount":0,"firstRecalledId":null,"selectedText":null}}
     ]
   }
 ]

@@ -1,19 +1,42 @@
 #pragma once
 
 #include "Features/Data/DataAdapters.h"
+#include "Features/Testing/Action/ActionAdapters.h"
 #include "Features/Testing/Ghost/TestingGhostTypes.h"
 
 namespace Testing::Ghost {
 
+/**
+ * User Story: As a ghost reducer-test consumer, I need the complete semantic action registry so fixture behavior cannot drift when enum declarations change.
+ * @fn inline const TArray<Testing::Action::TTestingActionKind<EGhostTestActionKind>> & GhostTestActionKinds()
+ */
+inline const TArray<Testing::Action::TTestingActionKind<EGhostTestActionKind>> &
+GhostTestActionKinds() {
+#define FORBOC_GHOST_TEST_ACTION_KIND(Name) {FString(TEXT(#Name)), EGhostTestActionKind::Name}
+  static const TArray<Testing::Action::TTestingActionKind<
+      EGhostTestActionKind>> Kinds = {
+      FORBOC_GHOST_TEST_ACTION_KIND(Start),
+      FORBOC_GHOST_TEST_ACTION_KIND(Progress),
+      FORBOC_GHOST_TEST_ACTION_KIND(Complete),
+      FORBOC_GHOST_TEST_ACTION_KIND(Fail),
+      FORBOC_GHOST_TEST_ACTION_KIND(LoadHistory),
+      FORBOC_GHOST_TEST_ACTION_KIND(Clear),
+      FORBOC_GHOST_TEST_ACTION_KIND(Inspect),
+  };
+#undef FORBOC_GHOST_TEST_ACTION_KIND
+  check(Kinds.Num() == static_cast<int32>(EGhostTestActionKind::Count));
+  return Kinds;
+}
+
+/** User Story: As a features testing ghost consumer, I need to invoke read ghost test action through a stable signature so the features testing ghost workflow remains explicit and composable. @fn inline FGhostTestAction ReadGhostTestAction(const TSharedPtr<FJsonObject> &Object) */
 inline FGhostTestAction
 ReadGhostTestAction(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
   const TSharedRef<FJsonObject> Value = Object.ToSharedRef();
-  const int32 Kind = DataAdapters::ReadNumberField(Value, TEXT("kind"));
-  check(Kind >= static_cast<int32>(EGhostTestActionKind::Start));
-  check(Kind < static_cast<int32>(EGhostTestActionKind::Count));
   return {
-      static_cast<EGhostTestActionKind>(Kind),
+      Testing::Action::ReadTestingActionKind<EGhostTestActionKind>(
+          DataAdapters::ReadStringField(Value, TEXT("kind")),
+          GhostTestActionKinds()),
       DataAdapters::ReadOptionalStringField(Value, TEXT("sessionId")),
       DataAdapters::ReadOptionalStringField(Value, TEXT("status")),
       DataAdapters::ReadOptionalFloatField(Value, TEXT("progress")),
@@ -23,6 +46,7 @@ ReadGhostTestAction(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing ghost consumer, I need to invoke read ghost test expected through a stable signature so the features testing ghost workflow remains explicit and composable. @fn inline FGhostTestExpected ReadGhostTestExpected(const TSharedPtr<FJsonObject> &Object) */
 inline FGhostTestExpected
 ReadGhostTestExpected(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -41,6 +65,7 @@ ReadGhostTestExpected(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing ghost consumer, I need to invoke read ghost test step through a stable signature so the features testing ghost workflow remains explicit and composable. @fn inline FGhostTestStep ReadGhostTestStep( const TSharedPtr<FJsonObject> &Object) */
 inline FGhostTestStep ReadGhostTestStep(
     const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -53,6 +78,7 @@ inline FGhostTestStep ReadGhostTestStep(
   };
 }
 
+/** User Story: As a features testing ghost consumer, I need to invoke read ghost test scenario through a stable signature so the features testing ghost workflow remains explicit and composable. @fn inline FGhostTestScenario ReadGhostTestScenario(const TSharedPtr<FJsonObject> &Object) */
 inline FGhostTestScenario
 ReadGhostTestScenario(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -65,12 +91,14 @@ ReadGhostTestScenario(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing ghost consumer, I need to invoke read ghost test scenarios through a stable signature so the features testing ghost workflow remains explicit and composable. @fn inline TArray<FGhostTestScenario> ReadGhostTestScenarios(const DataAdapters::FArraySource &Source) */
 inline TArray<FGhostTestScenario>
 ReadGhostTestScenarios(const DataAdapters::FArraySource &Source) {
   return func::map_array<TSharedPtr<FJsonObject>, FGhostTestScenario>(
       DataAdapters::ReadObjectArray(Source), ReadGhostTestScenario);
 }
 
+/** User Story: As a features testing ghost consumer, I need to invoke read ghost test labels through a stable signature so the features testing ghost workflow remains explicit and composable. @fn inline FGhostTestLabels ReadGhostTestLabels(const DataAdapters::FSettingsSource &Source) */
 inline FGhostTestLabels
 ReadGhostTestLabels(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Labels =
@@ -92,6 +120,7 @@ ReadGhostTestLabels(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As a features testing ghost consumer, I need to invoke testing ghost fixtures through a stable signature so the features testing ghost workflow remains explicit and composable. @fn inline const FGhostTestFixtures &TestingGhostFixtures() */
 inline const FGhostTestFixtures &TestingGhostFixtures() {
   static const DataAdapters::FSettingsSource SettingsSource =
       DataAdapters::SettingsSource(TEXT("ForbocAI_SDK"),
@@ -115,6 +144,7 @@ inline const FGhostTestFixtures &TestingGhostFixtures() {
   return Fixtures;
 }
 
+/** User Story: As a features testing ghost consumer, I need to invoke find ghost test scenario through a stable signature so the features testing ghost workflow remains explicit and composable. @fn inline func::Maybe<FGhostTestScenario> FindGhostTestScenario(const FString &Name) */
 inline func::Maybe<FGhostTestScenario>
 FindGhostTestScenario(const FString &Name) {
   return func::find_array<FGhostTestScenario>(

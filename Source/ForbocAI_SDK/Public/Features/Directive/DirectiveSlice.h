@@ -17,6 +17,7 @@ namespace DirectiveSlice {
 using namespace rtk;
 using namespace func;
 
+/** User Story: As a features directive consumer, I need to invoke create directive initial state through a stable signature so the features directive workflow remains explicit and composable. @fn inline FDirectiveSliceState createDirectiveInitialState() */
 inline FDirectiveSliceState createDirectiveInitialState() {
   FDirectiveSliceState State;
   State.Entities = GetDirectiveAdapter().getInitialState();
@@ -27,6 +28,7 @@ inline FDirectiveSliceState createDirectiveInitialState() {
  * Builds the directive slice reducer and initial state.
  * User Story: As directive runtime setup, I need one slice factory so all
  * directive lifecycle actions share a consistent reducer.
+ * @fn inline Slice<FDirectiveSliceState> createDirectiveSlice()
  */
 inline Slice<FDirectiveSliceState> createDirectiveSlice() {
   return rtk::createSlice<FDirectiveSliceState>(

@@ -13,6 +13,7 @@
 /**
  * Ghost Module Implementation — Strict FP (Reduced)
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
+ * @fn FGhost GhostOps::Create(const FGhostConfig &Config)
  */
 
 FGhost GhostOps::Create(const FGhostConfig &Config) {
@@ -25,6 +26,7 @@ FGhost GhostOps::Create(const FGhostConfig &Config) {
 /**
  * Single test — G.6: dispatch runLocalGhostTestThunk
  * User Story: As a maintainer, I need this implementation note so I can understand which milestone behavior the surrounding code is preserving.
+ * @fn GhostTypes::GhostTestRunResult GhostOps::RunTest(const FGhost &Ghost, const FString &Scenario)
  */
 GhostTypes::GhostTestRunResult GhostOps::RunTest(const FGhost &Ghost,
                                                  const FString &Scenario) {
@@ -41,6 +43,7 @@ GhostTypes::GhostTestRunResult GhostOps::RunTest(const FGhost &Ghost,
 /**
  * All tests implementation (Async)
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
+ * @fn GhostTypes::GhostTestRunAllResult GhostOps::RunAllTests(const FGhost &Ghost)
  */
 GhostTypes::GhostTestRunAllResult GhostOps::RunAllTests(const FGhost &Ghost) {
   return GhostTypes::AsyncResult<FGhostTestReport>::create(
@@ -52,13 +55,13 @@ GhostTypes::GhostTestRunAllResult GhostOps::RunAllTests(const FGhost &Ghost) {
         GhostInternal::RunTestsSequentially(
             Ghost, Report, 0,
             [resolve](FGhostTestReport FinalReport) {
-              auto Store = store();
+              auto &Store = store();
               Store.dispatch(
                   GhostSlice::Actions::ghostSessionCompleted(FinalReport));
               resolve(FinalReport);
             },
             [reject](std::string Error) {
-              auto Store = store();
+              auto &Store = store();
               Store.dispatch(GhostSlice::Actions::ghostSessionFailed(
                   TEXT("ghost-run"), FString(Error.c_str())));
               reject(Error);
@@ -69,6 +72,7 @@ GhostTypes::GhostTestRunAllResult GhostOps::RunAllTests(const FGhost &Ghost) {
 /**
  * Configuration validation implementation
  * User Story: As a maintainer, I need this section note so related declarations and logic stay easy to locate.
+ * @fn GhostTypes::GhostValidationResult GhostOps::ValidateConfig(const FGhostConfig &Config)
  */
 GhostTypes::GhostValidationResult
 GhostOps::ValidateConfig(const FGhostConfig &Config) {
@@ -78,6 +82,7 @@ GhostOps::ValidateConfig(const FGhostConfig &Config) {
 /**
  * Summary generation implementation
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
+ * @fn GhostTypes::Either<FString, FString> GhostOps::GenerateSummary(const FGhostTestReport &Report)
  */
 GhostTypes::Either<FString, FString>
 GhostOps::GenerateSummary(const FGhostTestReport &Report) {
@@ -87,6 +92,7 @@ GhostOps::GenerateSummary(const FGhostTestReport &Report) {
 /**
  * JSON export implementation
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
+ * @fn GhostTypes::Either<FString, FString> GhostOps::ExportToJson(const FGhostTestReport &Report)
  */
 GhostTypes::Either<FString, FString>
 GhostOps::ExportToJson(const FGhostTestReport &Report) {
@@ -96,6 +102,7 @@ GhostOps::ExportToJson(const FGhostTestReport &Report) {
 /**
  * CSV export implementation
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
+ * @fn GhostTypes::Either<FString, FString> GhostOps::ExportToCsv(const FGhostTestReport &Report)
  */
 GhostTypes::Either<FString, FString>
 GhostOps::ExportToCsv(const FGhostTestReport &Report) {

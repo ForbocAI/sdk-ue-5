@@ -1,0 +1,95 @@
+{
+  "path": {
+    "separator": "/",
+    "queryStart": "?",
+    "queryAssignment": "="
+  },
+  "segments": {
+    "bridge": "bridge",
+    "validate": "validate",
+    "rules": "rules",
+    "ghost": "ghost",
+    "run": "run",
+    "status": "status",
+    "results": "results",
+    "stop": "stop",
+    "history": "history",
+    "npcs": "npcs",
+    "process": "process",
+    "presets": "presets",
+    "soul": "soul",
+    "export": "export",
+    "confirm": "confirm",
+    "souls": "souls",
+    "verify": "verify"
+  },
+  "queryKeys": {
+    "limit": "limit"
+  },
+  "names": {
+    "getApiStatus": "getApiStatus",
+    "postNpcProcess": "postNpcProcess",
+    "getBridgeValidation": "getBridgeValidation",
+    "getBridgeRules": "getBridgeRules",
+    "postGhostRun": "postGhostRun",
+    "getGhostStatus": "getGhostStatus",
+    "getGhostResults": "getGhostResults",
+    "postGhostStop": "postGhostStop",
+    "getGhostHistory": "getGhostHistory",
+    "postBridgePreset": "postBridgePreset",
+    "getRulesets": "getRulesets",
+    "getRulePresets": "getRulePresets",
+    "postSoulExportPreparation": "postSoulExportPreparation",
+    "postSoulExportConfirmation": "postSoulExportConfirmation",
+    "postSoulVerification": "postSoulVerification"
+  },
+  "fields": {
+    "ghostRunSessionId": "sessionId",
+    "ghostRunStatus": "runStatus",
+    "ghostStatusSessionId": "ghostSessionId",
+    "ghostStatusStatus": "ghostStatus",
+    "ghostStatusProgress": "ghostProgress",
+    "ghostStatusStartedAt": "ghostStartedAt",
+    "ghostStatusDuration": "ghostDuration",
+    "ghostStatusErrors": "ghostErrors",
+    "ghostResultsSessionId": "resultsSessionId",
+    "ghostResultsTotalTests": "resultsTotalTests",
+    "ghostResultsPassed": "resultsPassed",
+    "ghostResultsFailed": "resultsFailed",
+    "ghostResultsSkipped": "resultsSkipped",
+    "ghostResultsDuration": "resultsDuration",
+    "ghostResultsTests": "resultsTests",
+    "ghostResultsCoverage": "resultsCoverage",
+    "ghostResultsMetrics": "resultsMetrics",
+    "ghostTestName": "testName",
+    "ghostTestPassed": "testPassed",
+    "ghostTestDuration": "testDuration",
+    "ghostTestError": "testError",
+    "ghostTestScreenshot": "testScreenshot",
+    "ghostStopStatus": "stopStatus",
+    "ghostStopSessionId": "stopSessionId",
+    "ghostHistorySessions": "sessions",
+    "ghostHistorySessionId": "histSessionId",
+    "ghostHistoryTestSuite": "histTestSuite",
+    "ghostHistoryStartedAt": "histStartedAt",
+    "ghostHistoryCompletedAt": "histCompletedAt",
+    "ghostHistoryStatus": "histStatus",
+    "ghostHistoryPassRate": "histPassRate"
+  },
+  "values": {
+    "stopped": "stopped"
+  },
+  "payloads": {
+    "emptyObject": "{}"
+  },
+  "tagIds": {
+    "list": "LIST"
+  },
+  "defaults": {
+    "ghostHistoryLimit": 10,
+    "soulListLimit": 50
+  },
+  "timeouts": {
+    "statusMs": 1500
+  }
+}

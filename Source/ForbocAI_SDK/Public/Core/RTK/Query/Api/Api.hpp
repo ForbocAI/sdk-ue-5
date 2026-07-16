@@ -5,8 +5,8 @@
 
 namespace rtk {
 /**
+ * @fn template <typename State> Api<State> createApi(const FString &ReducerPath, const TArray<FString> &TagTypes)
  * @brief Creates an API slice registry with a defined path and tag types.
- * @signature template <typename State> Api<State> createApi(const FString &ReducerPath, const TArray<FString> &TagTypes)
  * @param ReducerPath The state path where the API slice mounts.
  * @param TagTypes The list of cache tag types supported by this API.
  * @return Api<State> The initialized API definition.
@@ -22,6 +22,7 @@ Api<State> createApi(const FString &ReducerPath,
   return Slice;
 }
 
+/** User Story: As a rtk query api consumer, I need to invoke create api through a stable signature so the rtk query api workflow remains explicit and composable. @fn template <typename State> Api<State> createApi(const CreateApiOptions<State> &Options) */
 template <typename State>
 Api<State> createApi(const CreateApiOptions<State> &Options) {
   EndpointBuilder<State> Builder;
@@ -31,6 +32,7 @@ Api<State> createApi(const CreateApiOptions<State> &Options) {
   return Slice;
 }
 
+/** User Story: As a rtk query api consumer, I need to invoke build create api through a stable signature so the rtk query api workflow remains explicit and composable. @fn template <typename State> BuildCreateApi<State> buildCreateApi(const ApiModules &Modules = ApiModules{coreModule()}) */
 template <typename State>
 BuildCreateApi<State>
 buildCreateApi(const ApiModules &Modules = ApiModules{coreModule()}) {
@@ -41,6 +43,7 @@ buildCreateApi(const ApiModules &Modules = ApiModules{coreModule()}) {
   };
 }
 
+/** User Story: As a rtk query api consumer, I need to invoke setup listeners through a stable signature so the rtk query api workflow remains explicit and composable. @fn template <typename State> std::function<void()> setupListeners(Dispatcher Dispatch, const SubscriptionOptions &Options = SubscriptionOptions()) */
 template <typename State>
 std::function<void()> setupListeners(Dispatcher Dispatch,
                                      const SubscriptionOptions &Options =
@@ -51,8 +54,8 @@ std::function<void()> setupListeners(Dispatcher Dispatch,
 }
 
 /**
+ * @fn template <typename Result> func::AsyncResult<Result> unwrapEndpointResult(QueryReturnValue<Result> QueryResult)
  * @brief Unwraps an RTK Query return value into an AsyncResult.
- * @signature template <typename Result> func::AsyncResult<Result> unwrapEndpointResult(QueryReturnValue<Result> QueryResult)
  * @param QueryResult The query return value containing data or error.
  * @return func::AsyncResult<Result> The async result that resolves or rejects based on success.
  *
@@ -81,8 +84,8 @@ unwrapEndpointResult(QueryReturnValue<Result> QueryResult) {
 }
 
 /**
+ * @fn template <typename State, typename Arg, typename Result> AsyncThunkConfig<Result, Arg, State> injectEndpoints(const Api<State> &Slice, const ApiEndpoint<Arg, Result> &EndpointDesc)
  * @brief Injects a specific endpoint into an existing API slice definition.
- * @signature template <typename State, typename Arg, typename Result> AsyncThunkConfig<Result, Arg, State> injectEndpoints(const Api<State> &Slice, const ApiEndpoint<Arg, Result> &EndpointDesc)
  * @param Slice The base API slice.
  * @param EndpointDesc The endpoint descriptor.
  * @return AsyncThunkConfig<Result, Arg, State> A configured thunk managing the endpoint request lifecycle.

@@ -5,6 +5,7 @@
 
 namespace TestGame {
 
+/** User Story: As a features entities player consumer, I need to invoke create player initial state through a stable signature so the features entities player workflow remains explicit and composable. @fn inline FPlayerState CreatePlayerInitialState() */
 inline FPlayerState CreatePlayerInitialState() {
   static const DataAdapters::FSettingsSource Source =
       DataAdapters::SettingsSource(TEXT("entities/player.json"));

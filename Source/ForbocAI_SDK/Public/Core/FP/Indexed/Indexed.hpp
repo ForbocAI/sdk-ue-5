@@ -18,6 +18,7 @@ struct GridIndex {
 };
 
 namespace detail {
+/** User Story: As a core fp indexed consumer, I need to invoke fold indexed recursive through a stable signature so the core fp indexed workflow remains explicit and composable. @fn template <typename IndexedCollection, typename Acc, typename Step> Acc foldIndexedRecursive(const IndexedCollection &values, size_t count, size_t index, Acc acc, Step step) */
 template <typename IndexedCollection, typename Acc, typename Step>
 Acc foldIndexedRecursive(const IndexedCollection &values, size_t count,
                          size_t index, Acc acc, Step step) {
@@ -27,6 +28,7 @@ Acc foldIndexedRecursive(const IndexedCollection &values, size_t count,
                    values, count, index + 1, step(acc, values[index]), step);
 }
 
+/** User Story: As a core fp indexed consumer, I need to invoke find indexed recursive through a stable signature so the core fp indexed workflow remains explicit and composable. @fn template <typename IndexedCollection, typename Predicate, typename Value> Maybe<Value> findIndexedRecursive(const IndexedCollection &values, size_t count, size_t index, Predicate predicate) */
 template <typename IndexedCollection, typename Predicate, typename Value>
 Maybe<Value> findIndexedRecursive(const IndexedCollection &values, size_t count,
                                   size_t index, Predicate predicate) {
@@ -38,6 +40,7 @@ Maybe<Value> findIndexedRecursive(const IndexedCollection &values, size_t count,
                           values, count, index + 1, predicate));
 }
 
+/** User Story: As a core fp indexed consumer, I need to invoke map grid recursive through a stable signature so the core fp indexed workflow remains explicit and composable. @fn template <typename Output, typename Map> std::vector<Output> mapGridRecursive(size_t rows, size_t columns, size_t index, Map map, std::vector<Output> result) */
 template <typename Output, typename Map>
 std::vector<Output> mapGridRecursive(size_t rows, size_t columns, size_t index,
                                      Map map, std::vector<Output> result) {
@@ -51,9 +54,9 @@ std::vector<Output> mapGridRecursive(size_t rows, size_t columns, size_t index,
 } // namespace detail
 
 /**
+ * @fn template <typename IndexedCollection, typename Acc, typename Step> Acc fold_indexed(const IndexedCollection &values, size_t count, Acc seed, Step step)
  * @brief Folds any indexed collection through a pure accumulator step.
  *
- * @signature template <typename IndexedCollection, typename Acc, typename Step> Acc fold_indexed(const IndexedCollection &values, size_t count, Acc seed, Step step)
  *
  * User Story: As Unreal and SDK integration code, I need TArray-style indexed
  * collections to compose through the SDK FP core without local loops.
@@ -66,9 +69,9 @@ Acc fold_indexed(const IndexedCollection &values, size_t count, Acc seed,
 }
 
 /**
+ * @fn template <typename IndexedCollection, typename Effect> void for_each_indexed(const IndexedCollection &values, size_t count, Effect effect)
  * @brief Runs one effect for each indexed collection value.
  *
- * @signature template <typename IndexedCollection, typename Effect> void for_each_indexed(const IndexedCollection &values, size_t count, Effect effect)
  *
  * User Story: As boundary code, I need effectful indexed traversal to remain
  * centralized in the SDK functional core instead of feature-local loops.
@@ -88,9 +91,9 @@ void for_each_indexed(const IndexedCollection &values, size_t count,
 }
 
 /**
+ * @fn template <typename IndexedCollection, typename Predicate> auto find_indexed(const IndexedCollection &values, size_t count, Predicate predicate) -> Maybe<typename std::decay<decltype(std::declval< const IndexedCollection &>()[0])>:: type>
  * @brief Finds the first indexed collection value that satisfies a predicate.
  *
- * @signature template <typename IndexedCollection, typename Predicate> Maybe<Value> find_indexed(const IndexedCollection &values, size_t count, Predicate predicate)
  *
  * User Story: As lookup code, I need indexed collection searches to return
  * Maybe values without hidden sentinels.
@@ -109,9 +112,9 @@ auto find_indexed(const IndexedCollection &values, size_t count,
 }
 
 /**
+ * @fn template <typename IndexedCollection, typename Predicate> bool any_indexed(const IndexedCollection &values, size_t count, Predicate predicate)
  * @brief Returns true when any indexed collection value satisfies a predicate.
  *
- * @signature template <typename IndexedCollection, typename Predicate> bool any_indexed(const IndexedCollection &values, size_t count, Predicate predicate)
  *
  * User Story: As predicate code, I need indexed collection checks to compose
  * through Maybe-returning SDK helpers rather than branches.
@@ -124,9 +127,9 @@ bool any_indexed(const IndexedCollection &values, size_t count,
 }
 
 /**
+ * @fn template <typename IndexedCollection, typename Predicate> bool all_indexed(const IndexedCollection &values, size_t count, Predicate predicate)
  * @brief Returns true when every indexed collection value satisfies a predicate.
  *
- * @signature template <typename IndexedCollection, typename Predicate> bool all_indexed(const IndexedCollection &values, size_t count, Predicate predicate)
  *
  * User Story: As validation code, I need universal indexed checks to compose
  * through SDK functional predicates.
@@ -138,9 +141,9 @@ bool all_indexed(const IndexedCollection &values, size_t count,
 }
 
 /**
+ * @fn template <typename Output, typename Map> std::vector<Output> map_grid(size_t rows, size_t columns, Map map)
  * @brief Maps a rectangular grid into a vector in row-major order.
  *
- * @signature template <typename Output, typename Map> std::vector<Output> map_grid(size_t rows, size_t columns, Map map)
  *
  * User Story: As rendering and data code, I need grid mapping in the SDK FP
  * core rather than borrowing ECS grid helpers for non-ECS data.

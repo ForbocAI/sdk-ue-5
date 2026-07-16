@@ -9,8 +9,8 @@ struct FEmptyPayload;
 namespace payload_debug {
 
 /**
+ * @fn inline FString DebugPayloadString(const FEmptyPayload &)
  * @brief Converts an FEmptyPayload to a debug string.
- * @signature FString DebugPayloadString(const FEmptyPayload &)
  * @param Payload The empty payload (unused).
  * @return FString A string representation indicating no payload.
  *
@@ -19,8 +19,8 @@ namespace payload_debug {
 inline FString DebugPayloadString(const FEmptyPayload &) { return TEXT("<none>"); }
 
 /**
+ * @fn inline FString DebugPayloadString(const FString &Value)
  * @brief Returns the FString payload as a debug string.
- * @signature FString DebugPayloadString(const FString &Value)
  * @param Value The FString payload.
  * @return FString The FString payload itself.
  *
@@ -29,8 +29,8 @@ inline FString DebugPayloadString(const FEmptyPayload &) { return TEXT("<none>")
 inline FString DebugPayloadString(const FString &Value) { return Value; }
 
 /**
+ * @fn inline FString DebugPayloadString(const bool &Value)
  * @brief Converts a boolean payload to a debug string.
- * @signature FString DebugPayloadString(const bool &Value)
  * @param Value The boolean payload.
  * @return FString "true" if the value is true, "false" otherwise.
  *
@@ -41,8 +41,8 @@ inline FString DebugPayloadString(const bool &Value) {
 }
 
 /**
+ * @fn template <typename T> typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, bool>::value, FString>::type DebugPayloadString(const T &Value)
  * @brief Converts an integral payload (non-boolean) to a debug string.
- * @signature template <typename T> typename std::enable_if<std::is_integral<T>::value && !std::is_same<T, bool>::value, FString>::type DebugPayloadString(const T &Value)
  * @param Value The integral payload.
  * @return FString The integral value formatted as a string.
  *
@@ -57,8 +57,8 @@ DebugPayloadString(const T &Value) {
 }
 
 /**
+ * @fn template <typename T> typename std::enable_if<std::is_floating_point<T>::value, FString>::type DebugPayloadString(const T &Value)
  * @brief Converts a floating-point payload to a debug string.
- * @signature template <typename T> typename std::enable_if<std::is_floating_point<T>::value, FString>::type DebugPayloadString(const T &Value)
  * @param Value The floating-point payload.
  * @return FString The floating-point value safely converted to a string.
  *
@@ -71,10 +71,12 @@ DebugPayloadString(const T &Value) {
 }
 
 template <typename T> class HasToString {
+  /** User Story: As a core rtk payload consumer, I need to invoke test through a stable signature so the core rtk payload workflow remains explicit and composable. @fn template <typename U> static auto Test(int) -> decltype(std::declval<const U &>().ToString(), std::true_type()) */
   template <typename U>
   static auto Test(int) -> decltype(std::declval<const U &>().ToString(),
                                     std::true_type());
 
+  /** User Story: As a core rtk payload consumer, I need to invoke test through a stable signature so the core rtk payload workflow remains explicit and composable. @fn template <typename> static std::false_type Test(...) */
   template <typename> static std::false_type Test(...);
 
 public:
@@ -82,8 +84,8 @@ public:
 };
 
 /**
+ * @fn template <typename T> typename std::enable_if<HasToString<T>::value, FString>::type DebugPayloadString(const T &Value)
  * @brief Converts a payload with a ToString() method to a debug string.
- * @signature template <typename T> typename std::enable_if<HasToString<T>::value, FString>::type DebugPayloadString(const T &Value)
  * @param Value The payload object.
  * @return FString The string representation obtained from the object's ToString() method.
  *
@@ -96,8 +98,8 @@ DebugPayloadString(const T &Value) {
 }
 
 /**
+ * @fn template <typename T> FString DebugPayloadString(const TArray<T> &Values)
  * @brief Converts a TArray payload to a debug string indicating its length.
- * @signature template <typename T> FString DebugPayloadString(const TArray<T> &Values)
  * @param Values The TArray payload.
  * @return FString A string showing the length of the array.
  *
@@ -109,8 +111,8 @@ FString DebugPayloadString(const TArray<T> &Values) {
 }
 
 /**
+ * @fn template <typename K, typename V> FString DebugPayloadString(const TMap<K, V> &Map)
  * @brief Converts a TMap payload to a debug string indicating its length.
- * @signature template <typename K, typename V> FString DebugPayloadString(const TMap<K, V> &Map)
  * @param Map The TMap payload.
  * @return FString A string showing the number of entries in the map.
  *
@@ -121,8 +123,8 @@ template <typename K, typename V> FString DebugPayloadString(const TMap<K, V> &M
 }
 
 /**
+ * @fn template <typename T> typename std::enable_if<!HasToString<T>::value && !std::is_integral<T>::value && !std::is_floating_point<T>::value && !std::is_same<T, bool>::value, FString>::type DebugPayloadString(const T &)
  * @brief Default conversion for payloads that cannot be easily stringified.
- * @signature template <typename T> typename std::enable_if<!HasToString<T>::value && !std::is_integral<T>::value && !std::is_floating_point<T>::value && !std::is_same<T, bool>::value, FString>::type DebugPayloadString(const T &)
  * @param unused The opaque payload.
  * @return FString A placeholder string "<opaque>".
  *

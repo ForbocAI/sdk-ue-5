@@ -16,27 +16,32 @@ using FBridgeTestDispatcher =
     func::ArgDispatcher<EBridgeTestActionKind, FBridgeTestActionInput,
                         BridgeSlice::FBridgeSliceState>;
 
+/** User Story: As a tests slices consumer, I need to invoke required bridge field message through a stable signature so the tests slices workflow remains explicit and composable. @fn inline std::string RequiredBridgeFieldMessage() */
 inline std::string RequiredBridgeFieldMessage() {
   return std::string(
       TCHAR_TO_UTF8(*TestingBridgeFixtures().Labels.RequiredField));
 }
 
+/** User Story: As a tests slices consumer, I need to invoke required bridge field through a stable signature so the tests slices workflow remains explicit and composable. @fn template <typename T> T RequiredBridgeField(const func::Maybe<T> &Value) */
 template <typename T>
 T RequiredBridgeField(const func::Maybe<T> &Value) {
   return func::requireJust<T>(Value, RequiredBridgeFieldMessage());
 }
 
+/** User Story: As a tests slices consumer, I need to invoke bridge test slice through a stable signature so the tests slices workflow remains explicit and composable. @fn inline const rtk::Slice<BridgeSlice::FBridgeSliceState> &BridgeTestSlice() */
 inline const rtk::Slice<BridgeSlice::FBridgeSliceState> &BridgeTestSlice() {
   static const rtk::Slice<BridgeSlice::FBridgeSliceState> Slice =
       BridgeSlice::createBridgeSlice();
   return Slice;
 }
 
+/** User Story: As a tests slices consumer, I need to invoke first bridge ruleset through a stable signature so the tests slices workflow remains explicit and composable. @fn inline FDirectiveRuleSet FirstBridgeRuleset(const FBridgeTestAction &Action) */
 inline FDirectiveRuleSet FirstBridgeRuleset(const FBridgeTestAction &Action) {
   return RequiredBridgeField(func::find_array<FDirectiveRuleSet>(
       Action.Rulesets, [](const FDirectiveRuleSet &) { return true; }));
 }
 
+/** User Story: As a tests slices consumer, I need to invoke build bridge test dispatcher through a stable signature so the tests slices workflow remains explicit and composable. @fn inline FBridgeTestDispatcher BuildBridgeTestDispatcher() */
 inline FBridgeTestDispatcher BuildBridgeTestDispatcher() {
   FBridgeTestDispatcher Dispatcher =
       func::create_arg_dispatcher<EBridgeTestActionKind,
@@ -86,18 +91,6 @@ inline FBridgeTestDispatcher BuildBridgeTestDispatcher() {
                  Input.State, BridgeSlice::Actions::rulesetsReceived(
                                   Input.Action.Rulesets));
            });
-  Register(EBridgeTestActionKind::RulesetRegistered,
-           [](const FBridgeTestActionInput &Input) {
-             return BridgeTestSlice().Reducer(
-                 Input.State, BridgeSlice::Actions::rulesetRegistered(
-                                  FirstBridgeRuleset(Input.Action)));
-           });
-  Register(EBridgeTestActionKind::RulesetDeleted,
-           [](const FBridgeTestActionInput &Input) {
-             return BridgeTestSlice().Reducer(
-                 Input.State, BridgeSlice::Actions::rulesetDeleted(
-                                  RequiredBridgeField(Input.Action.TargetId)));
-           });
   Register(EBridgeTestActionKind::PresetIdsReceived,
            [](const FBridgeTestActionInput &Input) {
              return BridgeTestSlice().Reducer(
@@ -114,6 +107,7 @@ inline FBridgeTestDispatcher BuildBridgeTestDispatcher() {
   return Dispatcher;
 }
 
+/** User Story: As a tests slices consumer, I need to invoke apply bridge test action through a stable signature so the tests slices workflow remains explicit and composable. @fn inline BridgeSlice::FBridgeSliceState ApplyBridgeTestAction(const BridgeSlice::FBridgeSliceState &State, const FBridgeTestAction &Action) */
 inline BridgeSlice::FBridgeSliceState
 ApplyBridgeTestAction(const BridgeSlice::FBridgeSliceState &State,
                       const FBridgeTestAction &Action) {
@@ -126,6 +120,7 @@ ApplyBridgeTestAction(const BridgeSlice::FBridgeSliceState &State,
           &Dispatcher, &Action.Kind, &Input}));
 }
 
+/** User Story: As a tests slices consumer, I need to invoke test bridge expected through a stable signature so the tests slices workflow remains explicit and composable. @fn template <typename T> void TestBridgeExpected(FAutomationTestBase &Test, const FString &Label, const func::Maybe<T> &Expected, const func::Maybe<T> &Actual) */
 template <typename T>
 void TestBridgeExpected(FAutomationTestBase &Test, const FString &Label,
                         const func::Maybe<T> &Expected,
@@ -145,18 +140,20 @@ void TestBridgeExpected(FAutomationTestBase &Test, const FString &Label,
       []() { return true; });
 }
 
+/** User Story: As a tests slices consumer, I need to invoke test bridge expected through a stable signature so the tests slices workflow remains explicit and composable. @fn template <typename T> void TestBridgeExpected(FAutomationTestBase &Test, const FString &Label, const func::Maybe<T> &Expected, const T &Actual) */
 template <typename T>
 void TestBridgeExpected(FAutomationTestBase &Test, const FString &Label,
                         const func::Maybe<T> &Expected, const T &Actual) {
   TestBridgeExpected(Test, Label, Expected, func::just<T>(Actual));
 }
 
+/** User Story: As a tests slices consumer, I need to invoke first bridge ruleset id through a stable signature so the tests slices workflow remains explicit and composable. @fn inline func::Maybe<FString> FirstBridgeRulesetId(const TArray<FDirectiveRuleSet> &Rulesets) */
 inline func::Maybe<FString>
 FirstBridgeRulesetId(const TArray<FDirectiveRuleSet> &Rulesets) {
   return func::fmap(
       func::find_array<FDirectiveRuleSet>(
           Rulesets, [](const FDirectiveRuleSet &) { return true; }),
-      [](const FDirectiveRuleSet &Ruleset) { return Ruleset.Id; });
+      [](const FDirectiveRuleSet &Ruleset) { return Ruleset.RulesetId; });
 }
 
 } // namespace
@@ -166,6 +163,7 @@ IMPLEMENT_COMPLEX_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
+/** User Story: As a tests slices consumer, I need to invoke get tests through a stable signature so the tests slices workflow remains explicit and composable. @fn void FBridgeTest::GetTests(TArray<FString> &Names, TArray<FString> &Commands) const */
 void FBridgeTest::GetTests(TArray<FString> &Names,
                            TArray<FString> &Commands) const {
   func::for_each_array<FBridgeTestScenario>(
@@ -176,6 +174,7 @@ void FBridgeTest::GetTests(TArray<FString> &Names,
       });
 }
 
+/** User Story: As a tests slices consumer, I need to invoke run test through a stable signature so the tests slices workflow remains explicit and composable. @fn bool FBridgeTest::RunTest(const FString &Parameters) */
 bool FBridgeTest::RunTest(const FString &Parameters) {
   const FBridgeTestFixtures &Fixtures = TestingBridgeFixtures();
   const func::Maybe<FBridgeTestScenario> Scenario =
@@ -185,12 +184,12 @@ bool FBridgeTest::RunTest(const FString &Parameters) {
       Scenario,
       [this, &Fixtures](const FBridgeTestScenario &Value) {
         func::fold_array<FBridgeTestStep, BridgeSlice::FBridgeSliceState>(
-            Value.Steps, BridgeSlice::FBridgeSliceState(),
+            Value.Steps, BridgeTestSlice().InitialState,
             [this, &Fixtures](const BridgeSlice::FBridgeSliceState &State,
                               const FBridgeTestStep &Step) {
               const auto Next = ApplyBridgeTestAction(State, Step.Action);
               const auto Validation =
-                  BridgeSelectors::selectBridgeLastValidation(Next);
+                  BridgeSelectors::selectBridgeValidationResult(Next);
               const auto Active = BridgeSelectors::selectActivePresets(Next);
               const auto Available =
                   BridgeSelectors::selectAvailableRulesets(Next);
@@ -201,7 +200,7 @@ bool FBridgeTest::RunTest(const FString &Parameters) {
                   Step.Expected.Error, BridgeSelectors::selectBridgeError(Next));
               TestBridgeExpected(*this, Fixtures.Labels.HasValidation,
                   Step.Expected.HasValidation,
-                  BridgeSelectors::selectBridgeHasLastValidation(Next));
+                  BridgeSelectors::selectBridgeHasValidationResult(Next));
               TestBridgeExpected(*this, Fixtures.Labels.ValidationValid,
                   Step.Expected.ValidationValid,
                   func::fmap(Validation, [](const FValidationResult &Result) {

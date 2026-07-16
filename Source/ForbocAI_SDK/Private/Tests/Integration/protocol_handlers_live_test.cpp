@@ -12,34 +12,9 @@
 #include "Misc/AutomationTest.h"
 #include "Features/Config/ConfigAdapters.h"
 #include "Store.h"
+#include "Tests/Integration/Protocol/HandlersLive/HandlersLiveTestAdapters.h"
 
 using namespace rtk;
-
-namespace {
-
-FString InstructionTypeName(const ENPCInstructionType Type) {
-  return Type == ENPCInstructionType::IdentifyActor
-             ? TEXT("IdentifyActor")
-             : Type == ENPCInstructionType::QueryVector
-                   ? TEXT("QueryVector")
-                   : Type == ENPCInstructionType::Decision
-                         ? TEXT("Decision")
-                         : Type == ENPCInstructionType::Reasoning
-                               ? TEXT("Reasoning")
-                               : TEXT("Finalize");
-}
-
-FString ExpectedInstructionError(const FString &Expected,
-                                 const ENPCInstructionType Actual) {
-  return FString::Printf(TEXT("Expected %s, got %s"), *Expected,
-                         *InstructionTypeName(Actual));
-}
-
-FString LastResultJson(const TSharedPtr<FJsonObject> &Object) {
-  return JsonInterop::StringifyObject(Object);
-}
-
-} // namespace
 
 struct FProcessLiveTestState {
   bool bCompleted = false;
@@ -54,6 +29,7 @@ DEFINE_LATENT_AUTOMATION_COMMAND_TWO_PARAMETER(
     FProcessLiveStepWait, TSharedPtr<FProcessLiveTestState>, State, int32, PollCount);
 /**
  * User Story: As a developer, I need Update to fulfill its role in the module.
+ * @fn bool FProcessLiveStepWait::Update()
  */
 bool FProcessLiveStepWait::Update() {
   const int32 MaxPolls = 300;  // ~15s at 50ms
@@ -77,7 +53,7 @@ bool FProcessLiveStepWait::Update() {
               } else {
                   State->bCompleted = true;
                   State->bSuccess = false;
-                  State->Error = ExpectedInstructionError(TEXT("IdentifyActor"), R.Instruction.Type);
+                  State->Error = ProtocolHandlersLiveTestAdapters::ExpectedInstructionError(TEXT("IdentifyActor"), R.Instruction.Type);
               }
           })
           .catch_([this](std::string E) {
@@ -100,7 +76,7 @@ bool FProcessLiveStepWait::Update() {
       ActorObj->SetStringField(TEXT("npcId"), TEXT("live_npc_1"));
       ActorObj->SetObjectField(TEXT("data"), MakeShared<FJsonObject>());
       ActorRes->SetObjectField(TEXT("actor"), ActorObj);
-      Req.PreviousResult = LastResultJson(ActorRes);
+      Req.PreviousResult = ProtocolHandlersLiveTestAdapters::LastResultJson(ActorRes);
       Req.bHasPreviousResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
@@ -114,7 +90,7 @@ bool FProcessLiveStepWait::Update() {
               } else {
                   State->bCompleted = true;
                   State->bSuccess = false;
-                  State->Error = ExpectedInstructionError(TEXT("QueryVector"), R.Instruction.Type);
+                  State->Error = ProtocolHandlersLiveTestAdapters::ExpectedInstructionError(TEXT("QueryVector"), R.Instruction.Type);
               }
           })
           .catch_([this](std::string E) {
@@ -134,7 +110,7 @@ bool FProcessLiveStepWait::Update() {
       TSharedPtr<FJsonObject> QueryRes = MakeShared<FJsonObject>();
       QueryRes->SetStringField(TEXT("type"), TEXT("QueryVectorResult"));
       QueryRes->SetArrayField(TEXT("memories"), TArray<TSharedPtr<FJsonValue>>());
-      Req.PreviousResult = LastResultJson(QueryRes);
+      Req.PreviousResult = ProtocolHandlersLiveTestAdapters::LastResultJson(QueryRes);
       Req.bHasPreviousResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
@@ -148,7 +124,7 @@ bool FProcessLiveStepWait::Update() {
               } else {
                   State->bCompleted = true;
                   State->bSuccess = false;
-                  State->Error = ExpectedInstructionError(TEXT("Decision"), R.Instruction.Type);
+                  State->Error = ProtocolHandlersLiveTestAdapters::ExpectedInstructionError(TEXT("Decision"), R.Instruction.Type);
               }
           })
           .catch_([this](std::string E) {
@@ -171,7 +147,7 @@ bool FProcessLiveStepWait::Update() {
       IntentObj->SetStringField(TEXT("goal"), TEXT("test"));
       IntentObj->SetStringField(TEXT("actionType"), TEXT("SPEAK"));
       DecRes->SetObjectField(TEXT("decisionIntent"), IntentObj);
-      Req.PreviousResult = LastResultJson(DecRes);
+      Req.PreviousResult = ProtocolHandlersLiveTestAdapters::LastResultJson(DecRes);
       Req.bHasPreviousResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
@@ -191,7 +167,7 @@ bool FProcessLiveStepWait::Update() {
               } else {
                   State->bCompleted = true;
                   State->bSuccess = false;
-                  State->Error = ExpectedInstructionError(TEXT("Reasoning"), R.Instruction.Type);
+                  State->Error = ProtocolHandlersLiveTestAdapters::ExpectedInstructionError(TEXT("Reasoning"), R.Instruction.Type);
               }
           })
           .catch_([this](std::string E) {
@@ -214,7 +190,7 @@ bool FProcessLiveStepWait::Update() {
       OutObj->SetStringField(TEXT("reasoningText"), TEXT("I think"));
       OutObj->SetStringField(TEXT("responseText"), TEXT("I speak"));
       RsgRes->SetObjectField(TEXT("reasoningOutput"), OutObj);
-      Req.PreviousResult = LastResultJson(RsgRes);
+      Req.PreviousResult = ProtocolHandlersLiveTestAdapters::LastResultJson(RsgRes);
       Req.bHasPreviousResult = true;
       
       auto Dispatch = [this](const rtk::AnyAction &A) { return State->Store->dispatch(A); };
@@ -239,7 +215,7 @@ bool FProcessLiveStepWait::Update() {
               } else {
                   State->bCompleted = true;
                   State->bSuccess = false;
-                  State->Error = ExpectedInstructionError(TEXT("Finalize"), R.Instruction.Type);
+                  State->Error = ProtocolHandlersLiveTestAdapters::ExpectedInstructionError(TEXT("Finalize"), R.Instruction.Type);
               }
           })
           .catch_([this](std::string E) {
@@ -270,17 +246,17 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FProtocolHandlersLiveTest::RunTest(const FString &Parameters)
  */
 bool FProtocolHandlersLiveTest::RunTest(const FString &Parameters) {
-  FString RuntimeUrl = FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_API_URL"));
-  if (RuntimeUrl.IsEmpty()) {
-      AddInfo(TEXT("Skip: FORBOCAI_API_URL not set"));
-      return true;
+  const FString ApiKey =
+      FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_API_KEY"));
+  if (ApiKey.IsEmpty()) {
+    AddError(TEXT("FORBOCAI_API_KEY is required for protocol integration"));
+    return true;
   }
-  
-  SDKConfig::SetApiConfig(RuntimeUrl,
-                          FPlatformMisc::GetEnvironmentVariable(
-                              TEXT("FORBOCAI_API_KEY")));
+
+  SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(), ApiKey);
 
   auto State = MakeShared<FProcessLiveTestState>();
   ADD_LATENT_AUTOMATION_COMMAND(FProcessLiveStepWait(State, 0));

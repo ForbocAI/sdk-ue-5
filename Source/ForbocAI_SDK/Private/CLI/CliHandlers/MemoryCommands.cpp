@@ -1,102 +1,138 @@
-// User Story: As a developer, I need this module to function.
 #include "CLI/CliHandlers.h"
+#include "Features/CLI/CLISelectors.h"
+#include "Features/CLI/Memory/CLIMemoryAdapters.h"
+#include "Features/CLI/Memory/CLIMemorySelectors.h"
 #include "Features/CLI/Memory/CLIMemoryThunks.h"
-#include "Dom/JsonObject.h"
+#include "Features/CLI/Presentation/PresentationAdapters.h"
 #include "Store.h"
-#include "Serialization/JsonSerializer.h"
-#include "Serialization/JsonWriter.h"
+
+namespace {
+
+/** User Story: As a cli cli handlers consumer, I need to invoke memory success through a stable signature so the cli cli handlers workflow remains explicit and composable. @fn CLIOps::Handlers::Result MemorySuccess(const FString &Message) */
+CLIOps::Handlers::Result MemorySuccess(const FString &Message) {
+  return CLIOps::Handlers::Result::Success(TCHAR_TO_UTF8(*Message));
+}
+
+/** User Story: As a cli cli handlers consumer, I need to invoke memory failure through a stable signature so the cli cli handlers workflow remains explicit and composable. @fn CLIOps::Handlers::Result MemoryFailure(const FString &Message) */
+CLIOps::Handlers::Result MemoryFailure(const FString &Message) {
+  return CLIOps::Handlers::Result::Failure(TCHAR_TO_UTF8(*Message));
+}
+
+} // namespace
 
 namespace CLIOps {
 namespace Handlers {
 
+/** User Story: As a cli cli handlers consumer, I need to invoke handle memory through a stable signature so the cli cli handlers workflow remains explicit and composable. @fn HandlerResult HandleMemory(rtk::EnhancedStore<FRuntimeState> &Store, const FString &CommandKey, const TArray<FString> &Args) */
 HandlerResult HandleMemory(rtk::EnhancedStore<FRuntimeState> &Store,
-                          const FString &CommandKey,
-                          const TArray<FString> &Args) {
+                           const FString &CommandKey,
+                           const TArray<FString> &Args) {
   using func::just;
   using func::nothing;
+  using ForbocAI::CLI::Presentation::formatCliMessage;
+  const ForbocAI::CLI::FCLIState &CLIState = Store.getState().CLI;
+  const ForbocAI::CLI::FCLICommandRoles &Roles =
+      ForbocAI::CLI::selectCliCommandRoles(CLIState);
+  const ForbocAI::CLI::Memory::FCLIMemoryState &State =
+      ForbocAI::CLI::Memory::selectCliMemory(CLIState);
+  const int32 First = CLIState.Parsing.FirstTokenIndex;
+  const int32 Second = CLIState.Parsing.SecondTokenIndex;
 
-  return CommandKey == TEXT("memory_list")
-             ? (Args.Num() < 1
-                    ? just(Result::Failure(
-                          "Usage: memory_list <npcId>"))
+  return CommandKey == Roles.MemoryList
+             ? (Args.Num() < State.Limits.SingleArgumentCount
+                    ? just(MemoryFailure(State.Messages.ListUsage))
                     : [&]() -> HandlerResult {
-                        TArray<FMemoryItem> Items =
-                            Ops::listMemory(Store, Args[0]);
-                        UE_LOG(LogTemp, Display,
-                               TEXT("Found %d memories"), Items.Num());
-                        return just(
-                            Result::Success("Memories listed"));
+                        ForbocAI::CLI::Presentation::logCliMessage(
+                            formatCliMessage(State.Messages.Listing,
+                                             Args[First],
+                                             State.Limits.ListItemLimit));
+                        const TArray<FMemoryItem> Items =
+                            ForbocAI::CLI::Memory::selectMemoryItems(
+                                Ops::listMemory(Store, Args[First]),
+                                State.Limits.ListItemLimit);
+                        Items.Num() == State.Limits.FirstItemIndex
+                            ? ForbocAI::CLI::Presentation::logCliMessage(
+                                  State.Messages.None)
+                            : [&]() {
+                                int32 Index = State.Limits.FirstItemIndex;
+                                func::for_each_array<FMemoryItem>(
+                                    Items,
+                                    [&State, &Index](
+                                        const FMemoryItem &Item) {
+                                      ForbocAI::CLI::Presentation::
+                                          logCliMessage(formatCliMessage(
+                                              State.Messages.ListItem,
+                                              Index + State.Limits
+                                                          .DisplayIndexOffset,
+                                              ForbocAI::CLI::Memory::
+                                                  selectMemorySnippet(Item,
+                                                                      State)));
+                                      Index += State.Limits.NextItemOffset;
+                                    });
+                              }();
+                        return just(MemorySuccess(State.Messages.Listed));
                       }())
-         : CommandKey == TEXT("memory_recall")
-             ? (Args.Num() < 2
-                    ? just(Result::Failure(
-                          "Usage: memory_recall <npcId> <query>"))
+         : CommandKey == Roles.MemoryRecall
+             ? (Args.Num() < State.Limits.DoubleArgumentCount
+                    ? just(MemoryFailure(State.Messages.RecallUsage))
                     : [&]() -> HandlerResult {
-                        TArray<FMemoryItem> Items =
-                            Ops::recallMemory(Store, Args[0], Args[1]);
-                        UE_LOG(LogTemp, Display,
-                               TEXT("Recalled %d memories"),
-                               Items.Num());
-                        return just(
-                            Result::Success("Memories recalled"));
+                        const TArray<FMemoryItem> Items =
+                            ForbocAI::CLI::Memory::selectMemoryItems(
+                                Ops::recallMemory(
+                                    Store, Args[First], Args[Second],
+                                    State.Limits.RecallItemLimit,
+                                    State.Defaults.RecallSimilarity),
+                                State.Limits.RecallItemLimit);
+                        Items.Num() == State.Limits.FirstItemIndex
+                            ? ForbocAI::CLI::Presentation::logCliMessage(
+                                  State.Messages.NoneRelevant)
+                            : [&]() {
+                                int32 Index = State.Limits.FirstItemIndex;
+                                func::for_each_array<FMemoryItem>(
+                                    Items,
+                                    [&State, &Index](
+                                        const FMemoryItem &Item) {
+                                      ForbocAI::CLI::Presentation::
+                                          logCliMessage(formatCliMessage(
+                                              State.Messages.RecallItem,
+                                              Index + State.Limits
+                                                          .DisplayIndexOffset,
+                                              Item.Text));
+                                      Index += State.Limits.NextItemOffset;
+                                    });
+                              }();
+                        return just(MemorySuccess(State.Messages.RecallDone));
                       }())
-         : CommandKey == TEXT("memory_store")
-             ? (Args.Num() < 2
-                    ? just(Result::Failure(
-                          "Usage: memory_store <npcId> <observation>"))
-                    : (Ops::storeMemory(Store, Args[0], Args[1]),
-                       just(Result::Success("Memory stored"))))
-         : CommandKey == TEXT("memory_clear")
-             ? (Args.Num() < 1
-                    ? just(Result::Failure(
-                          "Usage: memory_clear <npcId>"))
-                    : (Ops::clearMemory(Store, Args[0]),
-                       just(Result::Success("Memory cleared"))))
-         : CommandKey == TEXT("memory_export")
-             ? (Args.Num() < 1
-                    ? just(Result::Failure(
-                          "Usage: memory_export <npcId>"))
+         : CommandKey == Roles.MemoryStore
+             ? (Args.Num() < State.Limits.DoubleArgumentCount
+                    ? just(MemoryFailure(State.Messages.StoreUsage))
+                    : (Ops::storeMemory(Store, Args[First], Args[Second],
+                                        State.Defaults.Importance),
+                       ForbocAI::CLI::Presentation::logCliMessage(
+                           State.Messages.Stored),
+                       just(MemorySuccess(State.Messages.StoreDone))))
+         : CommandKey == Roles.MemoryClear
+             ? (Args.Num() < State.Limits.SingleArgumentCount
+                    ? just(MemoryFailure(State.Messages.ClearUsage))
+                    : (ForbocAI::CLI::Presentation::logCliMessage(
+                           State.Messages.ClearWarning),
+                       Ops::clearMemory(Store, Args[First]),
+                       ForbocAI::CLI::Presentation::logCliMessage(
+                           State.Messages.Cleared),
+                       just(MemorySuccess(State.Messages.ClearDone))))
+         : CommandKey == Roles.MemoryExport
+             ? (Args.Num() < State.Limits.SingleArgumentCount
+                    ? just(MemoryFailure(State.Messages.ExportUsage))
                     : [&]() -> HandlerResult {
-                        TArray<FMemoryItem> Items =
-                            Ops::listMemory(Store, Args[0]);
-                        TSharedRef<FJsonObject> Root =
-                            MakeShared<FJsonObject>();
-                        TArray<TSharedPtr<FJsonValue>> JsonItems;
-                        struct BuildItems {
-                          static void apply(
-                              const TArray<FMemoryItem> &Src,
-                              TArray<TSharedPtr<FJsonValue>> &Out,
-                              int32 Idx) {
-                            Idx >= Src.Num()
-                                ? void()
-                                : ([&]() {
-                                     TSharedPtr<FJsonObject> Obj =
-                                         MakeShared<FJsonObject>();
-                                     Obj->SetStringField(TEXT("text"),
-                                                         Src[Idx].Text);
-                                     Obj->SetStringField(TEXT("type"),
-                                                         Src[Idx].Type);
-                                     Obj->SetNumberField(
-                                         TEXT("importance"),
-                                         Src[Idx].Importance);
-                                     Out.Add(
-                                         MakeShared<FJsonValueObject>(
-                                             Obj));
-                                   }(),
-                                   apply(Src, Out, Idx + 1), void());
-                          }
-                        };
-                        BuildItems::apply(Items, JsonItems, 0);
-                        Root->SetArrayField(TEXT("memories"),
-                                            JsonItems);
-                        FString JsonString;
-                        TSharedRef<TJsonWriter<>> Writer =
-                            TJsonWriterFactory<>::Create(&JsonString);
-                        FJsonSerializer::Serialize(Root, Writer);
-                        UE_LOG(LogTemp, Display, TEXT("%s"),
-                               *JsonString);
-                        return just(
-                            Result::Success("Memories exported"));
+                        ForbocAI::CLI::Presentation::logCliMessage(
+                            formatCliMessage(State.Messages.Exporting,
+                                             Args[First]));
+                        const TArray<FMemoryItem> Items =
+                            Ops::listMemory(Store, Args[First]);
+                        ForbocAI::CLI::Presentation::logCliMessage(
+                            ForbocAI::CLI::Memory::serializeMemories(Items,
+                                                                    State));
+                        return just(MemorySuccess(State.Messages.ExportDone));
                       }())
              : nothing<Result>();
 }

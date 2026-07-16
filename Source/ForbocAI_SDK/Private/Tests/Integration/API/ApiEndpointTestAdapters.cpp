@@ -5,6 +5,7 @@
 
 namespace ApiEndpointTests {
 
+/** User Story: As a tests integration api consumer, I need to invoke base query options through a stable signature so the tests integration api workflow remains explicit and composable. @fn rtk::FetchBaseQueryArgs BaseQueryOptions(const FString &ApiKey) */
 rtk::FetchBaseQueryArgs BaseQueryOptions(const FString &ApiKey) {
   rtk::FetchBaseQueryArgs Options;
   !ApiKey.IsEmpty()
@@ -15,6 +16,7 @@ rtk::FetchBaseQueryArgs BaseQueryOptions(const FString &ApiKey) {
   return Options;
 }
 
+/** User Story: As a tests integration api consumer, I need to invoke fetch args through a stable signature so the tests integration api workflow remains explicit and composable. @fn rtk::FetchArgs FetchArgs(const FString &Method, const FString &Url) */
 rtk::FetchArgs FetchArgs(const FString &Method, const FString &Url) {
   rtk::FetchArgs Args;
   Args.method = Method;
@@ -22,16 +24,19 @@ rtk::FetchArgs FetchArgs(const FString &Method, const FString &Url) {
   return Args;
 }
 
+/** User Story: As a tests integration api consumer, I need to invoke status code through a stable signature so the tests integration api workflow remains explicit and composable. @fn int32 StatusCode(const rtk::QueryReturnValue<FString> &Result) */
 int32 StatusCode(const rtk::QueryReturnValue<FString> &Result) {
   return Result.meta.hasValue && Result.meta.value.response.hasValue
              ? Result.meta.value.response.value.status
              : 0;
 }
 
+/** User Story: As a tests integration api consumer, I need to invoke body through a stable signature so the tests integration api workflow remains explicit and composable. @fn FString Body(const rtk::QueryReturnValue<FString> &Result) */
 FString Body(const rtk::QueryReturnValue<FString> &Result) {
   return Result.data.hasValue ? Result.data.value : TEXT("");
 }
 
+/** User Story: As a tests integration api consumer, I need to invoke error message through a stable signature so the tests integration api workflow remains explicit and composable. @fn FString ErrorMessage(const rtk::QueryReturnValue<FString> &Result) */
 FString ErrorMessage(const rtk::QueryReturnValue<FString> &Result) {
   return Result.error.hasValue
              ? (!Result.error.value.error.IsEmpty() ? Result.error.value.error
@@ -39,22 +44,23 @@ FString ErrorMessage(const rtk::QueryReturnValue<FString> &Result) {
              : TEXT("");
 }
 
+/** User Story: As a tests integration api consumer, I need to invoke base url through a stable signature so the tests integration api workflow remains explicit and composable. @fn FString BaseUrl() */
 FString BaseUrl() { return SDKConfig::GetApiUrl(); }
 
-bool ShouldSkip() {
-  return FPlatformMisc::GetEnvironmentVariable(
-             TEXT("FORBOC_RUN_API_ENDPOINT_TESTS"))
-             .IsEmpty()
-         ? []() {
-             UE_LOG(LogTemp, Display,
-                    TEXT("Skipping API endpoint integration tests until API work resumes."));
-             return true;
-           }()
-         : false;
+/** User Story: As a tests integration api consumer, I need to invoke required api key through a stable signature so the tests integration api workflow remains explicit and composable. @fn FString RequiredApiKey(FAutomationTestBase &Test) */
+FString RequiredApiKey(FAutomationTestBase &Test) {
+  const FString ApiKey =
+      FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_API_KEY"));
+  ApiKey.IsEmpty()
+      ? Test.AddError(
+            TEXT("FORBOCAI_API_KEY is required for live endpoint tests"))
+      : void();
+  return ApiKey;
 }
 
 } // namespace ApiEndpointTests
 
+/** User Story: As a tests integration api consumer, I need to invoke update through a stable signature so the tests integration api workflow remains explicit and composable. @fn bool FHttpGetWaitComplete::Update() */
 bool FHttpGetWaitComplete::Update() {
   if (!State->bStarted) {
     const TSharedPtr<FApiEndpointTestState> SharedState = State;

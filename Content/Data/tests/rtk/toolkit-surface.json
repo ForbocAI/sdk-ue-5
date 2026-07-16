@@ -1,0 +1,79 @@
+{
+  "names": {
+    "actionAndUtility": "ForbocAI.Core.RTK.ToolkitSurface.ActionAndUtility",
+    "autoBatch": "ForbocAI.Core.RTK.ToolkitSurface.AutoBatch",
+    "middleware": "ForbocAI.Core.RTK.ToolkitSurface.Middleware"
+  },
+  "prepared": {
+    "format": "value-{0}",
+    "metaKey": "source",
+    "metaValue": "test",
+    "expectedValue": "value-7",
+    "input": 7,
+    "error": true
+  },
+  "utility": {
+    "initialDispatchCount": 0,
+    "boundPayload": 3,
+    "initialValues": [2, 3],
+    "head": 1,
+    "suffix": [4],
+    "expectedValues": [1, 2, 3, 4],
+    "original": 5,
+    "draftDelta": 4,
+    "expectedNext": 9,
+    "nanoidSize": 18,
+    "expectedDispatchCount": 1
+  },
+  "autoBatch": {
+    "initialState": 0,
+    "initialSubscriberCalls": 0,
+    "firstAmount": 1,
+    "secondAmount": 2,
+    "expectedBatchedState": 3,
+    "expectedFirstQueueSize": 1,
+    "firstNotificationIndex": 0,
+    "expectedFirstSubscriberCalls": 1,
+    "thirdAmount": 3,
+    "normalAmount": 4,
+    "expectedFinalState": 10,
+    "secondNotificationIndex": 1,
+    "expectedFinalSubscriberCalls": 2
+  },
+  "middleware": {
+    "initialState": 0,
+    "initialDynamicCalls": 0,
+    "initialImmutableChecks": 0,
+    "expectedDynamicCalls": 1,
+    "expectedImmutableChecks": 4,
+    "expectedFinalState": 2
+  },
+  "labels": {
+    "preparedPayload": "prepared action carries a payload",
+    "preparedTransform": "prepared action transforms arguments",
+    "preparedMetadata": "prepared action carries metadata",
+    "preparedError": "prepared action carries the error marker",
+    "optionalPayload": "optional action can omit its payload",
+    "optionalType": "optional action preserves its type",
+    "boundAction": "bound creator returns the dispatched action",
+    "boundDispatch": "bound creator dispatches once",
+    "tupleOrder": "tuple prepend and concat preserve order",
+    "nextOriginal": "createNextState leaves the input unchanged",
+    "nextResult": "createNextState returns the recipe result",
+    "nanoidSize": "nanoid honors the requested size",
+    "nanoidUnique": "nanoid produces independent identifiers",
+    "batchState": "batched reducers run synchronously",
+    "batchQueue": "batched actions schedule one notification",
+    "batchWait": "subscriber waits for the batch",
+    "batchNotify": "scheduled batch notifies once",
+    "normalState": "normal action flushes current state",
+    "normalNotify": "normal action notifies immediately",
+    "staleNotify": "stale scheduled notification is suppressed",
+    "dynamicEmpty": "dynamic middleware starts empty",
+    "dynamicLive": "middleware added after setup is live",
+    "invariantCount": "invariant checks run before and after each dispatch",
+    "reducerState": "both actions reached the reducer",
+    "emptyActionPath": "empty action identifies the type path",
+    "typedAction": "typed action passes action serializability"
+  }
+}

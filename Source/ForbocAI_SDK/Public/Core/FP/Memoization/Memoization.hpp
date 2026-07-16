@@ -18,6 +18,7 @@ template <typename Signature> struct MemoizedLast;
 namespace detail {
 template <typename Signature> struct MemoizedLastFactory;
 
+/** User Story: As a core fp memoization consumer, I need to invoke call memoized last through a stable signature so the core fp memoization workflow remains explicit and composable. @fn template <typename Result, typename... Args> const Result &callMemoizedLast(const MemoizedLast<Result(Args...)> &memoized, Args... args) */
 template <typename Result, typename... Args>
 const Result &callMemoizedLast(const MemoizedLast<Result(Args...)> &memoized,
                                Args... args);
@@ -33,6 +34,7 @@ struct MemoizedLast<Result(Args...)> {
   mutable ArgsTuple lastArgs;
   mutable std::shared_ptr<Result> lastResult;
 
+  /** User Story: As a core fp memoization consumer, I need to invoke the callable value through a stable signature so the core fp memoization workflow remains explicit and composable. @fn const Result &operator()(Args... args) const */
   const Result &operator()(Args... args) const {
     return detail::callMemoizedLast(*this, std::forward<Args>(args)...);
   }
@@ -43,12 +45,14 @@ template <typename Result, typename... Args>
 struct MemoizedLastFactory<Result(Args...)> {
   typedef MemoizedLast<Result(Args...)> MemoizedType;
 
+  /** User Story: As a core fp memoization consumer, I need to invoke default comparator through a stable signature so the core fp memoization workflow remains explicit and composable. @fn static typename MemoizedType::Comparator defaultComparator() */
   static typename MemoizedType::Comparator defaultComparator() {
     return typename MemoizedType::Comparator(
         [](const typename MemoizedType::ArgsTuple &lhs,
            const typename MemoizedType::ArgsTuple &rhs) { return lhs == rhs; });
   }
 
+  /** User Story: As a core fp memoization consumer, I need to invoke create through a stable signature so the core fp memoization workflow remains explicit and composable. @fn static MemoizedType create(std::function<Result(Args...)> function, typename MemoizedType::Comparator comparator = defaultComparator()) */
   static MemoizedType
   create(std::function<Result(Args...)> function,
          typename MemoizedType::Comparator comparator = defaultComparator()) {
@@ -59,6 +63,7 @@ struct MemoizedLastFactory<Result(Args...)> {
   }
 };
 
+/** User Story: As a core fp memoization consumer, I need to invoke store memoized result through a stable signature so the core fp memoization workflow remains explicit and composable. @fn template <typename Result> const Result &storeMemoizedResult(std::shared_ptr<Result> &target, Result computed) */
 template <typename Result>
 const Result &storeMemoizedResult(std::shared_ptr<Result> &target,
                                   Result computed) {
@@ -66,6 +71,7 @@ const Result &storeMemoizedResult(std::shared_ptr<Result> &target,
                 : *(target = std::make_shared<Result>(std::move(computed)));
 }
 
+/** User Story: As a core fp memoization consumer, I need to invoke recompute memoized last through a stable signature so the core fp memoization workflow remains explicit and composable. @fn template <typename Result, typename... Args> const Result & recomputeMemoizedLast(const MemoizedLast<Result(Args...)> &memoized, typename MemoizedLast<Result(Args...)>::ArgsTuple current) */
 template <typename Result, typename... Args>
 const Result &
 recomputeMemoizedLast(const MemoizedLast<Result(Args...)> &memoized,
@@ -76,6 +82,7 @@ recomputeMemoizedLast(const MemoizedLast<Result(Args...)> &memoized,
   return storeMemoizedResult(memoized.lastResult, std::move(computed));
 }
 
+/** User Story: As a core fp memoization consumer, I need to invoke call memoized last through a stable signature so the core fp memoization workflow remains explicit and composable. @fn template <typename Result, typename... Args> const Result &callMemoizedLast(const MemoizedLast<Result(Args...)> &memoized, Args... args) */
 template <typename Result, typename... Args>
 const Result &callMemoizedLast(const MemoizedLast<Result(Args...)> &memoized,
                                Args... args) {
@@ -89,11 +96,11 @@ const Result &callMemoizedLast(const MemoizedLast<Result(Args...)> &memoized,
 } // namespace detail
 
 /**
+ * @fn template <typename Signature> MemoizedLast<Signature> memoizeLast(std::function<Signature> function)
  * @brief Memoizes the last invocation of a std::function with default comparison.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename Signature> MemoizedLast<Signature> memoizeLast(std::function<Signature> function)
  *
  * User Story: As derived-data helpers, I need last-call memoization so cached
  * computations can be reused when inputs repeat.
@@ -104,11 +111,11 @@ MemoizedLast<Signature> memoizeLast(std::function<Signature> function) {
 }
 
 /**
+ * @fn template <typename Signature, typename F> MemoizedLast<Signature> memoizeLast(F f)
  * @brief Memoizes the last invocation of a generic callable with default comparison.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename Signature, typename F> MemoizedLast<Signature> memoizeLast(F f)
  *
  * User Story: As derived-data helpers, I need memoization for generic
  * callables so caching is not limited to std::function inputs.
@@ -120,11 +127,11 @@ MemoizedLast<Signature> memoizeLast(F f) {
 }
 
 /**
+ * @fn template <typename Signature> MemoizedLast<Signature> memoizeLast(std::function<Signature> function, typename MemoizedLast<Signature>::Comparator comparator)
  * @brief Memoizes the last invocation using a custom argument comparator.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename Signature> MemoizedLast<Signature> memoizeLast(std::function<Signature> function, typename MemoizedLast<Signature>::Comparator comparator)
  *
  * User Story: As derived-data helpers, I need custom comparison so caching can
  * respect caller-defined notions of argument equality.
@@ -138,11 +145,11 @@ memoizeLast(std::function<Signature> function,
 }
 
 /**
+ * @fn template <typename Signature, typename F> MemoizedLast<Signature> memoizeLast(F f, typename MemoizedLast<Signature>::Comparator comparator)
  * @brief Memoizes a generic callable using a custom argument comparator.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename Signature, typename F> MemoizedLast<Signature> memoizeLast(F f, typename MemoizedLast<Signature>::Comparator comparator)
  *
  * User Story: As derived-data helpers, I need generic custom-comparator
  * memoization so reusable callables can control cache invalidation.

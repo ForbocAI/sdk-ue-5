@@ -16,6 +16,7 @@ struct FGameNPC {
   TArray<FString> KnownSecrets;
   FPosition Position;
 
+  /** User Story: As a features entities npcs consumer, I need to invoke fgame npc through a stable signature so the features entities npcs workflow remains explicit and composable. @fn FGameNPC() */
   FGameNPC() : Hp(100), Suspicion(0) {}
 };
 
@@ -24,6 +25,7 @@ typedef FGameNPC FNPC;
 struct FNPCsSliceState {
   rtk::EntityState<FGameNPC> Entities;
 
+  /** User Story: As a features entities npcs consumer, I need to compare values for equality through a stable signature so the features entities npcs workflow remains explicit and composable. @fn bool operator==(const FNPCsSliceState &Other) const */
   bool operator==(const FNPCsSliceState &Other) const {
     return Entities.ids == Other.Entities.ids;
   }
@@ -52,6 +54,7 @@ struct FPatchNPCChanges {
   FPosition Position;
   bool bHasPosition;
 
+  /** User Story: As a features entities npcs consumer, I need to invoke fpatch npcchanges through a stable signature so the features entities npcs workflow remains explicit and composable. @fn FPatchNPCChanges() */
   FPatchNPCChanges()
       : bHasName(false), bHasFaction(false), Hp(0), bHasHp(false),
         Suspicion(0), bHasSuspicion(false), bHasInventory(false),
@@ -68,6 +71,7 @@ struct FNpcVerdictAction {
   FPosition TargetHex;
   bool bHasTargetHex;
 
+  /** User Story: As a features entities npcs consumer, I need to invoke fnpc verdict action through a stable signature so the features entities npcs workflow remains explicit and composable. @fn FNpcVerdictAction() */
   FNpcVerdictAction() : bHasTargetHex(false) {}
 };
 

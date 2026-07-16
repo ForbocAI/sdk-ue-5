@@ -1,0 +1,200 @@
+{
+  "registry": {
+    "namespace": "soul",
+    "client": "storageClient"
+  },
+  "runtimeTypes": {
+    "object": "object",
+    "string": "string",
+    "number": "number",
+    "undefined": "undefined"
+  },
+  "numbers": {
+    "zero": 0,
+    "one": 1,
+    "byteMask": 255,
+    "byteShift": 8,
+    "zigZagShift": 1,
+    "continuationMask": 127,
+    "continuationShift": 7,
+    "continuationFlag": 128,
+    "signatureTypeLength": 2,
+    "tagNumberLength": 8
+  },
+  "encoding": {
+    "plus": "+",
+    "minus": "-",
+    "slash": "/",
+    "underscore": "_",
+    "padding": "=",
+    "base64BlockSize": 4,
+    "paddingPatternSuffix": "+$",
+    "caseInsensitiveRegexFlag": "i"
+  },
+  "catalog": {
+    "requiredStringFields": [
+      "txId",
+      "name",
+      "npcId",
+      "exportedAt",
+      "storageUrl",
+      "provider",
+      "digest",
+      "signature"
+    ]
+  },
+  "soul": {
+    "version": "2.0.0",
+    "defaultName": "NPC",
+    "fields": {
+      "id": "id",
+      "version": "version",
+      "name": "name",
+      "structuredPersona": "structuredPersona",
+      "memories": "memories",
+      "state": "state"
+    }
+  },
+  "lifecycle": {
+    "idle": "idle",
+    "exporting": "exporting",
+    "importing": "importing",
+    "succeeded": "success",
+    "failed": "failed"
+  },
+  "provider": {
+    "name": "turbo",
+    "uploadUrl": "https://upload.ardrive.io/v1/tx",
+    "uploadMethod": "POST",
+    "uploadContentType": "application/octet-stream",
+    "accept": "application/json",
+    "gatewayScheme": "https://",
+    "gatewayPathSeparator": "/",
+    "retrievalGateways": ["https://arweave.net"],
+    "requestTimeoutMs": 60000,
+    "successMinimum": 200,
+    "successMaximumExclusive": 300,
+    "contentTypeHeader": "Content-Type",
+    "acceptHeader": "Accept",
+    "gatewayTrailingPattern": "/+$",
+    "absoluteUrlPattern": "^https?://",
+    "responseFields": {
+      "id": "id",
+      "owner": "owner",
+      "dataCaches": "dataCaches",
+      "fastFinalityIndexes": "fastFinalityIndexes"
+    }
+  },
+  "retrieval": {
+    "maximumCycles": 180,
+    "initialAttempt": 0,
+    "attemptStep": 1,
+    "delayMs": 5000
+  },
+  "upload": {
+    "maximumAttempts": 4,
+    "initialAttempt": 0,
+    "attemptStep": 1,
+    "delayMs": 1000
+  },
+  "wallet": {
+    "algorithm": "RSA-PSS",
+    "hash": "SHA-256",
+    "modulusLength": 4096,
+    "publicExponent": [1, 0, 1],
+    "saltLength": 32,
+    "keyType": "RSA",
+    "keyFormat": "jwk",
+    "requiredPrivateFields": ["kty", "e", "n", "d", "p", "q", "dp", "dq", "qi"],
+    "generateUsages": ["sign", "verify"],
+    "signUsages": ["sign"]
+  },
+  "encryption": {
+    "version": "1",
+    "algorithm": "AES-GCM",
+    "algorithmLabel": "A256GCM",
+    "keyDerivation": "HKDF",
+    "keyDerivationLabel": "HKDF-SHA-256",
+    "hash": "SHA-256",
+    "keyLength": 256,
+    "saltLength": 32,
+    "initializationVectorLength": 12,
+    "additionalData": "ForbocAI Soul Envelope v1",
+    "keyFormat": "raw",
+    "deriveUsages": ["deriveKey"],
+    "cipherUsages": ["encrypt", "decrypt"],
+    "envelopeFields": ["salt", "initializationVector", "ciphertext"]
+  },
+  "dataItem": {
+    "signatureType": 1,
+    "signatureLength": 512,
+    "ownerLength": 512,
+    "targetPresent": 0,
+    "anchorPresent": 0,
+    "deepHashAlgorithm": "SHA-384",
+    "deepHashList": "list",
+    "deepHashBlob": "blob",
+    "domain": "dataitem",
+    "version": "1",
+    "tags": [
+      {"name": "Content-Type", "value": "application/vnd.forbocai.soul+json"},
+      {"name": "App-Name", "value": "ForbocAI"},
+      {"name": "App-Version", "value": "1"}
+    ]
+  },
+  "digest": {
+    "algorithm": "SHA-256"
+  },
+  "persistence": {
+    "directory": ".forbocai",
+    "walletFile": "soul-wallet.json",
+    "catalogFile": "souls.json",
+    "temporarySuffix": ".tmp",
+    "fileMode": 384,
+    "directoryMode": 448,
+    "jsonIndent": 2,
+    "browserWalletKey": "forbocai.soul.wallet",
+    "browserCatalogKey": "forbocai.soul.catalog",
+    "textEncoding": "utf8",
+    "errorCodeField": "code",
+    "missingFileCode": "ENOENT"
+  },
+  "text": {
+    "missingClient": "Soul storage client is not registered for this SDK runtime",
+    "missingPrivateKey": "Soul wallet is missing required private key material",
+    "invalidOwnerLength": "Soul wallet owner modulus has an invalid length",
+    "invalidSignatureLength": "Soul data-item signature has an invalid length",
+    "uploadFailed": "Permanent Soul upload failed",
+    "uploadNetworkFailed": "Permanent Soul upload network request failed",
+    "uploadResponseInvalid": "Permanent Soul upload returned an invalid receipt",
+    "transactionMismatch": "Permanent Soul provider returned a different transaction ID",
+    "pendingUploadMissing": "Prepared Soul upload is not present in this SDK runtime",
+    "retrievalFailed": "Uploaded Soul was not retrievable from the provider",
+    "retrievalNetworkFailed": "Permanent Soul retrieval network request failed",
+    "retrievalUrlSeparator": " at ",
+    "retrievalMismatch": "Retrieved Soul bytes did not match the uploaded payload",
+    "providerStatusMissing": "Permanent Soul provider response did not include an HTTP status",
+    "invalidEnvelope": "Stored Soul envelope is invalid",
+    "decryptFailed": "Stored Soul could not be authenticated and decrypted",
+    "catalogEntryMissingPrefix": "Soul ",
+    "catalogEntryMissingSuffix": " is not present in the SDK catalog",
+    "invalidCatalog": "Soul catalog is invalid",
+    "invalidWallet": "Soul wallet is invalid",
+    "invalidSoul": "Stored Soul schema is invalid",
+    "unsupportedSoulVersion": "Stored Soul version is not supported",
+    "browserStorageUnavailable": "Browser storage is unavailable for Soul persistence",
+    "confirmationMismatch": "Soul export confirmation does not match the prepared transaction",
+    "verificationFailed": "Soul protocol signature verification failed",
+    "exportFailed": "Soul export failed",
+    "importFailed": "Soul import failed",
+    "listFailed": "Failed to list Souls",
+    "verifyFailed": "Soul verification failed",
+    "invalidTextEncoding": "Soul persistence text encoding is invalid",
+    "cleanupFailedSeparator": " | preparation cleanup failed: ",
+    "errorSeparator": ": ",
+    "causeSeparator": "; ",
+    "statusSeparator": " ",
+    "catalogVersion": "1",
+    "empty": ""
+  }
+}

@@ -21,13 +21,19 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FSerializeIdentifyActorPayloadTest::RunTest(const FString &Parameters)
  */
 bool FSerializeIdentifyActorPayloadTest::RunTest(const FString &Parameters) {
   const FIdentifyActorPayloadFixture &Fixture =
       CodecFixtures().IdentifyActorPayload;
+  const auto &ProcessData =
+      APISlice::NPCProcessConfiguration::processContractData();
+  const auto &AgentData =
+      JsonInterop::AgentConfiguration::agentContractData();
   FNPCActorInfo Actor;
   Actor.NpcId = Fixture.NpcId;
   Actor.Persona = Fixture.Persona;
+  Actor.bHasStructuredPersona = true;
   Actor.Data.JsonData = Fixture.DataJson;
   
   FString Json = rtk::detail::SerializeIdentifyActorResult(Actor);
@@ -36,22 +42,25 @@ bool FSerializeIdentifyActorPayloadTest::RunTest(const FString &Parameters) {
            JsonInterop::ParseJsonObject(Json, Root));
   const TSharedRef<FJsonObject> RootObject = Root.ToSharedRef();
   const TSharedRef<FJsonObject> ActorObject =
-      DataAdapters::ReadObjectField(RootObject, TEXT("actor"));
+      DataAdapters::ReadObjectField(RootObject, ProcessData.Tape.Actor);
   const TSharedRef<FJsonObject> DataObject =
-      DataAdapters::ReadObjectField(ActorObject, TEXT("data"));
+      DataAdapters::ReadObjectField(ActorObject, ProcessData.Actor.Data);
+  const TSharedRef<FJsonObject> PersonaObject = DataAdapters::ReadObjectField(
+      ActorObject, ProcessData.Actor.StructuredPersona);
+  const TArray<FString> Traits = DataAdapters::ReadStringArrayField(
+      PersonaObject, AgentData.Persona.Traits);
 
   TestEqual(Fixture.Labels.Type,
-            DataAdapters::ReadStringField(RootObject, TEXT("type")),
+            DataAdapters::ReadStringField(RootObject,
+                                          ProcessData.Instruction.Type),
             Fixture.ExpectedType);
   TestEqual(Fixture.Labels.NpcId,
-            DataAdapters::ReadStringField(ActorObject, TEXT("npcId")),
+            DataAdapters::ReadStringField(ActorObject, ProcessData.Actor.Id),
             Fixture.NpcId);
-  TestEqual(Fixture.Labels.Persona,
-            DataAdapters::ReadStringField(ActorObject, TEXT("persona")),
-            Fixture.Persona);
-  TestEqual(Fixture.Labels.Health,
-            DataAdapters::ReadNumberField(DataObject, TEXT("health")),
-            Fixture.ExpectedHealth);
+  TestTrue(Fixture.Labels.Persona,
+           Traits == TArray<FString>{Fixture.Persona});
+  TestEqual(Fixture.Labels.Data, DataAdapters::SerializeObject(DataObject),
+            Fixture.DataJson);
   
   return true;
 }
@@ -63,9 +72,12 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FSerializeDecisionPayloadTest::RunTest(const FString &Parameters)
  */
 bool FSerializeDecisionPayloadTest::RunTest(const FString &Parameters) {
   const FDecisionPayloadFixture &Fixture = CodecFixtures().DecisionPayload;
+  const auto &ProcessData =
+      APISlice::NPCProcessConfiguration::processContractData();
   FString Json = rtk::detail::SerializeDecisionResult(
       Fixture.Goal, Fixture.ActionType, Fixture.Target);
   TSharedPtr<FJsonObject> Root;
@@ -73,19 +85,24 @@ bool FSerializeDecisionPayloadTest::RunTest(const FString &Parameters) {
            JsonInterop::ParseJsonObject(Json, Root));
   const TSharedRef<FJsonObject> RootObject = Root.ToSharedRef();
   const TSharedRef<FJsonObject> Intent =
-      DataAdapters::ReadObjectField(RootObject, TEXT("decisionIntent"));
+      DataAdapters::ReadObjectField(RootObject,
+                                    ProcessData.Tape.DecisionIntent);
 
   TestEqual(Fixture.Labels.Type,
-            DataAdapters::ReadStringField(RootObject, TEXT("type")),
+            DataAdapters::ReadStringField(RootObject,
+                                          ProcessData.Instruction.Type),
             Fixture.ExpectedType);
   TestEqual(Fixture.Labels.Goal,
-            DataAdapters::ReadStringField(Intent, TEXT("goal")),
+            DataAdapters::ReadStringField(Intent,
+                                          ProcessData.DecisionIntent.Goal),
             Fixture.Goal);
   TestEqual(Fixture.Labels.ActionType,
-            DataAdapters::ReadStringField(Intent, TEXT("actionType")),
+            DataAdapters::ReadStringField(
+                Intent, ProcessData.DecisionIntent.ActionType),
             Fixture.ActionType);
   TestEqual(Fixture.Labels.Target,
-            DataAdapters::ReadStringField(Intent, TEXT("target")),
+            DataAdapters::ReadStringField(Intent,
+                                          ProcessData.DecisionIntent.Target),
             Fixture.Target);
   
   return true;
@@ -98,9 +115,12 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FSerializeReasoningPayloadTest::RunTest(const FString &Parameters)
  */
 bool FSerializeReasoningPayloadTest::RunTest(const FString &Parameters) {
   const FReasoningPayloadFixture &Fixture = CodecFixtures().ReasoningPayload;
+  const auto &ProcessData =
+      APISlice::NPCProcessConfiguration::processContractData();
   FString Json = rtk::detail::SerializeReasoningResult(
       Fixture.ReasoningText, Fixture.ResponseText);
   TSharedPtr<FJsonObject> Root;
@@ -108,16 +128,20 @@ bool FSerializeReasoningPayloadTest::RunTest(const FString &Parameters) {
            JsonInterop::ParseJsonObject(Json, Root));
   const TSharedRef<FJsonObject> RootObject = Root.ToSharedRef();
   const TSharedRef<FJsonObject> Reasoning =
-      DataAdapters::ReadObjectField(RootObject, TEXT("reasoningOutput"));
+      DataAdapters::ReadObjectField(RootObject,
+                                    ProcessData.Tape.ReasoningOutput);
 
   TestEqual(Fixture.Labels.Type,
-            DataAdapters::ReadStringField(RootObject, TEXT("type")),
+            DataAdapters::ReadStringField(RootObject,
+                                          ProcessData.Instruction.Type),
             Fixture.ExpectedType);
   TestEqual(Fixture.Labels.ReasoningText,
-            DataAdapters::ReadStringField(Reasoning, TEXT("reasoningText")),
+            DataAdapters::ReadStringField(
+                Reasoning, ProcessData.ReasoningOutput.ReasoningText),
             Fixture.ReasoningText);
   TestEqual(Fixture.Labels.ResponseText,
-            DataAdapters::ReadStringField(Reasoning, TEXT("responseText")),
+            DataAdapters::ReadStringField(
+                Reasoning, ProcessData.ReasoningOutput.ResponseText),
             Fixture.ResponseText);
   
   return true;
@@ -130,15 +154,21 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FEncodeProcessTapePayloadTest::RunTest(const FString &Parameters)
  */
 bool FEncodeProcessTapePayloadTest::RunTest(const FString &Parameters) {
   const FProcessTapePayloadFixture &Fixture =
       CodecFixtures().ProcessTapePayload;
+  const auto &ProcessData =
+      APISlice::NPCProcessConfiguration::processContractData();
+  const auto &AgentData =
+      JsonInterop::AgentConfiguration::agentContractData();
   FNPCProcessTape Tape;
   Tape.Observation = Fixture.Observation;
   Tape.ContextJson = Fixture.ContextJson;
   Tape.NpcState.JsonData = Fixture.NpcStateJson;
   Tape.Persona = Fixture.Persona;
+  Tape.bHasStructuredPersona = true;
   
   TSharedRef<FJsonObject> Obj = APISlice::Detail::EncodeProcessTapeObject(Tape);
   FString Json = APISlice::Detail::ToJsonString(Obj);
@@ -147,14 +177,16 @@ bool FEncodeProcessTapePayloadTest::RunTest(const FString &Parameters) {
            JsonInterop::ParseJsonObject(Json, Root));
   const TSharedRef<FJsonObject> RootObject = Root.ToSharedRef();
   const TSharedRef<FJsonObject> Context =
-      DataAdapters::ReadObjectField(RootObject, TEXT("context"));
+      DataAdapters::ReadObjectField(RootObject, ProcessData.Tape.Context);
   const TSharedRef<FJsonObject> StructuredPersona =
-      DataAdapters::ReadObjectField(RootObject, TEXT("structuredPersona"));
+      DataAdapters::ReadObjectField(RootObject,
+                                    ProcessData.Tape.StructuredPersona);
   const TArray<FString> Traits = DataAdapters::ReadStringArrayField(
-      StructuredPersona, TEXT("traits"));
+      StructuredPersona, AgentData.Persona.Traits);
 
   TestEqual(Fixture.Labels.Observation,
-            DataAdapters::ReadStringField(RootObject, TEXT("observation")),
+            DataAdapters::ReadStringField(RootObject,
+                                          ProcessData.Tape.Observation),
             Fixture.Observation);
   TestTrue(Fixture.Labels.Persona, Traits == Fixture.ExpectedTraits);
   TestEqual(Fixture.Labels.ContextTime,

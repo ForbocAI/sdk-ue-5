@@ -32,13 +32,13 @@ struct FDirectiveRun {
   FString Observation;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  EDirectiveStatus Status;
+  EDirectiveStatus Status{};
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  int64 StartedAt;
+  int64 StartedAt{};
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  int64 CompletedAt;
+  int64 CompletedAt{};
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FString Error;
@@ -47,13 +47,13 @@ struct FDirectiveRun {
   FString MemoryRecallQuery;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  int32 MemoryRecallLimit;
+  int32 MemoryRecallLimit{};
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  float MemoryRecallThreshold;
+  float MemoryRecallThreshold{};
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  bool bVerdictValid;
+  bool bVerdictValid{};
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FString VerdictDialogue;
@@ -61,10 +61,11 @@ struct FDirectiveRun {
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FString VerdictActionType;
 
-  FDirectiveRun()
-      : Status(EDirectiveStatus::Running), StartedAt(0), CompletedAt(0),
-        MemoryRecallLimit(0), MemoryRecallThreshold(0.0f),
-        bVerdictValid(false) {}
+  /**
+   * User Story: As a features protocol consumer, I need to invoke fdirective run through a stable signature so the features protocol workflow remains explicit and composable.
+   * @fn FDirectiveRun() = default
+   */
+  FDirectiveRun() = default;
 };
 
 USTRUCT(BlueprintType)
@@ -75,12 +76,16 @@ struct FMemoryRecallInstruction {
   FString Query;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  int32 Limit;
+  int32 Limit{};
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  float Threshold;
+  float Threshold{};
 
-  FMemoryRecallInstruction() : Limit(5), Threshold(0.7f) {}
+  /**
+   * User Story: As a features protocol consumer, I need to invoke fmemory recall instruction through a stable signature so the features protocol workflow remains explicit and composable.
+   * @fn FMemoryRecallInstruction() = default
+   */
+  FMemoryRecallInstruction() = default;
 };
 
 USTRUCT(BlueprintType)
@@ -94,9 +99,13 @@ struct FMemoryStoreInstruction {
   FString Type;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  float Importance;
+  float Importance{};
 
-  FMemoryStoreInstruction() : Importance(0.5f) {}
+  /**
+   * User Story: As a features protocol consumer, I need to invoke fmemory store instruction through a stable signature so the features protocol workflow remains explicit and composable.
+   * @fn FMemoryStoreInstruction() = default
+   */
+  FMemoryStoreInstruction() = default;
 };
 
 USTRUCT(BlueprintType)
@@ -110,12 +119,91 @@ struct FRecalledMemory {
   FString Type;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  float Importance;
+  float Importance{};
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  float Similarity;
+  float Similarity{};
 
-  FRecalledMemory() : Importance(0.5f), Similarity(0.0f) {}
+  /**
+   * User Story: As a features protocol consumer, I need to invoke frecalled memory through a stable signature so the features protocol workflow remains explicit and composable.
+   * @fn FRecalledMemory() = default
+   */
+  FRecalledMemory() = default;
+};
+
+USTRUCT(BlueprintType)
+struct FPromptConstraints {
+  GENERATED_BODY()
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasMaxTokens{};
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  int32 MaxTokens{};
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasTemperature{};
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  float Temperature{};
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasStop{};
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  TArray<FString> Stop;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasRepeatPenalty{};
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  float RepeatPenalty{};
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasSeed{};
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  int32 Seed{};
+
+  /**
+   * User Story: As a protocol consumer, I need absent inference constraints represented explicitly so zero values are never confused with omission.
+   * @fn FPromptConstraints() = default
+   */
+  FPromptConstraints() = default;
+};
+
+USTRUCT(BlueprintType)
+struct FRuleVerdictEntry {
+  GENERATED_BODY()
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  FString RuleId;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  FString Verdict;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasReason{};
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  FString Reason;
+
+  /**
+   * User Story: As a rule-audit consumer, I need optional block reasons represented without manufacturing empty reasons.
+   * @fn FRuleVerdictEntry() = default
+   */
+  FRuleVerdictEntry() = default;
+};
+
+USTRUCT(BlueprintType)
+struct FRuleAudit {
+  GENERATED_BODY()
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  FString Preset;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  TArray<FRuleVerdictEntry> AppliedRules;
 };
 
 UENUM(BlueprintType)
@@ -132,19 +220,19 @@ struct FNPCInstruction {
   GENERATED_BODY()
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  ENPCInstructionType Type;
+  ENPCInstructionType Type{};
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FString Query;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  int32 Limit;
+  int32 Limit{};
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  float Threshold;
+  float Threshold{};
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  bool bValid;
+  bool bValid{};
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FString Signature;
@@ -159,21 +247,30 @@ struct FNPCInstruction {
   FAgentAction Action;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  bool bHasAction;
+  bool bHasAction{};
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FString Dialogue;
 
-  FNPCInstruction()
-      : Type(ENPCInstructionType::Finalize), Limit(0), Threshold(0.7f),
-        bValid(true), bHasAction(false) {}
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasRuleAudit{};
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  FRuleAudit RuleAudit;
+
+  /**
+   * User Story: As a features protocol consumer, I need to invoke fnpcinstruction through a stable signature so the features protocol workflow remains explicit and composable.
+   * @fn FNPCInstruction() = default
+   */
+  FNPCInstruction() = default;
 };
 
 namespace TypeFactory {
 
+/** User Story: As a features protocol consumer, I need to invoke memory recall instruction through a stable signature so the features protocol workflow remains explicit and composable. @fn inline FMemoryRecallInstruction MemoryRecallInstruction(const FString &Query, int32 Limit, float Threshold) */
 inline FMemoryRecallInstruction
-MemoryRecallInstruction(const FString &Query, int32 Limit = 5,
-                        float Threshold = 0.7f) {
+MemoryRecallInstruction(const FString &Query, int32 Limit,
+                        float Threshold) {
   FMemoryRecallInstruction Instruction;
   Instruction.Query = Query;
   Instruction.Limit = Limit;
@@ -181,10 +278,10 @@ MemoryRecallInstruction(const FString &Query, int32 Limit = 5,
   return Instruction;
 }
 
+/** User Story: As a features protocol consumer, I need to invoke memory store instruction through a stable signature so the features protocol workflow remains explicit and composable. @fn inline FMemoryStoreInstruction MemoryStoreInstruction(const FString &Text, const FString &Type, float Importance) */
 inline FMemoryStoreInstruction
 MemoryStoreInstruction(const FString &Text,
-                       const FString &Type = TEXT("observation"),
-                       float Importance = 0.5f) {
+                       const FString &Type, float Importance) {
   FMemoryStoreInstruction Instruction;
   Instruction.Text = Text;
   Instruction.Type = Type;

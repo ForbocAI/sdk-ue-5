@@ -2,6 +2,7 @@
 
 #include "Features/Directive/DirectiveSlice.h"
 #include "Features/NPC/NPCActions.h"
+#include "Features/Protocol/Configuration/ConfigurationAdapters.h"
 #include "Features/Protocol/Turn/TurnAdapters.h"
 
 namespace rtk::detail {
@@ -11,14 +12,17 @@ namespace rtk::detail {
  * persisting memory, and applying state transforms.
  * User Story: As protocol instruction dispatch, I need finalization handled
  * as a pure expression so the instruction ternary stays flat.
+ * @fn template <typename RuntimeState> inline func::AsyncResult<FAgentResponse> HandleFinalize(const FNPCInstruction &Instruction, const FString &NpcId, const FString &Input, const FString &RunId, const FProtocolHandlerContext &Runtime, std::function<AnyAction(const AnyAction &)> Dispatch, std::function<const RuntimeState &()> GetState)
  */
+template <typename RuntimeState>
 inline func::AsyncResult<FAgentResponse>
 HandleFinalize(const FNPCInstruction &Instruction,
                const FString &NpcId, const FString &Input,
                const FString &RunId,
                const FProtocolHandlerContext &Runtime,
                std::function<AnyAction(const AnyAction &)> Dispatch,
-               std::function<const FRuntimeState &()> GetState) {
+               std::function<const RuntimeState &()> GetState) {
+  const auto &Data = ProtocolConfiguration::protocolData();
   FVerdictResponse Verdict;
   Verdict.bValid = Instruction.bValid;
   Verdict.Signature = Instruction.Signature;
@@ -32,13 +36,14 @@ HandleFinalize(const FNPCInstruction &Instruction,
   return !Instruction.bValid
              ? (Dispatch(NPCActions::blockAction(
                     NpcId, Instruction.Dialogue.IsEmpty()
-                               ? FString(TEXT("Validation failed"))
+                               ? Data.Errors.ValidationFailed
                                : Instruction.Dialogue)),
                 ResolveAsync(BuildAgentResponse(Instruction)))
              : func::AsyncChain::then<rtk::FEmptyPayload, FAgentResponse>(
-                   PersistMemoryInstructions(Instruction.storeMemory, 0,
-                                             Runtime, Dispatch, GetState),
-                   [NpcId, Input, Instruction, Dispatch,
+                   PersistMemoryInstructions(
+                       Instruction.storeMemory, Data.Iteration.InitialIndex,
+                       Runtime, Dispatch, GetState),
+                   [NpcId, Input, Instruction, Dispatch, Data,
                     GetState](const rtk::FEmptyPayload &) {
                      HasStatePayload(Instruction.StateTransform)
                          ? (Dispatch(NPCActions::updateNPCState(
@@ -53,9 +58,9 @@ HandleFinalize(const FNPCInstruction &Instruction,
                          : void();
 
                      Dispatch(NPCActions::addToHistory(
-                         NpcId, TEXT("user"), Input));
+                         NpcId, Data.Roles.User, Input));
                      Dispatch(NPCActions::addToHistory(
-                         NpcId, TEXT("assistant"), Instruction.Dialogue));
+                         NpcId, Data.Roles.Assistant, Instruction.Dialogue));
 
                      return ResolveAsync(BuildAgentResponse(Instruction));
                    });

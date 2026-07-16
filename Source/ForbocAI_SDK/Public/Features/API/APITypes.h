@@ -27,11 +27,13 @@ struct FApiStatusResponse {
   UPROPERTY(BlueprintReadOnly, Category = "System")
   FString Version;
 
+  /** User Story: As a features api consumer, I need to invoke fapi status response through a stable signature so the features api workflow remains explicit and composable. @fn FApiStatusResponse() */
   FApiStatusResponse() {}
 };
 
 namespace TypeFactory {
 
+/** User Story: As a features api consumer, I need to invoke api status response through a stable signature so the features api workflow remains explicit and composable. @fn inline FApiStatusResponse ApiStatusResponse(FString Status, FString Version) */
 inline FApiStatusResponse ApiStatusResponse(FString Status, FString Version) {
   FApiStatusResponse R;
   R.Status = MoveTemp(Status);

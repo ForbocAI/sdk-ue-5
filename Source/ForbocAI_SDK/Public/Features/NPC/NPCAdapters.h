@@ -9,14 +9,17 @@
 
 namespace NPCAdapters {
 
+/** User Story: As a features npc consumer, I need to invoke npc id selector through a stable signature so the features npc workflow remains explicit and composable. @fn inline FString npcIdSelector(const FNPCInternalState &Npc) */
 inline FString npcIdSelector(const FNPCInternalState &Npc) { return Npc.Id; }
 
+/** User Story: As a features npc consumer, I need to invoke npc adapter through a stable signature so the features npc workflow remains explicit and composable. @fn inline const rtk::EntityAdapter<FNPCInternalState> &npcAdapter() */
 inline const rtk::EntityAdapter<FNPCInternalState> &npcAdapter() {
   static const rtk::EntityAdapter<FNPCInternalState> Adapter =
       rtk::createEntityAdapter<FNPCInternalState>(&npcIdSelector);
   return Adapter;
 }
 
+/** User Story: As a features npc consumer, I need to invoke update npcstate locally through a stable signature so the features npc workflow remains explicit and composable. @fn inline FAgentState updateNPCStateLocally(const FAgentState &Current, const FAgentState &Delta) */
 inline FAgentState updateNPCStateLocally(const FAgentState &Current,
                                          const FAgentState &Delta) {
   return (Delta.JsonData.IsEmpty() || Delta.JsonData == TEXT("{}"))
@@ -61,6 +64,7 @@ inline FAgentState updateNPCStateLocally(const FAgentState &Current,
   }();
 }
 
+/** User Story: As a features npc consumer, I need to invoke make state log entry through a stable signature so the features npc workflow remains explicit and composable. @fn inline FNPCStateLogEntry makeStateLogEntry(const FAgentState &Delta, const FAgentState &State, int64 Timestamp) */
 inline FNPCStateLogEntry makeStateLogEntry(const FAgentState &Delta,
                                            const FAgentState &State,
                                            int64 Timestamp) {

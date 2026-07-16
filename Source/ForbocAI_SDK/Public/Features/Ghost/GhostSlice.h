@@ -9,6 +9,7 @@
 #include "CoreMinimal.h"
 #include "Features/Contracts/ContractsTypes.h"
 #include "Features/Ghost/GhostActions.h"
+#include "Features/Ghost/State/StateTypes.h"
 
 namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
 typedef func::Maybe<FString> FForbocAISDKPublicGhostGhostSliceHOptionalDomainId;
@@ -25,6 +26,7 @@ struct FGhostSessionProgressPayload {
   FString Status;
   float Progress;
 
+  /** User Story: As a features ghost consumer, I need to invoke fghost session progress payload through a stable signature so the features ghost workflow remains explicit and composable. @fn FGhostSessionProgressPayload() */
   FGhostSessionProgressPayload() : Progress(0.0f) {}
 };
 
@@ -33,20 +35,16 @@ struct FGhostSessionFailedPayload {
   FString Error;
 };
 
-struct FGhostSliceState {
-  FString ActiveSessionId;
-  FString Status;
-  float Progress;
-  FGhostTestReport Results;
-  bool bHasResults;
-  TArray<FGhostHistoryEntry> History;
-  bool bLoading;
-  FString Error;
-
-  FGhostSliceState()
-      : Status(TEXT("idle")), Progress(0.0f), bHasResults(false),
-        bLoading(false) {}
-};
+/**
+ * User Story: As ghost initialization, I need authored lifecycle defaults
+ * established at the slice boundary while the state type remains inert.
+ * @fn inline FGhostSliceState createGhostInitialState()
+ */
+inline FGhostSliceState createGhostInitialState() {
+  FGhostSliceState State;
+  State.Status = TEXT("idle");
+  return State;
+}
 
 namespace Actions {
 
@@ -54,6 +52,7 @@ namespace Actions {
  * Returns the cached action creator for ghost session start events.
  * User Story: As ghost session orchestration, I need a stable action creator
  * so reducers and middleware can reuse the same start contract.
+ * @fn inline const ActionCreator<FGhostSessionStartedPayload> & ghostSessionStartedActionCreator()
  */
 inline const ActionCreator<FGhostSessionStartedPayload> &
 ghostSessionStartedActionCreator() {
@@ -66,6 +65,7 @@ ghostSessionStartedActionCreator() {
  * Returns the cached action creator for ghost session progress events.
  * User Story: As ghost progress tracking, I need a reusable action creator so
  * progress updates stay consistent across dispatch sites.
+ * @fn inline const ActionCreator<FGhostSessionProgressPayload> & ghostSessionProgressActionCreator()
  */
 inline const ActionCreator<FGhostSessionProgressPayload> &
 ghostSessionProgressActionCreator() {
@@ -78,6 +78,7 @@ ghostSessionProgressActionCreator() {
  * Returns the cached action creator for completed ghost sessions.
  * User Story: As ghost reporting, I need a reusable completion action creator
  * so finished runs can be stored with one contract.
+ * @fn inline const ActionCreator<FGhostTestReport> & ghostSessionCompletedActionCreator()
  */
 inline const ActionCreator<FGhostTestReport> &
 ghostSessionCompletedActionCreator() {
@@ -90,6 +91,7 @@ ghostSessionCompletedActionCreator() {
  * Returns the cached action creator for failed ghost sessions.
  * User Story: As ghost failure handling, I need a reusable failure action
  * creator so session errors can be reported consistently.
+ * @fn inline const ActionCreator<FGhostSessionFailedPayload> & ghostSessionFailedActionCreator()
  */
 inline const ActionCreator<FGhostSessionFailedPayload> &
 ghostSessionFailedActionCreator() {
@@ -102,6 +104,7 @@ ghostSessionFailedActionCreator() {
  * Returns the cached action creator for loading ghost history.
  * User Story: As ghost history views, I need a stable action creator so prior
  * runs can be loaded without custom action wiring.
+ * @fn inline const ActionCreator<TArray<FGhostHistoryEntry>> & ghostHistoryLoadedActionCreator()
  */
 inline const ActionCreator<TArray<FGhostHistoryEntry>> &
 ghostHistoryLoadedActionCreator() {
@@ -114,6 +117,7 @@ ghostHistoryLoadedActionCreator() {
  * Returns the cached action creator for clearing ghost state.
  * User Story: As ghost session reset flows, I need one clear action creator so
  * teardown can restore the slice predictably.
+ * @fn inline const ActionCreatorWithoutPayload &clearGhostSessionActionCreator()
  */
 inline const ActionCreatorWithoutPayload &clearGhostSessionActionCreator() {
   static const ActionCreatorWithoutPayload ActionCreator =
@@ -125,6 +129,7 @@ inline const ActionCreatorWithoutPayload &clearGhostSessionActionCreator() {
  * Creates an action that opens a new ghost test session.
  * User Story: As ghost run startup, I need session metadata captured so the UI
  * and reducers know which run is active.
+ * @fn inline AnyAction ghostSessionStarted(const FString &SessionId, const FString &Status = TEXT("running"))
  */
 inline AnyAction ghostSessionStarted(const FString &SessionId,
                                      const FString &Status = TEXT("running")) {
@@ -136,6 +141,7 @@ inline AnyAction ghostSessionStarted(const FString &SessionId,
  * Creates an action that updates ghost session progress state.
  * User Story: As ghost progress reporting, I need each progress tick recorded
  * so observers can render current status and percentage.
+ * @fn inline AnyAction ghostSessionProgress(const FString &SessionId, const FString &Status, float Progress)
  */
 inline AnyAction ghostSessionProgress(const FString &SessionId,
                                       const FString &Status, float Progress) {
@@ -150,6 +156,7 @@ inline AnyAction ghostSessionProgress(const FString &SessionId,
  * Creates an action that stores a completed ghost test report.
  * User Story: As ghost result consumers, I need the finished report preserved
  * so results can be reviewed after execution.
+ * @fn inline AnyAction ghostSessionCompleted(const FGhostTestReport &Report)
  */
 inline AnyAction ghostSessionCompleted(const FGhostTestReport &Report) {
   return ghostSessionCompletedActionCreator()(Report);
@@ -159,6 +166,7 @@ inline AnyAction ghostSessionCompleted(const FGhostTestReport &Report) {
  * Creates an action that stores a ghost session failure.
  * User Story: As ghost error handling, I need failed sessions recorded so the
  * UI can explain why a run stopped.
+ * @fn inline AnyAction ghostSessionFailed(const FString &SessionId, const FString &Error)
  */
 inline AnyAction ghostSessionFailed(const FString &SessionId,
                                     const FString &Error) {
@@ -170,6 +178,7 @@ inline AnyAction ghostSessionFailed(const FString &SessionId,
  * Creates an action that replaces the cached ghost history.
  * User Story: As history views, I need the latest run history loaded so users
  * can inspect recent ghost sessions.
+ * @fn inline AnyAction ghostHistoryLoaded(const TArray<FGhostHistoryEntry> &History)
  */
 inline AnyAction ghostHistoryLoaded(const TArray<FGhostHistoryEntry> &History) {
   return ghostHistoryLoadedActionCreator()(History);
@@ -179,6 +188,7 @@ inline AnyAction ghostHistoryLoaded(const TArray<FGhostHistoryEntry> &History) {
  * Creates an action that resets ghost session state.
  * User Story: As cleanup flows, I need ghost state cleared so a new run starts
  * from a known baseline.
+ * @fn inline AnyAction clearGhostSession()
  */
 inline AnyAction clearGhostSession() {
   return clearGhostSessionActionCreator()();
@@ -186,11 +196,13 @@ inline AnyAction clearGhostSession() {
 
 } // namespace Actions
 
+/** User Story: As a features ghost consumer, I need to invoke is active session through a stable signature so the features ghost workflow remains explicit and composable. @fn inline bool IsActiveSession(const FGhostSliceState &State, const FString &SessionId) */
 inline bool IsActiveSession(const FGhostSliceState &State,
                             const FString &SessionId) {
   return !State.ActiveSessionId.IsEmpty() && State.ActiveSessionId == SessionId;
 }
 
+/** User Story: As a features ghost consumer, I need to invoke reduce active session through a stable signature so the features ghost workflow remains explicit and composable. @fn template <typename Transform> inline FGhostSliceState ReduceActiveSession(const FGhostSliceState &State, const FString &SessionId, Transform TransformState) */
 template <typename Transform>
 inline FGhostSliceState ReduceActiveSession(const FGhostSliceState &State,
                                             const FString &SessionId,
@@ -202,12 +214,13 @@ inline FGhostSliceState ReduceActiveSession(const FGhostSliceState &State,
  * Builds the ghost slice reducer and initial state.
  * User Story: As ghost runtime setup, I need one slice factory so store
  * creation wires ghost actions and state transitions consistently.
+ * @fn inline Slice<FGhostSliceState> createGhostSlice()
  */
 inline Slice<FGhostSliceState> createGhostSlice() {
+  const FGhostSliceState InitialState = createGhostInitialState();
   return rtk::createSlice<FGhostSliceState>(
-  TEXT("ghost"),
-                                                   FGhostSliceState(),
-  [](rtk::ActionReducerMapBuilder<FGhostSliceState> &Builder) {
+  TEXT("ghost"), InitialState,
+  [InitialState](rtk::ActionReducerMapBuilder<FGhostSliceState> &Builder) {
     Builder.addCase(Actions::ghostSessionStartedActionCreator(),
       [](const FGhostSliceState &State,
                              const Action<FGhostSessionStartedPayload> &Action)
@@ -268,9 +281,9 @@ inline Slice<FGhostSliceState> createGhostSlice() {
                             return Next;
                           });
     Builder.addCase(Actions::clearGhostSessionActionCreator(),
-      [](const FGhostSliceState &State,
+      [InitialState](const FGhostSliceState &State,
                    const Action<rtk::FEmptyPayload> &Action) -> FGhostSliceState {
-                  return FGhostSliceState();
+                  return InitialState;
                 });
   });
 }

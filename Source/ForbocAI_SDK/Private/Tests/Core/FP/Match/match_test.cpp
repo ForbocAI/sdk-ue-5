@@ -7,6 +7,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     "ForbocAI.Core.FunctionalCore.MultiMatch.Predicate",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
+/** User Story: As a core fp match consumer, I need to invoke run test through a stable signature so the core fp match workflow remains explicit and composable. @fn bool FMultiMatchPredicateTest::RunTest(const FString &Parameters) */
 bool FMultiMatchPredicateTest::RunTest(const FString &Parameters) {
   const auto &Fixture = Testing::FP::Match::MatchFixtures().Predicate;
   const std::string NegativeExpected =
@@ -51,6 +52,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     "ForbocAI.Core.FunctionalCore.MultiMatch.Wildcard",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
+/** User Story: As a core fp match consumer, I need to invoke run test through a stable signature so the core fp match workflow remains explicit and composable. @fn bool FMultiMatchWildcardTest::RunTest(const FString &Parameters) */
 bool FMultiMatchWildcardTest::RunTest(const FString &Parameters) {
   const auto &Fixture = Testing::FP::Match::MatchFixtures().Wildcard;
   const std::string ExactExpected =
@@ -83,6 +85,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     "ForbocAI.Core.FunctionalCore.MultiMatch.NoMatch",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
+/** User Story: As a core fp match consumer, I need to invoke run test through a stable signature so the core fp match workflow remains explicit and composable. @fn bool FMultiMatchNoMatchTest::RunTest(const FString &Parameters) */
 bool FMultiMatchNoMatchTest::RunTest(const FString &Parameters) {
   const auto &Fixture = Testing::FP::Match::MatchFixtures().NoMatch;
   const std::string RegisteredResult =
@@ -103,6 +106,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     "ForbocAI.Core.FunctionalCore.MultiMatch.Equals",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
+/** User Story: As a core fp match consumer, I need to invoke run test through a stable signature so the core fp match workflow remains explicit and composable. @fn bool FMultiMatchEqualsTest::RunTest(const FString &Parameters) */
 bool FMultiMatchEqualsTest::RunTest(const FString &Parameters) {
   const auto &Fixture = Testing::FP::Match::MatchFixtures().Equals;
   const std::string FirstInput = TCHAR_TO_UTF8(*Fixture.First.Input);
@@ -140,6 +144,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     "ForbocAI.Core.FunctionalCore.FromNullable.Pointer",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
+/** User Story: As a core fp match consumer, I need to invoke run test through a stable signature so the core fp match workflow remains explicit and composable. @fn bool FFromNullablePtrTest::RunTest(const FString &Parameters) */
 bool FFromNullablePtrTest::RunTest(const FString &Parameters) {
   const auto &Fixture = Testing::FP::Match::MatchFixtures().NullablePointer;
   int Value = Fixture.Value;
@@ -159,6 +164,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     "ForbocAI.Core.FunctionalCore.FromNullable.Value",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
+/** User Story: As a core fp match consumer, I need to invoke run test through a stable signature so the core fp match workflow remains explicit and composable. @fn bool FFromNullableValueTest::RunTest(const FString &Parameters) */
 bool FFromNullableValueTest::RunTest(const FString &Parameters) {
   const auto &Fixture = Testing::FP::Match::MatchFixtures().NullableValue;
   const std::string ValidValue = TCHAR_TO_UTF8(*Fixture.ValidValue);
@@ -178,6 +184,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FRequireJustTest, "ForbocAI.Core.FunctionalCore.RequireJust",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
+/** User Story: As a core fp match consumer, I need to invoke run test through a stable signature so the core fp match workflow remains explicit and composable. @fn bool FRequireJustTest::RunTest(const FString &Parameters) */
 bool FRequireJustTest::RunTest(const FString &Parameters) {
   const auto &Fixture = Testing::FP::Match::MatchFixtures().RequireJust;
   const std::string SuccessMessage =

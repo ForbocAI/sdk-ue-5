@@ -5,9 +5,9 @@
 
 namespace func {
 /**
+ * @fn template <typename A, typename B, typename Combine> auto lift2(const Maybe<A> &a, const Maybe<B> &b, Combine combine) -> Maybe<decltype(combine(a.value, b.value))>
  * @brief Combines two Maybe values when both are present.
  *
- * @signature template <typename A, typename B, typename Combine> auto lift2(const Maybe<A> &a, const Maybe<B> &b, Combine combine) -> Maybe<decltype(combine(a.value, b.value))>
  *
  * User Story: As data assembly code, I need small optional records to compose
  * without nested matches or substitute values.
@@ -21,9 +21,9 @@ auto lift2(const Maybe<A> &a, const Maybe<B> &b, Combine combine)
 }
 
 /**
+ * @fn template <typename A, typename B, typename C, typename Combine> auto lift3(const Maybe<A> &a, const Maybe<B> &b, const Maybe<C> &c, Combine combine) -> Maybe<decltype(combine(a.value, b.value, c.value))>
  * @brief Combines three Maybe values when all are present.
  *
- * @signature template <typename A, typename B, typename C, typename Combine> auto lift3(const Maybe<A> &a, const Maybe<B> &b, const Maybe<C> &c, Combine combine) -> Maybe<decltype(combine(a.value, b.value, c.value))>
  *
  * User Story: As JSON and ECS seed code, I need small required-field groups to
  * assemble through one reusable optional combinator.
@@ -39,11 +39,11 @@ auto lift3(const Maybe<A> &a, const Maybe<B> &b, const Maybe<C> &c,
 
 
 /**
+ * @fn template <typename T, typename Func> auto fmap(const Maybe<T> &m, Func f) -> Maybe<decltype(f(m.value))>
  * @brief Maps a function across the populated branch of a Maybe.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename T, typename Func> auto fmap(const Maybe<T> &m, Func f) -> Maybe<decltype(f(m.value))>
  *
  * User Story: As optional transformations, I need fmap on Maybe so values can
  * be transformed without unwrapping and rewrapping by hand.
@@ -55,11 +55,11 @@ auto fmap(const Maybe<T> &m, Func f) -> Maybe<decltype(f(m.value))> {
 }
 
 /**
+ * @fn template <typename E, typename T, typename Func> auto fmap(const Either<E, T> &e, Func f) -> Either<E, decltype(f(e.right))>
  * @brief Maps a function across the success branch of an Either.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename E, typename T, typename Func> auto fmap(const Either<E, T> &e, Func f) -> Either<E, decltype(f(e.right))>
  *
  * User Story: As result transformations, I need fmap on Either so success
  * values can be transformed while preserving failures unchanged.
@@ -82,6 +82,7 @@ auto fmap(const Either<E, T> &e, Func f) -> Either<E, decltype(f(e.right))> {
  * element-wise mapping follows the same functional style as Maybe and Either.
  */
 namespace detail {
+/** User Story: As a core fp functor consumer, I need to invoke fmap vector recursive through a stable signature so the core fp functor workflow remains explicit and composable. @fn template <typename T, typename Func, typename U> std::vector<U> fmapVectorRecursive(const std::vector<T> &vec, Func f, size_t index, std::vector<U> result) */
 template <typename T, typename Func, typename U>
 std::vector<U> fmapVectorRecursive(const std::vector<T> &vec, Func f,
                                    size_t index, std::vector<U> result) {
@@ -93,6 +94,7 @@ std::vector<U> fmapVectorRecursive(const std::vector<T> &vec, Func f,
 }
 } // namespace detail
 
+/** User Story: As a core fp functor consumer, I need to invoke fmap through a stable signature so the core fp functor workflow remains explicit and composable. @fn template <typename T, typename Func> auto fmap(const std::vector<T> &vec, Func f) -> std::vector<decltype(f(std::declval<const T &>()))> */
 template <typename T, typename Func>
 auto fmap(const std::vector<T> &vec, Func f)
     -> std::vector<decltype(f(std::declval<const T &>()))> {

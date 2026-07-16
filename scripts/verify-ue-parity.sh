@@ -13,11 +13,16 @@
 #   5. Redux/RTK boundary discipline (check_redux.py)
 #   6. Source/data literal discipline (check_source_for_data.py)
 #   7. ECS domain/data discipline (ecs/domain_boundaries.py, ecs/data_naming.py)
-#   8. Line-count discipline (check_line_count.py)
-#   9. Dead-code/data guard (check_dead_code.py)
-#   10. Test-game executor-boundary guard (check-test-game-executor-boundary.sh)
-#   11. Product boundary audit (check-product-boundary.sh)
-#   12. API contract parity (check-api-contract-parity.py)
+#   8. Function documentation (docs/check_function_docs.py)
+#   9. Line-count discipline (check_line_count.py)
+#   10. Dead-code/data guard (check_dead_code.py)
+#   11. Test-game executor-boundary guard (check-test-game-executor-boundary.sh)
+#   12. Product boundary audit (check-product-boundary.sh)
+#   13. API contract parity (check-api-contract-parity.py)
+#   14. Handler classification parity (check-handler-classification.py)
+#   15. Test quality (check-test-quality.sh)
+#   16. Protocol codec parity (check-codec-parity.sh)
+#   17. Runtime readiness (check-runtime-readiness.sh)
 #
 # Exit codes:
 #   0 = all checks passed
@@ -44,6 +49,7 @@ REDUX_RTK_STATUS="skipped"
 SOURCE_DATA_STATUS="skipped"
 ECS_DOMAIN_STATUS="skipped"
 ECS_DATA_STATUS="skipped"
+FUNCTION_DOCS_STATUS="skipped"
 LINE_COUNT_STATUS="skipped"
 DEAD_CODE_STATUS="skipped"
 PRODUCT_BOUNDARY_STATUS="skipped"
@@ -197,7 +203,11 @@ run_check "ECS Domain Boundary Discipline (UE targets)" \
 run_check "ECS Authored Data Naming (UE targets)" \
   "$SCRIPT_DIR/ecs/data_naming.py" ECS_DATA_STATUS
 
-# ── Phase 3f: File size and dead-code discipline ──
+# ── Phase 3f: Function documentation contract ──
+run_check "Function documentation (Doxygen stories and exact signatures)" \
+  "$SCRIPT_DIR/docs/check_function_docs.py" FUNCTION_DOCS_STATUS
+
+# ── Phase 3g: File size and dead-code discipline ──
 run_check "Line-count discipline (Source/Content authored files)" \
   "$SCRIPT_DIR/check_line_count.py" LINE_COUNT_STATUS
 
@@ -298,6 +308,7 @@ echo "  [$(mark_for_status "$REDUX_RTK_STATUS")] Redux/RTK guidance"
 echo "  [$(mark_for_status "$SOURCE_DATA_STATUS")] Source/data literal discipline"
 echo "  [$(mark_for_status "$ECS_DOMAIN_STATUS")] ECS domain boundaries"
 echo "  [$(mark_for_status "$ECS_DATA_STATUS")] ECS authored-data naming"
+echo "  [$(mark_for_status "$FUNCTION_DOCS_STATUS")] Function documentation"
 echo "  [$(mark_for_status "$LINE_COUNT_STATUS")] Line-count discipline"
 echo "  [$(mark_for_status "$DEAD_CODE_STATUS")] Dead-code/data guard"
 echo "  [$(mark_for_status "$TEST_GAME_BOUNDARY_STATUS")] Test-game executor boundary"

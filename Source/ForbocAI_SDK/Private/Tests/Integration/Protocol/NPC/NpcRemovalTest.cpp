@@ -13,6 +13,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
+/** User Story: As a integration protocol npc consumer, I need to invoke run test through a stable signature so the integration protocol npc workflow remains explicit and composable. @fn bool FProtocolNpcRemovalCascadeTest::RunTest(const FString &Parameters) */
 bool FProtocolNpcRemovalCascadeTest::RunTest(const FString &Parameters) {
   rtk::EnhancedStore<FRuntimeState> TestStore = createRuntimeStore();
 

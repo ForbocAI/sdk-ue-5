@@ -1,0 +1,79 @@
+{
+  "history": {
+    "recentInteractionLimit": 6
+  },
+  "iteration": {
+    "initialIndex": 0,
+    "step": 1
+  },
+  "runtimeTypes": {
+    "function": "function",
+    "string": "string"
+  },
+  "errors": {
+    "missingMemoryStore": "API requires memory engine for memoryStore",
+    "missingVectorMemory": "API requires memory engine for QueryVector",
+    "unknownInstruction": "API returned unknown instruction type",
+    "validationFailed": "Validation failed",
+    "maxTurnsExceeded": "Protocol loop exceeded max turns",
+    "unsupportedInstruction": "Unsupported protocol instruction type: ",
+    "missingNpcId": "No npcId provided and no active NPC selected",
+    "missingStructuredPersona": "No structured persona provided by the game",
+    "processingFailed": "Protocol processing failed"
+  },
+  "limits": {
+    "maxTurns": 12
+  },
+  "classifications": {
+    "IdentifyActor": "Local",
+    "QueryVector": "Local",
+    "Decision": "Local",
+    "Reasoning": "Pass-through",
+    "Finalize": "Local"
+  },
+  "decision": {
+    "moveVerbs": ["move", "walk", "run", "go"],
+    "interactVerbs": ["open", "close", "use", "pick", "take", "give", "attack"],
+    "stopWords": ["the", "a", "an", "to", "into", "toward", "towards", "i", "can", "please", "you"],
+    "actionTypes": {
+      "move": "MOVE",
+      "interact": "INTERACT",
+      "speak": "SPEAK"
+    },
+    "goal": {
+      "prefix": "Respond to: ",
+      "memoryPrefix": " (with ",
+      "memorySuffix": " recalled memories)"
+    },
+    "metadataSource": "sdk_decision_policy",
+    "metadataFields": {
+      "source": "source",
+      "context": "context",
+      "npcState": "npcState",
+      "memories": "memories",
+      "recentInteractions": "recentInteractions",
+      "role": "role",
+      "content": "content"
+    }
+  },
+  "roles": {
+    "user": "user",
+    "assistant": "assistant"
+  },
+  "text": {
+    "empty": "",
+    "emptyObject": "{}",
+    "wordSeparator": " "
+  },
+  "formats": {
+    "runIdSeparator": ":"
+  },
+  "debug": {
+    "environment": "FORBOCAI_DEBUG_NPC_PROCESS",
+    "enabledValue": "1",
+    "preDispatch": "[npc-process][pre-dispatch]",
+    "rawAction": "[npc-process][raw-action]",
+    "unwrapThrow": "[npc-process][unwrap-throw]",
+    "unwrapOk": "[npc-process][unwrap-ok]"
+  }
+}

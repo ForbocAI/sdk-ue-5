@@ -2,269 +2,65 @@
   {
     "name": "ClearNoMatch",
     "actions": [
-      {
-        "kind": 0,
-        "id": "d1",
-        "npcId": "npc_a",
-        "observation": "obs"
-      },
-      {
-        "kind": 4,
-        "npcId": "npc_nonexistent"
-      }
+      {"kind":"Start","id":"d1","npcId":"npc_a","observation":"obs"},
+      {"kind":"ClearNpc","npcId":"npc_nonexistent"}
     ],
-    "expected": {
-      "directiveCount": 1,
-      "activeId": "d1",
-      "runs": [
-        {
-          "id": "d1",
-          "exists": true,
-          "npcId": "npc_a"
-        }
-      ]
-    }
+    "expected": {"directiveCount":1,"activeId":"d1","runs":[{"id":"d1","exists":true,"npcId":"npc_a"}]}
   },
   {
     "name": "InvalidVerdict",
     "actions": [
-      {
-        "kind": 0,
-        "id": "iv",
-        "npcId": "npc1",
-        "observation": "obs"
-      },
-      {
-        "kind": 2,
-        "id": "iv",
-        "verdictValid": false,
-        "dialogue": "Action blocked by bridge",
-        "hasAction": true,
-        "actionType": "ATTACK",
-        "actionTarget": "entity",
-        "actionReason": "Action is not permitted"
-      }
+      {"kind":"Start","id":"iv","npcId":"npc1","observation":"obs"},
+      {"kind":"Validate","id":"iv","verdictValid":false,"dialogue":"Action blocked by bridge","hasAction":true,"actionType":"ATTACK","actionTarget":"entity","actionReason":"Action is not permitted"}
     ],
-    "expected": {
-      "directiveCount": 1,
-      "activeId": "iv",
-      "runs": [
-        {
-          "id": "iv",
-          "exists": true,
-          "status": 1,
-          "verdictValid": false,
-          "dialogue": "Action blocked by bridge",
-          "actionType": "ATTACK"
-        }
-      ]
-    }
+    "expected": {"directiveCount":1,"activeId":"iv","runs":[{"id":"iv","exists":true,"status":1,"verdictValid":false,"dialogue":"Action blocked by bridge","actionType":"ATTACK"}]}
   },
   {
     "name": "RapidSequentialFailures",
     "actions": [
-      {
-        "kind": 0,
-        "id": "rapid_0",
-        "npcId": "npc_stress",
-        "observation": "obs"
-      },
-      {
-        "kind": 0,
-        "id": "rapid_1",
-        "npcId": "npc_stress",
-        "observation": "obs"
-      },
-      {
-        "kind": 0,
-        "id": "rapid_2",
-        "npcId": "npc_stress",
-        "observation": "obs"
-      },
-      {
-        "kind": 0,
-        "id": "rapid_3",
-        "npcId": "npc_stress",
-        "observation": "obs"
-      },
-      {
-        "kind": 0,
-        "id": "rapid_4",
-        "npcId": "npc_stress",
-        "observation": "obs"
-      },
-      {
-        "kind": 3,
-        "id": "rapid_0",
-        "error": "Timeout after 1000 ms"
-      },
-      {
-        "kind": 3,
-        "id": "rapid_1",
-        "error": "Timeout after 2000 ms"
-      },
-      {
-        "kind": 3,
-        "id": "rapid_2",
-        "error": "Timeout after 3000 ms"
-      },
-      {
-        "kind": 3,
-        "id": "rapid_3",
-        "error": "Timeout after 4000 ms"
-      },
-      {
-        "kind": 3,
-        "id": "rapid_4",
-        "error": "Timeout after 5000 ms"
-      }
+      {"kind":"Start","id":"rapid_0","npcId":"npc_stress","observation":"obs"},
+      {"kind":"Start","id":"rapid_1","npcId":"npc_stress","observation":"obs"},
+      {"kind":"Start","id":"rapid_2","npcId":"npc_stress","observation":"obs"},
+      {"kind":"Start","id":"rapid_3","npcId":"npc_stress","observation":"obs"},
+      {"kind":"Start","id":"rapid_4","npcId":"npc_stress","observation":"obs"},
+      {"kind":"Fail","id":"rapid_0","error":"Timeout after 1000 ms"},
+      {"kind":"Fail","id":"rapid_1","error":"Timeout after 2000 ms"},
+      {"kind":"Fail","id":"rapid_2","error":"Timeout after 3000 ms"},
+      {"kind":"Fail","id":"rapid_3","error":"Timeout after 4000 ms"},
+      {"kind":"Fail","id":"rapid_4","error":"Timeout after 5000 ms"}
     ],
-    "expected": {
-      "directiveCount": 5,
-      "activeId": "rapid_4",
-      "runs": [
-        {
-          "id": "rapid_0",
-          "exists": true,
-          "status": 2,
-          "error": "Timeout after 1000 ms"
-        },
-        {
-          "id": "rapid_1",
-          "exists": true,
-          "status": 2,
-          "error": "Timeout after 2000 ms"
-        },
-        {
-          "id": "rapid_2",
-          "exists": true,
-          "status": 2,
-          "error": "Timeout after 3000 ms"
-        },
-        {
-          "id": "rapid_3",
-          "exists": true,
-          "status": 2,
-          "error": "Timeout after 4000 ms"
-        },
-        {
-          "id": "rapid_4",
-          "exists": true,
-          "status": 2,
-          "error": "Timeout after 5000 ms"
-        }
-      ]
-    }
+    "expected": {"directiveCount":5,"activeId":"rapid_4","runs":[{"id":"rapid_0","exists":true,"status":2,"error":"Timeout after 1000 ms"},{"id":"rapid_1","exists":true,"status":2,"error":"Timeout after 2000 ms"},{"id":"rapid_2","exists":true,"status":2,"error":"Timeout after 3000 ms"},{"id":"rapid_3","exists":true,"status":2,"error":"Timeout after 4000 ms"},{"id":"rapid_4","exists":true,"status":2,"error":"Timeout after 5000 ms"}]}
   },
   {
     "name": "ClearActiveLost",
     "actions": [
-      {
-        "kind": 0,
-        "id": "keep",
-        "npcId": "npc_a",
-        "observation": "obs1"
-      },
-      {
-        "kind": 0,
-        "id": "remove",
-        "npcId": "npc_b",
-        "observation": "obs2"
-      },
-      {
-        "kind": 4,
-        "npcId": "npc_b"
-      }
+      {"kind":"Start","id":"keep","npcId":"npc_a","observation":"obs1"},
+      {"kind":"Start","id":"remove","npcId":"npc_b","observation":"obs2"},
+      {"kind":"ClearNpc","npcId":"npc_b"}
     ],
-    "expected": {
-      "directiveCount": 1,
-      "activeId": "",
-      "runs": [
-        {
-          "id": "keep",
-          "exists": true
-        },
-        {
-          "id": "remove",
-          "exists": false
-        }
-      ]
-    }
+    "expected": {"directiveCount":1,"activeId":"","runs":[{"id":"keep","exists":true},{"id":"remove","exists":false}]}
   },
   {
     "name": "ClearActivePreserved",
     "actions": [
-      {
-        "kind": 0,
-        "id": "other",
-        "npcId": "npc_x",
-        "observation": "obs1"
-      },
-      {
-        "kind": 0,
-        "id": "active",
-        "npcId": "npc_y",
-        "observation": "obs2"
-      },
-      {
-        "kind": 4,
-        "npcId": "npc_x"
-      }
+      {"kind":"Start","id":"other","npcId":"npc_x","observation":"obs1"},
+      {"kind":"Start","id":"active","npcId":"npc_y","observation":"obs2"},
+      {"kind":"ClearNpc","npcId":"npc_x"}
     ],
-    "expected": {
-      "directiveCount": 1,
-      "activeId": "active",
-      "runs": [
-        {
-          "id": "other",
-          "exists": false
-        },
-        {
-          "id": "active",
-          "exists": true
-        }
-      ]
-    }
+    "expected": {"directiveCount":1,"activeId":"active","runs":[{"id":"other","exists":false},{"id":"active","exists":true}]}
   },
   {
     "name": "VerdictDialogueOnly",
     "actions": [
-      {
-        "kind": 0,
-        "id": "dg",
-        "npcId": "npc1",
-        "observation": "obs"
-      },
-      {
-        "kind": 2,
-        "id": "dg",
-        "verdictValid": true,
-        "dialogue": "I understand.",
-        "hasAction": false
-      }
+      {"kind":"Start","id":"dg","npcId":"npc1","observation":"obs"},
+      {"kind":"Validate","id":"dg","verdictValid":true,"dialogue":"I understand.","hasAction":false}
     ],
-    "expected": {
-      "directiveCount": 1,
-      "activeId": "dg",
-      "runs": [
-        {
-          "id": "dg",
-          "exists": true,
-          "status": 1,
-          "verdictValid": true,
-          "dialogue": "I understand.",
-          "actionType": ""
-        }
-      ]
-    }
+    "expected": {"directiveCount":1,"activeId":"dg","runs":[{"id":"dg","exists":true,"status":1,"verdictValid":true,"dialogue":"I understand.","actionType":""}]}
   },
   {
     "name": "SelectActiveEmpty",
-    "actions": [],
-    "expected": {
-      "directiveCount": 0,
-      "activeId": "",
-      "runs": []
-    }
+    "actions": [
+    ],
+    "expected": {"directiveCount":0,"activeId":"","runs":[]}
   }
 ]

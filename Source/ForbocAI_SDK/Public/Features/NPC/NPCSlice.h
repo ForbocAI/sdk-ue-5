@@ -21,6 +21,7 @@ using namespace func;
  * Builds the NPC slice reducer and extra cases.
  * User Story: As NPC runtime setup, I need one slice factory so NPC lifecycle
  * actions update state through a single reducer contract.
+ * @fn inline Slice<FNPCSliceState> createNPCSlice()
  */
 inline Slice<FNPCSliceState> createNPCSlice() {
   return createSlice<FNPCSliceState>(

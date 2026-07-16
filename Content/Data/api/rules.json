@@ -1,0 +1,27 @@
+{
+  "rule": {
+    "id": "drRuleId",
+    "name": "ruleName",
+    "conditions": "ruleCondition",
+    "action": "ruleAction",
+    "reason": "ruleReason",
+    "target": "ruleTarget",
+    "priority": "rulePriority",
+    "observationPattern": "ruleObsPattern",
+    "promptSuffix": "rulePromptSuffix"
+  },
+  "ruleset": {
+    "id": "rulesetId",
+    "rules": "rulesetRules",
+    "template": "template"
+  },
+  "condition": {
+    "pairSize": 2,
+    "keyIndex": 0,
+    "valueIndex": 1
+  },
+  "errors": {
+    "invalidRule": "Invalid directive rule response",
+    "invalidRuleset": "Invalid directive ruleset response"
+  }
+}

@@ -25,7 +25,13 @@ struct FNPCActorInfo {
   FString Persona;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasStructuredPersona;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FAgentState Data;
+
+  /** User Story: As a process-tape consumer, I need actor persona absence represented explicitly instead of inferred from an empty string. @fn FNPCActorInfo() */
+  FNPCActorInfo() : bHasStructuredPersona(false) {}
 };
 USTRUCT(BlueprintType)
 struct FDecisionIntent {
@@ -40,7 +46,17 @@ struct FDecisionIntent {
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FString Target;
 
-  FDecisionIntent() : Goal(TEXT("")), ActionType(TEXT("SPEAK")), Target(TEXT("")) {}
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasMetadata{};
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  FString MetadataJson;
+
+  /**
+   * User Story: As a features protocol requests consumer, I need to invoke fdecision intent through a stable signature so the features protocol requests workflow remains explicit and composable.
+   * @fn FDecisionIntent() = default
+   */
+  FDecisionIntent() = default;
 };
 USTRUCT(BlueprintType)
 struct FReasoningOutput {
@@ -52,7 +68,11 @@ struct FReasoningOutput {
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FString ResponseText;
 
-  FReasoningOutput() : ReasoningText(TEXT("")), ResponseText(TEXT("")) {}
+  /**
+   * User Story: As a features protocol requests consumer, I need to invoke freasoning output through a stable signature so the features protocol requests workflow remains explicit and composable.
+   * @fn FReasoningOutput() = default
+   */
+  FReasoningOutput() = default;
 };
 
 USTRUCT(BlueprintType)
@@ -72,6 +92,15 @@ struct FNPCProcessTape {
   FString Persona;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasStructuredPersona;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasSamplerProfile;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  FString SamplerProfile;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   bool bHasActor;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
@@ -84,7 +113,13 @@ struct FNPCProcessTape {
   FString RulesetId;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasRulesetId;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   bool bVectorQueried;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasVectorQueried;
 
   /** Decision step result — intent selected by the local decision handler. */
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
@@ -102,9 +137,31 @@ struct FNPCProcessTape {
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   bool bReasoningCompleted;
 
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasPrompt;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  FString Prompt;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasConstraints;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  FPromptConstraints Constraints;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasGeneratedOutput;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  FString GeneratedOutput;
+
+  /** User Story: As a features protocol requests consumer, I need to invoke fnpcprocess tape through a stable signature so the features protocol requests workflow remains explicit and composable. @fn FNPCProcessTape() */
   FNPCProcessTape()
-      : bHasActor(false), bVectorQueried(false), bDecisionCompleted(false),
-        bReasoningCompleted(false) {}
+      : bHasStructuredPersona(false), bHasSamplerProfile(false),
+        bHasActor(false), bHasRulesetId(false), bVectorQueried(false),
+        bHasVectorQueried(false), bDecisionCompleted(false),
+        bReasoningCompleted(false), bHasPrompt(false),
+        bHasConstraints(false), bHasGeneratedOutput(false) {}
 };
 
 USTRUCT(BlueprintType)
@@ -120,6 +177,7 @@ struct FNPCProcessRequest {
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   bool bHasPreviousResult;
 
+  /** User Story: As a features protocol requests consumer, I need to invoke fnpcprocess request through a stable signature so the features protocol requests workflow remains explicit and composable. @fn FNPCProcessRequest() */
   FNPCProcessRequest() : bHasPreviousResult(false) {}
 };
 
@@ -181,5 +239,6 @@ struct FVerdictResponse {
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FString Dialogue;
 
+  /** User Story: As a features protocol requests consumer, I need to invoke fverdict response through a stable signature so the features protocol requests workflow remains explicit and composable. @fn FVerdictResponse() */
   FVerdictResponse() : bValid(true), bHasAction(false) {}
 };

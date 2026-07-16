@@ -8,15 +8,18 @@
 namespace TestGame {
 
 namespace SocialSelectors {
+/** User Story: As a features systems social consumer, I need to invoke select social active dialogue through a stable signature so the features systems social workflow remains explicit and composable. @fn inline FString SelectSocialActiveDialogue(const FSocialState &S) */
 inline FString SelectSocialActiveDialogue(const FSocialState &S) {
   return S.ActiveDialogue;
 }
+/** User Story: As a features systems social consumer, I need to invoke select social active trade through a stable signature so the features systems social workflow remains explicit and composable. @fn inline func::Maybe<FTradeOffer> SelectSocialActiveTrade(const FSocialState &S) */
 inline func::Maybe<FTradeOffer> SelectSocialActiveTrade(const FSocialState &S) {
   return S.bHasActiveTrade ? func::just<FTradeOffer>(S.ActiveTrade)
                            : func::nothing<FTradeOffer>();
 }
 } // namespace SocialSelectors
 
+/** User Story: As a features systems social consumer, I need to invoke create social slice through a stable signature so the features systems social workflow remains explicit and composable. @fn inline rtk::Slice<FSocialState> CreateSocialSlice() */
 inline rtk::Slice<FSocialState> CreateSocialSlice() {
   return rtk::createSlice<FSocialState>(
       TEXT("testgame/social"), FSocialState(),

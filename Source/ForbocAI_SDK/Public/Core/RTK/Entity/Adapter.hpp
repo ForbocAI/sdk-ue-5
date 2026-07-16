@@ -10,6 +10,7 @@ template <typename T> struct EntityAdapter {
    * Returns an empty entity-state container.
    * User Story: As entity-backed slices, I need a canonical empty entity state
    * so adapters can initialize predictable reducer storage.
+   * @fn EntityState<T> getInitialState() const
    */
   EntityState<T> getInitialState() const { return EntityState<T>{{}, {}}; }
 
@@ -17,6 +18,7 @@ template <typename T> struct EntityAdapter {
    * Adds a single entity when its id is not already present.
    * User Story: As entity-backed slices, I need single-entity insertion so new
    * records can be added without mutating existing adapter state.
+   * @fn EntityState<T> addOne(const EntityState<T> &state, const T &entity) const
    */
   EntityState<T> addOne(const EntityState<T> &state, const T &entity) const {
     EntityState<T> next = state;
@@ -29,6 +31,7 @@ template <typename T> struct EntityAdapter {
    * Adds each missing entity from a batch without replacing existing entries.
    * User Story: As entity-backed slices, I need batch insertion so collections
    * can be seeded while preserving existing records.
+   * @fn EntityState<T> addMany(const EntityState<T> &state, const TArray<T> &newEntities) const
    */
   EntityState<T> addMany(const EntityState<T> &state,
                          const TArray<T> &newEntities) const {
@@ -39,6 +42,7 @@ template <typename T> struct EntityAdapter {
    * Inserts or replaces a single entity by id.
    * User Story: As entity-backed slices, I need single-entity replacement so
    * reducers can upsert records deterministically.
+   * @fn EntityState<T> setOne(const EntityState<T> &state, const T &entity) const
    */
   EntityState<T> setOne(const EntityState<T> &state, const T &entity) const {
     EntityState<T> next = state;
@@ -51,6 +55,7 @@ template <typename T> struct EntityAdapter {
    * Replaces the full entity set with the provided collection.
    * User Story: As entity-backed slices, I need whole-collection replacement so
    * reducers can resync adapter state from remote payloads.
+   * @fn EntityState<T> setAll(const EntityState<T> &state, const TArray<T> &newEntities) const
    */
   EntityState<T> setAll(const EntityState<T> &state,
                         const TArray<T> &newEntities) const {
@@ -62,6 +67,7 @@ template <typename T> struct EntityAdapter {
    * Upserts a single entity by delegating to setOne.
    * User Story: As entity-backed slices, I need a semantic upsert helper so
    * reducers can express intent without duplicating adapter logic.
+   * @fn EntityState<T> upsertOne(const EntityState<T> &state, const T &entity) const
    */
   EntityState<T> upsertOne(const EntityState<T> &state, const T &entity) const {
     return setOne(state, entity);
@@ -71,6 +77,7 @@ template <typename T> struct EntityAdapter {
    * Upserts a batch of entities by id.
    * User Story: As entity-backed slices, I need batch upsert so synced payloads
    * can merge into adapter state efficiently.
+   * @fn EntityState<T> upsertMany(const EntityState<T> &state, const TArray<T> &entitiesToUpsert) const
    */
   EntityState<T> upsertMany(const EntityState<T> &state,
                             const TArray<T> &entitiesToUpsert) const {
@@ -82,6 +89,7 @@ template <typename T> struct EntityAdapter {
    * Removes a single entity and its id when present.
    * User Story: As entity-backed slices, I need record removal so deleted items
    * disappear from both entity maps and id orderings.
+   * @fn EntityState<T> removeOne(const EntityState<T> &state, const FString &id) const
    */
   EntityState<T> removeOne(const EntityState<T> &state,
                            const FString &id) const {
@@ -94,6 +102,7 @@ template <typename T> struct EntityAdapter {
    * Removes all entities whose ids appear in the supplied list.
    * User Story: As entity-backed slices, I need batch removal so reducers can
    * clear multiple records in one pure operation.
+   * @fn EntityState<T> removeMany(const EntityState<T> &state, const TArray<FString> &removeIds) const
    */
   EntityState<T> removeMany(const EntityState<T> &state,
                             const TArray<FString> &removeIds) const {
@@ -104,6 +113,7 @@ template <typename T> struct EntityAdapter {
    * Clears every entity from the adapter state.
    * User Story: As entity-backed slices, I need a reset helper so adapters can
    * return to a clean initial state predictably.
+   * @fn EntityState<T> removeAll(const EntityState<T> &) const
    */
   EntityState<T> removeAll(const EntityState<T> &) const {
     return getInitialState();
@@ -113,6 +123,7 @@ template <typename T> struct EntityAdapter {
    * Replaces one entity with the result of a patch function.
    * User Story: As entity-backed slices, I need targeted patching so one record
    * can be updated without rebuilding the full collection manually.
+   * @fn EntityState<T> updateOne(const EntityState<T> &state, const FString &id, std::function<T(const T &)> patch) const
    */
   EntityState<T> updateOne(const EntityState<T> &state, const FString &id,
                            std::function<T(const T &)> patch) const {
@@ -125,6 +136,7 @@ template <typename T> struct EntityAdapter {
    * Builds selector helpers for the current adapter shape.
    * User Story: As entity-backed slices, I need selector helpers so callers can
    * read ids, entities, and totals without hand-rolled lookup code.
+   * @fn EntitySelectors<T> getSelectors() const
    */
   EntitySelectors<T> getSelectors() const {
     const auto SelectAll = [](const EntityState<T> &state) -> TArray<T> {
@@ -150,6 +162,7 @@ template <typename T> struct EntityAdapter {
 };
 
 namespace detail {
+/** User Story: As a core rtk entity consumer, I need to invoke add many entities recursive through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> EntityState<T> addManyEntitiesRecursive(const EntityAdapter<T> &Ops, const TArray<T> &NewEntities, int32 Index, EntityState<T> Next) */
 template <typename T>
 EntityState<T> addManyEntitiesRecursive(const EntityAdapter<T> &Ops,
                                         const TArray<T> &NewEntities,
@@ -162,6 +175,7 @@ EntityState<T> addManyEntitiesRecursive(const EntityAdapter<T> &Ops,
                                          std::move(Next)));
 }
 
+/** User Story: As a core rtk entity consumer, I need to invoke set all entities recursive through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> EntityState<T> setAllEntitiesRecursive(const EntityAdapter<T> &Ops, const TArray<T> &NewEntities, int32 Index, EntityState<T> Next) */
 template <typename T>
 EntityState<T> setAllEntitiesRecursive(const EntityAdapter<T> &Ops,
                                        const TArray<T> &NewEntities,
@@ -175,6 +189,7 @@ EntityState<T> setAllEntitiesRecursive(const EntityAdapter<T> &Ops,
                                         std::move(Next)));
 }
 
+/** User Story: As a core rtk entity consumer, I need to invoke upsert many entities recursive through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> EntityState<T> upsertManyEntitiesRecursive(const EntityAdapter<T> &Ops, const TArray<T> &EntitiesToUpsert, int32 Index, EntityState<T> Next) */
 template <typename T>
 EntityState<T> upsertManyEntitiesRecursive(const EntityAdapter<T> &Ops,
                                            const TArray<T> &EntitiesToUpsert,
@@ -186,6 +201,7 @@ EntityState<T> upsertManyEntitiesRecursive(const EntityAdapter<T> &Ops,
                                                       EntitiesToUpsert[Index]));
 }
 
+/** User Story: As a core rtk entity consumer, I need to invoke remove many entities recursive through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> EntityState<T> removeManyEntitiesRecursive(const TArray<FString> &RemoveIds, int32 Index, EntityState<T> Next) */
 template <typename T>
 EntityState<T> removeManyEntitiesRecursive(const TArray<FString> &RemoveIds,
                                            int32 Index, EntityState<T> Next) {
@@ -196,6 +212,7 @@ EntityState<T> removeManyEntitiesRecursive(const TArray<FString> &RemoveIds,
                                             std::move(Next)));
 }
 
+/** User Story: As a core rtk entity consumer, I need to invoke select all entities recursive through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> TArray<T> selectAllEntitiesRecursive(const EntityState<T> &State, int32 Index, TArray<T> Result) */
 template <typename T>
 TArray<T> selectAllEntitiesRecursive(const EntityState<T> &State, int32 Index,
                                      TArray<T> Result) {
@@ -208,8 +225,8 @@ TArray<T> selectAllEntitiesRecursive(const EntityState<T> &State, int32 Index,
 } // namespace detail
 
 /**
+ * @fn template <typename T> EntityAdapter<T> createEntityAdapter(std::function<FString(const T &)> selectId)
  * @brief Creates entity-adapter operations from an id selector.
- * @signature template <typename T> EntityAdapter<T> createEntityAdapter(std::function<FString(const T &)> selectId)
  * @param selectId A function to extract the string ID from an entity.
  * @return EntityAdapter<T> The adapter with CRUD operation helpers.
  *

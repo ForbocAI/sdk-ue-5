@@ -1,0 +1,74 @@
+{
+  "labels": {
+    "suite": "CLI command matrix",
+    "nodeKeys": "Node command keys derive from CLI state",
+    "browserKeys": "Browser command keys derive from CLI state",
+    "browserRoots": "Browser roots derive from CLI state",
+    "browserParity": "Browser parity excludes declared Node-only commands",
+    "explicitGaps": "Browser gaps are explicitly authored",
+    "matrixKeys": "Command key record matches the matrix",
+    "tokenResolution": "Node token resolution matches every command",
+    "nodeCommandCount": "Node command count matches the authored contract",
+    "commandMatched": "Invocation match result",
+    "commandKey": "Invocation command key",
+    "arguments": "Invocation positional arguments",
+    "apiUrl": "Invocation API URL",
+    "apiKey": "Invocation API key"
+  },
+  "nodeOnlyCommandKeys": ["setup_check"],
+  "unsupportedBrowserCommandKeys": ["setup"],
+  "unsupportedBrowserBehavior": "unsupported",
+  "expectedNodeCommandCount": 36,
+  "invocations": [
+    {
+      "name": "nested NPC process command",
+      "tokens": ["npc", "process", "npc_test", "hello"],
+      "commandletParams": "-CliArg0=npc -CliArg1=process -CliArg2=npc_test -CliArg3=hello",
+      "expectedMatched": true,
+      "expectedKey": "npc_process",
+      "expectedArgs": ["npc_test", "hello"],
+      "expectedApiUrl": null,
+      "expectedApiKey": null
+    },
+    {
+      "name": "direct memory command key",
+      "tokens": ["memory_list", "npc_test"],
+      "commandletParams": "-CliArg0=memory_list -CliArg1=npc_test",
+      "expectedMatched": true,
+      "expectedKey": "memory_list",
+      "expectedArgs": ["npc_test"],
+      "expectedApiUrl": null,
+      "expectedApiKey": null
+    },
+    {
+      "name": "separate API URL option",
+      "tokens": ["--api-url", "https://api.forboc.ai", "status"],
+      "commandletParams": "-CliArg0=--api-url -CliArg1=https://api.forboc.ai -CliArg2=status",
+      "expectedMatched": true,
+      "expectedKey": "status",
+      "expectedArgs": [],
+      "expectedApiUrl": "https://api.forboc.ai",
+      "expectedApiKey": null
+    },
+    {
+      "name": "assigned API key option",
+      "tokens": ["--api-key=test_key", "doctor"],
+      "commandletParams": "-CliArg0=--api-key=test_key -CliArg1=doctor",
+      "expectedMatched": true,
+      "expectedKey": "doctor",
+      "expectedArgs": [],
+      "expectedApiUrl": null,
+      "expectedApiKey": "test_key"
+    },
+    {
+      "name": "retired named commandlet form",
+      "tokens": [],
+      "commandletParams": "-Command=status",
+      "expectedMatched": false,
+      "expectedKey": null,
+      "expectedArgs": [],
+      "expectedApiUrl": null,
+      "expectedApiKey": null
+    }
+  ]
+}

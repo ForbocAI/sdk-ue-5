@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Enforce UE handler ownership, behavior, and TS classification parity."""
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -16,48 +17,25 @@ UE_PROTOCOL_ROOT = (
     / "Features"
     / "Protocol"
 )
-TS_HANDLER_ROOT = (
-    ROOT_DIR.parent
-    / "sdk"
-    / "packages"
-    / "core"
-    / "src"
-    / "features"
-    / "protocol"
-    / "handlers"
-)
+UE_DATA_ROOT = ROOT_DIR / "Content" / "Data"
+TS_DATA_ROOT = ROOT_DIR.parent / "sdk" / "packages" / "core" / "data"
 
 
-def parse_table(text: str, prefix: str) -> dict[str, str]:
-    classifications: dict[str, str] = {}
-    in_table = False
-    for line in text.splitlines():
-        stripped = line.strip()
-        if stripped.startswith(f"{prefix} | Instruction"):
-            in_table = True
-            continue
-        if in_table and stripped.startswith(f"{prefix} | ---"):
-            continue
-        if in_table and stripped.startswith(f"{prefix} |"):
-            parts = [part.strip() for part in stripped.split("|")]
-            if len(parts) >= 3:
-                classifications[parts[1]] = parts[2]
-            continue
-        if in_table:
-            break
-    return classifications
-
-
-def discover_table(
-    root: Path, pattern: str, prefix: str
-) -> tuple[Path | None, dict[str, str]]:
+def discover_classifications(root: Path) -> tuple[Path | None, dict[str, str]]:
     if not root.is_dir():
         return None, {}
-    discovered = [
-        (path, table)
-        for path in sorted(root.rglob(pattern))
-        if (table := parse_table(path.read_text(encoding="utf-8"), prefix))
-    ]
+    discovered: list[tuple[Path, dict[str, str]]] = []
+    for path in sorted(root.rglob("*.json")):
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        classifications = value.get("classifications") if isinstance(value, dict) else None
+        if isinstance(classifications, dict) and classifications and all(
+            isinstance(key, str) and isinstance(item, str)
+            for key, item in classifications.items()
+        ):
+            discovered.append((path, classifications))
     return discovered[0] if len(discovered) == 1 else (None, {})
 
 
@@ -95,13 +73,11 @@ def discover_handler(function_name: str) -> list[tuple[Path, str]]:
 
 
 def main() -> int:
-    ue_table_path, ue_classifications = discover_table(
-        UE_PROTOCOL_ROOT, "*.h", "//"
-    )
-    if ue_table_path is None:
+    ue_contract_path, ue_classifications = discover_classifications(UE_DATA_ROOT)
+    if ue_contract_path is None:
         print(
-            f"[FAIL] Expected exactly one UE classification table under "
-            f"{UE_PROTOCOL_ROOT}."
+            f"[FAIL] Expected exactly one UE classification contract under "
+            f"{UE_DATA_ROOT}."
         )
         return 1
 
@@ -129,7 +105,7 @@ def main() -> int:
         if classification not in {"Local", "Pass-through"}:
             print(
                 f"[FAIL] {instruction} has unsupported classification "
-                f"{classification!r} in {ue_table_path}."
+                f"{classification!r} in {ue_contract_path}."
             )
             failures += 1
             continue
@@ -153,22 +129,20 @@ def main() -> int:
         else:
             print(f"[OK] {function_name} returns through {required} ({path}).")
 
-    ts_table_path, ts_classifications = discover_table(
-        TS_HANDLER_ROOT, "*.ts", "*"
-    )
-    if ts_table_path is None:
+    ts_contract_path, ts_classifications = discover_classifications(TS_DATA_ROOT)
+    if ts_contract_path is None:
         print(
-            f"[FAIL] Expected exactly one TS classification table under "
-            f"{TS_HANDLER_ROOT}."
+            f"[FAIL] Expected exactly one TS classification contract under "
+            f"{TS_DATA_ROOT}."
         )
         failures += 1
     elif ue_classifications != ts_classifications:
         print("[FAIL] UE and TS classification tables diverge.")
-        print(f"  UE ({ue_table_path}): {ue_classifications}")
-        print(f"  TS ({ts_table_path}): {ts_classifications}")
+        print(f"  UE ({ue_contract_path}): {ue_classifications}")
+        print(f"  TS ({ts_contract_path}): {ts_classifications}")
         failures += 1
     else:
-        print(f"[OK] UE and TS classification tables match ({ts_table_path}).")
+        print(f"[OK] UE and TS classification contracts match ({ts_contract_path}).")
 
     if failures:
         print(f"\nFailed {failures} handler classification checks.")

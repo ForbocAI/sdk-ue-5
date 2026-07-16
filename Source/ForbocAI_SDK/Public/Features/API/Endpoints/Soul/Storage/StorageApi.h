@@ -1,0 +1,83 @@
+#pragma once
+
+#include "Features/API/APIAdapters.h"
+#include "Features/API/Endpoints/EndpointsTypes.h"
+#include "Features/API/Endpoints/Soul/Storage/StorageAdapters.h"
+#include "Features/Soul/Storage/StorageAdapters.h"
+
+namespace APISlice::Endpoints {
+
+/** User Story: As a Soul exporter, I need local preparation represented as an RTK Query mutation before API authorization. @fn inline Thunk<FSoulStoragePreparation> postSoulStoragePreparation(const FSoul &Soul) */
+inline Thunk<FSoulStoragePreparation>
+postSoulStoragePreparation(const FSoul &Soul) {
+  const Transport::FTransportQueryData &Data =
+      Transport::transportQueryData();
+  return Detail::MakeEndpoint<FSoul, FSoulStoragePreparation>(
+      TEXT("postSoulStoragePreparation"), Soul,
+      [](const FSoul &Value) {
+        return SoulStorageEndpoint::storageQueryResult(
+            ::SoulStorage::prepareSoulStorageAdapter(Value));
+      },
+      {}, {Configuration::endpointTag(Data.Tags.Soul)},
+      rtk::DefinitionType::mutation);
+}
+
+/** User Story: As a failed Soul export, I need process-local prepared bytes discarded through an RTK Query mutation. @fn inline Thunk<rtk::FEmptyPayload> deleteSoulStoragePreparation(const FString &TxId) */
+inline Thunk<rtk::FEmptyPayload>
+deleteSoulStoragePreparation(const FString &TxId) {
+  return Detail::MakeEndpoint<FSoulStorageTransactionRequest,
+                              rtk::FEmptyPayload>(
+      TEXT("deleteSoulStoragePreparation"), {TxId},
+      [](const FSoulStorageTransactionRequest &Request) {
+        return SoulStorageEndpoint::storageQueryResult(
+            ::SoulStorage::discardSoulStorageAdapter(Request.TxId));
+      },
+      {}, {}, rtk::DefinitionType::mutation);
+}
+
+/** User Story: As a confirmed Soul exporter, I need durable catalog publication represented as an RTK Query mutation. @fn inline Thunk<FSoulCatalogEntry> postSoulStorageCommit(const FSoulStorageCommit &Commit) */
+inline Thunk<FSoulCatalogEntry>
+postSoulStorageCommit(const FSoulStorageCommit &Commit) {
+  const Transport::FTransportQueryData &Data =
+      Transport::transportQueryData();
+  return Detail::MakeEndpoint<FSoulStorageCommit, FSoulCatalogEntry>(
+      TEXT("postSoulStorageCommit"), Commit,
+      [](const FSoulStorageCommit &Value) {
+        return SoulStorageEndpoint::storageQueryResult(
+            ::SoulStorage::commitSoulStorageAdapter(Value));
+      },
+      {}, {Configuration::endpointTag(Data.Tags.Soul)},
+      rtk::DefinitionType::mutation);
+}
+
+/** User Story: As a Soul browser, I need package-owned durable entries represented as an RTK Query catalog query. @fn inline Thunk<TArray<FSoulListItem>> getSoulStorageCatalog(int32 Limit) */
+inline Thunk<TArray<FSoulListItem>> getSoulStorageCatalog(int32 Limit) {
+  const Transport::FTransportQueryData &Data =
+      Transport::transportQueryData();
+  return Detail::MakeEndpoint<FSoulStorageListRequest,
+                              TArray<FSoulListItem>>(
+      TEXT("getSoulStorageCatalog"), {Limit},
+      [](const FSoulStorageListRequest &Request) {
+        return SoulStorageEndpoint::storageQueryResult(
+            ::SoulStorage::listSoulStorageAdapter(Request.Limit));
+      },
+      {Configuration::endpointTag(Data.Tags.Soul,
+                                  Configuration::endpointData().TagIds.List)});
+}
+
+/** User Story: As a Soul importer, I need local catalog entry reads represented as an RTK Query query. @fn inline Thunk<FSoulCatalogEntry> getSoulStorageEntry(const FString &TxId) */
+inline Thunk<FSoulCatalogEntry>
+getSoulStorageEntry(const FString &TxId) {
+  const Transport::FTransportQueryData &Data =
+      Transport::transportQueryData();
+  return Detail::MakeEndpoint<FSoulStorageTransactionRequest,
+                              FSoulCatalogEntry>(
+      TEXT("getSoulStorageEntry"), {TxId},
+      [](const FSoulStorageTransactionRequest &Request) {
+        return SoulStorageEndpoint::storageQueryResult(
+            ::SoulStorage::getSoulStorageEntryAdapter(Request.TxId));
+      },
+      {Configuration::endpointTag(Data.Tags.Soul, TxId)});
+}
+
+} // namespace APISlice::Endpoints

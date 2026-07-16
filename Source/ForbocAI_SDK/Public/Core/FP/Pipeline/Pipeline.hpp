@@ -18,11 +18,11 @@ template <typename T> struct Pipeline {
 };
 
 /**
+ * @fn template <typename T> Pipeline<T> pipe(T v)
  * @brief Starts a pipeline with an initial value.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename T> Pipeline<T> pipe(T v)
  *
  * User Story: As functional composition code, I need a pipeline entry point so
  * value-threading reads clearly in C++11 call sites.
@@ -34,33 +34,37 @@ template <typename T> Pipeline<T> pipe(T v) {
 template <typename F> struct Tapped {
   F f;
 
+  /** User Story: As a core fp pipeline consumer, I need to invoke the callable value through a stable signature so the core fp pipeline workflow remains explicit and composable. @fn template <typename T> T operator()(T value) */
   template <typename T> T operator()(T value) {
     f(value);
     return value;
   }
 };
 
+/** User Story: As a core fp pipeline consumer, I need to invoke tap through a stable signature so the core fp pipeline workflow remains explicit and composable. @fn template <typename F> Tapped<F> tap(F f) */
 template <typename F> Tapped<F> tap(F f) { return Tapped<F>{std::move(f)}; }
 
 template <typename F> struct TapMut {
   F f;
 
+  /** User Story: As a core fp pipeline consumer, I need to invoke the callable value through a stable signature so the core fp pipeline workflow remains explicit and composable. @fn template <typename T> T &operator()(T &value) */
   template <typename T> T &operator()(T &value) {
     f(value);
     return value;
   }
 };
 
+/** User Story: As a core fp pipeline consumer, I need to invoke tap mut through a stable signature so the core fp pipeline workflow remains explicit and composable. @fn template <typename F> TapMut<F> tap_mut(F f) */
 template <typename F> TapMut<F> tap_mut(F f) {
   return TapMut<F>{std::move(f)};
 }
 
 /**
+ * @fn template <typename T, typename F> auto operator|(const Pipeline<T> &p, F f) -> Pipeline<decltype(f(p.val))>
  * @brief operator| for chaining lvalue-backed pipelines.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename T, typename F> auto operator|(const Pipeline<T> &p, F f) -> Pipeline<decltype(f(p.val))>
  *
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
@@ -70,11 +74,11 @@ auto operator|(const Pipeline<T> &p, F f) -> Pipeline<decltype(f(p.val))> {
 }
 
 /**
+ * @fn template <typename T, typename F> auto operator|(Pipeline<T> &&p, F f) -> Pipeline<decltype(f(std::move(p.val)))>
  * @brief operator| for chaining move-only or ownership-transferring values.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename T, typename F> auto operator|(Pipeline<T> &&p, F f) -> Pipeline<decltype(f(std::move(p.val)))>
  *
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */

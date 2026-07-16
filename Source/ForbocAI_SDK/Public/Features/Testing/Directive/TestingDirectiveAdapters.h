@@ -1,19 +1,41 @@
 #pragma once
 
 #include "Features/Data/DataAdapters.h"
+#include "Features/Testing/Action/ActionAdapters.h"
 #include "Features/Testing/Directive/TestingDirectiveTypes.h"
 
 namespace Testing::Directive {
 
+/**
+ * User Story: As a directive reducer-test consumer, I need the complete semantic action registry so fixture behavior cannot drift when enum declarations change.
+ * @fn inline const TArray<Testing::Action::TTestingActionKind< EDirectiveTestActionKind>> & DirectiveTestActionKinds()
+ */
+inline const TArray<Testing::Action::TTestingActionKind<
+    EDirectiveTestActionKind>> &
+DirectiveTestActionKinds() {
+#define FORBOC_DIRECTIVE_TEST_ACTION_KIND(Name) {FString(TEXT(#Name)), EDirectiveTestActionKind::Name}
+  static const TArray<Testing::Action::TTestingActionKind<
+      EDirectiveTestActionKind>> Kinds = {
+      FORBOC_DIRECTIVE_TEST_ACTION_KIND(Start),
+      FORBOC_DIRECTIVE_TEST_ACTION_KIND(Receive),
+      FORBOC_DIRECTIVE_TEST_ACTION_KIND(Validate),
+      FORBOC_DIRECTIVE_TEST_ACTION_KIND(Fail),
+      FORBOC_DIRECTIVE_TEST_ACTION_KIND(ClearNpc),
+  };
+#undef FORBOC_DIRECTIVE_TEST_ACTION_KIND
+  check(Kinds.Num() == static_cast<int32>(EDirectiveTestActionKind::Count));
+  return Kinds;
+}
+
+/** User Story: As a features testing directive consumer, I need to invoke read directive test action through a stable signature so the features testing directive workflow remains explicit and composable. @fn inline FDirectiveTestAction ReadDirectiveTestAction(const TSharedPtr<FJsonObject> &Object) */
 inline FDirectiveTestAction
 ReadDirectiveTestAction(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
   const TSharedRef<FJsonObject> Value = Object.ToSharedRef();
-  const int32 Kind = DataAdapters::ReadNumberField(Value, TEXT("kind"));
-  check(Kind >= static_cast<int32>(EDirectiveTestActionKind::Start));
-  check(Kind < static_cast<int32>(EDirectiveTestActionKind::Count));
   return {
-      static_cast<EDirectiveTestActionKind>(Kind),
+      Testing::Action::ReadTestingActionKind<EDirectiveTestActionKind>(
+          DataAdapters::ReadStringField(Value, TEXT("kind")),
+          DirectiveTestActionKinds()),
       DataAdapters::ReadOptionalStringField(Value, TEXT("id")),
       DataAdapters::ReadOptionalStringField(Value, TEXT("npcId")),
       DataAdapters::ReadOptionalStringField(Value, TEXT("observation")),
@@ -30,6 +52,7 @@ ReadDirectiveTestAction(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing directive consumer, I need to invoke read directive test run expected through a stable signature so the features testing directive workflow remains explicit and composable. @fn inline FDirectiveTestRunExpected ReadDirectiveTestRunExpected(const TSharedPtr<FJsonObject> &Object) */
 inline FDirectiveTestRunExpected
 ReadDirectiveTestRunExpected(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -50,6 +73,7 @@ ReadDirectiveTestRunExpected(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing directive consumer, I need to invoke read directive test expected through a stable signature so the features testing directive workflow remains explicit and composable. @fn inline FDirectiveTestExpected ReadDirectiveTestExpected(const TSharedRef<FJsonObject> &Object) */
 inline FDirectiveTestExpected
 ReadDirectiveTestExpected(const TSharedRef<FJsonObject> &Object) {
   return {
@@ -61,6 +85,7 @@ ReadDirectiveTestExpected(const TSharedRef<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing directive consumer, I need to invoke read directive test scenario through a stable signature so the features testing directive workflow remains explicit and composable. @fn inline FDirectiveTestScenario ReadDirectiveTestScenario(const TSharedPtr<FJsonObject> &Object) */
 inline FDirectiveTestScenario
 ReadDirectiveTestScenario(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -75,6 +100,7 @@ ReadDirectiveTestScenario(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing directive consumer, I need to invoke read directive test scenarios through a stable signature so the features testing directive workflow remains explicit and composable. @fn inline TArray<FDirectiveTestScenario> ReadDirectiveTestScenarios(const DataAdapters::FArraySource &Source) */
 inline TArray<FDirectiveTestScenario>
 ReadDirectiveTestScenarios(const DataAdapters::FArraySource &Source) {
   return func::map_array<TSharedPtr<FJsonObject>,
@@ -82,6 +108,7 @@ ReadDirectiveTestScenarios(const DataAdapters::FArraySource &Source) {
       DataAdapters::ReadObjectArray(Source), ReadDirectiveTestScenario);
 }
 
+/** User Story: As a features testing directive consumer, I need to invoke read directive test labels through a stable signature so the features testing directive workflow remains explicit and composable. @fn inline FDirectiveTestLabels ReadDirectiveTestLabels(const DataAdapters::FSettingsSource &Source) */
 inline FDirectiveTestLabels
 ReadDirectiveTestLabels(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Labels =
@@ -106,6 +133,7 @@ ReadDirectiveTestLabels(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As a features testing directive consumer, I need to invoke directive test fixtures through a stable signature so the features testing directive workflow remains explicit and composable. @fn inline const FDirectiveTestFixtures &DirectiveTestFixtures() */
 inline const FDirectiveTestFixtures &DirectiveTestFixtures() {
   static const DataAdapters::FSettingsSource SettingsSource =
       DataAdapters::SettingsSource(TEXT("ForbocAI_SDK"),
@@ -134,6 +162,7 @@ inline const FDirectiveTestFixtures &DirectiveTestFixtures() {
   return Fixtures;
 }
 
+/** User Story: As a features testing directive consumer, I need to invoke find directive test scenario through a stable signature so the features testing directive workflow remains explicit and composable. @fn inline func::Maybe<FDirectiveTestScenario> FindDirectiveTestScenario(const FString &Name) */
 inline func::Maybe<FDirectiveTestScenario>
 FindDirectiveTestScenario(const FString &Name) {
   return func::find_array<FDirectiveTestScenario>(

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Features/API/Endpoints/NPC/NPCApi.h"
+#include "Features/Memory/Local/LocalAdapters.h"
+#include "Features/Protocol/Configuration/ConfigurationAdapters.h"
 #include "Features/Protocol/Instructions/IdentifyActor/IdentifyActorThunks.h"
 #include "Features/Protocol/Instructions/QueryVector/QueryVectorThunks.h"
 #include "Features/Protocol/Instructions/Decision/DecisionThunks.h"
@@ -9,18 +11,20 @@
 
 namespace rtk::detail {
 
+/** User Story: As protocol execution, I need turn recursion parameterized by package state so feature headers remain independent of the root store. @fn template <typename RuntimeState> inline func::AsyncResult<FAgentResponse> RunProtocolTurn(const FString &NpcId, const FString &Input, const FString &RunId, const FNPCProcessTape &Tape, const FString &LastResult, bool bHasLastResult, int32 Turn, const FProtocolHandlerContext &Runtime, std::function<AnyAction(const AnyAction &)> Dispatch, std::function<const RuntimeState &()> GetState) */
+template <typename RuntimeState>
 inline func::AsyncResult<FAgentResponse>
 RunProtocolTurn(const FString &NpcId, const FString &Input,
                 const FString &RunId, const FNPCProcessTape &Tape,
                 const FString &LastResult, bool bHasLastResult,
                 int32 Turn, const FProtocolHandlerContext &Runtime,
                 std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<const FRuntimeState &()> GetState) {
-  return Turn >= 12
+                std::function<const RuntimeState &()> GetState) {
+  const auto &Data = ProtocolConfiguration::protocolData();
+  return Turn >= Data.Limits.MaxTurns
              ? (Dispatch(DirectiveSlice::Actions::directiveRunFailed(
-                    RunId, TEXT("Max turns exceeded"))),
-                RejectAsync<FAgentResponse>(
-                    TEXT("Protocol loop exceeded max turns")))
+                    RunId, Data.Errors.MaxTurnsExceeded)),
+                RejectAsync<FAgentResponse>(Data.Errors.MaxTurnsExceeded))
              : [&]() -> func::AsyncResult<FAgentResponse> {
     FNPCProcessRequest Request;
     Request.Tape = Tape;
@@ -30,8 +34,9 @@ RunProtocolTurn(const FString &NpcId, const FString &Input,
     return func::AsyncChain::then<FNPCProcessResponse, FAgentResponse>(
                APISlice::Endpoints::postNpcProcess(NpcId, Request)(Dispatch,
                                                                    GetState),
-               [NpcId, Input, RunId, Tape, Turn, Runtime, Dispatch,
-                GetState](const FNPCProcessResponse &Response)
+               [NpcId, Input, RunId, Tape, Turn, Runtime, Dispatch, GetState,
+                UnsupportedInstruction = Data.Errors.UnsupportedInstruction](
+                   const FNPCProcessResponse &Response)
                    -> func::AsyncResult<FAgentResponse> {
                  const FNPCInstruction &Instruction = Response.Instruction;
 
@@ -56,18 +61,15 @@ RunProtocolTurn(const FString &NpcId, const FString &Input,
                         : Instruction.Type == ENPCInstructionType::Finalize
                             ? HandleFinalize(Instruction, NpcId, Input, RunId,
                                              Runtime, Dispatch, GetState)
-                            : (Dispatch(
-                                   DirectiveSlice::Actions::directiveRunFailed(
-                                       RunId,
-                                       FString::Printf(
-                                           TEXT("Unsupported protocol "
-                                                "instruction type: %d"),
-                                           static_cast<int32>(
-                                               Instruction.Type)))),
-                               RejectAsync<FAgentResponse>(FString::Printf(
-                                   TEXT("Unsupported protocol instruction "
-                                        "type: %d"),
-                                   static_cast<int32>(Instruction.Type))));
+                            : [&]() {
+                                const FString Error =
+                                    UnsupportedInstruction +
+                                    LexToString(
+                                        static_cast<int32>(Instruction.Type));
+                                Dispatch(DirectiveSlice::Actions::
+                                             directiveRunFailed(RunId, Error));
+                                return RejectAsync<FAgentResponse>(Error);
+                              }();
                })
         .catch_([RunId, Dispatch](std::string Error) {
           Dispatch(DirectiveSlice::Actions::directiveRunFailed(
@@ -76,25 +78,29 @@ RunProtocolTurn(const FString &NpcId, const FString &Input,
   }();
 }
 
+/** User Story: As protocol persistence, I need memory effects parameterized by the package state so feature headers never import the root store. @fn template <typename RuntimeState> inline func::AsyncResult<rtk::FEmptyPayload> PersistMemoryInstructions(const TArray<FMemoryStoreInstruction> &Instructions, int32 Index, const FProtocolHandlerContext &Runtime, std::function<AnyAction(const AnyAction &)> Dispatch, std::function<const RuntimeState &()> GetState) */
+template <typename RuntimeState>
 inline func::AsyncResult<rtk::FEmptyPayload>
 PersistMemoryInstructions(const TArray<FMemoryStoreInstruction> &Instructions,
                           int32 Index, const FProtocolHandlerContext &Runtime,
                           std::function<AnyAction(const AnyAction &)> Dispatch,
-                          std::function<const FRuntimeState &()> GetState) {
+                          std::function<const RuntimeState &()> GetState) {
+  const auto &Data = ProtocolConfiguration::protocolData();
   return Index >= Instructions.Num()
              ? ResolveAsync(rtk::FEmptyPayload{})
          : !Runtime.StoreMemory
-             ? RejectAsync<rtk::FEmptyPayload>(
-                   TEXT("API returned memoryStore instructions, but no memory "
-                        "engine is configured"))
+             ? RejectAsync<rtk::FEmptyPayload>(Data.Errors.MissingMemoryStore)
              : func::AsyncChain::then<FMemoryItem, rtk::FEmptyPayload>(
-                   Runtime.StoreMemory(MakeMemoryItem(Instructions[Index]))(
+                   Runtime.StoreMemory(
+                       MemoryLocalAdapters::createMemoryItemAdapter(
+                           Instructions[Index].Text, Instructions[Index].Type,
+                           Instructions[Index].Importance))(
                        Dispatch, GetState),
-                   [Instructions, Index, Runtime, Dispatch,
-                    GetState](const FMemoryItem &Stored) {
-                     return PersistMemoryInstructions(Instructions, Index + 1,
-                                                      Runtime, Dispatch,
-                                                      GetState);
+                   [Instructions, Index, Runtime, Dispatch, GetState,
+                    Step = Data.Iteration.Step](const FMemoryItem &Stored) {
+                     return PersistMemoryInstructions(
+                         Instructions, Index + Step, Runtime,
+                         Dispatch, GetState);
                    });
 }
 

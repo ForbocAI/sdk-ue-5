@@ -3,19 +3,18 @@
 #include "HAL/PlatformProcess.h"
 #include "Features/Config/ConfigAdapters.h"
 #include "TestGame/Features/Entities/NPCs/NPCsActions.h"
-#include "TestGame/Features/Entities/Player/PlayerActions.h"
 #include "TestGame/Features/Systems/Contract/ContractThunks.h"
+#include "TestGame/Features/Systems/Harness/CommandRunner/CommandRunnerActions.h"
+#include "TestGame/Features/Systems/Harness/CommandRunner/CommandRunnerAdapters.h"
+#include "TestGame/Features/Systems/Harness/CommandRunner/CommandRunnerSelectors.h"
 #include "TestGame/Features/Systems/Harness/CommandRunner/CommandRunnerThunks.h"
 #include "TestGame/Features/Systems/Harness/Coverage/CoverageActions.h"
-#include "TestGame/Features/Systems/Harness/Game/GameAdapters.h"
+#include "TestGame/Features/Systems/Harness/Game/Command/CommandThunks.h"
 #include "TestGame/Features/Systems/Harness/Game/GameSelectors.h"
+#include "TestGame/Features/Systems/Harness/Game/Scenario/ScenarioThunks.h"
 #include "TestGame/Features/Systems/Harness/HarnessThunks.h"
-#include "TestGame/Features/Systems/Memory/MemoryActions.h"
 #include "TestGame/Features/Systems/Harness/Scenario/ScenarioActions.h"
 #include "TestGame/Features/Systems/Harness/Scenario/ScenarioSelectors.h"
-#include "TestGame/Features/Systems/Social/SocialActions.h"
-#include "TestGame/Features/Systems/Soul/SoulActions.h"
-#include "TestGame/Features/Systems/Stealth/StealthActions.h"
 #include "TestGame/Features/Systems/Terminal/Transcript/TranscriptActions.h"
 #include "TestGame/Features/Systems/Terminal/UI/UIActions.h"
 
@@ -25,10 +24,12 @@ using FGameProgressSink = TFunction<void(const FGameProgress &)>;
 
 namespace GameThunksDetail {
 
+/** User Story: As a systems harness game consumer, I need to invoke emit through a stable signature so the systems harness game workflow remains explicit and composable. @fn inline void Emit(const FGameProgressSink &Sink, FGameProgress Progress) */
 inline void Emit(const FGameProgressSink &Sink, FGameProgress Progress) {
   Sink ? (Sink(Progress), void()) : void();
 }
 
+/** User Story: As a systems harness game consumer, I need to invoke command delay ms through a stable signature so the systems harness game workflow remains explicit and composable. @fn inline int32 CommandDelayMs() */
 inline int32 CommandDelayMs() {
   const FString Raw = FPlatformMisc::GetEnvironmentVariable(
       TEXT("FORBOCAI_TEST_GAME_COMMAND_DELAY_MS"));
@@ -36,124 +37,39 @@ inline int32 CommandDelayMs() {
   return Parsed >= 0 ? Parsed : 1000;
 }
 
+/** User Story: As a systems harness game consumer, I need to invoke delay after command through a stable signature so the systems harness game workflow remains explicit and composable. @fn inline void DelayAfterCommand() */
 inline void DelayAfterCommand() {
   const float Seconds = static_cast<float>(CommandDelayMs()) / 1000.0f;
   Seconds > 0.0f ? FPlatformProcess::Sleep(Seconds) : void();
 }
 
-inline void ApplyScenarioInitialState(
-    const FScenarioStep &Step, FTestGameStore &Store) {
-  (Step.EventType == EEventType::Stealth)
-      ? [&]() {
-          Store.dispatch(StealthActions::setDoorOpen(true));
-          Store.dispatch(StealthActions::bumpAlert(25));
-
-          FGameNPC Npc;
-          Npc.Id = TEXT("doomguard");
-          Npc.Name = TEXT("Doomguard Patrol");
-          Npc.Faction = TEXT("Doomguards");
-          Npc.Hp = 100;
-          Npc.Suspicion = 40;
-          Npc.Position = FPosition(5, 10);
-          Store.dispatch(NPCsActions::UpsertNPC(Npc));
-
-          FMemoryRecord Memory;
-          Memory.Id = TEXT("mem-door-001");
-          Memory.NpcId = TEXT("doomguard");
-          Memory.Text = TEXT("Armory door found open at x:5, y:12");
-          Memory.Importance = 0.9f;
-          Store.dispatch(GameMemoryActions::storeMemory(Memory));
-        }()
-      : void();
-
-  (Step.EventType == EEventType::Social)
-      ? [&]() {
-          FGameNPC Npc;
-          Npc.Id = TEXT("miller");
-          Npc.Name = TEXT("Miller");
-          Npc.Faction = TEXT("Neutral");
-          Npc.Hp = 100;
-          Npc.Suspicion = 50;
-          Npc.Inventory.Add(TEXT("medkit"));
-          Npc.KnownSecrets.Add(TEXT("player_stole_rations"));
-          Npc.Position = FPosition(5, 12);
-          Store.dispatch(NPCsActions::UpsertNPC(Npc));
-          Store.dispatch(SocialActions::setDialogue(
-              TEXT("I know you took those rations...")));
-
-          FTradeOffer Offer;
-          Offer.NpcId = TEXT("miller");
-          Offer.Item = TEXT("medkit");
-          Offer.Price = 100;
-          Store.dispatch(SocialActions::setTradeOffer(Offer));
-
-          NPCsActions::FPatchNPCPayload Patch;
-          Patch.Id = TEXT("miller");
-          Patch.Patch.Suspicion = 75;
-          Patch.Patch.bHasSuspicion = true;
-          Store.dispatch(NPCsActions::PatchNPC(Patch));
-        }()
-      : void();
-
-  Step.EventType == EEventType::Escape
-      ? (Store.dispatch(PlayerActions::setHidden(false)), void())
-      : void();
-
-  (Step.EventType == EEventType::Persistence)
-      ? [&]() {
-          FMarkSoulExportedPayload Export;
-          Export.NpcId = TEXT("doomguard");
-          Export.TxId = TEXT("tx-runtime-001");
-          Store.dispatch(GameSoulActions::markSoulExported(Export));
-          Store.dispatch(
-              GameSoulActions::markSoulImported(TEXT("tx-runtime-001")));
-          Store.dispatch(
-              GameMemoryActions::clearMemoryForNpc(TEXT("doomguard")));
-        }()
-      : void();
+/** User Story: As a systems harness game consumer, I need the complete command alias state selected from the package root store through a stable signature so execution and semantic validation share one identity source. @fn inline CommandRunner::FCommandAliasState SelectCommandAliases(const FTestGameStore &Store) */
+inline CommandRunner::FCommandAliasState
+SelectCommandAliases(const FTestGameStore &Store) {
+  return CommandRunner::CreateCommandAliasState(
+      CommandRunnerSelectors::SelectNpcAliases(
+          Store.getState().CommandRunner),
+      CommandRunnerSelectors::SelectGhostSessionAliases(
+          Store.getState().CommandRunner),
+      CommandRunnerSelectors::SelectSoulTransactionAliases(
+          Store.getState().CommandRunner));
 }
 
-inline void ApplyCommandResult(
-    const FCommandSpec &Command,
-    const CommandRunner::FCommandOutput &CommandResult,
-    FTestGameStore &Store) {
-  Command.Group == ECommandGroup::NpcProcessChat
-      ? [&]() {
-          const FParsedVerdict Verdict =
-              GameAdapters::ParseVerdict(CommandResult.Output);
-          const FString NpcId = GameAdapters::ExtractNpcId(Command.Command);
-          (Verdict.bValid && !NpcId.IsEmpty())
-              ? [&]() {
-                  NPCsActions::FApplyNpcVerdictPayload Payload;
-                  Payload.Id = NpcId;
-                  Payload.Action.Type = Verdict.ActionType;
-                  Payload.Action.TargetHex = Verdict.TargetHex;
-                  Payload.Action.bHasTargetHex = true;
-                  Payload.StateDelta.Suspicion = Verdict.SuspicionDelta;
-                  Payload.StateDelta.bHasSuspicion =
-                      Verdict.SuspicionDelta != 0;
-                  Store.dispatch(NPCsActions::ApplyNpcVerdict(Payload));
-                }()
-              : void();
-        }()
-      : void();
-
-  (Command.Group == ECommandGroup::BridgeValidate &&
-   CommandResult.Status == ETranscriptStatus::Error)
-      ? (Store.dispatch(UIActions::addMessage(
-             FString(TEXT("Bridge validation failed: ")) +
-             CommandResult.Output)),
-         void())
-      : void();
-}
-
+/** User Story: As a systems harness game consumer, I need to invoke process command through a stable signature so the systems harness game workflow remains explicit and composable. @fn inline void ProcessCommand(const FScenarioStep &Step, const FCommandSpec &Command, FTestGameStore &Store, const FGameProgressSink &Sink) */
 inline void ProcessCommand(const FScenarioStep &Step,
                            const FCommandSpec &Command,
-                           CommandRunner::FAliasState &Aliases,
                            FTestGameStore &Store,
                            const FGameProgressSink &Sink) {
+  const CommandRunner::FCommandOutput ExecutionResult =
+      CommandRunner::Execute(Command.Command, SelectCommandAliases(Store));
+  CommandRunner::HasCommandAliasUpdate(ExecutionResult.AliasUpdate)
+      ? (Store.dispatch(CommandRunnerActions::aliasesCaptured(
+             ExecutionResult.AliasUpdate)),
+         void())
+      : void();
   const CommandRunner::FCommandOutput Result =
-      CommandRunner::Execute(Command.Command, Aliases);
+      CommandRunner::ValidateOutputAssertions(
+          Command, ExecutionResult, SelectCommandAliases(Store));
   Result.Status == ETranscriptStatus::Ok
       ? (Store.dispatch(HarnessActions::markCovered(Command.Group)), void())
       : void();
@@ -178,19 +94,19 @@ inline void ProcessCommand(const FScenarioStep &Step,
   Emit(Sink, MoveTemp(Progress));
 }
 
+/** User Story: As a systems harness game consumer, I need to invoke process commands through a stable signature so the systems harness game workflow remains explicit and composable. @fn inline void ProcessCommands(const FScenarioStep &Step, int32 Index, FTestGameStore &Store, const FGameProgressSink &Sink) */
 inline void ProcessCommands(const FScenarioStep &Step, int32 Index,
-                            CommandRunner::FAliasState &Aliases,
                             FTestGameStore &Store,
                             const FGameProgressSink &Sink) {
   Index >= Step.Commands.Num()
       ? void()
-      : (ProcessCommand(Step, Step.Commands[Index], Aliases, Store, Sink),
+      : (ProcessCommand(Step, Step.Commands[Index], Store, Sink),
          DelayAfterCommand(),
-         ProcessCommands(Step, Index + 1, Aliases, Store, Sink));
+         ProcessCommands(Step, Index + 1, Store, Sink));
 }
 
+/** User Story: As a systems harness game consumer, I need to invoke process steps through a stable signature so the systems harness game workflow remains explicit and composable. @fn inline void ProcessSteps(const TArray<FScenarioStep> &Steps, int32 Index, FTestGameStore &Store, const FGameProgressSink &Sink) */
 inline void ProcessSteps(const TArray<FScenarioStep> &Steps, int32 Index,
-                         CommandRunner::FAliasState &Aliases,
                          FTestGameStore &Store,
                          const FGameProgressSink &Sink) {
   Index >= Steps.Num()
@@ -201,11 +117,12 @@ inline void ProcessSteps(const TArray<FScenarioStep> &Steps, int32 Index,
           Progress.Step = Steps[Index];
           Emit(Sink, MoveTemp(Progress));
           ApplyScenarioInitialState(Steps[Index], Store);
-          ProcessCommands(Steps[Index], 0, Aliases, Store, Sink);
-          ProcessSteps(Steps, Index + 1, Aliases, Store, Sink);
+          ProcessCommands(Steps[Index], 0, Store, Sink);
+          ProcessSteps(Steps, Index + 1, Store, Sink);
         }();
 }
 
+/** User Story: As a systems harness game consumer, I need to invoke fail run through a stable signature so the systems harness game workflow remains explicit and composable. @fn inline FGameRunResult FailRun(const FString &Message, const FGameProgressSink &Sink) */
 inline FGameRunResult FailRun(const FString &Message,
                               const FGameProgressSink &Sink) {
   FGameRunResult Failure;
@@ -219,10 +136,12 @@ inline FGameRunResult FailRun(const FString &Message,
 
 } // namespace GameThunksDetail
 
+/** User Story: As a systems harness game consumer, I need to invoke run game through a stable signature so the systems harness game workflow remains explicit and composable. @fn inline FGameRunResult RunGame(FTestGameStore &Store, EPlayMode Mode, const FString &ApiUrlOverride, const FGameProgressSink &ProgressSink = {}) */
 inline FGameRunResult RunGame(FTestGameStore &Store, EPlayMode Mode,
                               const FString &ApiUrlOverride,
                               const FGameProgressSink &ProgressSink = {}) {
   SDKConfig::InitializeConfig();
+  Store.dispatch(CommandRunnerActions::aliasesReset());
   Store.dispatch(UIActions::setMode(Mode));
 
   FGameProgress Started;
@@ -261,10 +180,8 @@ inline FGameRunResult RunGame(FTestGameStore &Store, EPlayMode Mode,
                                 const TArray<FScenarioStep> Steps =
                                     ScenarioSelectors::SelectScenarioSteps(
                                         Store.getState().Scenario);
-                                CommandRunner::FAliasState Aliases =
-                                    CommandRunner::CreateAliasState(Contract);
                                 GameThunksDetail::ProcessSteps(
-                                    Steps, 0, Aliases, Store, ProgressSink);
+                                    Steps, 0, Store, ProgressSink);
 
                                 FGameRunResult Result =
                                     GameSelectors::SelectGameRunResult(

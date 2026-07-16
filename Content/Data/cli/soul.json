@@ -1,0 +1,29 @@
+{
+  "limits": {
+    "emptyItemCount": 0,
+    "singleArgumentCount": 1,
+    "doubleArgumentCount": 2,
+    "firstArgumentIndex": 0,
+    "secondArgumentIndex": 1,
+    "defaultListLimit": 50
+  },
+  "syntax": {
+    "listSeparator": "\n"
+  },
+  "timeouts": {
+    "providerOperationSeconds": 660
+  },
+  "messages": {
+    "exportUsage": "Usage: soul_export <npcId>",
+    "exported": "Soul exported: {0}",
+    "importUsage": "Usage: soul_import <txId>",
+    "imported": "Soul imported: {0}",
+    "listEmpty": "No souls found",
+    "chatUsage": "Usage: soul_chat <npcId> <message>",
+    "chatUser": "> You: {0}",
+    "chatNpc": "> NPC: {0}",
+    "verifyUsage": "Usage: soul_verify <txId>",
+    "verificationValid": "Soul verification valid",
+    "verificationInvalid": "Soul verification invalid: {0}"
+  }
+}

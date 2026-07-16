@@ -7,6 +7,7 @@
 
 namespace TestGame {
 
+/** User Story: As a systems harness coverage consumer, I need to invoke create harness slice through a stable signature so the systems harness coverage workflow remains explicit and composable. @fn inline rtk::Slice<FHarnessState> CreateHarnessSlice() */
 inline rtk::Slice<FHarnessState> CreateHarnessSlice() {
   return rtk::createSlice<FHarnessState>(
       TEXT("testgame/harness"), FHarnessState(),

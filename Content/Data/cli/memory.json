@@ -1,0 +1,50 @@
+{
+  "limits": {
+    "singleArgumentCount": 1,
+    "doubleArgumentCount": 2,
+    "listItemLimit": 20,
+    "recallItemLimit": 10,
+    "firstItemIndex": 0,
+    "nextItemOffset": 1,
+    "displayIndexOffset": 1,
+    "snippetLength": 50,
+    "jsonIndent": 2
+  },
+  "defaults": {
+    "importance": 0.8,
+    "recallSimilarity": 0.7,
+    "confirmation": "y"
+  },
+  "fields": {
+    "text": "text",
+    "type": "type",
+    "importance": "importance",
+    "memories": "memories"
+  },
+  "messages": {
+    "unknownError": "Unknown error",
+    "listUsage": "Usage: memory list <npcId>",
+    "listing": "> Listing memory for {0} (last {1} items)...",
+    "none": "> No memories found.",
+    "listItem": "  {0}. {1}...",
+    "recallUsage": "Usage: memory recall <npcId> <query>",
+    "noneRelevant": "> No relevant memories found.",
+    "recallItem": "  {0}. {1}",
+    "storeUsage": "Usage: memory store <npcId> <text>",
+    "stored": "> Memory stored.",
+    "clearUsage": "Usage: memory clear <npcId>",
+    "clearWarning": "> WARNING: This will permanently delete local SDK memories for this NPC.",
+    "clearPrompt": "Are you sure? (y/N): ",
+    "cleared": "> Memories cleared.",
+    "aborted": "> Aborted.",
+    "exportUsage": "Usage: memory export <npcId>",
+    "exporting": "> Exporting memories for {0}...",
+    "found": "Found {0} memories",
+    "recalled": "Recalled {0} memories",
+    "listed": "Memories listed",
+    "recallDone": "Memories recalled",
+    "storeDone": "Memory stored",
+    "clearDone": "Memory cleared",
+    "exportDone": "Memories exported"
+  }
+}

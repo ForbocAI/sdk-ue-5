@@ -1,76 +1,68 @@
 #pragma once
 
+#include "Core/fp.hpp"
+#include "Features/Memory/Configuration/ConfigurationAdapters.h"
+#include "Features/Memory/Identity/IdentityAdapters.h"
+#include "Features/Memory/Local/LocalTypes.h"
+#include "Features/Memory/MemoryTypes.h"
 #include "Features/Memory/Vector/MemoryVectorAdapters.h"
-#include "Features/Memory/MemorySlice.h"
+#include "Internationalization/Regex.h"
 #include "Misc/Paths.h"
-#include "Features/Memory/Local/Storage/StorageAdapters.h"
+namespace MemoryLocalAdapters {
 
-namespace rtk {
-namespace detail {
-
-/**
- * Returns the singleton handle backing the local sqlite memory database.
- * User Story: As node-memory thunks, I need a shared database handle so local
- * memory operations reuse one opened connection.
- */
-inline Native::Sqlite::DB &NodeMemoryHandle() {
-  static Native::Sqlite::DB Handle = nullptr;
-  return Handle;
+/** User Story: As native memory persistence, I need database names resolved beneath one authored vector directory so callers cannot escape SDK-owned storage. @fn inline func::Either<FString, MemoryLocalTypes::FMemoryDatabasePaths> resolveMemoryDatabasePathsAdapter(const FString &DatabaseName) */
+inline func::Either<FString, MemoryLocalTypes::FMemoryDatabasePaths>
+resolveMemoryDatabasePathsAdapter(const FString &DatabaseName) {
+  const MemoryConfiguration::FMemoryData &Data =
+      MemoryConfiguration::memoryData();
+  const FRegexPattern Pattern(Data.Storage.Paths.DatabaseNamePattern);
+  FRegexMatcher Matcher(Pattern, DatabaseName);
+  return !Matcher.FindNext()
+             ? func::make_left<
+                   FString, MemoryLocalTypes::FMemoryDatabasePaths>(
+                   Data.Errors.InvalidDatabaseName)
+             : [&]() {
+                 const FString BaseDirectory =
+                     FPaths::ConvertRelativePathToFull(FPaths::Combine(
+                         FPaths::ProjectDir(),
+                         Data.Storage.Paths.InfrastructureDirectory,
+                         Data.Storage.Paths.VectorsDirectory));
+                 const FString DatabasePath =
+                     FPaths::ConvertRelativePathToFull(FPaths::Combine(
+                         BaseDirectory,
+                         DatabaseName +
+                             Data.Storage.Sqlite.DatabaseExtension));
+                 return !FPaths::IsUnderDirectory(DatabasePath, BaseDirectory)
+                            ? func::make_left<
+                                  FString,
+                                  MemoryLocalTypes::FMemoryDatabasePaths>(
+                                  Data.Errors.DatabasePathEscape)
+                            : func::make_right<
+                                  FString,
+                                  MemoryLocalTypes::FMemoryDatabasePaths>(
+                                  {DatabaseName, DatabasePath, true});
+               }();
 }
 
-/**
- * Returns the project-local infrastructure root used by native runtimes.
- * User Story: As local runtime setup, I need one canonical infrastructure root
- * so vector assets resolve from one place.
- */
-inline FString GetLocalInfrastructureDir() {
-  return FPaths::ProjectDir() + TEXT("local_infrastructure/");
-}
-
-/**
- * Returns the default sqlite database path for node-backed memory.
- * User Story: As node-memory setup, I need a canonical database location so
- * local memory storage initializes predictably.
- */
-inline FString DefaultNodeMemoryPath() {
-  return GetLocalInfrastructureDir() + TEXT("vectors/forbocai_vectors.db");
-}
-
-/**
- * Returns the mutable storage holding the active node-memory database path.
- * User Story: As node-memory setup, I need one mutable path slot so config and
- * initialization code share the active database target.
- */
-inline FString &NodeMemoryPathStorage() {
-  static FString Path = DefaultNodeMemoryPath();
-  return Path;
-}
-
-/**
- * Returns the current node-memory database handle.
- * User Story: As node-memory helpers, I need one place to read the active
- * database handle so storage and recall use the same connection.
- */
-inline Native::Sqlite::DB EnsureNodeMemoryDatabase() {
-  return NodeMemoryHandle();
-}
-
-/**
- * Builds a persisted memory item from a memory-store instruction.
- * User Story: As node-memory store thunks, I need instructions converted into
- * persisted memory items so local storage uses a complete record shape.
- */
-inline FMemoryItem MakeMemoryItem(const FMemoryStoreInstruction &Instruction) {
+/** User Story: As native memory persistence, I need new records created in one pure adapter so thunks only coordinate storage effects. @fn inline FMemoryItem createMemoryItemAdapter(const FString &Text, const FString &Type, float Importance) */
+inline FMemoryItem createMemoryItemAdapter(const FString &Text,
+                                           const FString &Type,
+                                           float Importance) {
   FMemoryItem Item;
-  Item.Id = FGuid::NewGuid().ToString();
-  Item.Text = Instruction.Text;
-  Item.Type = Instruction.Type.IsEmpty() ? TEXT("observation")
-                                         : Instruction.Type;
-  Item.Importance = Instruction.Importance;
+  Item.Id = MemoryIdentityAdapters::createMemoryId();
+  Item.Text = Text;
+  Item.Type = Type;
+  Item.Importance = Importance;
   Item.Timestamp = FDateTime::UtcNow().ToUnixTimestamp();
-  Item.Embedding = MemoryVectorAdapters::embed(Instruction.Text);
+  Item.Embedding = MemoryVectorAdapters::embed(Text);
   return Item;
 }
 
-} // namespace detail
-} // namespace rtk
+/** User Story: As native memory import, I need source records combined with deterministic embeddings without changing identity or chronology. @fn inline FMemoryItem createMemoryVectorRecordAdapter(const FMemoryItem &Item) */
+inline FMemoryItem createMemoryVectorRecordAdapter(const FMemoryItem &Item) {
+  FMemoryItem Record = Item;
+  Record.Embedding = MemoryVectorAdapters::embed(Item.Text);
+  return Record;
+}
+
+} // namespace MemoryLocalAdapters

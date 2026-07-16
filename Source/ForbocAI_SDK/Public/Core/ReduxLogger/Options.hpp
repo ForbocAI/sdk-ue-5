@@ -11,6 +11,7 @@ namespace rtk::logger {
 
 namespace helpers {
 
+/** User Story: As a core redux logger consumer, I need to invoke repeat recursive through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline FString repeatRecursive(const FString &Value, int32 Times, FString Result) */
 inline FString repeatRecursive(const FString &Value, int32 Times,
                                FString Result) {
   return Times <= 0
@@ -18,21 +19,25 @@ inline FString repeatRecursive(const FString &Value, int32 Times,
              : repeatRecursive(Value, Times - 1, Result + Value);
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke repeat through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline FString repeat(const FString &Value, int32 Times) */
 inline FString repeat(const FString &Value, int32 Times) {
   return repeatRecursive(Value, Times, FString());
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke pad through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline FString pad(int32 Number, int32 MaxLength) */
 inline FString pad(int32 Number, int32 MaxLength) {
   const FString NumberText = FString::FromInt(Number);
   return repeat(TEXT("0"), MaxLength - NumberText.Len()) + NumberText;
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke format time through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline FString formatTime(const FDateTime &Time) */
 inline FString formatTime(const FDateTime &Time) {
   return pad(Time.GetHour(), 2) + TEXT(":") + pad(Time.GetMinute(), 2) +
          TEXT(":") + pad(Time.GetSecond(), 2) + TEXT(".") +
          pad(Time.GetMillisecond(), 3);
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke timer now through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline double timerNow() */
 inline double timerNow() {
   return std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
              std::chrono::steady_clock::now().time_since_epoch())
@@ -54,6 +59,7 @@ struct LogEntry {
 
 namespace detail {
 
+/** User Story: As a core redux logger consumer, I need to invoke format action through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline FString formatAction(const AnyAction &Action) */
 inline FString formatAction(const AnyAction &Action) {
   const FString Payload = Action.describePayload();
   return Payload == TEXT("<none>")
@@ -62,12 +68,14 @@ inline FString formatAction(const AnyAction &Action) {
                                *Action.Type, *Payload);
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke payload list through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline TArray<FString> payloadList(const FString &First) */
 inline TArray<FString> payloadList(const FString &First) {
   TArray<FString> Payload;
   Payload.Add(First);
   return Payload;
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke payload list through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline TArray<FString> payloadList(const FString &First, const FString &Second) */
 inline TArray<FString> payloadList(const FString &First,
                                    const FString &Second) {
   TArray<FString> Payload;

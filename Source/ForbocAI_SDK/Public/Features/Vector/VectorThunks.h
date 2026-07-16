@@ -8,6 +8,7 @@ struct FRuntimeState;
 
 namespace rtk {
 
+/** User Story: As a features vector consumer, I need to invoke init vector thunk through a stable signature so the features vector workflow remains explicit and composable. @fn inline const AsyncThunkConfig<FEmptyPayload, FEmptyPayload, FRuntimeState> & initVectorThunk() */
 inline const AsyncThunkConfig<FEmptyPayload, FEmptyPayload, FRuntimeState> &
 initVectorThunk() {
   const ConditionCallback<FEmptyPayload, FRuntimeState> Condition =
@@ -29,6 +30,7 @@ initVectorThunk() {
   return Thunk;
 }
 
+/** User Story: As a features vector consumer, I need to invoke generate embedding thunk through a stable signature so the features vector workflow remains explicit and composable. @fn inline const AsyncThunkConfig<TArray<float>, FString, FRuntimeState> & generateEmbeddingThunk() */
 inline const AsyncThunkConfig<TArray<float>, FString, FRuntimeState> &
 generateEmbeddingThunk() {
   static const AsyncThunkConfig<TArray<float>, FString, FRuntimeState> Thunk =

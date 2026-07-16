@@ -9,6 +9,7 @@ template <typename T> struct EntityState {
 };
 
 namespace detail {
+/** User Story: As a core rtk entity consumer, I need to invoke entity state value equals through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> bool entityStateValueEquals(const TMap<FString, T> &LeftEntities, const TMap<FString, T> &RightEntities, const FString &Id) */
 template <typename T>
 bool entityStateValueEquals(const TMap<FString, T> &LeftEntities,
                             const TMap<FString, T> &RightEntities,
@@ -18,6 +19,7 @@ bool entityStateValueEquals(const TMap<FString, T> &LeftEntities,
   return LeftEntity && RightEntity && (*LeftEntity == *RightEntity);
 }
 
+/** User Story: As a core rtk entity consumer, I need to invoke entity state equals recursive through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> bool entityStateEqualsRecursive(const EntityState<T> &Left, const EntityState<T> &Right, int32 Index) */
 template <typename T>
 bool entityStateEqualsRecursive(const EntityState<T> &Left,
                                 const EntityState<T> &Right, int32 Index) {
@@ -31,8 +33,8 @@ bool entityStateEqualsRecursive(const EntityState<T> &Left,
 } // namespace detail
 
 /**
+ * @fn template <typename T> bool operator==(const EntityState<T> &Left, const EntityState<T> &Right)
  * @brief Checks if two EntityState objects are deeply equal.
- * @signature template <typename T> bool operator==(const EntityState<T> &Left, const EntityState<T> &Right)
  * @param Left The first state to compare.
  * @param Right The second state to compare.
  * @return true if both states have the same entities and ordering; false otherwise.
@@ -47,8 +49,8 @@ bool operator==(const EntityState<T> &Left, const EntityState<T> &Right) {
 }
 
 /**
+ * @fn template <typename T> bool operator!=(const EntityState<T> &Left, const EntityState<T> &Right)
  * @brief Checks if two EntityState objects are not equal.
- * @signature template <typename T> bool operator!=(const EntityState<T> &Left, const EntityState<T> &Right)
  * @param Left The first state to compare.
  * @param Right The second state to compare.
  * @return true if the states differ; false otherwise.
@@ -71,6 +73,7 @@ template <typename T> struct EntitySelectors {
 template <typename T> struct EntityAdapter;
 
 namespace detail {
+/** User Story: As a core rtk entity consumer, I need to invoke add entity if missing through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> void addEntityIfMissing(EntityState<T> &Next, const FString &Id, const T &Entity) */
 template <typename T>
 void addEntityIfMissing(EntityState<T> &Next, const FString &Id,
                         const T &Entity) {
@@ -79,17 +82,20 @@ void addEntityIfMissing(EntityState<T> &Next, const FString &Id,
   bMissing && (Next.entities.Add(Id, Entity), true);
 }
 
+/** User Story: As a core rtk entity consumer, I need to invoke set entity through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> void setEntity(EntityState<T> &Next, const FString &Id, const T &Entity) */
 template <typename T>
 void setEntity(EntityState<T> &Next, const FString &Id, const T &Entity) {
   (!Next.entities.Find(Id)) && (Next.ids.Add(Id), true);
   Next.entities.Add(Id, Entity);
 }
 
+/** User Story: As a core rtk entity consumer, I need to invoke remove entity if present through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> void removeEntityIfPresent(EntityState<T> &Next, const FString &Id) */
 template <typename T>
 void removeEntityIfPresent(EntityState<T> &Next, const FString &Id) {
   (Next.entities.Remove(Id) > 0) && (Next.ids.Remove(Id), true);
 }
 
+/** User Story: As a core rtk entity consumer, I need to invoke update entity if present through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T, typename PatchFn> void updateEntityIfPresent(EntityState<T> &Next, const FString &Id, PatchFn Patch) */
 template <typename T, typename PatchFn>
 void updateEntityIfPresent(EntityState<T> &Next, const FString &Id,
                            PatchFn Patch) {
@@ -97,6 +103,7 @@ void updateEntityIfPresent(EntityState<T> &Next, const FString &Id,
   Existing && (Next.entities.Add(Id, Patch(*Existing)), true);
 }
 
+/** User Story: As a core rtk entity consumer, I need to invoke append entity if present through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> void appendEntityIfPresent(TArray<T> &Result, const EntityState<T> &State, const FString &Id) */
 template <typename T>
 void appendEntityIfPresent(TArray<T> &Result, const EntityState<T> &State,
                            const FString &Id) {
@@ -104,31 +111,37 @@ void appendEntityIfPresent(TArray<T> &Result, const EntityState<T> &State,
   Entity && (Result.Add(*Entity), true);
 }
 
+/** User Story: As a core rtk entity consumer, I need to invoke find entity by id through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> func::Maybe<T> findEntityById(const EntityState<T> &State, const FString &Id) */
 template <typename T>
 func::Maybe<T> findEntityById(const EntityState<T> &State, const FString &Id) {
   const T *Entity = State.entities.Find(Id);
   return Entity ? func::just(*Entity) : func::nothing<T>();
 }
 
+/** User Story: As a core rtk entity consumer, I need to invoke add many entities recursive through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> EntityState<T> addManyEntitiesRecursive(const EntityAdapter<T> &Ops, const TArray<T> &NewEntities, int32 Index, EntityState<T> Next) */
 template <typename T>
 EntityState<T> addManyEntitiesRecursive(const EntityAdapter<T> &Ops,
                                         const TArray<T> &NewEntities,
                                         int32 Index, EntityState<T> Next);
 
+/** User Story: As a core rtk entity consumer, I need to invoke set all entities recursive through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> EntityState<T> setAllEntitiesRecursive(const EntityAdapter<T> &Ops, const TArray<T> &NewEntities, int32 Index, EntityState<T> Next) */
 template <typename T>
 EntityState<T> setAllEntitiesRecursive(const EntityAdapter<T> &Ops,
                                        const TArray<T> &NewEntities,
                                        int32 Index, EntityState<T> Next);
 
+/** User Story: As a core rtk entity consumer, I need to invoke upsert many entities recursive through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> EntityState<T> upsertManyEntitiesRecursive(const EntityAdapter<T> &Ops, const TArray<T> &EntitiesToUpsert, int32 Index, EntityState<T> Next) */
 template <typename T>
 EntityState<T> upsertManyEntitiesRecursive(const EntityAdapter<T> &Ops,
                                            const TArray<T> &EntitiesToUpsert,
                                            int32 Index, EntityState<T> Next);
 
+/** User Story: As a core rtk entity consumer, I need to invoke remove many entities recursive through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> EntityState<T> removeManyEntitiesRecursive(const TArray<FString> &RemoveIds, int32 Index, EntityState<T> Next) */
 template <typename T>
 EntityState<T> removeManyEntitiesRecursive(const TArray<FString> &RemoveIds,
                                            int32 Index, EntityState<T> Next);
 
+/** User Story: As a core rtk entity consumer, I need to invoke select all entities recursive through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> TArray<T> selectAllEntitiesRecursive(const EntityState<T> &State, int32 Index, TArray<T> Result) */
 template <typename T>
 TArray<T> selectAllEntitiesRecursive(const EntityState<T> &State, int32 Index,
                                      TArray<T> Result);

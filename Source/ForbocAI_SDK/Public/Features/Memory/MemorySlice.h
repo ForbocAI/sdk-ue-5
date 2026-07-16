@@ -1,41 +1,39 @@
 #pragma once
 
+#include "Core/fp.hpp"
 #include "Core/rtk.hpp"
+#include "Features/Memory/Configuration/ConfigurationAdapters.h"
 #include "Features/Memory/MemoryActions.h"
 #include "Features/Memory/MemoryAdapters.h"
 
 namespace MemorySlice {
 
-struct FMemorySliceState {
-  rtk::EntityState<FMemoryItem> Entities;
-  FString StorageStatus;
-  FString RecallStatus;
-  FString Error;
-  TArray<FString> LastRecalledIds;
-
-  FMemorySliceState()
-      : Entities(GetMemoryAdapter().getInitialState()),
-        StorageStatus(TEXT("idle")), RecallStatus(TEXT("idle")) {}
-};
-
-inline void CollectMemoryIds(const TArray<FMemoryItem> &Items,
-                             TArray<FString> &Ids, int32 Index) {
-  Index >= Items.Num()
-      ? void()
-      : (Ids.Add(Items[Index].Id),
-         CollectMemoryIds(Items, Ids, Index + 1), void());
+/**
+ * User Story: As memory initialization, I need entity state and authored
+ * lifecycle defaults composed at the slice boundary.
+ * @fn inline FMemorySliceState createMemoryInitialState()
+ */
+inline FMemorySliceState createMemoryInitialState() {
+  FMemorySliceState State;
+  State.Entities = GetMemoryAdapter().getInitialState();
+  State.StorageStatus = MemoryConfiguration::memoryData().Status.Idle;
+  State.RecallStatus = MemoryConfiguration::memoryData().Status.Idle;
+  return State;
 }
 
+/** User Story: As a features memory consumer, I need to invoke create memory slice through a stable signature so the features memory workflow remains explicit and composable. @fn inline rtk::Slice<FMemorySliceState> createMemorySlice() */
 inline rtk::Slice<FMemorySliceState> createMemorySlice() {
+  const FMemorySliceState InitialState = createMemoryInitialState();
   return rtk::createSlice<FMemorySliceState>(
-      TEXT("memory"), FMemorySliceState(),
-      [](rtk::ActionReducerMapBuilder<FMemorySliceState> &Builder) {
+      TEXT("memory"), InitialState,
+      [InitialState](rtk::ActionReducerMapBuilder<FMemorySliceState> &Builder) {
         Builder.addCase(
             Actions::memoryStoreStartActionCreator(),
             [](const FMemorySliceState &State,
                const rtk::Action<rtk::FEmptyPayload> &) {
               FMemorySliceState Next = State;
-              Next.StorageStatus = TEXT("storing");
+              Next.StorageStatus =
+                  MemoryConfiguration::memoryData().Status.Storing;
               Next.Error.Empty();
               return Next;
             });
@@ -44,7 +42,8 @@ inline rtk::Slice<FMemorySliceState> createMemorySlice() {
             [](const FMemorySliceState &State,
                const rtk::Action<FMemoryItem> &Action) {
               FMemorySliceState Next = State;
-              Next.StorageStatus = TEXT("idle");
+              Next.StorageStatus =
+                  MemoryConfiguration::memoryData().Status.Idle;
               Next.Error.Empty();
               Next.Entities = GetMemoryAdapter().upsertOne(
                   Next.Entities, Action.PayloadValue);
@@ -55,7 +54,8 @@ inline rtk::Slice<FMemorySliceState> createMemorySlice() {
             [](const FMemorySliceState &State,
                const rtk::Action<FString> &Action) {
               FMemorySliceState Next = State;
-              Next.StorageStatus = TEXT("error");
+              Next.StorageStatus =
+                  MemoryConfiguration::memoryData().Status.Error;
               Next.Error = Action.PayloadValue;
               return Next;
             });
@@ -64,7 +64,8 @@ inline rtk::Slice<FMemorySliceState> createMemorySlice() {
             [](const FMemorySliceState &State,
                const rtk::Action<rtk::FEmptyPayload> &) {
               FMemorySliceState Next = State;
-              Next.RecallStatus = TEXT("recalling");
+              Next.RecallStatus =
+                  MemoryConfiguration::memoryData().Status.Recalling;
               Next.Error.Empty();
               return Next;
             });
@@ -73,12 +74,14 @@ inline rtk::Slice<FMemorySliceState> createMemorySlice() {
             [](const FMemorySliceState &State,
                const rtk::Action<TArray<FMemoryItem>> &Action) {
               FMemorySliceState Next = State;
-              Next.RecallStatus = TEXT("idle");
+              Next.RecallStatus =
+                  MemoryConfiguration::memoryData().Status.Idle;
               Next.Error.Empty();
               Next.Entities = GetMemoryAdapter().upsertMany(
                   Next.Entities, Action.PayloadValue);
-              Next.LastRecalledIds.Empty(Action.PayloadValue.Num());
-              CollectMemoryIds(Action.PayloadValue, Next.LastRecalledIds, 0);
+              Next.RecalledIds = func::map_array<FMemoryItem, FString>(
+                  Action.PayloadValue,
+                  [](const FMemoryItem &Item) { return Item.Id; });
               return Next;
             });
         Builder.addCase(
@@ -86,15 +89,16 @@ inline rtk::Slice<FMemorySliceState> createMemorySlice() {
             [](const FMemorySliceState &State,
                const rtk::Action<FString> &Action) {
               FMemorySliceState Next = State;
-              Next.RecallStatus = TEXT("error");
+              Next.RecallStatus =
+                  MemoryConfiguration::memoryData().Status.Error;
               Next.Error = Action.PayloadValue;
               return Next;
             });
         Builder.addCase(
             Actions::memoryClearActionCreator(),
-            [](const FMemorySliceState &,
+            [InitialState](const FMemorySliceState &,
                const rtk::Action<rtk::FEmptyPayload> &) {
-              return FMemorySliceState();
+              return InitialState;
             });
       });
 }

@@ -1,0 +1,112 @@
+{
+  "actionPrefixes": [
+    "api/",
+    "npc/process",
+    "protocol/",
+    "directive/",
+    "soul/",
+    "memory/",
+    "bridge/",
+    "ghost/"
+  ],
+  "runtimeTypes": {
+    "string": "string",
+    "undefined": "undefined"
+  },
+  "levels": {
+    "log": "log",
+    "info": "info",
+    "warn": "warn",
+    "error": "error"
+  },
+  "options": {
+    "enabled": true,
+    "grouping": "collapsed",
+    "level": "log",
+    "prefix": "[ForbocAI]",
+    "debugEnvironment": "FORBOCAI_DEBUG",
+    "debugEnabledValue": "1",
+    "nodeEnvironment": "NODE_ENV",
+    "productionEnvironment": "production",
+    "expandedGrouping": "expanded",
+    "collapsedGrouping": "collapsed",
+    "flatGrouping": "flat"
+  },
+  "text": {
+    "empty": "",
+    "categoryPrefix": "[ForbocAI][Protocol]",
+    "action": "action",
+    "payload": "payload",
+    "delta": "delta",
+    "previousState": "prev",
+    "nextState": "next",
+    "keyValueSeparator": "=",
+    "fieldSeparator": " "
+  },
+  "boolean": {
+    "true": "true",
+    "false": "false"
+  },
+  "delta": {
+    "open": "{",
+    "transition": " -> ",
+    "close": "}",
+    "separator": "; ",
+    "none": "<none>"
+  },
+  "labels": {
+    "npcs": "NPCs",
+    "memory": "Memory",
+    "directives": "Directives",
+    "bridge": "Bridge",
+    "soul": "Soul",
+    "ghost": "Ghost",
+    "vector": "Vector",
+    "dependencies": "Dependencies",
+    "extra": "Extra"
+  },
+  "fields": {
+    "npc": { "ids": "ids", "active": "active" },
+    "memory": {
+      "ids": "ids",
+      "store": "store",
+      "recall": "recall",
+      "recalled": "recalled",
+      "error": "error"
+    },
+    "directive": { "ids": "ids", "active": "active" },
+    "bridge": {
+      "status": "status",
+      "presets": "presets",
+      "rulesets": "rulesets",
+      "presetIds": "presetIds",
+      "validated": "validated",
+      "error": "error"
+    },
+    "soul": {
+      "export": "export",
+      "import": "import",
+      "hasExport": "hasExport",
+      "hasImport": "hasImport",
+      "available": "available",
+      "error": "error"
+    },
+    "ghost": {
+      "session": "session",
+      "status": "status",
+      "progress": "progress",
+      "hasResults": "hasResults",
+      "history": "history",
+      "loading": "loading",
+      "error": "error"
+    },
+    "vector": { "status": "status", "ready": "ready", "error": "error" },
+    "dependencies": {
+      "status": "status",
+      "report": "report",
+      "result": "result",
+      "error": "error"
+    },
+    "extra": { "entries": "entries" }
+  }
+}

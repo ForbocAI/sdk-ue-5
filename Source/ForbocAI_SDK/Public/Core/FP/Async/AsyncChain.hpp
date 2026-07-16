@@ -15,11 +15,11 @@ namespace func {
 
 namespace AsyncChain {
 /**
+ * @fn template <typename T, typename U, typename F> auto then(const AsyncResult<T> &res, F f) -> AsyncResult<U>
  * @brief Chains one AsyncResult into another async-producing transformation.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename T, typename U, typename F> auto then(const AsyncResult<T> &res, F f) -> AsyncResult<U>
  *
  * User Story: As async thunk composition, I need async chaining so one async
  * result can feed into the next without nested callback plumbing.

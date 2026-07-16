@@ -3,7 +3,9 @@
 namespace ecs {
 
 /**
+ * @fn inline FWorld setResource(const FSetResourceRequest &Request)
  * @brief Sets one world resource using a request payload.
+ * User Story: As a core ecs world consumer, I need to invoke set resource through a stable signature so the core ecs world workflow remains explicit and composable.
  */
 inline FWorld setResource(const FSetResourceRequest &Request) {
   FWorld World = Request.World;
@@ -13,8 +15,8 @@ inline FWorld setResource(const FSetResourceRequest &Request) {
 }
 
 /**
+ * @fn inline func::Maybe<FComponentValue> getResource(const FGetResourceRequest &Request)
  * @brief Reads one resource value from the world.
- * @signature inline func::Maybe<FComponentValue> getResource(const FGetResourceRequest &Request)
  *
  * User Story: As ECS side-effect orchestration code, resource reads should be
  * optional values instead of nullable pointer branches.
@@ -26,7 +28,9 @@ getResource(const FGetResourceRequest &Request) {
 }
 
 /**
+ * @fn inline FWorld pushEvent(const FPushEventRequest &Request)
  * @brief Appends one ECS event payload to its event queue.
+ * User Story: As a core ecs world consumer, I need to invoke push event through a stable signature so the core ecs world workflow remains explicit and composable.
  */
 inline FWorld pushEvent(const FPushEventRequest &Request) {
   FWorld World = Request.World;
@@ -35,8 +39,8 @@ inline FWorld pushEvent(const FPushEventRequest &Request) {
 }
 
 /**
+ * @fn inline TArray<FComponentValue> readEvents(const FReadEventsRequest &Request)
  * @brief Reads queued event payloads for one event type.
- * @signature inline TArray<FComponentValue> readEvents(const FReadEventsRequest &Request)
  *
  * User Story: As ECS systems code, event queues should materialize through a
  * Maybe match at the boundary.
@@ -49,7 +53,9 @@ inline TArray<FComponentValue> readEvents(const FReadEventsRequest &Request) {
 }
 
 /**
+ * @fn inline FWorld clearEvents(FWorld World)
  * @brief Clears all queued ECS events.
+ * User Story: As a core ecs world consumer, I need to invoke clear events through a stable signature so the core ecs world workflow remains explicit and composable.
  */
 inline FWorld clearEvents(FWorld World) {
   World.Events.Empty();
@@ -57,7 +63,9 @@ inline FWorld clearEvents(FWorld World) {
 }
 
 /**
+ * @fn inline FWorld setEntityDomain(const FSetEntityDomainRequest &Request)
  * @brief Associates one entity with one ECS domain via request payload.
+ * User Story: As a core ecs world consumer, I need to invoke set entity domain through a stable signature so the core ecs world workflow remains explicit and composable.
  */
 inline FWorld setEntityDomain(const FSetEntityDomainRequest &Request) {
   FWorld World = Request.World;
@@ -67,8 +75,8 @@ inline FWorld setEntityDomain(const FSetEntityDomainRequest &Request) {
 }
 
 /**
+ * @fn inline bool isEntityInDomain(const FEntityInDomainRequest &Request)
  * @brief Checks whether an entity belongs to a domain path.
- * @signature inline bool isEntityInDomain(const FEntityInDomainRequest &Request)
  *
  * User Story: As ECS domain queries, membership should be a Maybe lookup plus
  * an array predicate instead of borrowing sibling-domain logic.
@@ -79,8 +87,8 @@ inline bool isEntityInDomain(const FEntityInDomainRequest &Request) {
 }
 
 /**
+ * @fn inline TArray<EntityKey> queryComponents(const FQueryComponentsRequest &Request)
  * @brief Filters entities that contain every requested component type.
- * @signature inline TArray<EntityKey> queryComponents(const FQueryComponentsRequest &Request)
  *
  * User Story: As ECS system execution, component filtering should compose from
  * reusable predicates and request-shaped readers.
@@ -98,8 +106,8 @@ inline TArray<EntityKey> queryComponents(const FQueryComponentsRequest &Request)
 }
 
 /**
+ * @fn inline TArray<EntityKey> queryEntitiesByComponents(const FQueryEntitiesByComponentsRequest &Request)
  * @brief Queries all world entities by required components.
- * @signature inline TArray<EntityKey> queryEntitiesByComponents(const FQueryEntitiesByComponentsRequest &Request)
  *
  * User Story: As selectors or reducers query ECS state, component queries
  * should pass through one payload and remain view-neutral.
@@ -111,8 +119,8 @@ queryEntitiesByComponents(const FQueryEntitiesByComponentsRequest &Request) {
 }
 
 /**
+ * @fn inline TArray<EntityKey> queryEntitiesByTag(const FQueryEntitiesByTagRequest &Request)
  * @brief Queries all world entities by tag.
- * @signature inline TArray<EntityKey> queryEntitiesByTag(const FQueryEntitiesByTagRequest &Request)
  *
  * User Story: As selectors derive entity lists, tag filtering should reuse the
  * same functional query primitives as systems.
@@ -128,8 +136,8 @@ queryEntitiesByTag(const FQueryEntitiesByTagRequest &Request) {
 }
 
 /**
+ * @fn inline TArray<EntityKey> queryEntitiesByDomain(const FQueryEntitiesByDomainRequest &Request)
  * @brief Queries all world entities by domain path.
- * @signature inline TArray<EntityKey> queryEntitiesByDomain(const FQueryEntitiesByDomainRequest &Request)
  *
  * User Story: As feature domains query ECS ownership, domain filtering should
  * import downward into neutral ECS predicates.
@@ -145,15 +153,17 @@ queryEntitiesByDomain(const FQueryEntitiesByDomainRequest &Request) {
 }
 
 /**
+ * @fn inline TArray<EntityKey> queryDirtyWorldEntities(const FWorld &World)
  * @brief Returns entities dirtied by recent world transforms.
+ * User Story: As a core ecs world consumer, I need to invoke query dirty world entities through a stable signature so the core ecs world workflow remains explicit and composable.
  */
 inline TArray<EntityKey> queryDirtyWorldEntities(const FWorld &World) {
   return World.DirtyEntities;
 }
 
 /**
+ * @fn inline TArray<EntityKey> queryChildren(const FQueryChildrenRequest &Request)
  * @brief Returns child entity keys for a parent.
- * @signature inline TArray<EntityKey> queryChildren(const FQueryChildrenRequest &Request)
  *
  * User Story: As hierarchy selectors, child reads should materialize through
  * Maybe instead of nullable pointer branches.
@@ -165,8 +175,8 @@ inline TArray<EntityKey> queryChildren(const FQueryChildrenRequest &Request) {
 }
 
 /**
+ * @fn inline TMap<ComponentType, FComponentValue> gatherComponents(const FGatherComponentsRequest &Request)
  * @brief Gathers available component values for a system input entity.
- * @signature inline TMap<ComponentType, FComponentValue> gatherComponents(const FGatherComponentsRequest &Request)
  *
  * User Story: As ECS system execution, component gathering should fold over
  * requested types and let Maybe decide whether each component is present.

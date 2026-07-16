@@ -1,10 +1,37 @@
 #pragma once
 
 #include "Features/Data/DataAdapters.h"
+#include "Features/Testing/Action/ActionAdapters.h"
 #include "Features/Testing/NPC/TestingNPCTypes.h"
 
 namespace Testing::NPC {
 
+/**
+ * User Story: As an NPC reducer-test consumer, I need the complete semantic action registry so fixture behavior cannot drift when enum declarations change.
+ * @fn inline const TArray<Testing::Action::TTestingActionKind<ENPCTestActionKind>> & NPCTestActionKinds()
+ */
+inline const TArray<Testing::Action::TTestingActionKind<ENPCTestActionKind>> &
+NPCTestActionKinds() {
+#define FORBOC_NPC_TEST_ACTION_KIND(Name) {FString(TEXT(#Name)), ENPCTestActionKind::Name}
+  static const TArray<Testing::Action::TTestingActionKind<ENPCTestActionKind>>
+      Kinds = {
+          FORBOC_NPC_TEST_ACTION_KIND(InfoReceived),
+          FORBOC_NPC_TEST_ACTION_KIND(ActiveChanged),
+          FORBOC_NPC_TEST_ACTION_KIND(StateReplaced),
+          FORBOC_NPC_TEST_ACTION_KIND(StateUpdated),
+          FORBOC_NPC_TEST_ACTION_KIND(HistoryAppended),
+          FORBOC_NPC_TEST_ACTION_KIND(HistoryReceived),
+          FORBOC_NPC_TEST_ACTION_KIND(Blocked),
+          FORBOC_NPC_TEST_ACTION_KIND(BlockCleared),
+          FORBOC_NPC_TEST_ACTION_KIND(Removed),
+          FORBOC_NPC_TEST_ACTION_KIND(Inspect),
+      };
+#undef FORBOC_NPC_TEST_ACTION_KIND
+  check(Kinds.Num() == static_cast<int32>(ENPCTestActionKind::Count));
+  return Kinds;
+}
+
+/** User Story: As a features testing npc consumer, I need to invoke read npctest history entry through a stable signature so the features testing npc workflow remains explicit and composable. @fn inline FNPCHistoryEntry ReadNPCTestHistoryEntry(const TSharedPtr<FJsonObject> &Object) */
 inline FNPCHistoryEntry
 ReadNPCTestHistoryEntry(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -15,15 +42,15 @@ ReadNPCTestHistoryEntry(const TSharedPtr<FJsonObject> &Object) {
   return Entry;
 }
 
+/** User Story: As a features testing npc consumer, I need to invoke read npctest action through a stable signature so the features testing npc workflow remains explicit and composable. @fn inline FNPCTestAction ReadNPCTestAction(const TSharedPtr<FJsonObject> &Object) */
 inline FNPCTestAction
 ReadNPCTestAction(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
   const TSharedRef<FJsonObject> Value = Object.ToSharedRef();
-  const int32 Kind = DataAdapters::ReadNumberField(Value, TEXT("kind"));
-  check(Kind >= static_cast<int32>(ENPCTestActionKind::InfoReceived));
-  check(Kind < static_cast<int32>(ENPCTestActionKind::Count));
   return {
-      static_cast<ENPCTestActionKind>(Kind),
+      Testing::Action::ReadTestingActionKind<ENPCTestActionKind>(
+          DataAdapters::ReadStringField(Value, TEXT("kind")),
+          NPCTestActionKinds()),
       DataAdapters::ReadOptionalStringField(Value, TEXT("id")),
       DataAdapters::ReadOptionalStringField(Value, TEXT("persona")),
       DataAdapters::ReadOptionalStringField(Value, TEXT("stateJson")),
@@ -37,6 +64,7 @@ ReadNPCTestAction(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing npc consumer, I need to invoke read npctest expected through a stable signature so the features testing npc workflow remains explicit and composable. @fn inline FNPCTestExpected ReadNPCTestExpected(const TSharedPtr<FJsonObject> &Object) */
 inline FNPCTestExpected
 ReadNPCTestExpected(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -57,6 +85,7 @@ ReadNPCTestExpected(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing npc consumer, I need to invoke read npctest step through a stable signature so the features testing npc workflow remains explicit and composable. @fn inline FNPCTestStep ReadNPCTestStep( const TSharedPtr<FJsonObject> &Object) */
 inline FNPCTestStep ReadNPCTestStep(
     const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -68,6 +97,7 @@ inline FNPCTestStep ReadNPCTestStep(
   };
 }
 
+/** User Story: As a features testing npc consumer, I need to invoke read npctest scenario through a stable signature so the features testing npc workflow remains explicit and composable. @fn inline FNPCTestScenario ReadNPCTestScenario(const TSharedPtr<FJsonObject> &Object) */
 inline FNPCTestScenario
 ReadNPCTestScenario(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -80,12 +110,14 @@ ReadNPCTestScenario(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing npc consumer, I need to invoke read npctest scenarios through a stable signature so the features testing npc workflow remains explicit and composable. @fn inline TArray<FNPCTestScenario> ReadNPCTestScenarios(const DataAdapters::FArraySource &Source) */
 inline TArray<FNPCTestScenario>
 ReadNPCTestScenarios(const DataAdapters::FArraySource &Source) {
   return func::map_array<TSharedPtr<FJsonObject>, FNPCTestScenario>(
       DataAdapters::ReadObjectArray(Source), ReadNPCTestScenario);
 }
 
+/** User Story: As a features testing npc consumer, I need to invoke read npctest labels through a stable signature so the features testing npc workflow remains explicit and composable. @fn inline FNPCTestLabels ReadNPCTestLabels(const DataAdapters::FSettingsSource &Source) */
 inline FNPCTestLabels
 ReadNPCTestLabels(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Labels =
@@ -110,6 +142,7 @@ ReadNPCTestLabels(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As a features testing npc consumer, I need to invoke testing npcfixtures through a stable signature so the features testing npc workflow remains explicit and composable. @fn inline const FNPCTestFixtures &TestingNPCFixtures() */
 inline const FNPCTestFixtures &TestingNPCFixtures() {
   static const DataAdapters::FSettingsSource Settings =
       DataAdapters::SettingsSource(
@@ -132,6 +165,7 @@ inline const FNPCTestFixtures &TestingNPCFixtures() {
   return Fixtures;
 }
 
+/** User Story: As a features testing npc consumer, I need to invoke find npctest scenario through a stable signature so the features testing npc workflow remains explicit and composable. @fn inline func::Maybe<FNPCTestScenario> FindNPCTestScenario(const FString &Name) */
 inline func::Maybe<FNPCTestScenario>
 FindNPCTestScenario(const FString &Name) {
   return func::find_array<FNPCTestScenario>(

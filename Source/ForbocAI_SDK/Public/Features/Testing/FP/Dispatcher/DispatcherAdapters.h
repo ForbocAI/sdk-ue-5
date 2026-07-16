@@ -5,6 +5,7 @@
 
 namespace Testing::FP::Dispatcher {
 
+/** User Story: As a testing fp dispatcher consumer, I need to invoke read entry through a stable signature so the testing fp dispatcher workflow remains explicit and composable. @fn inline FEntryFixture ReadEntry(const TSharedRef<FJsonObject> &Object) */
 inline FEntryFixture ReadEntry(const TSharedRef<FJsonObject> &Object) {
   return {
       DataAdapters::ReadStringField(Object, TEXT("key")),
@@ -12,6 +13,7 @@ inline FEntryFixture ReadEntry(const TSharedRef<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a testing fp dispatcher consumer, I need to invoke read asserted entry through a stable signature so the testing fp dispatcher workflow remains explicit and composable. @fn inline FAssertedEntryFixture ReadAssertedEntry(const TSharedPtr<FJsonObject> &Object) */
 inline FAssertedEntryFixture
 ReadAssertedEntry(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -24,6 +26,7 @@ ReadAssertedEntry(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a testing fp dispatcher consumer, I need to invoke read has entry through a stable signature so the testing fp dispatcher workflow remains explicit and composable. @fn inline FHasEntryFixture ReadHasEntry(const TSharedPtr<FJsonObject> &Object) */
 inline FHasEntryFixture
 ReadHasEntry(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -35,6 +38,7 @@ ReadHasEntry(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a testing fp dispatcher consumer, I need to invoke read key lookup fixture through a stable signature so the testing fp dispatcher workflow remains explicit and composable. @fn inline FKeyLookupFixture ReadKeyLookupFixture(const DataAdapters::FSettingsSource &Source) */
 inline FKeyLookupFixture
 ReadKeyLookupFixture(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =
@@ -44,6 +48,7 @@ ReadKeyLookupFixture(const DataAdapters::FSettingsSource &Source) {
       ReadAssertedEntry)};
 }
 
+/** User Story: As a testing fp dispatcher consumer, I need to invoke read missing key fixture through a stable signature so the testing fp dispatcher workflow remains explicit and composable. @fn inline FMissingKeyFixture ReadMissingKeyFixture(const DataAdapters::FSettingsSource &Source) */
 inline FMissingKeyFixture
 ReadMissingKeyFixture(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =
@@ -55,6 +60,7 @@ ReadMissingKeyFixture(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As a testing fp dispatcher consumer, I need to invoke read has and keys fixture through a stable signature so the testing fp dispatcher workflow remains explicit and composable. @fn inline FHasAndKeysFixture ReadHasAndKeysFixture(const DataAdapters::FSettingsSource &Source) */
 inline FHasAndKeysFixture
 ReadHasAndKeysFixture(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =
@@ -70,6 +76,7 @@ ReadHasAndKeysFixture(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As a testing fp dispatcher consumer, I need to invoke read either miss fixture through a stable signature so the testing fp dispatcher workflow remains explicit and composable. @fn inline FEitherMissFixture ReadEitherMissFixture(const DataAdapters::FSettingsSource &Source) */
 inline FEitherMissFixture
 ReadEitherMissFixture(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =
@@ -89,6 +96,7 @@ ReadEitherMissFixture(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As a testing fp dispatcher consumer, I need to invoke read arg strict fixture through a stable signature so the testing fp dispatcher workflow remains explicit and composable. @fn inline FArgStrictFixture ReadArgStrictFixture(const DataAdapters::FSettingsSource &Source) */
 inline FArgStrictFixture
 ReadArgStrictFixture(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =
@@ -112,6 +120,7 @@ ReadArgStrictFixture(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As a testing fp dispatcher consumer, I need to invoke dispatcher fixtures through a stable signature so the testing fp dispatcher workflow remains explicit and composable. @fn inline const FDispatcherFixtures &DispatcherFixtures() */
 inline const FDispatcherFixtures &DispatcherFixtures() {
   static const DataAdapters::FSettingsSource Source =
       DataAdapters::SettingsSource(TEXT("ForbocAI_SDK"),

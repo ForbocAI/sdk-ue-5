@@ -3,6 +3,7 @@
 #include "Core/RTK/Query/StructuralSharing/StructuralSharing.hpp"
 
 namespace rtk {
+/** User Story: As a rtk query base query consumer, I need to invoke fetch base query through a stable signature so the rtk query base query workflow remains explicit and composable. @fn template <typename Result> BaseQueryFn<FetchArgs, Result, FetchBaseQueryError, FEmptyPayload, FetchBaseQueryMeta> fetchBaseQuery(const FetchBaseQueryArgs &Options = FetchBaseQueryArgs()) */
 template <typename Result>
 BaseQueryFn<FetchArgs, Result, FetchBaseQueryError, FEmptyPayload,
             FetchBaseQueryMeta>
@@ -45,13 +46,20 @@ fetchBaseQuery(const FetchBaseQueryArgs &Options = FetchBaseQueryArgs()) {
                     Resolve, RequestMeta, Res, bWasSuccessful);
               });
 
-          Request->ProcessRequest();
+          Request->ProcessRequest()
+              ? void()
+              : Resolve(QueryReturnValue<Result>::failure(
+                    detail::fetchNetworkFailureError(),
+                    func::just(detail::fetchMeta(
+                        RequestMeta,
+                        func::nothing<FetchBaseQueryResponse>()))));
         });
   };
 }
 
 namespace detail {
 
+/** User Story: As a rtk query base query consumer, I need to invoke retry base query attempt through a stable signature so the rtk query base query workflow remains explicit and composable. @fn template <typename Args, typename Result, typename Error, typename DefinitionExtraOptions, typename Meta> void retryBaseQueryAttempt( const BaseQueryFn<Args, Result, Error, DefinitionExtraOptions, Meta> &BaseQuery, const Args &ArgsValue, const BaseQueryApi &Api, const DefinitionExtraOptions &ExtraOptions, int32 Attempt, int32 MaxRetries, std::function<void(QueryReturnValue<Result, Error, Meta>)> Resolve, std::function<void(std::string)> Reject) */
 template <typename Args, typename Result, typename Error,
           typename DefinitionExtraOptions, typename Meta>
 void retryBaseQueryAttempt(
@@ -86,6 +94,7 @@ void retryBaseQueryAttempt(
 
 } // namespace detail
 
+/** User Story: As a rtk query base query consumer, I need to invoke retry through a stable signature so the rtk query base query workflow remains explicit and composable. @fn template <typename Args = FetchArgs, typename Result = FString, typename Error = FetchBaseQueryError, typename DefinitionExtraOptions = FEmptyPayload, typename Meta = FetchBaseQueryMeta> BaseQueryFn<Args, Result, Error, DefinitionExtraOptions, Meta> retry(const BaseQueryFn<Args, Result, Error, DefinitionExtraOptions, Meta> &BaseQuery, const RetryOptions &Options = RetryOptions()) */
 template <typename Args = FetchArgs, typename Result = FString,
           typename Error = FetchBaseQueryError,
           typename DefinitionExtraOptions = FEmptyPayload,
@@ -109,6 +118,7 @@ retry(const BaseQueryFn<Args, Result, Error, DefinitionExtraOptions, Meta>
   };
 }
 
+/** User Story: As a rtk query base query consumer, I need to invoke fake base query through a stable signature so the rtk query base query workflow remains explicit and composable. @fn template <typename Error = FetchBaseQueryError> BaseQueryFn<FEmptyPayload, FEmptyPayload, Error, FEmptyPayload, FetchBaseQueryMeta> fakeBaseQuery(const Error &ErrorValue = Error()) */
 template <typename Error = FetchBaseQueryError>
 BaseQueryFn<FEmptyPayload, FEmptyPayload, Error, FEmptyPayload,
             FetchBaseQueryMeta>

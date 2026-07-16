@@ -5,6 +5,7 @@
 
 namespace func {
 namespace detail {
+/** User Story: As a core fp vector consumer, I need to invoke fold vector recursive through a stable signature so the core fp vector workflow remains explicit and composable. @fn template <typename T, typename Acc, typename Step> Acc foldVectorRecursive(const std::vector<T> &values, size_t index, Acc acc, Step step) */
 template <typename T, typename Acc, typename Step>
 Acc foldVectorRecursive(const std::vector<T> &values, size_t index, Acc acc,
                         Step step) {
@@ -14,6 +15,7 @@ Acc foldVectorRecursive(const std::vector<T> &values, size_t index, Acc acc,
                    values, index + 1, step(acc, values[index]), step);
 }
 
+/** User Story: As a core fp vector consumer, I need to invoke filter vector recursive through a stable signature so the core fp vector workflow remains explicit and composable. @fn template <typename T, typename Predicate> std::vector<T> filterVectorRecursive(const std::vector<T> &values, size_t index, Predicate predicate, std::vector<T> result) */
 template <typename T, typename Predicate>
 std::vector<T> filterVectorRecursive(const std::vector<T> &values,
                                      size_t index, Predicate predicate,
@@ -27,6 +29,7 @@ std::vector<T> filterVectorRecursive(const std::vector<T> &values,
                                                     std::move(result)));
 }
 
+/** User Story: As a core fp vector consumer, I need to invoke find vector recursive through a stable signature so the core fp vector workflow remains explicit and composable. @fn template <typename T, typename Predicate> Maybe<T> findVectorRecursive(const std::vector<T> &values, size_t index, Predicate predicate) */
 template <typename T, typename Predicate>
 Maybe<T> findVectorRecursive(const std::vector<T> &values, size_t index,
                              Predicate predicate) {
@@ -38,6 +41,7 @@ Maybe<T> findVectorRecursive(const std::vector<T> &values, size_t index,
                                                        predicate));
 }
 
+/** User Story: As a core fp vector consumer, I need to invoke vector contains key through a stable signature so the core fp vector workflow remains explicit and composable. @fn template <typename Key> bool vectorContainsKey(const std::vector<Key> &values, const Key &key, size_t index) */
 template <typename Key>
 bool vectorContainsKey(const std::vector<Key> &values, const Key &key,
                        size_t index) {
@@ -47,6 +51,7 @@ bool vectorContainsKey(const std::vector<Key> &values, const Key &key,
                 vectorContainsKey<Key>(values, key, index + 1));
 }
 
+/** User Story: As a core fp vector consumer, I need to invoke unique by recursive through a stable signature so the core fp vector workflow remains explicit and composable. @fn template <typename T, typename Projection, typename Key> std::vector<T> uniqueByRecursive(const std::vector<T> &values, size_t index, Projection projection, std::vector<Key> seen, std::vector<T> result) */
 template <typename T, typename Projection, typename Key>
 std::vector<T> uniqueByRecursive(const std::vector<T> &values, size_t index,
                                  Projection projection,
@@ -65,6 +70,7 @@ std::vector<T> uniqueByRecursive(const std::vector<T> &values, size_t index,
                            std::move(result))));
 }
 
+/** User Story: As a core fp vector consumer, I need to invoke traverse maybe recursive through a stable signature so the core fp vector workflow remains explicit and composable. @fn template <typename T, typename Func, typename U> Maybe<std::vector<U>> traverseMaybeRecursive(const std::vector<T> &values, size_t index, Func fn, std::vector<U> result) */
 template <typename T, typename Func, typename U>
 Maybe<std::vector<U>> traverseMaybeRecursive(const std::vector<T> &values,
                                              size_t index, Func fn,
@@ -81,6 +87,7 @@ Maybe<std::vector<U>> traverseMaybeRecursive(const std::vector<T> &values,
                }();
 }
 
+/** User Story: As a core fp vector consumer, I need to invoke fold either recursive through a stable signature so the core fp vector workflow remains explicit and composable. @fn template <typename E, typename T, typename Acc, typename Step> Either<E, Acc> foldEitherRecursive(const std::vector<T> &values, size_t index, Acc acc, Step step) */
 template <typename E, typename T, typename Acc, typename Step>
 Either<E, Acc> foldEitherRecursive(const std::vector<T> &values, size_t index,
                                    Acc acc, Step step) {
@@ -95,9 +102,9 @@ Either<E, Acc> foldEitherRecursive(const std::vector<T> &values, size_t index,
 } // namespace detail
 
 /**
+ * @fn template <typename T, typename Acc, typename Step> Acc fold(const std::vector<T> &values, Acc seed, Step step)
  * @brief Folds a vector through a pure accumulator step.
  *
- * @signature template <typename T, typename Acc, typename Step> Acc fold(const std::vector<T> &values, Acc seed, Step step)
  *
  * User Story: As feature and ECS code, I need a reusable fold so repeated
  * accumulation does not require domain-specific request wrappers.
@@ -108,9 +115,9 @@ Acc fold(const std::vector<T> &values, Acc seed, Step step) {
 }
 
 /**
+ * @fn template <typename T, typename Predicate> std::vector<T> filter(const std::vector<T> &values, Predicate predicate)
  * @brief Keeps vector values that satisfy a predicate.
  *
- * @signature template <typename T, typename Predicate> std::vector<T> filter(const std::vector<T> &values, Predicate predicate)
  *
  * User Story: As selectors and ECS queries, I need reusable filtering so
  * feature code can compose predicates instead of hand-writing branches.
@@ -122,9 +129,9 @@ std::vector<T> filter(const std::vector<T> &values, Predicate predicate) {
 }
 
 /**
+ * @fn template <typename T, typename Predicate> Maybe<T> find_vector(const std::vector<T> &values, Predicate predicate)
  * @brief Finds the first vector value that satisfies a predicate.
  *
- * @signature template <typename T, typename Predicate> Maybe<T> find_vector(const std::vector<T> &values, Predicate predicate)
  *
  * User Story: As lookup code, I need Maybe-returning search so absence remains
  * explicit and no default sentinel is required.
@@ -135,9 +142,9 @@ Maybe<T> find_vector(const std::vector<T> &values, Predicate predicate) {
 }
 
 /**
+ * @fn template <typename T> bool contains_value(const std::vector<T> &values, const T &expected)
  * @brief Returns true when a vector contains a value by equality.
  *
- * @signature template <typename T> bool contains_value(const std::vector<T> &values, const T &expected)
  *
  * User Story: As predicate code, I need value membership as a neutral helper
  * instead of duplicating index loops across domains.
@@ -148,9 +155,9 @@ bool contains_value(const std::vector<T> &values, const T &expected) {
 }
 
 /**
+ * @fn template <typename T, typename Projection> std::vector<T> unique_by(const std::vector<T> &values, Projection projection)
  * @brief Keeps the first value for each projected key.
  *
- * @signature template <typename T, typename Projection> std::vector<T> unique_by(const std::vector<T> &values, Projection projection)
  *
  * User Story: As derived-data code, I need uniqueness by a reusable projection
  * so selectors and ECS queries avoid one-off dedupe helpers.
@@ -180,9 +187,9 @@ auto traverse(const std::vector<T> &values, Func fn)
 }
 
 /**
+ * @fn template <typename T> Maybe<std::vector<T>> sequence_maybe(const std::vector<Maybe<T>> &values)
  * @brief Converts a vector of Maybe values into a Maybe vector.
  *
- * @signature template <typename T> Maybe<std::vector<T>> sequence_maybe(const std::vector<Maybe<T>> &values)
  *
  * User Story: As composition code, I need to collect optional values only when
  * every element exists so validation remains explicit.
@@ -193,9 +200,9 @@ Maybe<std::vector<T>> sequence_maybe(const std::vector<Maybe<T>> &values) {
 }
 
 /**
+ * @fn template <typename E, typename T, typename Acc, typename Step> Either<E, Acc> fold_either(const std::vector<T> &values, Acc seed, Step step)
  * @brief Folds a vector through an Either-returning accumulator step.
  *
- * @signature template <typename E, typename T, typename Acc, typename Step> Either<E, Acc> fold_either(const std::vector<T> &values, Acc seed, Step step)
  *
  * User Story: As validation and reducer-boundary code, I need accumulation to
  * stop on the first error while preserving successful accumulator values.

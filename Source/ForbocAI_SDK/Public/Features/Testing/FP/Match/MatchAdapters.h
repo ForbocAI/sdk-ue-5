@@ -5,6 +5,7 @@
 
 namespace Testing::FP::Match {
 
+/** User Story: As a testing fp match consumer, I need to invoke read result labels through a stable signature so the testing fp match workflow remains explicit and composable. @fn inline FResultLabels ReadResultLabels(const TSharedRef<FJsonObject> &Object) */
 inline FResultLabels
 ReadResultLabels(const TSharedRef<FJsonObject> &Object) {
   return {
@@ -13,6 +14,7 @@ ReadResultLabels(const TSharedRef<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a testing fp match consumer, I need to invoke read predicate case through a stable signature so the testing fp match workflow remains explicit and composable. @fn inline FPredicateCaseFixture ReadPredicateCase(const TSharedRef<FJsonObject> &Object) */
 inline FPredicateCaseFixture
 ReadPredicateCase(const TSharedRef<FJsonObject> &Object) {
   return {
@@ -22,6 +24,7 @@ ReadPredicateCase(const TSharedRef<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a testing fp match consumer, I need to invoke read predicate fixture through a stable signature so the testing fp match workflow remains explicit and composable. @fn inline FPredicateFixture ReadPredicateFixture(const DataAdapters::FSettingsSource &Source) */
 inline FPredicateFixture
 ReadPredicateFixture(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =
@@ -36,6 +39,7 @@ ReadPredicateFixture(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As a testing fp match consumer, I need to invoke read wildcard fixture through a stable signature so the testing fp match workflow remains explicit and composable. @fn inline FWildcardFixture ReadWildcardFixture(const DataAdapters::FSettingsSource &Source) */
 inline FWildcardFixture
 ReadWildcardFixture(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =
@@ -56,6 +60,7 @@ ReadWildcardFixture(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As a testing fp match consumer, I need to invoke read no match fixture through a stable signature so the testing fp match workflow remains explicit and composable. @fn inline FNoMatchFixture ReadNoMatchFixture(const DataAdapters::FSettingsSource &Source) */
 inline FNoMatchFixture
 ReadNoMatchFixture(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =
@@ -68,6 +73,7 @@ ReadNoMatchFixture(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As a testing fp match consumer, I need to invoke read equals case through a stable signature so the testing fp match workflow remains explicit and composable. @fn inline FEqualsCaseFixture ReadEqualsCase(const TSharedRef<FJsonObject> &Object) */
 inline FEqualsCaseFixture
 ReadEqualsCase(const TSharedRef<FJsonObject> &Object) {
   return {
@@ -77,6 +83,7 @@ ReadEqualsCase(const TSharedRef<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a testing fp match consumer, I need to invoke read equals registered through a stable signature so the testing fp match workflow remains explicit and composable. @fn inline FEqualsRegisteredFixture ReadEqualsRegistered(const TSharedRef<FJsonObject> &Object) */
 inline FEqualsRegisteredFixture
 ReadEqualsRegistered(const TSharedRef<FJsonObject> &Object) {
   return {
@@ -85,6 +92,7 @@ ReadEqualsRegistered(const TSharedRef<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a testing fp match consumer, I need to invoke read equals fixture through a stable signature so the testing fp match workflow remains explicit and composable. @fn inline FEqualsFixture ReadEqualsFixture(const DataAdapters::FSettingsSource &Source) */
 inline FEqualsFixture
 ReadEqualsFixture(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =
@@ -99,6 +107,7 @@ ReadEqualsFixture(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As a testing fp match consumer, I need to invoke read nullable pointer fixture through a stable signature so the testing fp match workflow remains explicit and composable. @fn inline FNullablePointerFixture ReadNullablePointerFixture(const DataAdapters::FSettingsSource &Source) */
 inline FNullablePointerFixture
 ReadNullablePointerFixture(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =
@@ -115,6 +124,7 @@ ReadNullablePointerFixture(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As a testing fp match consumer, I need to invoke read nullable value fixture through a stable signature so the testing fp match workflow remains explicit and composable. @fn inline FNullableValueFixture ReadNullableValueFixture(const DataAdapters::FSettingsSource &Source) */
 inline FNullableValueFixture
 ReadNullableValueFixture(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =
@@ -134,6 +144,7 @@ ReadNullableValueFixture(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As a testing fp match consumer, I need to invoke read require just fixture through a stable signature so the testing fp match workflow remains explicit and composable. @fn inline FRequireJustFixture ReadRequireJustFixture(const DataAdapters::FSettingsSource &Source) */
 inline FRequireJustFixture
 ReadRequireJustFixture(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =
@@ -152,6 +163,7 @@ ReadRequireJustFixture(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As a testing fp match consumer, I need to invoke match fixtures through a stable signature so the testing fp match workflow remains explicit and composable. @fn inline const FMatchFixtures &MatchFixtures() */
 inline const FMatchFixtures &MatchFixtures() {
   static const DataAdapters::FSettingsSource Source =
       DataAdapters::SettingsSource(TEXT("ForbocAI_SDK"),

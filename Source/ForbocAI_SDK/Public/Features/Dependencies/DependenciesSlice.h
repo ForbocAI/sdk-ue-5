@@ -6,6 +6,7 @@
 
 namespace DependenciesSlice {
 
+/** User Story: As a features dependencies consumer, I need to invoke start workflow through a stable signature so the features dependencies workflow remains explicit and composable. @fn inline FDependenciesState startWorkflow(const FDependenciesState &State, const FString &Status) */
 inline FDependenciesState startWorkflow(const FDependenciesState &State,
                                       const FString &Status) {
   FDependenciesState Next = State;
@@ -14,6 +15,7 @@ inline FDependenciesState startWorkflow(const FDependenciesState &State,
   return Next;
 }
 
+/** User Story: As a features dependencies consumer, I need to invoke complete dependencies through a stable signature so the features dependencies workflow remains explicit and composable. @fn inline FDependenciesState completeDependencies(const FDependenciesState &State, const FDependenciesResult &Result) */
 inline FDependenciesState completeDependencies(const FDependenciesState &State,
                                       const FDependenciesResult &Result) {
   FDependenciesState Next = State;
@@ -27,6 +29,7 @@ inline FDependenciesState completeDependencies(const FDependenciesState &State,
   return Next;
 }
 
+/** User Story: As a features dependencies consumer, I need to invoke create dependencies slice through a stable signature so the features dependencies workflow remains explicit and composable. @fn inline rtk::Slice<FDependenciesState> createDependenciesSlice() */
 inline rtk::Slice<FDependenciesState> createDependenciesSlice() {
   return rtk::createSlice<FDependenciesState>(
       TEXT("dependencies"), FDependenciesState(),

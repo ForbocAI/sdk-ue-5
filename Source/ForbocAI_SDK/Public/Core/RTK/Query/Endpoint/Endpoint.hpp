@@ -24,6 +24,7 @@ template <typename Arg, typename Result> struct ApiEndpoint {
   std::function<func::AsyncResult<QueryReturnValue<Result>>(const Arg &)>
       RequestBuilder;
 
+  /** User Story: As a rtk query endpoint consumer, I need to invoke api endpoint through a stable signature so the rtk query endpoint workflow remains explicit and composable. @fn ApiEndpoint() */
   ApiEndpoint() : Type(DefinitionType::query) {}
 };
 
@@ -73,6 +74,7 @@ template <typename Result> struct QuerySubState {
   func::Maybe<Result> data;
   func::Maybe<FetchBaseQueryError> error;
 
+  /** User Story: As a rtk query endpoint consumer, I need to invoke query sub state through a stable signature so the rtk query endpoint workflow remains explicit and composable. @fn QuerySubState() */
   QuerySubState() : status(QueryStatus::uninitialized) {}
 };
 
@@ -133,6 +135,7 @@ template <typename State> struct ApiContext {
 };
 
 template <typename State> struct EndpointBuilder {
+  /** User Story: As a rtk query endpoint consumer, I need to invoke query through a stable signature so the rtk query endpoint workflow remains explicit and composable. @fn template <typename Arg, typename Result> QueryDefinition<Arg, Result> query(const QueryDefinition<Arg, Result> &Definition) const */
   template <typename Arg, typename Result>
   QueryDefinition<Arg, Result>
   query(const QueryDefinition<Arg, Result> &Definition) const {
@@ -141,6 +144,7 @@ template <typename State> struct EndpointBuilder {
     return Copy;
   }
 
+  /** User Story: As a rtk query endpoint consumer, I need to invoke mutation through a stable signature so the rtk query endpoint workflow remains explicit and composable. @fn template <typename Arg, typename Result> MutationDefinition<Arg, Result> mutation(const MutationDefinition<Arg, Result> &Definition) const */
   template <typename Arg, typename Result>
   MutationDefinition<Arg, Result>
   mutation(const MutationDefinition<Arg, Result> &Definition) const {
@@ -149,6 +153,7 @@ template <typename State> struct EndpointBuilder {
     return Copy;
   }
 
+  /** User Story: As a rtk query endpoint consumer, I need to invoke infinite query through a stable signature so the rtk query endpoint workflow remains explicit and composable. @fn template <typename Arg, typename Result> InfiniteQueryDefinition<Arg, Result> infiniteQuery(const InfiniteQueryDefinition<Arg, Result> &Definition) const */
   template <typename Arg, typename Result>
   InfiniteQueryDefinition<Arg, Result>
   infiniteQuery(const InfiniteQueryDefinition<Arg, Result> &Definition) const {

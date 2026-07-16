@@ -37,10 +37,8 @@
 // @covers:cliOp:storeMemory
 // @covers:cliOp:processNpc
 // @covers:cliOp:recallNodeMemory
-// @covers:cliOp:deleteRuleset
 // @covers:cliOp:listRulesets
 // @covers:cliOp:listRulePresets
-// @covers:cliOp:registerRuleset
 // @covers:cliOp:storeNodeMemory
 // @covers:cliOp:updateNpc
 // @covers:cliOp:validateBridgePayload
@@ -68,10 +66,8 @@
 // @covers:cli:npc_process
 // @covers:cli:npc_state
 // @covers:cli:npc_update
-// @covers:cli:rules_delete
 // @covers:cli:rules_list
 // @covers:cli:rules_presets
-// @covers:cli:rules_register
 // @covers:cli:soul_export
 // @covers:cli:soul_chat
 // @covers:cli:soul_import
@@ -93,6 +89,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsCreateNpcTest,
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FOpsCreateNpcTest::RunTest(const FString &Parameters)
  */
 bool FOpsCreateNpcTest::RunTest(const FString &Parameters) {
   EnhancedStore<FRuntimeState> Store = createRuntimeStore();
@@ -126,6 +123,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsGetActiveEmptyTest,
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FOpsGetActiveEmptyTest::RunTest(const FString &Parameters)
  */
 bool FOpsGetActiveEmptyTest::RunTest(const FString &Parameters) {
   EnhancedStore<FRuntimeState> Store = createRuntimeStore();
@@ -146,6 +144,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsConfigTest,
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FOpsConfigTest::RunTest(const FString &Parameters)
  */
 bool FOpsConfigTest::RunTest(const FString &Parameters) {
   const FString TempConfigPath = FPaths::Combine(
@@ -211,6 +210,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FOpsCreateAndRemoveTest::RunTest(const FString &Parameters)
  */
 bool FOpsCreateAndRemoveTest::RunTest(const FString &Parameters) {
   EnhancedStore<FRuntimeState> Store = createRuntimeStore();

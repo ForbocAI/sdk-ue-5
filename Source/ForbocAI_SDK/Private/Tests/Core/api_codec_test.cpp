@@ -4,13 +4,14 @@
 #include "Misc/AutomationTest.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FApiCodecSoulVerifyAliasTest, "ForbocAI.Core.API.SoulVerifyAliases",
+    FApiCodecSoulVerifyContractTest, "ForbocAI.Core.API.SoulVerifyContract",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FApiCodecSoulVerifyContractTest::RunTest(const FString &Parameters)
  */
-bool FApiCodecSoulVerifyAliasTest::RunTest(const FString &Parameters) {
+bool FApiCodecSoulVerifyContractTest::RunTest(const FString &Parameters) {
   const Testing::API::Codec::FSoulVerifyFixture &Fixture =
       Testing::API::Codec::CodecFixtures().SoulVerify;
 
@@ -24,13 +25,14 @@ bool FApiCodecSoulVerifyAliasTest::RunTest(const FString &Parameters) {
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FApiCodecBridgeRulesAliasTest, "ForbocAI.Core.API.BridgeRuleAliases",
+    FApiCodecBridgeRulesContractTest, "ForbocAI.Core.API.BridgeRulesContract",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FApiCodecBridgeRulesContractTest::RunTest(const FString &Parameters)
  */
-bool FApiCodecBridgeRulesAliasTest::RunTest(const FString &Parameters) {
+bool FApiCodecBridgeRulesContractTest::RunTest(const FString &Parameters) {
   const Testing::API::Codec::FBridgeRulesFixture &Fixture =
       Testing::API::Codec::CodecFixtures().BridgeRules;
 
@@ -51,13 +53,14 @@ bool FApiCodecBridgeRulesAliasTest::RunTest(const FString &Parameters) {
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FApiCodecRulesetAliasTest, "ForbocAI.Core.API.RulesetAliases",
+    FApiCodecRulesetContractTest, "ForbocAI.Core.API.RulesetContract",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FApiCodecRulesetContractTest::RunTest(const FString &Parameters)
  */
-bool FApiCodecRulesetAliasTest::RunTest(const FString &Parameters) {
+bool FApiCodecRulesetContractTest::RunTest(const FString &Parameters) {
   const Testing::API::Codec::FRulesetFixture &Fixture =
       Testing::API::Codec::CodecFixtures().Ruleset;
 
@@ -65,22 +68,36 @@ bool FApiCodecRulesetAliasTest::RunTest(const FString &Parameters) {
   TestTrue(*Fixture.Labels.Decode,
            APISlice::Detail::DecodeDirectiveRuleSetResponse(
                Fixture.ResponseJson, Ruleset));
-  TestEqual(*Fixture.Labels.Id, Ruleset.Id, Fixture.ExpectedId);
   TestEqual(*Fixture.Labels.RulesetId, Ruleset.RulesetId,
             Fixture.ExpectedRulesetId);
   TestEqual(*Fixture.Labels.RuleCount, Ruleset.RulesetRules.Num(),
             Fixture.ExpectedRuleCount);
+  TestEqual(*Fixture.Labels.Template, Ruleset.Template,
+            Fixture.ExpectedTemplate);
   if (Ruleset.RulesetRules.IsValidIndex(Fixture.FirstRuleIndex)) {
-    const auto &Rule = Ruleset.RulesetRules[Fixture.FirstRuleIndex];
-    TestEqual(*Fixture.Labels.RuleName, Rule.RuleName,
+    const FDirectiveRule &Rule = Ruleset.RulesetRules[Fixture.FirstRuleIndex];
+    TestEqual(*Fixture.Labels.RuleId, Rule.RuleId, Fixture.ExpectedRuleId);
+    TestEqual(*Fixture.Labels.RuleName, Rule.Name,
               Fixture.ExpectedRuleName);
-    TestEqual(*Fixture.Labels.ActionCount, Rule.RuleActionTypes.Num(),
-              Fixture.ExpectedActionCount);
-    if (Rule.RuleActionTypes.IsValidIndex(Fixture.FirstActionIndex)) {
-      TestEqual(*Fixture.Labels.Action,
-                Rule.RuleActionTypes[Fixture.FirstActionIndex],
-                Fixture.ExpectedAction);
+    TestEqual(*Fixture.Labels.ConditionCount, Rule.Conditions.Num(),
+              Fixture.ExpectedConditionCount);
+    if (Rule.Conditions.IsValidIndex(Fixture.FirstConditionIndex)) {
+      const FDirectiveRuleCondition &Condition =
+          Rule.Conditions[Fixture.FirstConditionIndex];
+      TestEqual(*Fixture.Labels.ConditionKey, Condition.Key,
+                Fixture.ExpectedConditionKey);
+      TestEqual(*Fixture.Labels.ConditionValue, Condition.Value,
+                Fixture.ExpectedConditionValue);
     }
+    TestEqual(*Fixture.Labels.Action, Rule.Action, Fixture.ExpectedAction);
+    TestEqual(*Fixture.Labels.Reason, Rule.Reason, Fixture.ExpectedReason);
+    TestEqual(*Fixture.Labels.Target, Rule.Target, Fixture.ExpectedTarget);
+    TestEqual(*Fixture.Labels.Priority, Rule.Priority,
+              Fixture.ExpectedPriority);
+    TestEqual(*Fixture.Labels.ObservationPattern, Rule.ObservationPattern,
+              Fixture.ExpectedObservationPattern);
+    TestEqual(*Fixture.Labels.PromptSuffix, Rule.PromptSuffix,
+              Fixture.ExpectedPromptSuffix);
   }
   return true;
 }
@@ -92,6 +109,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FApiCodecNullableProtocolFieldsTest::RunTest(const FString &Parameters)
  */
 bool FApiCodecNullableProtocolFieldsTest::RunTest(const FString &Parameters) {
   const Testing::API::Codec::FNullableProtocolFixture &Fixture =
@@ -106,18 +124,29 @@ bool FApiCodecNullableProtocolFieldsTest::RunTest(const FString &Parameters) {
   TestTrue(*Fixture.Labels.Persona, Response.Tape.Persona.IsEmpty());
   TestTrue(*Fixture.Labels.RulesetId,
            Response.Tape.RulesetId.IsEmpty());
+  FNPCProcessResponse MalformedStoreResponse;
+  TestFalse(*Fixture.Labels.RejectsMalformedStore,
+            APISlice::Detail::DecodeNpcProcessResponse(
+                Fixture.MalformedStoreResponseJson,
+                MalformedStoreResponse));
+  FNPCProcessResponse MalformedRecallResponse;
+  TestFalse(*Fixture.Labels.RejectsMalformedRecall,
+            APISlice::Detail::DecodeNpcProcessResponse(
+                Fixture.MalformedRecallResponseJson,
+                MalformedRecallResponse));
   return true;
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FApiCodecBridgeValidationWrapperTest,
-    "ForbocAI.Core.API.BridgeValidationWrapper",
+    FApiCodecBridgeValidationContractTest,
+    "ForbocAI.Core.API.BridgeValidationContract",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FApiCodecBridgeValidationContractTest::RunTest(const FString &Parameters)
  */
-bool FApiCodecBridgeValidationWrapperTest::RunTest(const FString &Parameters) {
+bool FApiCodecBridgeValidationContractTest::RunTest(const FString &Parameters) {
   const Testing::API::Codec::FBridgeValidationFixture &Fixture =
       Testing::API::Codec::CodecFixtures().BridgeValidation;
 
@@ -127,30 +156,41 @@ bool FApiCodecBridgeValidationWrapperTest::RunTest(const FString &Parameters) {
                                                     Result));
   TestEqual(*Fixture.Labels.Valid, Result.bValid, Fixture.bExpectedValid);
   TestEqual(*Fixture.Labels.Reason, Result.Reason, Fixture.ExpectedReason);
+  FValidationResult InvalidResult;
+  TestFalse(*Fixture.Labels.RejectsInvalidAction,
+            APISlice::Detail::DecodeValidationResult(
+                Fixture.InvalidActionResponseJson, InvalidResult));
   return true;
 }
 
-/**
- * Response normalization: gaType→type, actionReason→reason, actionTarget→target
- * (Haskell API may return aliased field names; JsonInterop::ActionFromObject normalizes)
- * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
- */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FApiCodecActionFromObjectGaTypeTest,
-    "ForbocAI.Core.API.ActionFromObjectGaTypeAliases",
+    FApiCodecActionContractTest, "ForbocAI.Core.API.ActionContract",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FApiCodecActionContractTest::RunTest(const FString &Parameters)
  */
-bool FApiCodecActionFromObjectGaTypeTest::RunTest(const FString &Parameters) {
-  const Testing::API::Codec::FActionAliasesFixture &Fixture =
-      Testing::API::Codec::CodecFixtures().ActionAliases;
+bool FApiCodecActionContractTest::RunTest(const FString &Parameters) {
+  const Testing::API::Codec::FActionContractFixture &Fixture =
+      Testing::API::Codec::CodecFixtures().ActionContract;
 
-  const FAgentAction Action = JsonInterop::ActionFromObject(Fixture.Input);
-
-  TestEqual(*Fixture.Labels.Type, Action.Type, Fixture.ExpectedType);
-  TestEqual(*Fixture.Labels.Target, Action.Target, Fixture.ExpectedTarget);
-  TestEqual(*Fixture.Labels.Reason, Action.Reason, Fixture.ExpectedReason);
-  return true;
+  const func::Maybe<FAgentAction> Decoded =
+      JsonInterop::DecodeActionObject(Fixture.Input);
+  const bool bDecoded = func::match(
+      Decoded,
+      [&](const FAgentAction &Action) {
+        TestEqual(*Fixture.Labels.Type, Action.Type, Fixture.ExpectedType);
+        TestEqual(*Fixture.Labels.Target, Action.Target,
+                  Fixture.ExpectedTarget);
+        TestEqual(*Fixture.Labels.Reason, Action.Reason,
+                  Fixture.ExpectedReason);
+        return true;
+      },
+      []() { return false; });
+  TestTrue(*Fixture.Labels.Decode, bDecoded);
+  TestTrue(*Fixture.Labels.RejectsInternalNames,
+           func::is_nothing(
+               JsonInterop::DecodeActionObject(Fixture.InternalInput)));
+  return bDecoded;
 }

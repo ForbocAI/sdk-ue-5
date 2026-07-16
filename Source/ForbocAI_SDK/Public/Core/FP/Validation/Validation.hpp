@@ -18,11 +18,11 @@ template <typename T, typename E = std::string> struct ValidationPipeline {
 };
 
 /**
+ * @fn template <typename T, typename E = std::string> ValidationPipeline<T, E> validationPipeline()
  * @brief Creates an empty validation pipeline.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename T, typename E = std::string> ValidationPipeline<T, E> validationPipeline()
  *
  * User Story: As validation flows, I need a pipeline entry point so validators
  * can be declared and composed incrementally.
@@ -33,11 +33,11 @@ ValidationPipeline<T, E> validationPipeline() {
 }
 
 /**
+ * @fn template <typename T, typename E, typename Func> ValidationPipeline<T, E> addValidation(ValidationPipeline<T, E> Pipeline, Func Validator)
  * @brief Appends a validator to the pipeline.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename T, typename E, typename Func> ValidationPipeline<T, E> addValidation(ValidationPipeline<T, E> Pipeline, Func Validator)
  *
  * User Story: As validation flows, I need validators chained fluently so input
  * rules can be assembled without stateful builder objects.
@@ -51,11 +51,11 @@ ValidationPipeline<T, E> addValidation(ValidationPipeline<T, E> Pipeline,
 }
 
 /**
+ * @fn template <typename T, typename E, typename Func> ValidationPipeline<T, E> operator|(ValidationPipeline<T, E> Pipeline, Func Validator)
  * @brief Supports pipe-style validation assembly with free functions.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename T, typename E, typename Func> ValidationPipeline<T, E> operator|(ValidationPipeline<T, E> Pipeline, Func Validator)
  *
  * User Story: As validation flows, I need ergonomic composition so validators
  * can still be chained declaratively after removing member builders.
@@ -67,11 +67,13 @@ ValidationPipeline<T, E> operator|(ValidationPipeline<T, E> Pipeline,
 }
 
 namespace detail {
+/** User Story: As a core fp validation consumer, I need to invoke run validation recursive through a stable signature so the core fp validation workflow remains explicit and composable. @fn template <typename T, typename E> Either<E, T> runValidationRecursive(const std::vector<std::function<Either<E, T>(T)>> &Steps, size_t Index, T Current) */
 template <typename T, typename E>
 Either<E, T>
 runValidationRecursive(const std::vector<std::function<Either<E, T>(T)>> &Steps,
                        size_t Index, T Current);
 
+/** User Story: As a core fp validation consumer, I need to invoke run validation step through a stable signature so the core fp validation workflow remains explicit and composable. @fn template <typename T, typename E> Either<E, T> runValidationStep(const std::vector<std::function<Either<E, T>(T)>> &Steps, size_t Index, T Current) */
 template <typename T, typename E>
 Either<E, T>
 runValidationStep(const std::vector<std::function<Either<E, T>(T)>> &Steps,
@@ -82,6 +84,7 @@ runValidationStep(const std::vector<std::function<Either<E, T>(T)>> &Steps,
                                                       Result.right);
 }
 
+/** User Story: As a core fp validation consumer, I need to invoke run validation recursive through a stable signature so the core fp validation workflow remains explicit and composable. @fn template <typename T, typename E> Either<E, T> runValidationRecursive(const std::vector<std::function<Either<E, T>(T)>> &Steps, size_t Index, T Current) */
 template <typename T, typename E>
 Either<E, T>
 runValidationRecursive(const std::vector<std::function<Either<E, T>(T)>> &Steps,
@@ -93,11 +96,11 @@ runValidationRecursive(const std::vector<std::function<Either<E, T>(T)>> &Steps,
 } // namespace detail
 
 /**
+ * @fn template <typename T, typename E> Either<E, T> runValidation(const ValidationPipeline<T, E> &Pipeline, T Value)
  * @brief Runs validators in order and stops on the first error.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename T, typename E> Either<E, T> runValidation(const ValidationPipeline<T, E> &Pipeline, T Value)
  *
  * User Story: As validation flows, I need short-circuit execution so failing
  * input stops at the first invalid step.

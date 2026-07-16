@@ -10,12 +10,14 @@ struct FGridBounds {
   int32 MinimumCoordinate{};
 };
 
+/** User Story: As a components spatial grid consumer, I need to invoke read grid position through a stable signature so the components spatial grid workflow remains explicit and composable. @fn inline FPosition ReadGridPosition(const TSharedRef<FJsonObject> &Object) */
 inline FPosition ReadGridPosition(const TSharedRef<FJsonObject> &Object) {
   return FPosition(
       DataAdapters::ReadNumberField(Object, TEXT("x")),
       DataAdapters::ReadNumberField(Object, TEXT("y")));
 }
 
+/** User Story: As a components spatial grid consumer, I need to invoke create grid initial state through a stable signature so the components spatial grid workflow remains explicit and composable. @fn inline FGridState CreateGridInitialState() */
 inline FGridState CreateGridInitialState() {
   static const DataAdapters::FSettingsSource Source =
       DataAdapters::SettingsSource(TEXT("components/spatial/grid.json"));
@@ -32,6 +34,7 @@ inline FGridState CreateGridInitialState() {
   return State;
 }
 
+/** User Story: As a components spatial grid consumer, I need to invoke read grid bounds through a stable signature so the components spatial grid workflow remains explicit and composable. @fn inline FGridBounds ReadGridBounds() */
 inline FGridBounds ReadGridBounds() {
   static const DataAdapters::FSettingsSource Source =
       DataAdapters::SettingsSource(TEXT("components/spatial/grid.json"));

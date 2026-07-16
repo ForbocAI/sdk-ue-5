@@ -9,9 +9,9 @@
       "reason": "signature_ok"
     },
     "labels": {
-      "decode": "Soul verify aliases decode",
-      "valid": "Alias validity mapped",
-      "reason": "Alias reason mapped"
+      "decode": "Canonical Soul verification decodes",
+      "valid": "Canonical validity mapped",
+      "reason": "Canonical reason mapped"
     }
   },
   "bridgeRules": {
@@ -30,9 +30,9 @@
       "actionCount": 2
     },
     "labels": {
-      "decode": "Bridge rule aliases decode",
+      "decode": "Canonical Bridge rules decode",
       "count": "One rule decoded",
-      "name": "Rule name uses alias when primary field is absent",
+      "name": "Bridge rule identifier mapped to domain name",
       "description": "Rule description preserved",
       "actionCount": "Affected actions preserved"
     }
@@ -44,29 +44,51 @@
         {
           "drRuleId": "rule_1",
           "ruleName": "Stay in character",
+          "ruleCondition": [["state", "ready"]],
           "ruleAction": "speak",
-          "ruleReason": "Keep voice consistent"
+          "ruleReason": "Keep voice consistent",
+          "ruleTarget": "player",
+          "rulePriority": 7,
+          "ruleObsPattern": "player_present",
+          "rulePromptSuffix": "Respond consistently"
         }
-      ]
+      ],
+      "template": "default"
     },
     "expected": {
-      "id": "preset_rpg",
       "rulesetId": "preset_rpg",
       "ruleCount": 1,
       "firstRuleIndex": 0,
+      "ruleId": "rule_1",
       "ruleName": "Stay in character",
-      "actionCount": 1,
-      "firstActionIndex": 0,
-      "action": "speak"
+      "conditionCount": 1,
+      "firstConditionIndex": 0,
+      "conditionKey": "state",
+      "conditionValue": "ready",
+      "action": "speak",
+      "reason": "Keep voice consistent",
+      "target": "player",
+      "priority": 7,
+      "observationPattern": "player_present",
+      "promptSuffix": "Respond consistently",
+      "template": "default"
     },
     "labels": {
-      "decode": "Ruleset aliases decode",
-      "id": "Ruleset id mapped to local id",
-      "rulesetId": "RulesetId preserved",
+      "decode": "Canonical ruleset decodes",
+      "rulesetId": "Ruleset identity preserved",
       "ruleCount": "One nested rule decoded",
+      "ruleId": "Nested rule identity mapped",
       "ruleName": "Nested rule name mapped",
-      "actionCount": "Nested rule has one action",
-      "action": "Nested rule action mapped"
+      "conditionCount": "Nested rule conditions preserved",
+      "conditionKey": "Condition key mapped",
+      "conditionValue": "Condition value mapped",
+      "action": "Nested rule action mapped",
+      "reason": "Nested rule reason mapped",
+      "target": "Nested rule target mapped",
+      "priority": "Nested rule priority mapped",
+      "observationPattern": "Nested rule observation pattern mapped",
+      "promptSuffix": "Nested rule prompt suffix mapped",
+      "template": "Ruleset template mapped"
     }
   },
   "nullableProtocol": {
@@ -84,24 +106,76 @@
         "observation": "look around",
         "context": {},
         "npcState": {},
-      "structuredPersona": null,
+        "structuredPersona": null,
         "memories": [],
         "rulesetId": null,
         "vectorQueried": true
+      }
+    },
+    "malformedStoreResponse": {
+      "instruction": {
+        "type": "Finalize",
+        "valid": true,
+        "memoryStore": [
+          {
+            "text": "remember this",
+            "type": "episodic"
+          }
+        ],
+        "stateTransform": {},
+        "action": null,
+        "dialogue": "hello there"
+      },
+      "tape": {
+        "observation": "look around",
+        "context": {},
+        "npcState": {},
+        "structuredPersona": null,
+        "memories": []
+      }
+    },
+    "malformedRecallResponse": {
+      "instruction": {
+        "type": "Finalize",
+        "valid": true,
+        "memoryStore": [],
+        "stateTransform": {},
+        "action": null,
+        "dialogue": "hello there"
+      },
+      "tape": {
+        "observation": "look around",
+        "context": {},
+        "npcState": {},
+        "structuredPersona": null,
+        "memories": [
+          {
+            "text": "remembered",
+            "type": "episodic"
+          }
+        ]
       }
     },
     "labels": {
       "decode": "Nullable protocol fields decode",
       "signature": "Nullable finalize signature becomes empty",
       "persona": "Nullable tape persona becomes empty",
-      "rulesetId": "Nullable ruleset id becomes empty"
+      "rulesetId": "Nullable ruleset id becomes empty",
+      "rejectsMalformedStore": "Malformed memory-store instructions reject the process response",
+      "rejectsMalformedRecall": "Malformed recalled memories reject the process response"
     }
   },
   "bridgeValidation": {
     "response": {
-      "brResult": {
-        "valid": false,
-        "reason": "blocked"
+      "valid": false,
+      "reason": "blocked"
+    },
+    "invalidActionResponse": {
+      "valid": false,
+      "correctedAction": {
+        "gaType": "speak",
+        "actionTarget": "player",
+        "actionReason": "blocked"
       }
     },
     "expected": {
@@ -109,13 +183,19 @@
       "reason": "blocked"
     },
     "labels": {
-      "decode": "Wrapped bridge result decodes",
-      "valid": "Wrapped validity mapped",
-      "reason": "Wrapped reason mapped"
+      "decode": "Canonical bridge validation decodes",
+      "valid": "Canonical validity mapped",
+      "reason": "Canonical reason mapped",
+      "rejectsInvalidAction": "Bridge validation rejects noncanonical corrected actions"
     }
   },
-  "actionAliases": {
+  "actionContract": {
     "input": {
+      "type": "speak",
+      "target": "player",
+      "reason": "greeting"
+    },
+    "internalInput": {
       "gaType": "speak",
       "actionTarget": "player",
       "actionReason": "greeting"
@@ -126,9 +206,11 @@
       "reason": "greeting"
     },
     "labels": {
-      "type": "gaType maps to Type",
-      "target": "actionTarget maps to Target",
-      "reason": "actionReason maps to Reason"
+      "decode": "Canonical action decodes",
+      "type": "Canonical action type maps to the domain",
+      "target": "Canonical action target maps to the domain",
+      "reason": "Canonical action reason maps to the domain",
+      "rejectsInternalNames": "Internal API record names are rejected"
     }
   },
   "identifyActorPayload": {
@@ -140,15 +222,14 @@
       }
     },
     "expected": {
-      "type": "IdentifyActorResult",
-      "health": 100
+      "type": "IdentifyActorResult"
     },
     "labels": {
       "payload": "Identify actor payload parses",
       "type": "Identify actor payload type",
       "npcId": "Identify actor NPC id",
       "persona": "Identify actor persona",
-      "health": "Identify actor health"
+      "data": "Identify actor data"
     }
   },
   "decisionPayload": {

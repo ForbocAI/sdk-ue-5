@@ -2,6 +2,7 @@
 
 namespace ecs {
 
+/** User Story: As a core ecs inspect consumer, I need to compare values for equality through a stable signature so the core ecs inspect workflow remains explicit and composable. @fn inline bool operator==(const FWorldStorageInspection &Left, const FWorldStorageInspection &Right) */
 inline bool operator==(const FWorldStorageInspection &Left,
                        const FWorldStorageInspection &Right) {
   return Left.EntityCount == Right.EntityCount &&
@@ -10,11 +11,13 @@ inline bool operator==(const FWorldStorageInspection &Left,
          Left.EventTypeCount == Right.EventTypeCount;
 }
 
+/** User Story: As a core ecs inspect consumer, I need to compare values for inequality through a stable signature so the core ecs inspect workflow remains explicit and composable. @fn inline bool operator!=(const FWorldStorageInspection &Left, const FWorldStorageInspection &Right) */
 inline bool operator!=(const FWorldStorageInspection &Left,
                        const FWorldStorageInspection &Right) {
   return !(Left == Right);
 }
 
+/** User Story: As a core ecs inspect consumer, I need to compare values for equality through a stable signature so the core ecs inspect workflow remains explicit and composable. @fn inline bool operator==(const FWorldRuntimeInspection &Left, const FWorldRuntimeInspection &Right) */
 inline bool operator==(const FWorldRuntimeInspection &Left,
                        const FWorldRuntimeInspection &Right) {
   return Left.DirtyEntityCount == Right.DirtyEntityCount &&
@@ -22,26 +25,32 @@ inline bool operator==(const FWorldRuntimeInspection &Left,
          Left.Generation == Right.Generation;
 }
 
+/** User Story: As a core ecs inspect consumer, I need to compare values for inequality through a stable signature so the core ecs inspect workflow remains explicit and composable. @fn inline bool operator!=(const FWorldRuntimeInspection &Left, const FWorldRuntimeInspection &Right) */
 inline bool operator!=(const FWorldRuntimeInspection &Left,
                        const FWorldRuntimeInspection &Right) {
   return !(Left == Right);
 }
 
 /**
+ * @fn inline bool operator==(const FWorldInspection &Left, const FWorldInspection &Right)
  * @brief Compares aggregate ECS world inspection counters.
+ * User Story: As a core ecs inspect consumer, I need to compare values for equality through a stable signature so the core ecs inspect workflow remains explicit and composable.
  */
 inline bool operator==(const FWorldInspection &Left,
                        const FWorldInspection &Right) {
   return Left.Storage == Right.Storage && Left.Runtime == Right.Runtime;
 }
 
+/** User Story: As a core ecs inspect consumer, I need to compare values for inequality through a stable signature so the core ecs inspect workflow remains explicit and composable. @fn inline bool operator!=(const FWorldInspection &Left, const FWorldInspection &Right) */
 inline bool operator!=(const FWorldInspection &Left,
                        const FWorldInspection &Right) {
   return !(Left == Right);
 }
 
 /**
+ * @fn inline FWorldInspection inspectWorld(const FWorld &World)
  * @brief Inspects aggregate world counters without exposing mutable state.
+ * User Story: As a core ecs inspect consumer, I need to invoke inspect world through a stable signature so the core ecs inspect workflow remains explicit and composable.
  */
 inline FWorldInspection inspectWorld(const FWorld &World) {
   FWorldInspection Inspection;
@@ -56,7 +65,9 @@ inline FWorldInspection inspectWorld(const FWorld &World) {
 }
 
 /**
+ * @fn inline FString debugWorldSummary(const FWorld &World)
  * @brief Formats aggregate ECS world inspection data for debugging.
+ * User Story: As a core ecs inspect consumer, I need to invoke debug world summary through a stable signature so the core ecs inspect workflow remains explicit and composable.
  */
 inline FString debugWorldSummary(const FWorld &World) {
   const FWorldInspection Inspection = inspectWorld(World);
@@ -85,6 +96,7 @@ typedef std::function<TArray<Tag>(const EntityKey &)> FTagInspectionSelector;
 typedef std::function<TArray<DomainPathKey>(const EntityKey &)>
     FDomainInspectionSelector;
 
+/** User Story: As a core ecs inspect consumer, I need to compare values for equality through a stable signature so the core ecs inspect workflow remains explicit and composable. @fn inline bool operator==(const FEntityInspection &Left, const FEntityInspection &Right) */
 inline bool operator==(const FEntityInspection &Left,
                        const FEntityInspection &Right) {
   return Left.Entity == Right.Entity && Left.Tags == Right.Tags &&
@@ -92,14 +104,15 @@ inline bool operator==(const FEntityInspection &Left,
          Left.Components.OrderIndependentCompareEqual(Right.Components);
 }
 
+/** User Story: As a core ecs inspect consumer, I need to compare values for inequality through a stable signature so the core ecs inspect workflow remains explicit and composable. @fn inline bool operator!=(const FEntityInspection &Left, const FEntityInspection &Right) */
 inline bool operator!=(const FEntityInspection &Left,
                        const FEntityInspection &Right) {
   return !(Left == Right);
 }
 
 /**
+ * @fn inline FEntityInspection createEntityInspection(const EntityKey &Entity)
  * @brief Creates an empty inspection record for one entity.
- * @signature inline FEntityInspection createEntityInspection(const EntityKey &Entity)
  *
  * User Story: As inspection code, I need the display record initialized in one
  * reusable pure constructor before selectors add derived values.
@@ -111,8 +124,8 @@ inline FEntityInspection createEntityInspection(const EntityKey &Entity) {
 }
 
 /**
+ * @fn inline FTagInspectionSelector selectEntityTagsForInspection(const FWorld &World)
  * @brief Builds a selector for entity tags used by inspection.
- * @signature inline FTagInspectionSelector selectEntityTagsForInspection(const FWorld &World)
  *
  * User Story: As display inspection code, tag lookup should be a unary selector
  * over entity keys instead of nullable pointer logic.

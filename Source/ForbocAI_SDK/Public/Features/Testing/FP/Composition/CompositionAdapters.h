@@ -7,6 +7,7 @@
 
 namespace Testing::FP::Composition {
 
+/** User Story: As a testing fp composition consumer, I need to invoke composition settings source through a stable signature so the testing fp composition workflow remains explicit and composable. @fn inline const DataAdapters::FSettingsSource &CompositionSettingsSource() */
 inline const DataAdapters::FSettingsSource &CompositionSettingsSource() {
   static const DataAdapters::FSettingsSource Source =
       DataAdapters::SettingsSource(TEXT("ForbocAI_SDK"),
@@ -14,6 +15,7 @@ inline const DataAdapters::FSettingsSource &CompositionSettingsSource() {
   return Source;
 }
 
+/** User Story: As a testing fp composition consumer, I need to invoke composition fixtures through a stable signature so the testing fp composition workflow remains explicit and composable. @fn inline const FCompositionFixtures &CompositionFixtures() */
 inline const FCompositionFixtures &CompositionFixtures() {
   static const FCompositionFixtures Fixtures = {
       ReadCollectionsFixture(CompositionSettingsSource()),

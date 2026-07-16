@@ -14,7 +14,9 @@ struct FGetRelationshipRequest {
 };
 
 /**
+ * @fn inline FRelationship createRelationship()
  * @brief Creates an empty parent/children relationship record.
+ * User Story: As a core ecs world consumer, I need to invoke create relationship through a stable signature so the core ecs world workflow remains explicit and composable.
  */
 inline FRelationship createRelationship() {
   FRelationship Relationship;
@@ -22,6 +24,7 @@ inline FRelationship createRelationship() {
   return Relationship;
 }
 
+/** User Story: As a core ecs world consumer, I need to compare values for equality through a stable signature so the core ecs world workflow remains explicit and composable. @fn inline bool operator==(const FRelationship &Left, const FRelationship &Right) */
 inline bool operator==(const FRelationship &Left,
                        const FRelationship &Right) {
   return Left.Parent.hasValue == Right.Parent.hasValue &&
@@ -29,14 +32,15 @@ inline bool operator==(const FRelationship &Left,
          Left.Children == Right.Children;
 }
 
+/** User Story: As a core ecs world consumer, I need to compare values for inequality through a stable signature so the core ecs world workflow remains explicit and composable. @fn inline bool operator!=(const FRelationship &Left, const FRelationship &Right) */
 inline bool operator!=(const FRelationship &Left,
                        const FRelationship &Right) {
   return !(Left == Right);
 }
 
 /**
+ * @fn inline FGetRelationshipRequest createGetRelationshipRequest(const TMap<EntityKey, FRelationship> &Relationships, const EntityKey &Entity)
  * @brief Builds a relationship lookup request payload.
- * @signature inline FGetRelationshipRequest createGetRelationshipRequest(const TMap<EntityKey, FRelationship> &Relationships, const EntityKey &Entity)
  *
  * User Story: As hierarchy ECS code, I need relationship reads to share one
  * lookup payload instead of repeating map branches.
@@ -48,8 +52,8 @@ createGetRelationshipRequest(const TMap<EntityKey, FRelationship> &Relationships
 }
 
 /**
+ * @fn inline FRelationship getRelationshipOrDefault(const FGetRelationshipRequest &Request)
  * @brief Reads a relationship or returns an empty default relationship.
- * @signature inline FRelationship getRelationshipOrDefault(const FGetRelationshipRequest &Request)
  *
  * User Story: As relationship reducers, parent and child updates should share
  * one Maybe-backed read helper.

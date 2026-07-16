@@ -1,276 +1,259 @@
 #pragma once
 
-#include "Features/API/Endpoints/Soul/EndpointsSoulAdapters.h"
+#include "Core/JsonInterop.h"
+#include "Features/API/Endpoints/Configuration/ConfigurationAdapters.h"
+#include "Features/Ghost/GhostTypes.h"
 
 namespace APISlice::Detail {
 
 /**
- * Decodes a ghost-run response into run metadata.
- * User Story: As ghost execution flows, I need run-response decoding so the
- * created session id and initial run status are captured immediately.
+ * @fn inline bool DecodeGhostRunResponse(const FString &Json, FGhostRunResponse &Response)
+ * User Story: As a Ghost consumer, I need run metadata normalized at the RTK Query boundary so feature state receives domain names only.
  */
 inline bool DecodeGhostRunResponse(const FString &Json,
                                    FGhostRunResponse &Response) {
   TSharedPtr<FJsonObject> Root;
+  const Endpoints::Configuration::FEndpointFieldData &Fields =
+      Endpoints::Configuration::endpointData().Fields;
   return (!JsonInterop::ParseJsonObject(Json, Root) || !Root.IsValid())
              ? false
-             : (Response.SessionId = Root->GetStringField(TEXT("sessionId")),
-                Response.RunStatus = Root->GetStringField(TEXT("runStatus")),
+             : (Response.SessionId = JsonInterop::OptionalStringFromField(
+                    Root, Fields.GhostRunSessionId),
+                Response.RunStatus = JsonInterop::OptionalStringFromField(
+                    Root, Fields.GhostRunStatus),
                 true);
 }
 
 /**
- * Reads an int64 from either numeric or string JSON fields.
- * User Story: As ghost and history codecs, I need tolerant integer parsing so
- * timestamp fields decode correctly even when the API changes wire formats.
+ * @fn inline FGhostResultRecord DecodeGhostTestRecord(const TSharedPtr<FJsonObject> &Object)
+ * User Story: As a Ghost consumer, I need each transport test record transformed into one stable domain record through the authored wire contract.
  */
-inline int64 JsonNumberOrStringToInt64(const TSharedPtr<FJsonObject> &Object,
-                                       const FString &FieldName) {
-  return (!Object.IsValid() || !Object->HasField(FieldName))
-             ? static_cast<int64>(0)
-             : [&]() -> int64 {
-                 const TSharedPtr<FJsonValue> Value =
-                     Object->TryGetField(FieldName);
-                 return !Value.IsValid()
-                            ? static_cast<int64>(0)
-                            : func::or_else(
-                                  func::multi_match<EJson, int64>(
-                                      Value->Type,
-                                      {func::when<EJson, int64>(
-                                           func::equals<EJson>(EJson::Number),
-                                           [&](const EJson &) -> int64 {
-                                             return static_cast<int64>(
-                                                 Value->AsNumber());
-                                           }),
-                                       func::when<EJson, int64>(
-                                           func::equals<EJson>(EJson::String),
-                                           [&](const EJson &) -> int64 {
-                                             return FCString::Atoi64(
-                                                 *Value->AsString());
-                                           })}),
-                                  static_cast<int64>(0));
+inline FGhostResultRecord
+DecodeGhostTestRecord(const TSharedPtr<FJsonObject> &Object) {
+  const Endpoints::Configuration::FEndpointFieldData &Fields =
+      Endpoints::Configuration::endpointData().Fields;
+  FGhostResultRecord Record;
+  return (Record.TestName = JsonInterop::OptionalStringFromField(
+              Object, Fields.GhostTestName),
+          Record.bTestPassed = JsonInterop::detail::TryGetBoolAs(
+              Object, Fields.GhostTestPassed, Record.bTestPassed),
+          Record.TestDuration = JsonInterop::detail::TryGetNumberAs<int64>(
+              Object, Fields.GhostTestDuration, Record.TestDuration),
+          Record.TestError = JsonInterop::OptionalStringFromField(
+              Object, Fields.GhostTestError),
+          Record.TestScreenshot = JsonInterop::OptionalStringFromField(
+              Object, Fields.GhostTestScreenshot),
+          Record);
+}
+
+/**
+ * @fn inline TArray<FGhostResultRecord> DecodeGhostTestRecords(const TArray<TSharedPtr<FJsonValue>> &Values)
+ * User Story: As a Ghost consumer, I need test arrays transformed with FP collection operators so malformed non-object values cannot enter domain state.
+ */
+inline TArray<FGhostResultRecord>
+DecodeGhostTestRecords(const TArray<TSharedPtr<FJsonValue>> &Values) {
+  return func::filter_map_array<TSharedPtr<FJsonValue>, FGhostResultRecord>(
+      Values,
+      [](const TSharedPtr<FJsonValue> &Value) {
+        return Value.IsValid() && Value->Type == EJson::Object;
+      },
+      [](const TSharedPtr<FJsonValue> &Value) {
+        return DecodeGhostTestRecord(Value->AsObject());
+      });
+}
+
+/**
+ * @fn inline func::Maybe<TPair<FString, float>> DecodeGhostMetricPair(const TSharedPtr<FJsonValue> &Value)
+ * User Story: As a Ghost consumer, I need metric tuple validation isolated at the wire boundary so malformed tuples are omitted rather than fabricated.
+ */
+inline func::Maybe<TPair<FString, float>>
+DecodeGhostMetricPair(const TSharedPtr<FJsonValue> &Value) {
+  return !Value.IsValid() || Value->Type != EJson::Array
+             ? func::nothing<TPair<FString, float>>()
+             : [&]() {
+                 const TArray<TSharedPtr<FJsonValue>> &Pair = Value->AsArray();
+                 const bool bValid =
+                     Pair.Num() == 2 && Pair[0].IsValid() &&
+                     Pair[0]->Type == EJson::String && Pair[1].IsValid() &&
+                     Pair[1]->Type == EJson::Number &&
+                     FMath::IsFinite(Pair[1]->AsNumber());
+                 return !bValid
+                            ? func::nothing<TPair<FString, float>>()
+                            : func::just<TPair<FString, float>>(
+                                  TPair<FString, float>(
+                                      Pair[0]->AsString(),
+                                      static_cast<float>(Pair[1]->AsNumber())));
                }();
 }
 
 /**
- * Decodes a ghost-status response into a typed status snapshot.
- * User Story: As ghost execution flows, I need status-response decoding so
- * progress, timing, and error fields can drive polling and UI updates.
+ * @fn inline TMap<FString, float> DecodeGhostMetrics(const TArray<TSharedPtr<FJsonValue>> &Values)
+ * User Story: As a Ghost consumer, I need valid metric tuples folded into domain state without index-driven parsing or mutation outside the adapter.
+ */
+inline TMap<FString, float>
+DecodeGhostMetrics(const TArray<TSharedPtr<FJsonValue>> &Values) {
+  return func::fold_array<TSharedPtr<FJsonValue>, TMap<FString, float>>(
+      Values, TMap<FString, float>(),
+      [](const TMap<FString, float> &Metrics,
+         const TSharedPtr<FJsonValue> &Value) {
+        return func::match(
+            DecodeGhostMetricPair(Value),
+            [&Metrics](const TPair<FString, float> &Metric) {
+              TMap<FString, float> Updated = Metrics;
+              Updated.Add(Metric.Key, Metric.Value);
+              return Updated;
+            },
+            [&Metrics]() { return Metrics; });
+      });
+}
+
+/**
+ * @fn inline bool DecodeGhostStatusResponse(const FString &Json, FGhostStatus &Response)
+ * User Story: As a Ghost consumer, I need status wire fields transformed once so thunks and selectors consume the same domain contract as TS.
  */
 inline bool DecodeGhostStatusResponse(const FString &Json,
-                                      FGhostStatusResponse &Response) {
+                                      FGhostStatus &Response) {
   TSharedPtr<FJsonObject> Root;
+  const Endpoints::Configuration::FEndpointFieldData &Fields =
+      Endpoints::Configuration::endpointData().Fields;
   return (!JsonInterop::ParseJsonObject(Json, Root) || !Root.IsValid())
              ? false
-             : (Response.GhostSessionId =
-                    Root->GetStringField(TEXT("ghostSessionId")),
-                Response.getGhostStatus =
-                    Root->GetStringField(TEXT("ghostStatus")),
-                Response.GhostProgress =
-                    JsonInterop::detail::TryGetNumberAs<float>(
-                        Root, TEXT("ghostProgress"), Response.GhostProgress),
-                Response.GhostStartedAt =
-                    JsonNumberOrStringToInt64(Root, TEXT("ghostStartedAt")),
-                Response.GhostDuration =
-                    JsonInterop::detail::TryGetNumberAs<int32>(
-                        Root, TEXT("ghostDuration"), Response.GhostDuration),
-                Response.GhostErrors.Empty(),
-                [&]() {
-                  Root->HasTypedField<EJson::Array>(TEXT("ghostErrors"))
-                      ? [&]() {
-                          const TArray<TSharedPtr<FJsonValue>> *Values =
-                              nullptr;
-                          (Root->TryGetArrayField(TEXT("ghostErrors"), Values) &&
-                           Values)
-                              ? (detail::ExtractGhostErrorsRecursive(
-                                     *Values, Response.GhostErrors, 0),
-                                 void())
-                              : void();
-                        }()
-                      : (Root->HasField(TEXT("ghostErrors"))
-                             ? [&]() {
-                                 const TSharedPtr<FJsonValue> Value =
-                                     Root->TryGetField(TEXT("ghostErrors"));
-                                 Value.IsValid()
-                                     ? (func::or_else(
-                                           func::multi_match<EJson, bool>(
-                                               Value->Type,
-                                               {func::when<EJson, bool>(
-                                                    func::equals<EJson>(
-                                                        EJson::String),
-                                                    [&](const EJson &) -> bool {
-                                                      !Value->AsString()
-                                                               .IsEmpty()
-                                                          ? (Response
-                                                                 .GhostErrors
-                                                                 .Add(Value
-                                                                          ->AsString()),
-                                                             void())
-                                                          : void();
-                                                      return true;
-                                                    }),
-                                                func::when<EJson, bool>(
-                                                    func::equals<EJson>(
-                                                        EJson::Number),
-                                                    [&](const EJson &) -> bool {
-                                                      const int32 Count =
-                                                          static_cast<int32>(
-                                                              Value
-                                                                  ->AsNumber());
-                                                      Count > 0
-                                                          ? (Response
-                                                                 .GhostErrors
-                                                                 .Add(FString::
-                                                                          FromInt(
-                                                                              Count)),
-                                                             void())
-                                                          : void();
-                                                      return true;
-                                                    })}),
-                                           false), void())
-                                     : void();
-                               }()
-                             : void());
-                }(),
+             : (Response.SessionId = JsonInterop::OptionalStringFromField(
+                    Root, Fields.GhostStatusSessionId),
+                Response.Status = JsonInterop::OptionalStringFromField(
+                    Root, Fields.GhostStatusStatus),
+                Response.Progress = JsonInterop::detail::TryGetNumberAs<float>(
+                    Root, Fields.GhostStatusProgress, Response.Progress),
+                Response.StartedAt = JsonInterop::OptionalStringFromField(
+                    Root, Fields.GhostStatusStartedAt),
+                Response.Duration = JsonInterop::detail::TryGetNumberAs<int32>(
+                    Root, Fields.GhostStatusDuration, Response.Duration),
+                Response.Errors = JsonInterop::detail::TryGetNumberAs<int32>(
+                    Root, Fields.GhostStatusErrors, Response.Errors),
                 true);
 }
 
 /**
- * Decodes a ghost-results response into typed result records.
- * User Story: As ghost execution flows, I need results-response decoding so
- * aggregate metrics and per-test outcomes can be inspected in tooling.
+ * @fn inline bool DecodeGhostResultsResponse(const FString &Json, FGhostResults &Response)
+ * User Story: As a Ghost consumer, I need aggregate and per-test wire data normalized at the RTK Query boundary so feature thunks only orchestrate state transitions.
  */
 inline bool DecodeGhostResultsResponse(const FString &Json,
-                                       FGhostResultsResponse &Response) {
+                                       FGhostResults &Response) {
   TSharedPtr<FJsonObject> Root;
-  return (!JsonInterop::ParseJsonObject(Json, Root) || !Root.IsValid())
+  const Endpoints::Configuration::FEndpointFieldData &Fields =
+      Endpoints::Configuration::endpointData().Fields;
+  return !JsonInterop::ParseJsonObject(Json, Root) || !Root.IsValid()
              ? false
-             : (Response.ResultsSessionId =
-                    Root->GetStringField(TEXT("resultsSessionId")),
-                Response.ResultsTotalTests =
-                    JsonInterop::detail::TryGetNumberAs<int32>(
-                        Root, TEXT("resultsTotalTests"),
-                        Response.ResultsTotalTests),
-                Response.ResultsPassed =
-                    JsonInterop::detail::TryGetNumberAs<int32>(
-                        Root, TEXT("resultsPassed"), Response.ResultsPassed),
-                Response.ResultsFailed =
-                    JsonInterop::detail::TryGetNumberAs<int32>(
-                        Root, TEXT("resultsFailed"), Response.ResultsFailed),
-                Response.ResultsSkipped =
-                    JsonInterop::detail::TryGetNumberAs<int32>(
-                        Root, TEXT("resultsSkipped"), Response.ResultsSkipped),
-                Response.ResultsDuration =
-                    JsonInterop::detail::TryGetNumberAs<int64>(
-                        Root, TEXT("resultsDuration"),
-                        Response.ResultsDuration),
-                Response.ResultsCoverage =
-                    JsonInterop::detail::TryGetNumberAs<float>(
-                        Root, TEXT("resultsCoverage"),
-                        Response.ResultsCoverage),
-                Response.ResultsTests.Empty(),
-                [&]() {
-                  const TArray<TSharedPtr<FJsonValue>> *Tests = nullptr;
-                  (Root->TryGetArrayField(TEXT("resultsTests"), Tests) && Tests)
-                      ? (detail::ExtractGhostTestRecordsRecursive(
-                             *Tests, Response.ResultsTests, 0),
-                         void())
-                      : void();
-                }(),
-                Response.ResultsMetrics.Empty(),
-                [&]() {
-                  const TArray<TSharedPtr<FJsonValue>> *MetricPairs = nullptr;
-                  (Root->TryGetArrayField(TEXT("resultsMetrics"), MetricPairs) &&
-                   MetricPairs)
-                      ? (detail::ExtractGhostMetricPairsRecursive(
-                             *MetricPairs, Response.ResultsMetrics, 0),
-                         void())
-                      : void();
-                }(),
-                true);
+             : [&]() {
+                 Response.SessionId = JsonInterop::OptionalStringFromField(
+                     Root, Fields.GhostResultsSessionId);
+                 Response.TotalTests =
+                     JsonInterop::detail::TryGetNumberAs<int32>(
+                         Root, Fields.GhostResultsTotalTests,
+                         Response.TotalTests);
+                 Response.Passed = JsonInterop::detail::TryGetNumberAs<int32>(
+                     Root, Fields.GhostResultsPassed, Response.Passed);
+                 Response.Failed = JsonInterop::detail::TryGetNumberAs<int32>(
+                     Root, Fields.GhostResultsFailed, Response.Failed);
+                 Response.Skipped = JsonInterop::detail::TryGetNumberAs<int32>(
+                     Root, Fields.GhostResultsSkipped, Response.Skipped);
+                 Response.Duration =
+                     JsonInterop::detail::TryGetNumberAs<int64>(
+                         Root, Fields.GhostResultsDuration, Response.Duration);
+                 Response.Coverage =
+                     JsonInterop::detail::TryGetNumberAs<float>(
+                         Root, Fields.GhostResultsCoverage, Response.Coverage);
+                 const TArray<TSharedPtr<FJsonValue>> *Tests = nullptr;
+                 Response.Tests =
+                     Root->TryGetArrayField(Fields.GhostResultsTests, Tests) &&
+                             Tests
+                         ? DecodeGhostTestRecords(*Tests)
+                         : TArray<FGhostResultRecord>();
+                 const TArray<TSharedPtr<FJsonValue>> *Metrics = nullptr;
+                 Response.Metrics =
+                     Root->TryGetArrayField(Fields.GhostResultsMetrics,
+                                            Metrics) &&
+                             Metrics
+                         ? DecodeGhostMetrics(*Metrics)
+                         : TMap<FString, float>();
+                 return true;
+               }();
 }
 
 /**
- * Decodes a ghost-stop response into typed stop metadata.
- * User Story: As ghost execution flows, I need stop-response decoding so the
- * caller can confirm the target session stopped and record its final state.
+ * @fn inline bool DecodeGhostStopResponse(const FString &Json, FGhostStopResponse &Response)
+ * User Story: As a Ghost consumer, I need stop metadata decoded through authored fields so completion state never depends on embedded wire names.
  */
 inline bool DecodeGhostStopResponse(const FString &Json,
                                     FGhostStopResponse &Response) {
   TSharedPtr<FJsonObject> Root;
+  const Endpoints::Configuration::FEndpointConfigurationData &Data =
+      Endpoints::Configuration::endpointData();
   return (!JsonInterop::ParseJsonObject(Json, Root) || !Root.IsValid())
              ? false
-             : (Response.StopStatus = Root->GetStringField(TEXT("stopStatus")),
-                Response.StopSessionId =
-                    Root->GetStringField(TEXT("stopSessionId")),
+             : (Response.StopStatus = JsonInterop::OptionalStringFromField(
+                    Root, Data.Fields.GhostStopStatus),
+                Response.StopSessionId = JsonInterop::OptionalStringFromField(
+                    Root, Data.Fields.GhostStopSessionId),
                 Response.bStopped = Response.StopStatus.Equals(
-                    TEXT("stopped"), ESearchCase::IgnoreCase),
+                    Data.Values.Stopped, ESearchCase::IgnoreCase),
                 true);
 }
 
 /**
- * Recursive ghost history entry extraction definition.
- * User Story: As a maintainer, I need this note so the surrounding code intent
- * stays clear during maintenance and debugging.
+ * @fn inline FGhostHistoryEntry DecodeGhostHistoryEntry(const TSharedPtr<FJsonObject> &Object)
+ * User Story: As a Ghost consumer, I need history wire records transformed into stable domain values without compatibility aliases.
  */
-namespace detail {
-inline void ExtractGhostHistoryEntriesRecursive(
-    const TArray<TSharedPtr<FJsonValue>> &Source,
-    TArray<FGhostHistoryEntry> &Out, int32 Index) {
-  Index < Source.Num()
-      ? ((Source[Index].IsValid() && Source[Index]->Type == EJson::Object)
-             ? [&]() {
-                 const TSharedPtr<FJsonObject> Session =
-                     Source[Index]->AsObject();
-                 FGhostHistoryEntry Entry;
-                 Entry.SessionId =
-                     FieldOrAlias(Session, TEXT("sessionId"),
-                                  TEXT("histSessionId"));
-                 Entry.TestSuite =
-                     FieldOrAlias(Session, TEXT("testSuite"),
-                                  TEXT("histTestSuite"));
-                 Entry.StartedAt = JsonNumberOrStringToInt64(
-                     Session,
-                     Session->HasField(TEXT("startedAt"))
-                         ? TEXT("startedAt")
-                         : TEXT("histStartedAt"));
-                 Entry.CompletedAt = JsonNumberOrStringToInt64(
-                     Session,
-                     Session->HasField(TEXT("completedAt"))
-                         ? TEXT("completedAt")
-                         : TEXT("histCompletedAt"));
-                 Entry.Status =
-                     FieldOrAlias(Session, TEXT("status"), TEXT("histStatus"));
-                 Entry.PassRate =
-                     TryGetPassRate(Session, TEXT("passRate"),
-                                   TEXT("histPassRate"));
-                 Out.Add(Entry);
-               }()
-             : void(),
-         ExtractGhostHistoryEntriesRecursive(Source, Out, Index + 1), void())
-      : void();
+inline FGhostHistoryEntry
+DecodeGhostHistoryEntry(const TSharedPtr<FJsonObject> &Object) {
+  const Endpoints::Configuration::FEndpointFieldData &Fields =
+      Endpoints::Configuration::endpointData().Fields;
+  FGhostHistoryEntry Entry;
+  return (Entry.SessionId = JsonInterop::OptionalStringFromField(
+              Object, Fields.GhostHistorySessionId),
+          Entry.TestSuite = JsonInterop::OptionalStringFromField(
+              Object, Fields.GhostHistoryTestSuite),
+          Entry.StartedAt = JsonInterop::OptionalStringFromField(
+              Object, Fields.GhostHistoryStartedAt),
+          Entry.CompletedAt = JsonInterop::OptionalStringFromField(
+              Object, Fields.GhostHistoryCompletedAt),
+          Entry.Status = JsonInterop::OptionalStringFromField(
+              Object, Fields.GhostHistoryStatus),
+          Entry.PassRate = JsonInterop::detail::TryGetNumberAs<float>(
+              Object, Fields.GhostHistoryPassRate, Entry.PassRate),
+          Entry);
 }
-} // namespace detail
 
 /**
- * Decodes a ghost-history response into typed session history.
- * User Story: As ghost execution flows, I need history-response decoding so
- * prior sessions can be listed with ids, timing, status, and pass-rate data.
+ * @fn inline bool DecodeGhostHistoryResponse(const FString &Json, FGhostHistoryResponse &Response)
+ * User Story: As a Ghost consumer, I need history envelopes normalized with FP collection transforms so missing optional arrays become empty domain collections.
  */
 inline bool DecodeGhostHistoryResponse(const FString &Json,
                                        FGhostHistoryResponse &Response) {
   TSharedPtr<FJsonObject> Root;
-  return (!JsonInterop::ParseJsonObject(Json, Root) || !Root.IsValid())
+  const Endpoints::Configuration::FEndpointFieldData &Fields =
+      Endpoints::Configuration::endpointData().Fields;
+  return !JsonInterop::ParseJsonObject(Json, Root) || !Root.IsValid()
              ? false
-             : [&]() -> bool {
+             : [&]() {
                  const TArray<TSharedPtr<FJsonValue>> *Sessions = nullptr;
-                 return (!Root->TryGetArrayField(TEXT("sessions"), Sessions) ||
-                         !Sessions)
-                            ? false
-                            : (Response.Sessions.Empty(Sessions->Num()),
-                               detail::ExtractGhostHistoryEntriesRecursive(
-                                   *Sessions, Response.Sessions, 0),
-                               true);
+                 Response.Sessions =
+                     Root->TryGetArrayField(Fields.GhostHistorySessions,
+                                            Sessions) &&
+                             Sessions
+                         ? func::filter_map_array<TSharedPtr<FJsonValue>,
+                                                  FGhostHistoryEntry>(
+                               *Sessions,
+                               [](const TSharedPtr<FJsonValue> &Value) {
+                                 return Value.IsValid() &&
+                                        Value->Type == EJson::Object;
+                               },
+                               [](const TSharedPtr<FJsonValue> &Value) {
+                                 return DecodeGhostHistoryEntry(
+                                     Value->AsObject());
+                               })
+                         : TArray<FGhostHistoryEntry>();
+                 return true;
                }();
 }
 

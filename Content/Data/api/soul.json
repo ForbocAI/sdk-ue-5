@@ -1,0 +1,39 @@
+{
+  "exportPreparationRequest": {
+    "npcId": "npcIdRef",
+    "transactionId": "transactionId",
+    "payloadDigest": "payloadDigest",
+    "provider": "provider"
+  },
+  "exportPreparationResponse": {
+    "npcId": "npcIdRef",
+    "transactionId": "transactionId",
+    "payloadDigest": "payloadDigest",
+    "provider": "provider",
+    "confirmationToken": "confirmationToken"
+  },
+  "exportConfirmationRequest": {
+    "storageUrl": "storageUrl",
+    "providerStatus": "providerStatus"
+  },
+  "exportResponse": {
+    "transactionId": "txId",
+    "storageUrl": "storageUrl",
+    "signature": "signature"
+  },
+  "verificationRequest": {
+    "npcId": "npcIdRef",
+    "payloadDigest": "payloadDigest",
+    "provider": "provider",
+    "signature": "signature"
+  },
+  "verifyResponse": {
+    "valid": "valid",
+    "reason": "reason"
+  },
+  "errors": {
+    "invalidExportPreparation": "Invalid Soul export preparation response",
+    "invalidExportConfirmation": "Invalid Soul export confirmation response",
+    "invalidVerify": "Invalid Soul verification response"
+  }
+}

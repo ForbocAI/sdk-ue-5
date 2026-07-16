@@ -6,6 +6,7 @@ namespace rtk {
 template <typename Payload> struct ActionCreator {
   FString Type;
 
+  /** User Story: As a core rtk matcher consumer, I need to invoke the callable value through a stable signature so the core rtk matcher workflow remains explicit and composable. @fn AnyAction operator()(const Payload &payload) const */
   AnyAction operator()(const Payload &payload) const {
     return AnyAction(Type, std::make_shared<Payload>(payload),
                      payload_debug::DebugPayloadString(payload));
@@ -15,6 +16,7 @@ template <typename Payload> struct ActionCreator {
    * Reports whether an AnyAction matches this creator's type tag.
    * User Story: As reducer helpers, I need action-type matching so handlers can
    * confirm payload shape before extraction.
+   * @fn bool match(const AnyAction &action) const
    */
   bool match(const AnyAction &action) const { return action.Type == Type; }
 
@@ -22,6 +24,7 @@ template <typename Payload> struct ActionCreator {
    * Extracts a typed payload when the action type matches this creator.
    * User Story: As reducer helpers, I need safe payload extraction so typed
    * reducers can consume AnyAction without repeating casts.
+   * @fn func::Maybe<Payload> extract(const AnyAction &action) const
    */
   func::Maybe<Payload> extract(const AnyAction &action) const {
     return match(action) ? action.getPayload<Payload>()
@@ -30,8 +33,8 @@ template <typename Payload> struct ActionCreator {
 };
 
 /**
+ * @fn template <typename Payload> ActionCreator<Payload> createAction(const FString &Type)
  * @brief Creates a typed action creator for a namespaced action type.
- * @signature template <typename Payload> ActionCreator<Payload> createAction(const FString &Type)
  * @param Type The action type identifier string.
  * @return ActionCreator<Payload> The action creator function object.
  *
@@ -46,6 +49,7 @@ ActionCreator<Payload> createAction(const FString &Type) {
 struct ActionCreatorWithoutPayload {
   FString Type;
 
+  /** User Story: As a core rtk matcher consumer, I need to invoke the callable value through a stable signature so the core rtk matcher workflow remains explicit and composable. @fn AnyAction operator()() const */
   AnyAction operator()() const {
     return AnyAction(Type, std::make_shared<FEmptyPayload>(),
                      payload_debug::DebugPayloadString(FEmptyPayload{}));
@@ -55,13 +59,14 @@ struct ActionCreatorWithoutPayload {
    * Reports whether an AnyAction matches this empty action creator.
    * User Story: As reducer helpers, I need empty-action matching so lifecycle
    * actions can be recognized without custom payload structs.
+   * @fn bool match(const AnyAction &action) const
    */
   bool match(const AnyAction &action) const { return action.Type == Type; }
 };
 
 /**
+ * @fn inline ActionCreatorWithoutPayload createAction(const FString &Type)
  * @brief Creates an empty-payload action creator for a namespaced action type.
- * @signature inline ActionCreatorWithoutPayload createAction(const FString &Type)
  * @param Type The action type identifier string.
  * @return ActionCreatorWithoutPayload The empty payload action creator object.
  *
@@ -84,8 +89,8 @@ inline ActionCreatorWithoutPayload createAction(const FString &Type) {
 using Matcher = std::function<bool(const AnyAction &)>;
 
 /**
+ * @fn inline bool actionTypeEndsWith(const AnyAction &Action, const FString &Suffix)
  * @brief Checks whether an action type ends with a lifecycle suffix.
- * @signature inline bool actionTypeEndsWith(const AnyAction &Action, const FString &Suffix)
  *
  * User Story: As async reducers, I need `/pending`, `/fulfilled`, and
  * `/rejected` suffix matching to follow Redux Toolkit lifecycle semantics.
@@ -94,6 +99,7 @@ inline bool actionTypeEndsWith(const AnyAction &Action, const FString &Suffix) {
   return Action.Type.EndsWith(Suffix);
 }
 
+/** User Story: As a core rtk matcher consumer, I need to invoke matches thunk lifecycle through a stable signature so the core rtk matcher workflow remains explicit and composable. @fn inline bool matchesThunkLifecycle(const AnyAction &Action, const FString &Suffix, const TArray<FString> &TypePrefixes) */
 inline bool matchesThunkLifecycle(const AnyAction &Action, const FString &Suffix,
                                   const TArray<FString> &TypePrefixes) {
   return TypePrefixes.Num() == 0
@@ -105,8 +111,8 @@ inline bool matchesThunkLifecycle(const AnyAction &Action, const FString &Suffix
 }
 
 /**
+ * @fn inline Matcher isAnyOf(const TArray<Matcher> &Matchers)
  * @brief Composes matchers with logical OR, equivalent to RTK isAnyOf.
- * @signature inline Matcher isAnyOf(const TArray<Matcher> &Matchers)
  *
  * User Story: As a reducer author, I need to group several event actions under
  * one state transition without setter-style action names.
@@ -119,8 +125,8 @@ inline Matcher isAnyOf(const TArray<Matcher> &Matchers) {
 }
 
 /**
+ * @fn inline Matcher isAllOf(const TArray<Matcher> &Matchers)
  * @brief Composes matchers with logical AND, equivalent to RTK isAllOf.
- * @signature inline Matcher isAllOf(const TArray<Matcher> &Matchers)
  *
  * User Story: As listener middleware, I need multiple predicates to agree
  * before a side effect runs.
@@ -132,28 +138,53 @@ inline Matcher isAllOf(const TArray<Matcher> &Matchers) {
   };
 }
 
-/** @brief Creates an RTK-style matcher for `/pending` async thunk actions. */
+/**
+ * @fn inline Matcher isPending(const TArray<FString> &TypePrefixes = TArray<FString>())
+ * @brief Creates an RTK-style matcher for `/pending` async thunk actions.
+ * User Story: As a core rtk matcher consumer, I need to invoke is pending through a stable signature so the core rtk matcher workflow remains explicit and composable.
+ */
 inline Matcher isPending(const TArray<FString> &TypePrefixes = TArray<FString>()) {
   return [TypePrefixes](const AnyAction &Action) {
     return matchesThunkLifecycle(Action, TEXT("/pending"), TypePrefixes);
   };
 }
 
-/** @brief Creates an RTK-style matcher for `/fulfilled` async thunk actions. */
+/**
+ * @fn inline Matcher isFulfilled(const TArray<FString> &TypePrefixes = TArray<FString>())
+ * @brief Creates an RTK-style matcher for `/fulfilled` async thunk actions.
+ * User Story: As a core rtk matcher consumer, I need to invoke is fulfilled through a stable signature so the core rtk matcher workflow remains explicit and composable.
+ */
 inline Matcher isFulfilled(const TArray<FString> &TypePrefixes = TArray<FString>()) {
   return [TypePrefixes](const AnyAction &Action) {
     return matchesThunkLifecycle(Action, TEXT("/fulfilled"), TypePrefixes);
   };
 }
 
-/** @brief Creates an RTK-style matcher for `/rejected` async thunk actions. */
+/**
+ * @fn inline Matcher isRejected(const TArray<FString> &TypePrefixes = TArray<FString>())
+ * @brief Creates an RTK-style matcher for `/rejected` async thunk actions.
+ * User Story: As a core rtk matcher consumer, I need to invoke is rejected through a stable signature so the core rtk matcher workflow remains explicit and composable.
+ */
 inline Matcher isRejected(const TArray<FString> &TypePrefixes = TArray<FString>()) {
   return [TypePrefixes](const AnyAction &Action) {
     return matchesThunkLifecycle(Action, TEXT("/rejected"), TypePrefixes);
   };
 }
 
-/** @brief Creates an RTK-style matcher for any async thunk lifecycle action. */
+/** User Story: As a core rtk matcher consumer, I need to invoke is rejected with value through a stable signature so the core rtk matcher workflow remains explicit and composable. @fn inline Matcher isRejectedWithValue(const TArray<FString> &TypePrefixes = TArray<FString>()) */
+inline Matcher
+isRejectedWithValue(const TArray<FString> &TypePrefixes = TArray<FString>()) {
+  return [TypePrefixes](const AnyAction &Action) {
+    return Action.bRejectedWithValue &&
+           matchesThunkLifecycle(Action, TEXT("/rejected"), TypePrefixes);
+  };
+}
+
+/**
+ * @fn inline Matcher isAsyncThunkAction(const TArray<FString> &TypePrefixes = TArray<FString>())
+ * @brief Creates an RTK-style matcher for any async thunk lifecycle action.
+ * User Story: As a core rtk matcher consumer, I need to invoke is async thunk action through a stable signature so the core rtk matcher workflow remains explicit and composable.
+ */
 inline Matcher isAsyncThunkAction(const TArray<FString> &TypePrefixes = TArray<FString>()) {
   TArray<Matcher> Matchers;
   Matchers.Add(isPending(TypePrefixes));

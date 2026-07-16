@@ -1,0 +1,44 @@
+{
+  "storeInstruction": {
+    "text": "text",
+    "type": "type",
+    "importance": "importance"
+  },
+  "recalledMemory": {
+    "text": "text",
+    "type": "type",
+    "importance": "importance",
+    "similarity": "similarity"
+  },
+  "memoryItem": {
+    "id": "id",
+    "text": "text",
+    "embedding": "embedding",
+    "type": "type",
+    "importance": "importance",
+    "similarity": "similarity",
+    "timestamp": "timestamp"
+  },
+  "remoteReceipt": {
+    "id": "memoryId",
+    "content": "content",
+    "timestamp": "timestamp"
+  },
+  "clearReceipt": {
+    "status": "clearStatus",
+    "count": "clearCount",
+    "timestamp": "clearTimestamp"
+  },
+  "values": {
+    "objectType": "object",
+    "stringType": "string",
+    "numberType": "number"
+  },
+  "errors": {
+    "invalidStoreInstruction": "Invalid memory store instruction response",
+    "invalidRecalledMemory": "Invalid recalled memory response",
+    "invalidMemoryItem": "Invalid memory item response",
+    "invalidRemoteReceipt": "Invalid remote memory receipt response",
+    "invalidClearReceipt": "Invalid remote memory clear receipt response"
+  }
+}

@@ -7,6 +7,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FForbocErrorFormatTest,
                                  EAutomationTestFlags_ApplicationContextMask |
                                      EAutomationTestFlags::EngineFilter)
 
+/** User Story: As a tests core consumer, I need to invoke run test through a stable signature so the tests core workflow remains explicit and composable. @fn bool FForbocErrorFormatTest::RunTest(const FString &Parameters) */
 bool FForbocErrorFormatTest::RunTest(const FString &Parameters) {
   const FString Html =
       TEXT("<!DOCTYPE html><html><head><title>502: Service unavailable</title>")

@@ -135,8 +135,6 @@ ForbocAI CLI (UE5) — Command: doctor
 API Status: online (v0.4.0)
 ```
 
-Advanced users can still call the underlying commandlet directly with `UnrealEditor-Cmd`, `-run=ForbocAI`, `-Command=<command_key>`, and named parameters such as `-Id=` or `-Input=`.
-
 ## Test-game CLI coverage
 
 The separate `test-game-cli/` host project wraps the SDK CLI path for full scenario coverage. It fetches the API-owned test-game contract, runs every scenario command through `TestGame::CommandSurface`, and `TestGame::CommandSurface` delegates each command to the canonical SDK `CLIOps::DispatchCommand` boundary.

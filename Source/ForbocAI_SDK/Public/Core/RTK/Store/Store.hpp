@@ -18,6 +18,7 @@ template <typename State> struct Store {
    * Returns the current store state snapshot.
    * User Story: As store consumers, I need the current state exposed so
    * dispatchers, selectors, and subscribers can inspect runtime data.
+   * @fn const State &getState() const
    */
   const State &getState() const { return rtk::getState(*this); }
 
@@ -25,6 +26,7 @@ template <typename State> struct Store {
    * Applies an action and notifies subscribers after the reducer runs.
    * User Story: As store consumers, I need dispatch to update state and notify
    * listeners so runtime flows can react to reducer changes.
+   * @fn AnyAction dispatch(const AnyAction &action)
    */
   AnyAction dispatch(const AnyAction &action) {
     return rtk::dispatch(*this, action);
@@ -34,6 +36,7 @@ template <typename State> struct Store {
    * Registers a callback and returns an unsubscribe function.
    * User Story: As store consumers, I need subscriptions with unsubscribe
    * handles so runtime code can observe state safely.
+   * @fn std::function<void()> subscribe(std::function<void()> Callback)
    */
   std::function<void()> subscribe(std::function<void()> Callback) {
     return rtk::subscribe(*this, std::move(Callback));
@@ -42,8 +45,8 @@ template <typename State> struct Store {
 
 namespace detail {
 /**
+ * @fn template <typename State> void notifySubscribersRecursive( const std::vector<typename Store<State>::Subscriber> &Subscribers, size_t Index)
  * @brief Recursively notifies all subscribers in the list.
- * @signature template <typename State> void notifySubscribersRecursive(const std::vector<typename Store<State>::Subscriber> &Subscribers, size_t Index)
  * @param Subscribers The list of active subscribers.
  * @param Index The current recursion index.
  *
@@ -60,8 +63,8 @@ void notifySubscribersRecursive(
 }
 
 /**
+ * @fn template <typename State> void eraseSubscriberAt(std::vector<typename Store<State>::Subscriber> &Subscribers, size_t Index)
  * @brief Erases a subscriber at a specific index.
- * @signature template <typename State> void eraseSubscriberAt(std::vector<typename Store<State>::Subscriber> &Subscribers, size_t Index)
  * @param Subscribers The list of subscribers to modify.
  * @param Index The index to remove.
  *
@@ -74,8 +77,8 @@ void eraseSubscriberAt(std::vector<typename Store<State>::Subscriber> &Subscribe
 }
 
 /**
+ * @fn template <typename State> void eraseSubscriberRecursive( std::vector<typename Store<State>::Subscriber> &Subscribers, size_t Index, int64_t Id)
  * @brief Recursively finds and removes a subscriber by Id.
- * @signature template <typename State> void eraseSubscriberRecursive(std::vector<typename Store<State>::Subscriber> &Subscribers, size_t Index, int64_t Id)
  * @param Subscribers The list of subscribers.
  * @param Index The current recursion index.
  * @param Id The unique identifier of the subscriber to remove.
@@ -93,11 +96,26 @@ void eraseSubscriberRecursive(
              : eraseSubscriberRecursive<State>(Subscribers, Index + 1, Id),
          void());
 }
+
+/** User Story: As a core rtk store consumer, I need to invoke reduce store through a stable signature so the core rtk store workflow remains explicit and composable. @fn template <typename State> void reduceStore(Store<State> &StoreValue, const AnyAction &Action) */
+template <typename State>
+void reduceStore(Store<State> &StoreValue, const AnyAction &Action) {
+  StoreValue.CurrentState =
+      StoreValue.RootReducer(StoreValue.CurrentState, Action);
+}
+
+/** User Story: As a core rtk store consumer, I need to invoke notify store subscribers through a stable signature so the core rtk store workflow remains explicit and composable. @fn template <typename State> void notifyStoreSubscribers(Store<State> &StoreValue) */
+template <typename State>
+void notifyStoreSubscribers(Store<State> &StoreValue) {
+  const std::vector<typename Store<State>::Subscriber> Subscribers =
+      StoreValue.Subscribers;
+  notifySubscribersRecursive<State>(Subscribers, size_t{});
+}
 } // namespace detail
 
 /**
+ * @fn template <typename State> Store<State> createStore(State InitialState, CaseReducer<State> ReducerFunc)
  * @brief Creates a Redux-like store with an initial state and root reducer.
- * @signature template <typename State> Store<State> createStore(State InitialState, CaseReducer<State> ReducerFunc)
  * @param InitialState The initial state of the store.
  * @param ReducerFunc The root reducer function.
  * @return Store<State> The created store instance.
@@ -112,9 +130,16 @@ Store<State> createStore(State InitialState, CaseReducer<State> ReducerFunc) {
   return StoreValue;
 }
 
+/** User Story: As a core rtk store consumer, I need to invoke legacy create store through a stable signature so the core rtk store workflow remains explicit and composable. @fn template <typename State> Store<State> legacy_createStore(State InitialState, CaseReducer<State> ReducerFunc) */
+template <typename State>
+Store<State> legacy_createStore(State InitialState,
+                                CaseReducer<State> ReducerFunc) {
+  return createStore(MoveTemp(InitialState), MoveTemp(ReducerFunc));
+}
+
 /**
+ * @fn template <typename State> const State &getState(const Store<State> &StoreValue)
  * @brief Gets the current state from a given store.
- * @signature template <typename State> const State &getState(const Store<State> &StoreValue)
  * @param StoreValue The store to query.
  * @return const State& A const reference to the current state.
  *
@@ -125,8 +150,8 @@ template <typename State> const State &getState(const Store<State> &StoreValue) 
 }
 
 /**
+ * @fn template <typename State> AnyAction dispatch(Store<State> &StoreValue, const AnyAction &Action)
  * @brief Dispatches an action to a store, updating its state and notifying subscribers.
- * @signature template <typename State> AnyAction dispatch(Store<State> &StoreValue, const AnyAction &Action)
  * @param StoreValue The store to dispatch to.
  * @param Action The type-erased action to process.
  * @return AnyAction The dispatched action.
@@ -135,16 +160,14 @@ template <typename State> const State &getState(const Store<State> &StoreValue) 
  */
 template <typename State>
 AnyAction dispatch(Store<State> &StoreValue, const AnyAction &Action) {
-  StoreValue.CurrentState = StoreValue.RootReducer(StoreValue.CurrentState, Action);
-  const std::vector<typename Store<State>::Subscriber> SubsCopy =
-      StoreValue.Subscribers;
-  detail::notifySubscribersRecursive<State>(SubsCopy, 0);
+  detail::reduceStore(StoreValue, Action);
+  detail::notifyStoreSubscribers(StoreValue);
   return Action;
 }
 
 /**
+ * @fn template <typename State> std::function<void()> subscribe(Store<State> &StoreValue, std::function<void()> Callback)
  * @brief Subscribes a callback to state changes in the store.
- * @signature template <typename State> std::function<void()> subscribe(Store<State> &StoreValue, std::function<void()> Callback)
  * @param StoreValue The store to subscribe to.
  * @param Callback The function to call on state changes.
  * @return std::function<void()> An unsubscribe function to remove the callback.

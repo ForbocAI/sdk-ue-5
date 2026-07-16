@@ -24,6 +24,7 @@ struct FUIState {
   EPlayMode Mode;
   TArray<FString> Messages;
 
+  /** User Story: As a features systems terminal consumer, I need to invoke fuistate through a stable signature so the features systems terminal workflow remains explicit and composable. @fn FUIState() */
   FUIState() : Mode(EPlayMode::Autoplay) {
     Messages.Add(TEXT("SYSTEM_OVERRIDE :: terminal HUD online"));
   }

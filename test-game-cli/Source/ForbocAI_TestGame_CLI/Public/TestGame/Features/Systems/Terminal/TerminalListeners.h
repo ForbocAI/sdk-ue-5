@@ -20,6 +20,7 @@ namespace TestGame {
  * Mirrors TS: npcsActions.moveNPC → uiActions.addMessage
  * User Story: As test-game reactive UI, I need listener middleware so NPC
  * movement and verdict application emit readable terminal messages.
+ * @fn inline rtk::Middleware<FTestGameState> createGameListenerMiddleware()
  */
 inline rtk::Middleware<FTestGameState> createGameListenerMiddleware() {
   return [](const rtk::MiddlewareApi<FTestGameState> &Api)

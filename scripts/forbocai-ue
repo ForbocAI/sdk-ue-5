@@ -9,6 +9,8 @@ source "$SCRIPT_DIR/lib/test-environment.sh"
 forbocai_load_test_environment optional
 # shellcheck source=lib/commandlet-result.sh
 source "$SCRIPT_DIR/lib/commandlet-result.sh"
+# shellcheck source=lib/wsl-environment.sh
+source "$SCRIPT_DIR/lib/wsl-environment.sh"
 
 if [[ $# -eq 0 ]]; then
   echo "Usage: scripts/forbocai-ue <command> [subcommand] [args]"
@@ -21,52 +23,9 @@ if [[ $# -eq 0 ]]; then
   exit 2
 fi
 
-append_wsl_env_entries() {
-  local current="${WSLENV:-}"
-  local entry
-
-  for entry in "$@"; do
-    [[ -z "$entry" ]] && continue
-    case ":$current:" in
-      *":$entry:"*) ;;
-      *) current="${current:+$current:}$entry" ;;
-    esac
-  done
-
-  printf '%s' "$current"
-}
-
-wsl_env_entry_for() {
-  local name="$1"
-  local value="${!name:-}"
-
-  case "$name" in
-    API_TEST_GAME_CONTRACT|FORBOCAI_CONFIG_PATH|FORBOCAI_DATABASE_PATH|FORBOC_SDK_SOURCE_PATH|UE_ROOT)
-      [[ "$value" == /* ]] && printf '%s/p\n' "$name" || printf '%s\n' "$name"
-      ;;
-    *)
-      printf '%s\n' "$name"
-      ;;
-  esac
-}
-
-collect_forboc_wsl_env_entries() {
-  local name
-
-  while IFS='=' read -r name _; do
-    case "$name" in
-      API_TEST_GAME_CONTRACT|FORBOCAI*|FORBOC_FP_*|FORBOC_SDK_SOURCE_PATH|UE_ROOT)
-        wsl_env_entry_for "$name"
-        ;;
-    esac
-  done < <(env)
-}
-
 if grep -qi microsoft /proc/version 2>/dev/null; then
   if command -v powershell.exe >/dev/null 2>&1; then
-    mapfile -t WSL_ENV_ENTRIES < <(collect_forboc_wsl_env_entries)
-    WSLENV="$(append_wsl_env_entries "${WSL_ENV_ENTRIES[@]}")"
-    export WSLENV
+    forbocai_export_wsl_environment
     powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$(wslpath -w "$SCRIPT_DIR/forbocai-ue.ps1")" "$@"
     exit $?
   fi
@@ -108,7 +67,7 @@ if [[ ! -x "$EDITOR_CMD" && ! -f "$EDITOR_CMD" ]]; then
 fi
 
 if [[ "${FORBOCAI_UE_SKIP_BUILD:-0}" != "1" ]]; then
-  "$BUILD" ForbocAI_CLI_Editor "$PLATFORM" Development -Project="$PROJECT" -WaitMutex -NoHotReloadFromIDE
+  "$BUILD" ForbocAI_CLI_Editor "$PLATFORM" Development -Project="$PROJECT" -WaitMutex -NoHotReloadFromIDE -NoUBTMakefiles
 fi
 
 CLI_ARGS=()

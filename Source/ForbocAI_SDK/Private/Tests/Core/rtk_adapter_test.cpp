@@ -11,6 +11,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRtkEntityAdapterTest,
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FRtkEntityAdapterTest::RunTest(const FString &Parameters)
  */
 bool FRtkEntityAdapterTest::RunTest(const FString &Parameters) {
   auto Adapter = createEntityAdapter<FNpcFixtureState>(

@@ -19,8 +19,8 @@ struct FEmptyPayload {};
 
 namespace detail {
 /**
+ * @fn template <typename Payload> PayloadAction<Payload> payloadAction(const FString &Type, const Payload &PayloadValue)
  * @brief Helper to create a PayloadAction with a specific value.
- * @signature template <typename Payload> PayloadAction<Payload> payloadAction(const FString &Type, const Payload &PayloadValue)
  * @param Type The action type string.
  * @param PayloadValue The actual payload data.
  * @return PayloadAction<Payload> The created typed action.
@@ -34,8 +34,8 @@ PayloadAction<Payload> payloadAction(const FString &Type,
 }
 
 /**
+ * @fn inline PayloadAction<FEmptyPayload> payloadAction(const FString &Type)
  * @brief Helper to create a PayloadAction with an empty payload.
- * @signature inline PayloadAction<FEmptyPayload> payloadAction(const FString &Type)
  * @param Type The action type string.
  * @return PayloadAction<FEmptyPayload> The created empty action.
  *
@@ -54,11 +54,16 @@ struct AnyAction {
   FString Type;
   std::shared_ptr<void> PayloadWrapper;
   FString PayloadDebugText;
+  TMap<FString, FString> Meta;
+  bool bError = false;
+  bool bAutoBatch = false;
+  bool bRejectedWithValue = false;
 
   /**
    * Constructs an empty type-erased action envelope.
    * User Story: As root dispatch infrastructure, I need a default AnyAction so
    * containers and return paths can be initialized before payload assignment.
+   * @fn AnyAction()
    */
   AnyAction() : PayloadDebugText(TEXT("<none>")) {}
 
@@ -66,6 +71,7 @@ struct AnyAction {
    * Constructs a type-erased action envelope from a type tag and payload wrapper.
    * User Story: As root dispatch infrastructure, I need a type-erased action
    * constructor so heterogeneous payloads can move through one dispatch channel.
+   * @fn AnyAction(const FString &InType, std::shared_ptr<void> InPayloadWrapper, const FString &InPayloadDebugText = TEXT("<opaque>"))
    */
   AnyAction(const FString &InType, std::shared_ptr<void> InPayloadWrapper,
             const FString &InPayloadDebugText = TEXT("<opaque>"))
@@ -79,6 +85,7 @@ struct AnyAction {
    * infrastructure code can recover stored action data when type ownership is known.
    * Warning: This performs an unchecked static_cast. Callers must ensure the requested
    * payload type matches the stored value. Prefer ActionCreator::extract() when possible.
+   * @fn template <typename Payload> func::Maybe<Payload> getPayload() const
    */
   template <typename Payload> func::Maybe<Payload> getPayload() const {
     return PayloadWrapper
@@ -86,6 +93,7 @@ struct AnyAction {
                : func::nothing<Payload>();
   }
 
+  /** User Story: As a core rtk action consumer, I need to invoke describe payload through a stable signature so the core rtk action workflow remains explicit and composable. @fn FString describePayload() const */
   FString describePayload() const {
     return PayloadDebugText.IsEmpty() ? TEXT("<none>") : PayloadDebugText;
   }
@@ -108,14 +116,18 @@ template <typename Result, typename Arg, typename State> struct AsyncThunkConfig
 
 template <typename State> struct Store;
 
+/** User Story: As a core rtk action consumer, I need to invoke create store through a stable signature so the core rtk action workflow remains explicit and composable. @fn template <typename State> Store<State> createStore(State InitialState, CaseReducer<State> ReducerFunc) */
 template <typename State>
 Store<State> createStore(State InitialState, CaseReducer<State> ReducerFunc);
 
+/** User Story: As a core rtk action consumer, I need to invoke get state through a stable signature so the core rtk action workflow remains explicit and composable. @fn template <typename State> const State &getState(const Store<State> &StoreValue) */
 template <typename State> const State &getState(const Store<State> &StoreValue);
 
+/** User Story: As a core rtk action consumer, I need to invoke dispatch through a stable signature so the core rtk action workflow remains explicit and composable. @fn template <typename State> AnyAction dispatch(Store<State> &StoreValue, const AnyAction &Action) */
 template <typename State>
 AnyAction dispatch(Store<State> &StoreValue, const AnyAction &Action);
 
+/** User Story: As a core rtk action consumer, I need to invoke subscribe through a stable signature so the core rtk action workflow remains explicit and composable. @fn template <typename State> std::function<void()> subscribe(Store<State> &StoreValue, std::function<void()> Callback) */
 template <typename State>
 std::function<void()> subscribe(Store<State> &StoreValue,
                                 std::function<void()> Callback);

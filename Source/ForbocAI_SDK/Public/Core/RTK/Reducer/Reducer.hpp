@@ -3,11 +3,15 @@
 #include "Core/RTK/Store/Store.hpp"
 
 namespace rtk {
+template <typename RootState>
+using CombinedSliceReducer = CaseReducer<RootState>;
+
 template <typename RootState> struct ReducersMapObject {
   std::vector<
       std::function<bool(RootState &, const RootState &, const AnyAction &)>>
       Reducers;
 
+  /** User Story: As a core rtk reducer consumer, I need to invoke reducer through a stable signature so the core rtk reducer workflow remains explicit and composable. @fn template <typename SliceState> ReducersMapObject<RootState> & reducer(SliceState RootState::*Member, CaseReducer<SliceState> ReducerFunc) */
   template <typename SliceState>
   ReducersMapObject<RootState> &
   reducer(SliceState RootState::*Member, CaseReducer<SliceState> ReducerFunc) {
@@ -26,6 +30,7 @@ template <typename RootState> struct ReducersMapObject {
 };
 
 namespace detail {
+/** User Story: As a core rtk reducer consumer, I need to invoke combine reducer entries recursive through a stable signature so the core rtk reducer workflow remains explicit and composable. @fn template <typename RootState> RootState combineReducerEntriesRecursive( const std::vector< std::function<bool(RootState &, const RootState &, const AnyAction &)>> &Reducers, size_t Index, const RootState &PrevState, RootState NextState, bool bChanged, const AnyAction &Action) */
 template <typename RootState>
 RootState combineReducerEntriesRecursive(
     const std::vector<
@@ -35,8 +40,8 @@ RootState combineReducerEntriesRecursive(
     bool bChanged, const AnyAction &Action);
 
 /**
+ * @fn template <typename RootState> RootState combineReducerEntryStep( const std::vector< std::function<bool(RootState &, const RootState &, const AnyAction &)>> &Reducers, size_t Index, const RootState &PrevState, RootState NextState, bool bChanged, const AnyAction &Action)
  * @brief Combines a single reducer entry with the next state.
- * @signature template <typename RootState> RootState combineReducerEntryStep(...)
  * @param Reducers List of reducer functions.
  * @param Index Current index in the list.
  * @param PrevState Previous root state.
@@ -62,8 +67,8 @@ RootState combineReducerEntryStep(
 }
 
 /**
+ * @fn template <typename RootState> RootState combineReducerEntriesRecursive( const std::vector< std::function<bool(RootState &, const RootState &, const AnyAction &)>> &Reducers, size_t Index, const RootState &PrevState, RootState NextState, bool bChanged, const AnyAction &Action)
  * @brief Recursively iterates over all slice reducers.
- * @signature template <typename RootState> RootState combineReducerEntriesRecursive(...)
  * @param Reducers List of reducer functions.
  * @param Index Current index in the list.
  * @param PrevState Previous root state.
@@ -93,6 +98,7 @@ RootState combineReducerEntriesRecursive(
  * Produces a root reducer that calls every reducer in the reducers map object.
  * User Story: As root-store assembly, I need Redux combineReducers semantics so
  * slice reducers receive the same dispatched action coherently.
+ * @fn template <typename RootState> CaseReducer<RootState> combineReducers(const ReducersMapObject<RootState> &ReducersMap)
  */
 template <typename RootState>
 CaseReducer<RootState>
@@ -103,6 +109,13 @@ combineReducers(const ReducersMapObject<RootState> &ReducersMap) {
     return detail::combineReducerEntriesRecursive<RootState>(
         Reducers, 0, PrevState, PrevState, false, Action);
   };
+}
+
+/** User Story: As a core rtk reducer consumer, I need to invoke combine slices through a stable signature so the core rtk reducer workflow remains explicit and composable. @fn template <typename RootState> CombinedSliceReducer<RootState> combineSlices(const ReducersMapObject<RootState> &ReducersMap) */
+template <typename RootState>
+CombinedSliceReducer<RootState>
+combineSlices(const ReducersMapObject<RootState> &ReducersMap) {
+  return combineReducers(ReducersMap);
 }
 
 /**

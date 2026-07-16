@@ -1,110 +1,205 @@
 #pragma once
-/**
- * personas and souls; the essence of the machine
- * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
- */
 
 #include "Core/rtk.hpp"
-#include "Core/fp.hpp"
-#include "CoreMinimal.h"
-#include "Features/Contracts/ContractsTypes.h"
 #include "Features/Soul/SoulActions.h"
-
-namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
-typedef func::Maybe<FString> FForbocAISDKPublicSoulSoulSliceHOptionalDomainId;
-} } }
+#include "Features/Soul/SoulThunks.h"
+#include "Features/Soul/SoulTypes.h"
+#include "Features/Soul/Storage/Configuration/ConfigurationAdapters.h"
 
 namespace SoulSlice {
 
-using namespace rtk;
-
-struct FSoulSliceState {
-  FString ExportStatus;
-  FString ImportStatus;
-  FSoulExportResult LastExport;
-  bool bHasLastExport;
-  FSoul LastImport;
-  bool bHasLastImport;
-  TArray<FSoulListItem> AvailableSouls;
-  FString Error;
-
-  FSoulSliceState()
-      : ExportStatus(TEXT("idle")), ImportStatus(TEXT("idle")),
-        bHasLastExport(false), bHasLastImport(false) {}
-};
+/**
+ * User Story: As a Soul reducer, I need export startup represented without side effects so status is derived from generated RTK events.
+ * @fn inline FSoulSliceState startSoulExportReducer( const FSoulSliceState &State, const SoulStorage::Configuration::FLifecycleData &Lifecycle)
+ */
+inline FSoulSliceState startSoulExportReducer(
+    const FSoulSliceState &State,
+    const SoulStorage::Configuration::FLifecycleData &Lifecycle) {
+  FSoulSliceState Next = State;
+  Next.ExportStatus = Lifecycle.Exporting;
+  Next.Error.Empty();
+  return Next;
+}
 
 /**
- * Builds the soul slice reducer and initial state.
- * User Story: As soul runtime setup, I need one slice factory so export and
- * import actions are wired into the store consistently.
+ * User Story: As a Soul reducer, I need successful export metadata stored as one immutable state transition.
+ * @fn inline FSoulSliceState completeSoulExportReducer( const FSoulSliceState &State, const FSoulExportResult &Result, const SoulStorage::Configuration::FLifecycleData &Lifecycle)
  */
-inline Slice<FSoulSliceState> createSoulSlice() {
+inline FSoulSliceState completeSoulExportReducer(
+    const FSoulSliceState &State, const FSoulExportResult &Result,
+    const SoulStorage::Configuration::FLifecycleData &Lifecycle) {
+  FSoulSliceState Next = State;
+  Next.ExportStatus = Lifecycle.Succeeded;
+  Next.ExportResult = Result;
+  Next.bHasExportResult = true;
+  return Next;
+}
+
+/**
+ * User Story: As a Soul reducer, I need export failures stored without performing transport work in the reducer.
+ * @fn inline FSoulSliceState failSoulExportReducer(const FSoulSliceState &State, const FString &Error, const SoulStorage::Configuration::FLifecycleData &Lifecycle)
+ */
+inline FSoulSliceState failSoulExportReducer(const FSoulSliceState &State,
+                                             const FString &Error,
+    const SoulStorage::Configuration::FLifecycleData &Lifecycle) {
+  FSoulSliceState Next = State;
+  Next.ExportStatus = Lifecycle.Failed;
+  Next.Error = Error;
+  return Next;
+}
+
+/**
+ * User Story: As a Soul reducer, I need import startup represented without side effects so status is derived from generated RTK events.
+ * @fn inline FSoulSliceState startSoulImportReducer( const FSoulSliceState &State, const SoulStorage::Configuration::FLifecycleData &Lifecycle)
+ */
+inline FSoulSliceState startSoulImportReducer(
+    const FSoulSliceState &State,
+    const SoulStorage::Configuration::FLifecycleData &Lifecycle) {
+  FSoulSliceState Next = State;
+  Next.ImportStatus = Lifecycle.Importing;
+  Next.Error.Empty();
+  return Next;
+}
+
+/**
+ * User Story: As a Soul reducer, I need authenticated imports stored as one immutable state transition.
+ * @fn inline FSoulSliceState completeSoulImportReducer(const FSoulSliceState &State, const FSoul &Soul, const SoulStorage::Configuration::FLifecycleData &Lifecycle)
+ */
+inline FSoulSliceState completeSoulImportReducer(const FSoulSliceState &State,
+                                                 const FSoul &Soul,
+    const SoulStorage::Configuration::FLifecycleData &Lifecycle) {
+  FSoulSliceState Next = State;
+  Next.ImportStatus = Lifecycle.Succeeded;
+  Next.ImportedSoul = Soul;
+  Next.bHasImportedSoul = true;
+  return Next;
+}
+
+/**
+ * User Story: As a Soul reducer, I need import failures stored without performing provider work in the reducer.
+ * @fn inline FSoulSliceState failSoulImportReducer(const FSoulSliceState &State, const FString &Error, const SoulStorage::Configuration::FLifecycleData &Lifecycle)
+ */
+inline FSoulSliceState failSoulImportReducer(const FSoulSliceState &State,
+                                             const FString &Error,
+    const SoulStorage::Configuration::FLifecycleData &Lifecycle) {
+  FSoulSliceState Next = State;
+  Next.ImportStatus = Lifecycle.Failed;
+  Next.Error = Error;
+  return Next;
+}
+
+/**
+ * User Story: As the package root store, I need generated Soul thunk lifecycle
+ * events reduced through one feature slice.
+ * @fn inline rtk::Slice<FSoulSliceState> createSoulSlice()
+ */
+inline rtk::Slice<FSoulSliceState> createSoulSlice() {
+  const SoulStorage::Configuration::FLifecycleData Lifecycle =
+      SoulStorage::Configuration::soulStorageData().Lifecycle;
+  FSoulSliceState InitialState;
+  InitialState.ExportStatus = Lifecycle.Idle;
+  InitialState.ImportStatus = Lifecycle.Idle;
   return rtk::createSlice<FSoulSliceState>(
-  TEXT("soul"), FSoulSliceState(),
-  [](rtk::ActionReducerMapBuilder<FSoulSliceState> &Builder) {
-    Builder.addCase(Actions::remoteExportSoulPendingActionCreator(),
-      [](const FSoulSliceState &State,
-                   const Action<rtk::FEmptyPayload> &Action) -> FSoulSliceState {
-                  FSoulSliceState Next = State;
-                  Next.ExportStatus = TEXT("exporting");
-                  Next.Error.Empty();
-                  return Next;
-                });
-    Builder.addCase(Actions::remoteExportSoulSuccessActionCreator(),
-      [](const FSoulSliceState &State,
-                   const Action<FSoulExportResult> &Action) -> FSoulSliceState {
-                  FSoulSliceState Next = State;
-                  Next.ExportStatus = TEXT("success");
-                  Next.LastExport = Action.PayloadValue;
-                  Next.bHasLastExport = true;
-                  return Next;
-                });
-    Builder.addCase(Actions::remoteExportSoulFailedActionCreator(),
-      [](const FSoulSliceState &State,
-                             const Action<FString> &Action) -> FSoulSliceState {
-                            FSoulSliceState Next = State;
-                            Next.ExportStatus = TEXT("failed");
-                            Next.Error = Action.PayloadValue;
-                            return Next;
-                          });
-    Builder.addCase(Actions::importSoulPendingActionCreator(),
-      [](const FSoulSliceState &State,
-                   const Action<rtk::FEmptyPayload> &Action) -> FSoulSliceState {
-                  FSoulSliceState Next = State;
-                  Next.ImportStatus = TEXT("importing");
-                  Next.Error.Empty();
-                  return Next;
-                });
-    Builder.addCase(Actions::importSoulSuccessActionCreator(),
-      [](const FSoulSliceState &State,
-                             const Action<FSoul> &Action) -> FSoulSliceState {
-                            FSoulSliceState Next = State;
-                            Next.ImportStatus = TEXT("success");
-                            Next.LastImport = Action.PayloadValue;
-                            Next.bHasLastImport = true;
-                            return Next;
-                          });
-    Builder.addCase(Actions::importSoulFailedActionCreator(),
-      [](const FSoulSliceState &State,
-                             const Action<FString> &Action) -> FSoulSliceState {
-                            FSoulSliceState Next = State;
-                            Next.ImportStatus = TEXT("failed");
-                            Next.Error = Action.PayloadValue;
-                            return Next;
-                          });
-    Builder.addCase(Actions::setSoulListActionCreator(),
-      [](const FSoulSliceState &State,
-                   const Action<TArray<FSoulListItem>> &Action) -> FSoulSliceState {
-                  FSoulSliceState Next = State;
-                  Next.AvailableSouls = Action.PayloadValue;
-                  return Next;
-                });
-    Builder.addCase(Actions::clearSoulStateActionCreator(),
-      [](const FSoulSliceState &State,
-                   const Action<rtk::FEmptyPayload> &Action) -> FSoulSliceState {
-                  return FSoulSliceState();
-                });
-  });
+      TEXT("soul"), InitialState,
+      [Lifecycle, InitialState](
+          rtk::ActionReducerMapBuilder<FSoulSliceState> &Builder) {
+        Builder.addCase(
+            rtk::exportSoulThunk().pending,
+            [Lifecycle](const FSoulSliceState &State,
+               const rtk::Action<FString> &) {
+              return startSoulExportReducer(State, Lifecycle);
+            });
+        Builder.addCase(
+            rtk::exportSoulThunk().fulfilled,
+            [Lifecycle](const FSoulSliceState &State,
+               const rtk::Action<FSoulExportResult> &Action) {
+              return completeSoulExportReducer(State, Action.PayloadValue,
+                                               Lifecycle);
+            });
+        Builder.addCase(
+            rtk::exportSoulThunk().rejected,
+            [Lifecycle](const FSoulSliceState &State,
+               const rtk::Action<FString> &Action) {
+              return failSoulExportReducer(State, Action.PayloadValue,
+                                           Lifecycle);
+            });
+        Builder.addCase(
+            rtk::importSoulThunk().pending,
+            [Lifecycle](const FSoulSliceState &State,
+               const rtk::Action<FString> &) {
+              return startSoulImportReducer(State, Lifecycle);
+            });
+        Builder.addCase(
+            rtk::importSoulThunk().fulfilled,
+            [Lifecycle](const FSoulSliceState &State,
+               const rtk::Action<FSoul> &Action) {
+              return completeSoulImportReducer(State, Action.PayloadValue,
+                                               Lifecycle);
+            });
+        Builder.addCase(
+            rtk::importSoulThunk().rejected,
+            [Lifecycle](const FSoulSliceState &State,
+               const rtk::Action<FString> &Action) {
+              return failSoulImportReducer(State, Action.PayloadValue,
+                                           Lifecycle);
+            });
+        Builder.addCase(
+            rtk::listSoulsThunk().pending,
+            [](const FSoulSliceState &State, const rtk::Action<int32> &) {
+              FSoulSliceState Next = State;
+              Next.bListing = true;
+              return Next;
+            });
+        Builder.addCase(
+            rtk::listSoulsThunk().fulfilled,
+            [](const FSoulSliceState &State,
+               const rtk::Action<TArray<FSoulListItem>> &Action) {
+              FSoulSliceState Next = State;
+              Next.AvailableSouls = Action.PayloadValue;
+              Next.bListing = false;
+              return Next;
+            });
+        Builder.addCase(
+            rtk::listSoulsThunk().rejected,
+            [](const FSoulSliceState &State,
+               const rtk::Action<FString> &Action) {
+              FSoulSliceState Next = State;
+              Next.bListing = false;
+              Next.Error = Action.PayloadValue;
+              return Next;
+            });
+        Builder.addCase(
+            rtk::verifySoulThunk().pending,
+            [](const FSoulSliceState &State,
+               const rtk::Action<FString> &Action) {
+              FSoulSliceState Next = State;
+              Next.bVerifying = true;
+              return Next;
+            });
+        Builder.addCase(
+            rtk::verifySoulThunk().fulfilled,
+            [](const FSoulSliceState &State,
+               const rtk::Action<FSoulVerifyResult> &) {
+              FSoulSliceState Next = State;
+              Next.bVerifying = false;
+              return Next;
+            });
+        Builder.addCase(
+            rtk::verifySoulThunk().rejected,
+            [](const FSoulSliceState &State,
+               const rtk::Action<FString> &Action) {
+              FSoulSliceState Next = State;
+              Next.bVerifying = false;
+              Next.Error = Action.PayloadValue;
+              return Next;
+            });
+        Builder.addCase(
+            Actions::clearSoulStateActionCreator(),
+            [InitialState](const FSoulSliceState &,
+               const rtk::Action<rtk::FEmptyPayload> &) {
+              return InitialState;
+            });
+      });
 }
 
 } // namespace SoulSlice

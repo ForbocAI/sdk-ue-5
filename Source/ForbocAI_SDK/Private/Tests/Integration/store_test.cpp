@@ -20,9 +20,10 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FStoreNPCCreationTest,
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FStoreNPCCreationTest::RunTest(const FString &Parameters)
  */
 bool FStoreNPCCreationTest::RunTest(const FString &Parameters) {
-  FRuntimeState State;
+  FRuntimeState State = StoreInternal::createRuntimeInitialState();
 
   FNPCInternalState Info;
   Info.Id = TEXT("int_npc_1");
@@ -60,6 +61,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters)
  */
 bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
   EnhancedStore<FRuntimeState> Store = createRuntimeStore();
@@ -99,12 +101,11 @@ bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
             FString(TEXT("validating")));
 
   FDirectiveRuleSet Preset;
-  Preset.Id = TEXT("preset_keep");
+  Preset.RulesetId = TEXT("preset_keep");
   Store.dispatch(BridgeSlice::Actions::activePresetAdded(Preset));
 
   TArray<FDirectiveRuleSet> Rulesets;
   FDirectiveRuleSet Ruleset;
-  Ruleset.Id = TEXT("ruleset_keep");
   Ruleset.RulesetId = TEXT("ruleset_keep");
   Rulesets.Add(Ruleset);
   Store.dispatch(BridgeSlice::Actions::rulesetsReceived(Rulesets));
@@ -180,6 +181,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FStoreRemoveNonActiveTest::RunTest(const FString &Parameters)
  */
 bool FStoreRemoveNonActiveTest::RunTest(const FString &Parameters) {
   EnhancedStore<FRuntimeState> Store = createRuntimeStore();
@@ -244,6 +246,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FRuntimeProtocolLoggerSummaryTest::RunTest(const FString &Parameters)
  */
 bool FRuntimeProtocolLoggerSummaryTest::RunTest(const FString &Parameters) {
   (void)Parameters;
@@ -253,7 +256,7 @@ bool FRuntimeProtocolLoggerSummaryTest::RunTest(const FString &Parameters) {
   TestEqual("String payloads are preserved for logger output",
             SetActiveAction.describePayload(), FString(TEXT("logger_npc")));
 
-  FRuntimeState Before;
+  FRuntimeState Before = StoreInternal::createRuntimeInitialState();
   FRuntimeState After = StoreReducer(Before, SetActiveAction);
   const FString Delta =
       LoggerSelectors::describeStateDelta(Before, After);

@@ -14,8 +14,9 @@ namespace CLIOps {
 
 /**
  * Dispatches a CLI command through the SDK store.
+ * @fn FORBOCAI_SDK_API func::TestResult<void> DispatchCommand(const FString &CommandKey, const TArray<FString> &Args)
  * @param CommandKey  Command in "domain_action" format (e.g. "npc_create",
- *                    "memory_list", "ghost_run", "soul_export").
+ * "memory_list", "ghost_run", "soul_export").
  * @param Args        Positional arguments for the command.
  * @return TestResult indicating success or failure with message.
  * User Story: As an SDK integrator, I need this type or module note so I can understand the role of the surrounding API surface quickly.

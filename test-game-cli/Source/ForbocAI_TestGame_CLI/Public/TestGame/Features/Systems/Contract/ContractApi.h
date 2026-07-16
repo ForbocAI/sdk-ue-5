@@ -16,11 +16,13 @@ inline rtk::Api<FTestGameState> testGameApi = []() {
   return ApiDefinition;
 }();
 
+/** User Story: As a features systems contract consumer, I need to invoke provides tags through a stable signature so the features systems contract workflow remains explicit and composable. @fn inline bool providesTags( const rtk::ApiEndpoint<FString, FString> &EndpointDefinition) */
 inline bool providesTags(
     const rtk::ApiEndpoint<FString, FString> &EndpointDefinition) {
   return EndpointDefinition.providesTags.Num() > 0;
 }
 
+/** User Story: As a features systems contract consumer, I need to invoke contract endpoint through a stable signature so the features systems contract workflow remains explicit and composable. @fn inline rtk::ApiEndpoint<FString, FString> contractEndpoint() */
 inline rtk::ApiEndpoint<FString, FString> contractEndpoint() {
   rtk::ApiEndpoint<FString, FString> Endpoint;
   Endpoint.EndpointName = TEXT("getTestGameContract");
@@ -39,6 +41,7 @@ inline rtk::ApiEndpoint<FString, FString> contractEndpoint() {
   return Endpoint;
 }
 
+/** User Story: As a features systems contract consumer, I need to invoke get test game contract thunk through a stable signature so the features systems contract workflow remains explicit and composable. @fn inline rtk::ThunkAction<FString, FTestGameState> getTestGameContractThunk(const FString &ApiUrl) */
 inline rtk::ThunkAction<FString, FTestGameState>
 getTestGameContractThunk(const FString &ApiUrl) {
   return rtk::injectEndpoints(testGameApi, contractEndpoint())(ApiUrl);

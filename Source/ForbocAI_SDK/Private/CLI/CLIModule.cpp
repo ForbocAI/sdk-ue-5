@@ -7,13 +7,14 @@ namespace CLIOps {
 
 namespace {
 
+/** User Story: As a cli consumer, I need to invoke get store through a stable signature so the cli workflow remains explicit and composable. @fn rtk::EnhancedStore<FRuntimeState> &GetStore() */
 rtk::EnhancedStore<FRuntimeState> &GetStore() {
-  static rtk::EnhancedStore<FRuntimeState> Store = store();
-  return Store;
+  return store();
 }
 
 } // namespace
 
+/** User Story: As a cli consumer, I need to invoke dispatch command through a stable signature so the cli workflow remains explicit and composable. @fn func::TestResult<void> DispatchCommand(const FString &CommandKey, const TArray<FString> &Args) */
 func::TestResult<void> DispatchCommand(const FString &CommandKey,
                                        const TArray<FString> &Args) {
   using Result = func::TestResult<void>;

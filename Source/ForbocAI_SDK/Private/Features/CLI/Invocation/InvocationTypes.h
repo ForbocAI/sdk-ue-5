@@ -11,4 +11,11 @@ struct FInvocation {
   FString ApiKey;
 };
 
+struct FInvocationTransportSettings {
+  FString ArgumentParameterTemplate;
+  FString IndexToken;
+  int32 FirstArgumentIndex;
+  int32 NextArgumentOffset;
+};
+
 } // namespace CommandletInvocation

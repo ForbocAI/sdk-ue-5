@@ -5,6 +5,7 @@
 
 namespace GhostInternal {
 
+/** User Story: As a ghost consumer, I need to invoke run scenario test through a stable signature so the ghost workflow remains explicit and composable. @fn GhostTypes::AsyncResult<FGhostTestResult> RunScenarioTest(const FAgent &Agent, const FString &Scenario) */
 GhostTypes::AsyncResult<FGhostTestResult>
 RunScenarioTest(const FAgent &Agent, const FString &Scenario) {
   return GhostTypes::AsyncResult<FGhostTestResult>::create(
@@ -29,6 +30,7 @@ RunScenarioTest(const FAgent &Agent, const FString &Scenario) {
 
 /**
  * User Story: As a developer, I need RunTestsSequentially to fulfill its role in the module.
+ * @fn void RunTestsSequentially(const FGhost &Ghost, TSharedPtr<FGhostTestReport> Report, int32 Index, std::function<void(FGhostTestReport)> OnComplete, std::function<void(std::string)> OnError)
  */
 void RunTestsSequentially(const FGhost &Ghost,
                           TSharedPtr<FGhostTestReport> Report, int32 Index,

@@ -5,6 +5,7 @@
 
 namespace Testing::Dependencies::Command {
 
+/** User Story: As a testing dependencies command consumer, I need to invoke read setup test command through a stable signature so the testing dependencies command workflow remains explicit and composable. @fn inline FSetupTestCommand ReadSetupTestCommand(const TSharedPtr<FJsonObject> &Object) */
 inline FSetupTestCommand
 ReadSetupTestCommand(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -16,6 +17,7 @@ ReadSetupTestCommand(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a testing dependencies command consumer, I need to invoke setup test fixtures through a stable signature so the testing dependencies command workflow remains explicit and composable. @fn inline const FSetupTestFixtures &SetupTestFixtures() */
 inline const FSetupTestFixtures &SetupTestFixtures() {
   static const DataAdapters::FSettingsSource Source =
       DataAdapters::SettingsSource(

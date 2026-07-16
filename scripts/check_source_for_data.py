@@ -48,10 +48,10 @@ UNREAL_REFLECTION_MACRO = re.compile(
 )
 JSON_SCHEMA_FIELD_CALL = re.compile(
     r"\b(?:[A-Za-z_][A-Za-z0-9_]*::)?(?:"
-    r"Field|ReadBooleanField|ReadNumberField|ReadStringField|ReadFloatField|"
+    r"Field|ReadBooleanField|ReadNumberField|ReadUInt32Field|ReadStringField|ReadFloatField|"
     r"ReadOptionalBooleanField|ReadOptionalNumberField|"
     r"ReadOptionalStringField|ReadOptionalFloatField|"
-    r"ReadStringArrayField|ReadOptionalStringArrayField|ReadArrayField|"
+    r"ReadStringArrayField|ReadNumberArrayField|ReadOptionalStringArrayField|ReadArrayField|"
     r"ReadObjectField|ReadObjectArrayField|"
     r"ReadRequiredField|RequiredField|"
     r"RequiredFieldName|FindRequiredJsonField|ReadSettingsObjectArrayField|"
@@ -77,7 +77,9 @@ SCHEMA_REGISTRY_STRUCT = re.compile(
 # not authored configuration. The values are collected dynamically from real
 # usage below; this only identifies the definition sites.
 METADATA_CONTEXT = re.compile(
-    r"create(?:Action|Slice|Reducer|AsyncThunk)|addListener|TypePrefix"
+    r"create(?:Action|Slice|Reducer|AsyncThunk)|"
+    r"ActionCreatorWith(?:Optional|NonInferrable|Prepared)Payload|"
+    r"addListener|TypePrefix"
 )
 
 GUIDANCE = (

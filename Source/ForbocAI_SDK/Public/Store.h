@@ -1,38 +1,20 @@
 #pragma once
 
-#include "Features/Bridge/BridgeSlice.h"
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "Core/fp.hpp"
+#include "Features/Bridge/BridgeSlice.h"
+#include "Features/CLI/CLISlice.h"
+#include "Features/Dependencies/DependenciesSlice.h"
 #include "Features/Directive/DirectiveSlice.h"
-#include "Features/Protocol/Logger/LoggerListeners.h"
 #include "Features/Ghost/GhostSlice.h"
 #include "Features/Memory/MemorySlice.h"
 #include "Features/NPC/NPCSlice.h"
+#include "Features/Protocol/Logger/LoggerListeners.h"
 #include "Features/NPC/NPCListeners.h"
-#include "Features/Dependencies/DependenciesSlice.h"
+#include "Features/Runtime/RuntimeTypes.h"
 #include "Features/Soul/SoulSlice.h"
 #include "Features/Vector/VectorSlice.h"
-
-struct FRuntimeState {
-  NPCSlice::FNPCSliceState NPCs;
-  MemorySlice::FMemorySliceState Memory;
-  DirectiveSlice::FDirectiveSliceState Directives;
-  BridgeSlice::FBridgeSliceState Bridge;
-  SoulSlice::FSoulSliceState Soul;
-  GhostSlice::FGhostSliceState Ghost;
-  FVectorState Vector;
-  FDependenciesState Dependencies;
-
-  /**
-   * G8: Generic state bag for game-specific slices.
-   * User Story: As game-specific runtime extensions, I need a shared extra bag
-   * so custom slice state can live beside SDK-managed state.
-   * Games can store serialized state keyed by slice name.
-   * Extra reducers operate on this map alongside SDK reducers.
-   */
-  TMap<FString, FString> Extra;
-};
 
 namespace StoreInternal {
 
@@ -40,6 +22,7 @@ namespace StoreInternal {
  * Returns the singleton NPC slice definition.
  * User Story: As store assembly, I need one shared NPC slice instance so every
  * store uses the same reducer wiring.
+ * @fn inline const rtk::Slice<NPCSlice::FNPCSliceState> &GetNPCSlice()
  */
 inline const rtk::Slice<NPCSlice::FNPCSliceState> &GetNPCSlice() {
   static const func::Lazy<rtk::Slice<NPCSlice::FNPCSliceState>> Slice =
@@ -51,6 +34,7 @@ inline const rtk::Slice<NPCSlice::FNPCSliceState> &GetNPCSlice() {
  * Returns the singleton memory slice definition.
  * User Story: As store assembly, I need one shared memory slice instance so
  * memory reducers stay consistent across stores.
+ * @fn inline const rtk::Slice<MemorySlice::FMemorySliceState> &GetMemorySlice()
  */
 inline const rtk::Slice<MemorySlice::FMemorySliceState> &GetMemorySlice() {
   static const func::Lazy<rtk::Slice<MemorySlice::FMemorySliceState>> Slice =
@@ -62,6 +46,7 @@ inline const rtk::Slice<MemorySlice::FMemorySliceState> &GetMemorySlice() {
  * Returns the singleton directive slice definition.
  * User Story: As store assembly, I need one shared directive slice instance so
  * directive lifecycle updates are wired uniformly.
+ * @fn inline const rtk::Slice<DirectiveSlice::FDirectiveSliceState> & GetDirectiveSlice()
  */
 inline const rtk::Slice<DirectiveSlice::FDirectiveSliceState> &
 GetDirectiveSlice() {
@@ -74,6 +59,7 @@ GetDirectiveSlice() {
  * Returns the singleton bridge slice definition.
  * User Story: As store assembly, I need one shared bridge slice instance so
  * validation state uses a single reducer definition.
+ * @fn inline const rtk::Slice<BridgeSlice::FBridgeSliceState> &GetBridgeSlice()
  */
 inline const rtk::Slice<BridgeSlice::FBridgeSliceState> &GetBridgeSlice() {
   static const func::Lazy<rtk::Slice<BridgeSlice::FBridgeSliceState>> Slice =
@@ -85,6 +71,7 @@ inline const rtk::Slice<BridgeSlice::FBridgeSliceState> &GetBridgeSlice() {
  * Returns the singleton soul slice definition.
  * User Story: As store assembly, I need one shared soul slice instance so
  * export and import state uses the same reducer wiring.
+ * @fn inline const rtk::Slice<SoulSlice::FSoulSliceState> &GetSoulSlice()
  */
 inline const rtk::Slice<SoulSlice::FSoulSliceState> &GetSoulSlice() {
   static const func::Lazy<rtk::Slice<SoulSlice::FSoulSliceState>> Slice =
@@ -96,6 +83,7 @@ inline const rtk::Slice<SoulSlice::FSoulSliceState> &GetSoulSlice() {
  * Returns the singleton ghost slice definition.
  * User Story: As store assembly, I need one shared ghost slice instance so QA
  * state transitions are defined once for the runtime.
+ * @fn inline const rtk::Slice<GhostSlice::FGhostSliceState> &GetGhostSlice()
  */
 inline const rtk::Slice<GhostSlice::FGhostSliceState> &GetGhostSlice() {
   static const func::Lazy<rtk::Slice<GhostSlice::FGhostSliceState>> Slice =
@@ -103,16 +91,45 @@ inline const rtk::Slice<GhostSlice::FGhostSliceState> &GetGhostSlice() {
   return func::eval(Slice);
 }
 
+/** User Story: As a store consumer, I need to invoke get vector slice through a stable signature so the store workflow remains explicit and composable. @fn inline const rtk::Slice<FVectorState> &GetVectorSlice() */
 inline const rtk::Slice<FVectorState> &GetVectorSlice() {
   static const func::Lazy<rtk::Slice<FVectorState>> Slice = func::lazy(
       []() { return VectorSlice::createVectorSlice(); });
   return func::eval(Slice);
 }
 
+/** User Story: As a store consumer, I need to invoke get dependencies slice through a stable signature so the store workflow remains explicit and composable. @fn inline const rtk::Slice<FDependenciesState> &GetDependenciesSlice() */
 inline const rtk::Slice<FDependenciesState> &GetDependenciesSlice() {
   static const func::Lazy<rtk::Slice<FDependenciesState>> Slice =
       func::lazy([]() { return DependenciesSlice::createDependenciesSlice(); });
   return func::eval(Slice);
+}
+
+/** User Story: As a store consumer, I need to invoke get clislice through a stable signature so the store workflow remains explicit and composable. @fn inline const rtk::Slice<ForbocAI::CLI::FCLIState> &GetCLISlice() */
+inline const rtk::Slice<ForbocAI::CLI::FCLIState> &GetCLISlice() {
+  static const func::Lazy<rtk::Slice<ForbocAI::CLI::FCLIState>> Slice =
+      func::lazy([]() { return CLISlice::createCLISlice(); });
+  return func::eval(Slice);
+}
+
+/**
+ * User Story: As root store initialization, I need every feature slice's
+ * canonical initial state composed once so direct struct defaults cannot drift
+ * from createSlice.
+ * @fn inline FRuntimeState createRuntimeInitialState()
+ */
+inline FRuntimeState createRuntimeInitialState() {
+  FRuntimeState InitialState;
+  InitialState.NPCs = GetNPCSlice().InitialState;
+  InitialState.Memory = GetMemorySlice().InitialState;
+  InitialState.Directives = GetDirectiveSlice().InitialState;
+  InitialState.Bridge = GetBridgeSlice().InitialState;
+  InitialState.Soul = GetSoulSlice().InitialState;
+  InitialState.Ghost = GetGhostSlice().InitialState;
+  InitialState.Vector = GetVectorSlice().InitialState;
+  InitialState.Dependencies = GetDependenciesSlice().InitialState;
+  InitialState.CLI = GetCLISlice().InitialState;
+  return InitialState;
 }
 
 } // namespace StoreInternal
@@ -134,6 +151,7 @@ namespace StoreInternal {
  * Returns the extra reducers registered by game-specific extensions.
  * User Story: As store extensibility, I need a shared reducer registry so
  * game-specific reducers can be mounted before store creation.
+ * @fn inline std::vector<ExtraReducerFn> &ExtraReducers()
  */
 inline std::vector<ExtraReducerFn> &ExtraReducers() {
   static std::vector<ExtraReducerFn> Reducers;
@@ -146,6 +164,7 @@ inline std::vector<ExtraReducerFn> &ExtraReducers() {
  * Runs the SDK reducers, then applies any registered extra reducers.
  * User Story: As root store reduction, I need SDK and game reducers composed
  * together so one dispatch updates all registered state.
+ * @fn inline FRuntimeState StoreReducer(const FRuntimeState &State, const rtk::AnyAction &Action)
  */
 inline FRuntimeState StoreReducer(const FRuntimeState &State,
                                 const rtk::AnyAction &Action) {
@@ -159,6 +178,7 @@ inline FRuntimeState StoreReducer(const FRuntimeState &State,
   Next.Ghost = StoreInternal::GetGhostSlice().Reducer(State.Ghost, Action);
   Next.Vector = StoreInternal::GetVectorSlice().Reducer(State.Vector, Action);
   Next.Dependencies = StoreInternal::GetDependenciesSlice().Reducer(State.Dependencies, Action);
+  Next.CLI = StoreInternal::GetCLISlice().Reducer(State.CLI, Action);
 
   /**
    * G8: Run extra reducers (game slices) — recursive application.
@@ -190,13 +210,14 @@ inline FRuntimeState StoreReducer(const FRuntimeState &State,
  * Game slices call this to mount their reducers alongside SDK slices.
  *
  * Example:
- *   addExtraReducer([](const FRuntimeState &S, const rtk::AnyAction &A) {
- *       FRuntimeState Next = S;
- *       if (A.Type == TEXT("game/setScore")) {
- *           Next.Extra.Add(TEXT("score"), A.Type);
- *       }
- *       return Next;
- *   });
+ * addExtraReducer([](const FRuntimeState &S, const rtk::AnyAction &A) {
+ * FRuntimeState Next = S;
+ * if (A.Type == TEXT("game/setScore")) {
+ * Next.Extra.Add(TEXT("score"), A.Type);
+ * }
+ * return Next;
+ * });
+ * @fn inline void addExtraReducer(const ExtraReducerFn &Reducer)
  */
 inline void addExtraReducer(const ExtraReducerFn &Reducer) {
   StoreInternal::ExtraReducers().push_back(Reducer);
@@ -206,6 +227,7 @@ inline void addExtraReducer(const ExtraReducerFn &Reducer) {
  * Creates a store with optional preloaded state and additional middleware.
  * User Story: As runtime bootstrap, I need a configurable store factory so
  * tests and games can start from custom state and middleware.
+ * @fn inline rtk::EnhancedStore<FRuntimeState> createRuntimeStore(func::Maybe<FRuntimeState> PreloadedState = func::nothing<FRuntimeState>(), std::vector<rtk::Middleware<FRuntimeState>> ExtraMiddlewares = {})
  */
 inline rtk::EnhancedStore<FRuntimeState>
 createRuntimeStore(func::Maybe<FRuntimeState> PreloadedState =
@@ -235,7 +257,8 @@ createRuntimeStore(func::Maybe<FRuntimeState> PreloadedState =
 
   return rtk::configureStore<FRuntimeState>(
       &StoreReducer,
-      PreloadedState.hasValue ? PreloadedState.value : FRuntimeState(),
+      PreloadedState.hasValue ? PreloadedState.value
+                              : StoreInternal::createRuntimeInitialState(),
       Middlewares);
 }
 
@@ -243,8 +266,9 @@ createRuntimeStore(func::Maybe<FRuntimeState> PreloadedState =
  * Returns the process-wide singleton runtime store.
  * User Story: As shared runtime access, I need a singleton store so Blueprint,
  * CLI, and subsystem helpers all dispatch through the same state container.
+ * @fn inline rtk::EnhancedStore<FRuntimeState> &store()
  */
-inline rtk::EnhancedStore<FRuntimeState> store() {
+inline rtk::EnhancedStore<FRuntimeState> &store() {
   static rtk::EnhancedStore<FRuntimeState> GlobalStore = createRuntimeStore();
   return GlobalStore;
 }

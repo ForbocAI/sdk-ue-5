@@ -9,6 +9,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRtkSelectorTest, "ForbocAI.Core.RTK.Selector",
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FRtkSelectorTest::RunTest(const FString &Parameters)
  */
 bool FRtkSelectorTest::RunTest(const FString &Parameters) {
   struct FTestState {

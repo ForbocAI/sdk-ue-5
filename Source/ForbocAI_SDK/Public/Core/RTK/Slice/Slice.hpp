@@ -5,8 +5,8 @@
 namespace rtk {
 namespace detail {
 /**
+ * @fn template <typename State> ActionReducerMapBuilder<State> createActionReducerMapBuilder(FString InName, State InInitialState)
  * @brief Constructs the reducer-map builder used by createSlice extraReducers.
- * @signature template <typename State> ActionReducerMapBuilder<State> createActionReducerMapBuilder(FString InName, State InInitialState)
  * @param InName The slice name.
  * @param InInitialState The initial state for the builder.
  * @return ActionReducerMapBuilder<State> The uninitialized builder.
@@ -36,8 +36,8 @@ template <typename State> struct ReducedState {
 };
 
 /**
+ * @fn template <typename State> ReducedState<State> reduceCase(const TMap<FString, CaseReducer<State>> &ReducerMap, const State &PrevState, const AnyAction &Action)
  * @brief Evaluates an action against a specific case reducer if the type matches.
- * @signature template <typename State> ReducedState<State> reduceCase(const TMap<FString, CaseReducer<State>> &ReducerMap, const State &PrevState, const AnyAction &Action)
  * @param ReducerMap Map of action types to case reducers.
  * @param PrevState Current state before reduction.
  * @param Action Action being dispatched.
@@ -55,8 +55,8 @@ ReducedState<State> reduceCase(const TMap<FString, CaseReducer<State>> &ReducerM
 }
 
 /**
+ * @fn template <typename State> ReducedState<State> reduceMatchersRecursive(const TArray<ActionMatcherDescription<State>> &ActionMatchers, const AnyAction &Action, int32 Index, ReducedState<State> Acc)
  * @brief Recursively evaluates an action against registered matcher reducers.
- * @signature template <typename State> ReducedState<State> reduceMatchersRecursive(const TArray<ActionMatcherDescription<State>> &ActionMatchers, const AnyAction &Action, int32 Index, ReducedState<State> Acc)
  * @param ActionMatchers List of matcher configurations.
  * @param Action Action being dispatched.
  * @param Index Current recursion index.
@@ -82,8 +82,8 @@ reduceMatchersRecursive(const TArray<ActionMatcherDescription<State>> &ActionMat
 }
 
 /**
+ * @fn template <typename State> Slice<State> finalizeSlice(ActionReducerMapBuilder<State> Builder)
  * @brief Finalizes the slice and its reducer lookup table from a createSlice builder.
- * @signature template <typename State> Slice<State> finalizeSlice(ActionReducerMapBuilder<State> Builder)
  * @param Builder The configured map builder.
  * @return Slice<State> The completed slice containing the composite reducer.
  *
@@ -117,8 +117,8 @@ Slice<State> finalizeSlice(ActionReducerMapBuilder<State> Builder) {
 } // namespace detail
 
 /**
+ * @fn template <typename State, typename ExtraReducersFn> Slice<State> createSlice(FString InName, State InInitialState, ExtraReducersFn ExtraReducers)
  * @brief Builds a slice from a name, initial state, and extraReducers callback.
- * @signature template <typename State, typename ExtraReducersFn> Slice<State> createSlice(FString InName, State InInitialState, ExtraReducersFn ExtraReducers)
  * @param InName The name of the slice.
  * @param InInitialState The initial state object.
  * @param ExtraReducers Function receiving a builder to attach reducers.
@@ -137,9 +137,20 @@ Slice<State> createSlice(FString InName, State InInitialState,
   return detail::finalizeSlice(std::move(Builder));
 }
 
+/** User Story: As a core rtk slice consumer, I need to invoke build create slice through a stable signature so the core rtk slice workflow remains explicit and composable. @fn template <typename State> std::function<Slice<State>(FString, State, CaseReducer<State>)> buildCreateSlice() */
+template <typename State>
+std::function<Slice<State>(FString, State, CaseReducer<State>)>
+buildCreateSlice() {
+  return [](FString Name, State InitialState,
+            CaseReducer<State> ReducerValue) {
+    return createSlice<State>(MoveTemp(Name), MoveTemp(InitialState),
+                              MoveTemp(ReducerValue));
+  };
+}
+
 /**
+ * @fn template <typename State, typename BuilderCallbackFn> CaseReducer<State> createReducer(State InitialState, BuilderCallbackFn BuilderCallback)
  * @brief Builds a reducer from initial state and an ActionReducerMapBuilder callback.
- * @signature template <typename State, typename BuilderCallbackFn> CaseReducer<State> createReducer(State InitialState, BuilderCallbackFn BuilderCallback)
  * @param InitialState Initial state for the reducer.
  * @param BuilderCallback Function to configure case matchers.
  * @return CaseReducer<State> The composed reducer function.
@@ -156,8 +167,8 @@ CaseReducer<State> createReducer(State InitialState,
 }
 
 /**
+ * @fn template <typename State> Slice<State> createSlice(FString InName, State InInitialState, CaseReducer<State> ReducerFunc)
  * @brief Builds a slice around an already-composed reducer.
- * @signature template <typename State> Slice<State> createSlice(FString InName, State InInitialState, CaseReducer<State> ReducerFunc)
  * @param InName Name of the slice.
  * @param InInitialState The initial state object.
  * @param ReducerFunc An already composed root reducer function.

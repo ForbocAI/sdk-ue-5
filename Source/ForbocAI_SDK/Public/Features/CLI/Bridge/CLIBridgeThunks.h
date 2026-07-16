@@ -10,6 +10,7 @@ struct FRuntimeState;
 
 namespace Ops {
 
+/** User Story: As a features cli bridge consumer, I need to invoke validate bridge payload through a stable signature so the features cli bridge workflow remains explicit and composable. @fn template <typename RuntimeState = FRuntimeState> inline FValidationResult validateBridgePayload(rtk::EnhancedStore<RuntimeState> &Store, const FAgentAction &Action, const FBridgeValidationContext &Context, const FString &NpcId = TEXT("")) */
 template <typename RuntimeState = FRuntimeState>
 inline FValidationResult
 validateBridgePayload(rtk::EnhancedStore<RuntimeState> &Store,
@@ -20,6 +21,7 @@ validateBridgePayload(rtk::EnhancedStore<RuntimeState> &Store,
       Store.dispatch(rtk::validateBridgeThunk(Action, Context, NpcId)));
 }
 
+/** User Story: As a features cli bridge consumer, I need to invoke get bridge rules through a stable signature so the features cli bridge workflow remains explicit and composable. @fn template <typename RuntimeState = FRuntimeState> inline TArray<FBridgeRule> getBridgeRules(rtk::EnhancedStore<RuntimeState> &Store) */
 template <typename RuntimeState = FRuntimeState>
 inline TArray<FBridgeRule>
 getBridgeRules(rtk::EnhancedStore<RuntimeState> &Store) {
@@ -27,6 +29,7 @@ getBridgeRules(rtk::EnhancedStore<RuntimeState> &Store) {
       Store.dispatch(rtk::getBridgeRulesThunk()));
 }
 
+/** User Story: As a features cli bridge consumer, I need to invoke load bridge preset through a stable signature so the features cli bridge workflow remains explicit and composable. @fn template <typename RuntimeState = FRuntimeState> inline FDirectiveRuleSet loadBridgePreset(rtk::EnhancedStore<RuntimeState> &Store, const FString &PresetName) */
 template <typename RuntimeState = FRuntimeState>
 inline FDirectiveRuleSet
 loadBridgePreset(rtk::EnhancedStore<RuntimeState> &Store,
@@ -35,6 +38,7 @@ loadBridgePreset(rtk::EnhancedStore<RuntimeState> &Store,
       Store.dispatch(rtk::loadBridgePresetThunk(PresetName)));
 }
 
+/** User Story: As a features cli bridge consumer, I need to invoke list rulesets through a stable signature so the features cli bridge workflow remains explicit and composable. @fn template <typename RuntimeState = FRuntimeState> inline TArray<FDirectiveRuleSet> listRulesets(rtk::EnhancedStore<RuntimeState> &Store) */
 template <typename RuntimeState = FRuntimeState>
 inline TArray<FDirectiveRuleSet>
 listRulesets(rtk::EnhancedStore<RuntimeState> &Store) {
@@ -42,27 +46,12 @@ listRulesets(rtk::EnhancedStore<RuntimeState> &Store) {
       Store.dispatch(rtk::listRulesetsThunk()));
 }
 
+/** User Story: As a features cli bridge consumer, I need to invoke list rule presets through a stable signature so the features cli bridge workflow remains explicit and composable. @fn template <typename RuntimeState = FRuntimeState> inline TArray<FString> listRulePresets(rtk::EnhancedStore<RuntimeState> &Store) */
 template <typename RuntimeState = FRuntimeState>
 inline TArray<FString>
 listRulePresets(rtk::EnhancedStore<RuntimeState> &Store) {
   return AsyncAdapters::waitForResult(
       Store.dispatch(rtk::listRulePresetsThunk()));
-}
-
-template <typename RuntimeState = FRuntimeState>
-inline FDirectiveRuleSet
-registerRuleset(rtk::EnhancedStore<RuntimeState> &Store,
-                const FDirectiveRuleSet &Ruleset) {
-  return AsyncAdapters::waitForResult(
-      Store.dispatch(rtk::registerRulesetThunk(Ruleset)));
-}
-
-template <typename RuntimeState = FRuntimeState>
-inline rtk::FEmptyPayload
-deleteRuleset(rtk::EnhancedStore<RuntimeState> &Store,
-              const FString &RulesetId) {
-  return AsyncAdapters::waitForResult(
-      Store.dispatch(rtk::deleteRulesetThunk(RulesetId)));
 }
 
 } // namespace Ops

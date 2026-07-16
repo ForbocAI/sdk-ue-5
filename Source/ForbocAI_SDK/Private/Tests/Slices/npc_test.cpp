@@ -17,21 +17,25 @@ using FNPCTestDispatcher =
     func::ArgDispatcher<ENPCTestActionKind, FNPCTestActionInput,
                         NPCSlice::FNPCSliceState>;
 
+/** User Story: As a tests slices consumer, I need to invoke required npcfield message through a stable signature so the tests slices workflow remains explicit and composable. @fn inline std::string RequiredNPCFieldMessage() */
 inline std::string RequiredNPCFieldMessage() {
   return std::string(TCHAR_TO_UTF8(*TestingNPCFixtures().Labels.RequiredField));
 }
 
+/** User Story: As a tests slices consumer, I need to invoke required npcfield through a stable signature so the tests slices workflow remains explicit and composable. @fn template <typename T> T RequiredNPCField(const func::Maybe<T> &Value) */
 template <typename T>
 T RequiredNPCField(const func::Maybe<T> &Value) {
   return func::requireJust<T>(Value, RequiredNPCFieldMessage());
 }
 
+/** User Story: As a tests slices consumer, I need to invoke npctest slice through a stable signature so the tests slices workflow remains explicit and composable. @fn inline const rtk::Slice<NPCSlice::FNPCSliceState> &NPCTestSlice() */
 inline const rtk::Slice<NPCSlice::FNPCSliceState> &NPCTestSlice() {
   static const rtk::Slice<NPCSlice::FNPCSliceState> Slice =
       NPCSlice::createNPCSlice();
   return Slice;
 }
 
+/** User Story: As a tests slices consumer, I need to invoke npctest info through a stable signature so the tests slices workflow remains explicit and composable. @fn inline FNPCInternalState NPCTestInfo(const FNPCTestAction &Action) */
 inline FNPCInternalState NPCTestInfo(const FNPCTestAction &Action) {
   FNPCInternalState Info;
   Info.Id = RequiredNPCField(Action.Id);
@@ -40,6 +44,7 @@ inline FNPCInternalState NPCTestInfo(const FNPCTestAction &Action) {
   return Info;
 }
 
+/** User Story: As a tests slices consumer, I need to invoke build npctest dispatcher through a stable signature so the tests slices workflow remains explicit and composable. @fn inline FNPCTestDispatcher BuildNPCTestDispatcher() */
 inline FNPCTestDispatcher BuildNPCTestDispatcher() {
   FNPCTestDispatcher Dispatcher =
       func::create_arg_dispatcher<ENPCTestActionKind, FNPCTestActionInput,
@@ -119,6 +124,7 @@ inline FNPCTestDispatcher BuildNPCTestDispatcher() {
   return Dispatcher;
 }
 
+/** User Story: As a tests slices consumer, I need to invoke apply npctest action through a stable signature so the tests slices workflow remains explicit and composable. @fn inline NPCSlice::FNPCSliceState ApplyNPCTestAction(const NPCSlice::FNPCSliceState &State, const FNPCTestAction &Action) */
 inline NPCSlice::FNPCSliceState
 ApplyNPCTestAction(const NPCSlice::FNPCSliceState &State,
                    const FNPCTestAction &Action) {
@@ -130,6 +136,7 @@ ApplyNPCTestAction(const NPCSlice::FNPCSliceState &State,
           &Dispatcher, &Action.Kind, &Input}));
 }
 
+/** User Story: As a tests slices consumer, I need to invoke test npcexpected through a stable signature so the tests slices workflow remains explicit and composable. @fn template <typename T> void TestNPCExpected(FAutomationTestBase &Test, const FString &Label, const func::Maybe<T> &Expected, const func::Maybe<T> &Actual) */
 template <typename T>
 void TestNPCExpected(FAutomationTestBase &Test, const FString &Label,
                      const func::Maybe<T> &Expected,
@@ -149,6 +156,7 @@ void TestNPCExpected(FAutomationTestBase &Test, const FString &Label,
       []() { return true; });
 }
 
+/** User Story: As a tests slices consumer, I need to invoke test npcexpected through a stable signature so the tests slices workflow remains explicit and composable. @fn template <typename T> void TestNPCExpected(FAutomationTestBase &Test, const FString &Label, const func::Maybe<T> &Expected, const T &Actual) */
 template <typename T>
 void TestNPCExpected(FAutomationTestBase &Test, const FString &Label,
                      const func::Maybe<T> &Expected, const T &Actual) {
@@ -162,6 +170,7 @@ IMPLEMENT_COMPLEX_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
+/** User Story: As a tests slices consumer, I need to invoke get tests through a stable signature so the tests slices workflow remains explicit and composable. @fn void FNPCTest::GetTests(TArray<FString> &Names, TArray<FString> &Commands) const */
 void FNPCTest::GetTests(TArray<FString> &Names,
                         TArray<FString> &Commands) const {
   func::for_each_array<FNPCTestScenario>(
@@ -172,6 +181,7 @@ void FNPCTest::GetTests(TArray<FString> &Names,
       });
 }
 
+/** User Story: As a tests slices consumer, I need to invoke run test through a stable signature so the tests slices workflow remains explicit and composable. @fn bool FNPCTest::RunTest(const FString &Parameters) */
 bool FNPCTest::RunTest(const FString &Parameters) {
   const FNPCTestFixtures &Fixtures = TestingNPCFixtures();
   const func::Maybe<FNPCTestScenario> Scenario =
@@ -181,7 +191,7 @@ bool FNPCTest::RunTest(const FString &Parameters) {
       Scenario,
       [this, &Fixtures](const FNPCTestScenario &Value) {
         func::fold_array<FNPCTestStep, NPCSlice::FNPCSliceState>(
-            Value.Steps, NPCSlice::FNPCSliceState(),
+            Value.Steps, NPCTestSlice().InitialState,
             [this, &Fixtures](const NPCSlice::FNPCSliceState &State,
                               const FNPCTestStep &Step) {
               const auto Next = ApplyNPCTestAction(State, Step.Action);

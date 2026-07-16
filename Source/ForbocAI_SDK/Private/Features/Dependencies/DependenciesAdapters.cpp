@@ -1,8 +1,9 @@
 #include "Features/Dependencies/DependenciesAdapters.h"
 #include "Features/Async/AsyncAdapters.h"
-#include "Features/Memory/Local/Storage/StorageAdapters.h"
+#include "Features/Dependencies/Download/DownloadAdapters.h"
 #include "Features/Dependencies/Process/DependenciesProcessAdapters.h"
 #include "Features/Dependencies/Manifest/ManifestAdapters.h"
+#include "Features/Memory/Local/Storage/Sqlite/Connection/ConnectionAdapters.h"
 #include "Features/Vector/VectorAdapters.h"
 #include "HAL/PlatformFileManager.h"
 #include "Interfaces/IPluginManager.h"
@@ -18,6 +19,7 @@ struct FDependenciesPaths {
   FString Vectors;
 };
 
+/** User Story: As a features dependencies consumer, I need to invoke dependencies paths through a stable signature so the features dependencies workflow remains explicit and composable. @fn FDependenciesPaths dependenciesPaths() */
 FDependenciesPaths dependenciesPaths() {
   const Dependencies::Manifest::FManifest &Settings =
       Dependencies::Manifest::manifest();
@@ -35,10 +37,12 @@ FDependenciesPaths dependenciesPaths() {
           Infrastructure / Settings.VectorsDirectory};
 }
 
+/** User Story: As a features dependencies consumer, I need to invoke copy file through a stable signature so the features dependencies workflow remains explicit and composable. @fn bool copyFile(const FString &Source, const FString &Destination) */
 bool copyFile(const FString &Source, const FString &Destination) {
   return IFileManager::Get().Copy(*Destination, *Source) == COPY_OK;
 }
 
+/** User Story: As a features dependencies consumer, I need to invoke download archive through a stable signature so the features dependencies workflow remains explicit and composable. @fn bool downloadArchive(const FString &Url, const FString &Destination) */
 bool downloadArchive(const FString &Url, const FString &Destination) {
   const Dependencies::Manifest::FManifest &Settings =
       Dependencies::Manifest::manifest();
@@ -49,7 +53,8 @@ bool downloadArchive(const FString &Url, const FString &Destination) {
              : [&]() {
                  try {
                    AsyncAdapters::waitForResult(
-                       Native::File::DownloadBinary(Url, Destination),
+                       Dependencies::DownloadAdapters::downloadBinary(
+                           Url, Destination),
                        Settings.DownloadTimeoutSeconds);
                    return true;
                  } catch (const std::exception &Error) {
@@ -62,6 +67,7 @@ bool downloadArchive(const FString &Url, const FString &Destination) {
                }();
 }
 
+/** User Story: As a features dependencies consumer, I need to invoke install sqlite through a stable signature so the features dependencies workflow remains explicit and composable. @fn bool installSqlite(const FDependenciesPaths &Paths) */
 bool installSqlite(const FDependenciesPaths &Paths) {
   const Dependencies::Manifest::FSqlite &Settings =
       Dependencies::Manifest::manifest().Sqlite;
@@ -99,6 +105,7 @@ bool installSqlite(const FDependenciesPaths &Paths) {
                }();
 }
 
+/** User Story: As a features dependencies consumer, I need to invoke resolve candidate paths through a stable signature so the features dependencies workflow remains explicit and composable. @fn TArray<FString> resolveCandidatePaths(const FString &Root, const TArray<FString> &Candidates) */
 TArray<FString> resolveCandidatePaths(const FString &Root,
                                       const TArray<FString> &Candidates) {
   return func::map_array<FString, FString>(
@@ -107,6 +114,7 @@ TArray<FString> resolveCandidatePaths(const FString &Root,
       });
 }
 
+/** User Story: As a features dependencies consumer, I need to invoke first existing path through a stable signature so the features dependencies workflow remains explicit and composable. @fn FString firstExistingPath(const TArray<FString> &Candidates) */
 FString firstExistingPath(const TArray<FString> &Candidates) {
   return func::match(
       func::find_array<FString>(Candidates, [](const FString &Candidate) {
@@ -117,6 +125,7 @@ FString firstExistingPath(const TArray<FString> &Candidates) {
       []() { return FString(); });
 }
 
+/** User Story: As a features dependencies consumer, I need to invoke install sqlite vec through a stable signature so the features dependencies workflow remains explicit and composable. @fn bool installSqliteVec(const FDependenciesPaths &Paths) */
 bool installSqliteVec(const FDependenciesPaths &Paths) {
   const Dependencies::Manifest::FSqliteVec &Settings =
       Dependencies::Manifest::manifest().SqliteVec;
@@ -170,6 +179,7 @@ bool installSqliteVec(const FDependenciesPaths &Paths) {
                }();
 }
 
+/** User Story: As a features dependencies consumer, I need to invoke install native assets through a stable signature so the features dependencies workflow remains explicit and composable. @fn bool installNativeAssets(const FDependenciesPaths &Paths) */
 bool installNativeAssets(const FDependenciesPaths &Paths) {
   IPlatformFile &PlatformFile =
       FPlatformFileManager::Get().GetPlatformFile();
@@ -185,6 +195,7 @@ bool installNativeAssets(const FDependenciesPaths &Paths) {
 
 namespace DependenciesAdapters {
 
+/** User Story: As a features dependencies consumer, I need to invoke check native dependencies adapter through a stable signature so the features dependencies workflow remains explicit and composable. @fn FNativeDependenciesReport checkNativeDependenciesAdapter() */
 FNativeDependenciesReport checkNativeDependenciesAdapter() {
   const Dependencies::Manifest::FManifest &Settings =
       Dependencies::Manifest::manifest();
@@ -215,6 +226,7 @@ FNativeDependenciesReport checkNativeDependenciesAdapter() {
   return Report;
 }
 
+/** User Story: As a features dependencies consumer, I need to invoke clear vector artifacts adapter through a stable signature so the features dependencies workflow remains explicit and composable. @fn FString clearVectorArtifactsAdapter() */
 FString clearVectorArtifactsAdapter() {
   const FString Vectors = dependenciesPaths().Vectors;
   return !FPlatformFileManager::Get().GetPlatformFile().DirectoryExists(
@@ -225,6 +237,7 @@ FString clearVectorArtifactsAdapter() {
                    : FString();
 }
 
+/** User Story: As a features dependencies consumer, I need to invoke setup native dependencies adapter through a stable signature so the features dependencies workflow remains explicit and composable. @fn FDependenciesResult setupNativeDependenciesAdapter(const FDependenciesOptions &Options) */
 FDependenciesResult setupNativeDependenciesAdapter(const FDependenciesOptions &Options) {
   const Dependencies::Manifest::FManifest &Settings =
       Dependencies::Manifest::manifest();
@@ -245,15 +258,18 @@ FDependenciesResult setupNativeDependenciesAdapter(const FDependenciesOptions &O
   FPlatformFileManager::Get().GetPlatformFile().CreateDirectoryTree(
       *Paths.Vectors);
   const FString DatabasePath = Paths.Vectors / Settings.DatabaseFile;
-  Native::Sqlite::DB Database =
-      Result.Vector.bOk ? Native::Sqlite::Open(DatabasePath) : nullptr;
-  Result.Memory.bOk = Database != nullptr;
+  const func::Either<FString, Native::Sqlite::DB> Database =
+      Result.Vector.bOk
+          ? Native::Sqlite::open(DatabasePath)
+          : func::make_left<FString, Native::Sqlite::DB>(
+                Settings.Readiness.DatabaseFailed);
+  Result.Memory.bOk = !Database.isLeft;
   Result.Memory.Detail =
       Result.Memory.bOk
           ? FString::Format(*Settings.Readiness.DatabaseReadyFormat,
                             {DatabasePath})
           : Settings.Readiness.DatabaseFailed;
-  Database ? (Native::Sqlite::Close(Database), void()) : void();
+  Database.isLeft ? void() : Native::Sqlite::close(Database.right);
   return Result;
 }
 

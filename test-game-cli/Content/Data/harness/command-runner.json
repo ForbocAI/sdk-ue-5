@@ -1,0 +1,45 @@
+{
+  "syntax": {
+    "unknownCommandKey": "unknown",
+    "commandSeparator": "_",
+    "textOption": "--text",
+    "rootCommand": "forbocai",
+    "invalidCommandMessage": "Not a forbocai command"
+  },
+  "commands": {
+    "npcPrefix": "npc_",
+    "memoryPrefix": "memory_",
+    "soulPrefix": "soul_",
+    "ghostPrefix": "ghost_",
+    "npcCreate": "npc_create",
+    "ghostRun": "ghost_run",
+    "soulExport": "soul_export",
+    "soulImport": "soul_import"
+  },
+  "aliases": {
+    "ghostSession": "ghost-session",
+    "soulTransaction": "soul-transaction"
+  },
+  "limits": {
+    "rootTokenCount": 1,
+    "domainTokenCount": 2,
+    "commandTokenCount": 3,
+    "firstTokenIndex": 0,
+    "domainTokenIndex": 1,
+    "actionTokenIndex": 2,
+    "argumentStartIndex": 3,
+    "firstArgumentIndex": 0,
+    "nextIndex": 1
+  },
+  "quotes": {
+    "doubleQuote": "\"",
+    "singleQuote": "'"
+  },
+  "messages": {
+    "unresolvedAlias": "Command dependency unavailable for {0}: alias {1} was not captured by a successful prerequisite.",
+    "outputAssertionAliasMissing": "Output assertion failed for {0}: alias {1} was not captured.",
+    "outputAssertionValueMissing": "Output assertion failed for {0}: output did not include the value captured as {1}.",
+    "outputAssertionKindUnsupported": "Output assertion failed for {0}: the assertion kind is unsupported.",
+    "outputAssertionFailure": "{0}\nCommand output:\n{1}"
+  }
+}

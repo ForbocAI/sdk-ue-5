@@ -6,6 +6,7 @@
 namespace DirectiveSlice {
 namespace Actions {
 
+/** User Story: As a features directive consumer, I need to invoke directive run started action creator through a stable signature so the features directive workflow remains explicit and composable. @fn inline const rtk::ActionCreator<FDirectiveRunStartedPayload> & directiveRunStartedActionCreator() */
 inline const rtk::ActionCreator<FDirectiveRunStartedPayload> &
 directiveRunStartedActionCreator() {
   static const rtk::ActionCreator<FDirectiveRunStartedPayload> ActionCreator =
@@ -14,6 +15,7 @@ directiveRunStartedActionCreator() {
   return ActionCreator;
 }
 
+/** User Story: As a features directive consumer, I need to invoke directive received action creator through a stable signature so the features directive workflow remains explicit and composable. @fn inline const rtk::ActionCreator<FDirectiveReceivedPayload> & directiveReceivedActionCreator() */
 inline const rtk::ActionCreator<FDirectiveReceivedPayload> &
 directiveReceivedActionCreator() {
   static const rtk::ActionCreator<FDirectiveReceivedPayload> ActionCreator =
@@ -22,6 +24,7 @@ directiveReceivedActionCreator() {
   return ActionCreator;
 }
 
+/** User Story: As a features directive consumer, I need to invoke verdict validated action creator through a stable signature so the features directive workflow remains explicit and composable. @fn inline const rtk::ActionCreator<FVerdictValidatedPayload> & verdictValidatedActionCreator() */
 inline const rtk::ActionCreator<FVerdictValidatedPayload> &
 verdictValidatedActionCreator() {
   static const rtk::ActionCreator<FVerdictValidatedPayload> ActionCreator =
@@ -30,6 +33,7 @@ verdictValidatedActionCreator() {
   return ActionCreator;
 }
 
+/** User Story: As a features directive consumer, I need to invoke directive run failed action creator through a stable signature so the features directive workflow remains explicit and composable. @fn inline const rtk::ActionCreator<FDirectiveRunFailedPayload> & directiveRunFailedActionCreator() */
 inline const rtk::ActionCreator<FDirectiveRunFailedPayload> &
 directiveRunFailedActionCreator() {
   static const rtk::ActionCreator<FDirectiveRunFailedPayload> ActionCreator =
@@ -38,6 +42,7 @@ directiveRunFailedActionCreator() {
   return ActionCreator;
 }
 
+/** User Story: As a features directive consumer, I need to invoke clear directives for npc action creator through a stable signature so the features directive workflow remains explicit and composable. @fn inline const rtk::ActionCreator<FString> & clearDirectivesForNpcActionCreator() */
 inline const rtk::ActionCreator<FString> &
 clearDirectivesForNpcActionCreator() {
   static const rtk::ActionCreator<FString> ActionCreator =
@@ -45,6 +50,7 @@ clearDirectivesForNpcActionCreator() {
   return ActionCreator;
 }
 
+/** User Story: As a features directive consumer, I need to invoke directive run started through a stable signature so the features directive workflow remains explicit and composable. @fn inline rtk::AnyAction directiveRunStarted(const FString &Id, const FString &NpcId, const FString &Observation) */
 inline rtk::AnyAction directiveRunStarted(const FString &Id,
                                           const FString &NpcId,
                                           const FString &Observation) {
@@ -52,21 +58,25 @@ inline rtk::AnyAction directiveRunStarted(const FString &Id,
       FDirectiveRunStartedPayload{Id, NpcId, Observation});
 }
 
+/** User Story: As a features directive consumer, I need to invoke directive received through a stable signature so the features directive workflow remains explicit and composable. @fn inline rtk::AnyAction directiveReceived(const FString &Id, const FDirectiveResponse &Response) */
 inline rtk::AnyAction directiveReceived(const FString &Id,
                                         const FDirectiveResponse &Response) {
   return directiveReceivedActionCreator()(FDirectiveReceivedPayload{Id, Response});
 }
 
+/** User Story: As a features directive consumer, I need to invoke verdict validated through a stable signature so the features directive workflow remains explicit and composable. @fn inline rtk::AnyAction verdictValidated(const FString &Id, const FVerdictResponse &Verdict) */
 inline rtk::AnyAction verdictValidated(const FString &Id,
                                        const FVerdictResponse &Verdict) {
   return verdictValidatedActionCreator()(FVerdictValidatedPayload{Id, Verdict});
 }
 
+/** User Story: As a features directive consumer, I need to invoke directive run failed through a stable signature so the features directive workflow remains explicit and composable. @fn inline rtk::AnyAction directiveRunFailed(const FString &Id, const FString &Error) */
 inline rtk::AnyAction directiveRunFailed(const FString &Id,
                                          const FString &Error) {
   return directiveRunFailedActionCreator()(FDirectiveRunFailedPayload{Id, Error});
 }
 
+/** User Story: As a features directive consumer, I need to invoke clear directives for npc through a stable signature so the features directive workflow remains explicit and composable. @fn inline rtk::AnyAction clearDirectivesForNpc(const FString &NpcId) */
 inline rtk::AnyAction clearDirectivesForNpc(const FString &NpcId) {
   return clearDirectivesForNpcActionCreator()(NpcId);
 }

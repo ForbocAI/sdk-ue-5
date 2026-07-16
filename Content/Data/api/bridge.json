@@ -1,0 +1,25 @@
+{
+  "context": {
+    "npcState": "npcState",
+    "worldState": "worldState",
+    "constraints": "constraints"
+  },
+  "validateRequest": {
+    "action": "action",
+    "context": "context"
+  },
+  "validationResult": {
+    "valid": "valid",
+    "reason": "reason",
+    "correctedAction": "correctedAction"
+  },
+  "rule": {
+    "id": "brRuleId",
+    "description": "ruleDescription",
+    "actions": "affectedActions"
+  },
+  "errors": {
+    "invalidValidation": "Invalid bridge validation response",
+    "invalidRules": "Invalid bridge rules response"
+  }
+}

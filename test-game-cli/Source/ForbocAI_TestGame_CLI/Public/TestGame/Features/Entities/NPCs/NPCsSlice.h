@@ -7,6 +7,7 @@
 
 namespace TestGame {
 
+/** User Story: As a features entities npcs consumer, I need to invoke create npcs slice through a stable signature so the features entities npcs workflow remains explicit and composable. @fn inline rtk::Slice<FNPCsSliceState> CreateNPCsSlice() */
 inline rtk::Slice<FNPCsSliceState> CreateNPCsSlice() {
   return rtk::createSlice<FNPCsSliceState>(
       TEXT("testgame/npcs"), FNPCsSliceState(),

@@ -12,8 +12,6 @@ enum class EBridgeTestActionKind : uint8 {
   ActivePresetsReceived,
   ActivePresetAdded,
   RulesetsReceived,
-  RulesetRegistered,
-  RulesetDeleted,
   PresetIdsReceived,
   ValidationCleared,
   Inspect,

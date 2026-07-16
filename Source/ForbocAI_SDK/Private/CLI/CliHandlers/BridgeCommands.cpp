@@ -1,65 +1,22 @@
-// User Story: As a developer, I need this module to function.
 #include "CLI/CliHandlers.h"
+#include "Features/CLI/Bridge/CLIBridgeAdapters.h"
+#include "Features/CLI/Bridge/CLIBridgeSelectors.h"
 #include "Features/CLI/Bridge/CLIBridgeThunks.h"
+#include "Features/CLI/CLISelectors.h"
+#include "Features/CLI/Presentation/PresentationAdapters.h"
 #include "Features/API/Serialization/APISerializationAdapters.h"
 #include "Store.h"
 
 namespace {
 
-struct FDecodedBridgePayload {
-  FAgentAction Action;
-  FBridgeValidationContext Context;
-  FString NpcId;
-};
-
-FString JsonObjectField(const TSharedPtr<FJsonObject> &Object,
-                        const FString &FieldName) {
-  return Object.IsValid() && Object->HasTypedField<EJson::Object>(FieldName)
-             ? JsonInterop::StringifyObject(Object->GetObjectField(FieldName))
-             : FString(TEXT("{}"));
+/** User Story: As a cli cli handlers consumer, I need to invoke success through a stable signature so the cli cli handlers workflow remains explicit and composable. @fn CLIOps::Handlers::Result Success(const FString &Message) */
+CLIOps::Handlers::Result Success(const FString &Message) {
+  return CLIOps::Handlers::Result::Success(TCHAR_TO_UTF8(*Message));
 }
 
-FString NumberPayloadJson(const FString &FieldName, double Value) {
-  const TSharedPtr<FJsonObject> Payload = MakeShared<FJsonObject>();
-  Payload->SetNumberField(FieldName, Value);
-  return JsonInterop::StringifyObject(Payload);
-}
-
-bool DecodeBridgePayload(const FString &Json,
-                         FDecodedBridgePayload &Decoded) {
-  TSharedPtr<FJsonObject> Root;
-  return !JsonInterop::ParseJsonObject(Json, Root) || !Root.IsValid() ||
-                 !Root->HasTypedField<EJson::Object>(TEXT("action"))
-             ? false
-             : [&]() {
-                 const TSharedPtr<FJsonObject> ActionObject =
-                     Root->GetObjectField(TEXT("action"));
-                 Decoded.Action = JsonInterop::ActionFromObject(ActionObject);
-
-                 double Distance = 0.0;
-                 ActionObject->TryGetNumberField(TEXT("distance"), Distance)
-                     ? (Decoded.Action.PayloadJson =
-                            NumberPayloadJson(TEXT("distance"), Distance),
-                        void())
-                     : void();
-
-                 Root->TryGetStringField(TEXT("npcId"), Decoded.NpcId);
-
-                 Root->HasTypedField<EJson::Object>(TEXT("context"))
-                     ? [&]() {
-                         const TSharedPtr<FJsonObject> ContextObject =
-                             Root->GetObjectField(TEXT("context"));
-                         Decoded.Context.NpcStateJson = JsonObjectField(
-                             ContextObject, TEXT("npcState"));
-                         Decoded.Context.WorldStateJson = JsonObjectField(
-                             ContextObject, TEXT("worldState"));
-                         Decoded.Context.ConstraintsJson = JsonObjectField(
-                             ContextObject, TEXT("constraints"));
-                       }()
-                     : void();
-
-                 return !Decoded.Action.Type.IsEmpty();
-               }();
+/** User Story: As a cli cli handlers consumer, I need to invoke failure through a stable signature so the cli cli handlers workflow remains explicit and composable. @fn CLIOps::Handlers::Result Failure(const FString &Message) */
+CLIOps::Handlers::Result Failure(const FString &Message) {
+  return CLIOps::Handlers::Result::Failure(TCHAR_TO_UTF8(*Message));
 }
 
 } // namespace
@@ -67,95 +24,142 @@ bool DecodeBridgePayload(const FString &Json,
 namespace CLIOps {
 namespace Handlers {
 
+/** User Story: As a cli cli handlers consumer, I need to invoke handle bridge through a stable signature so the cli cli handlers workflow remains explicit and composable. @fn HandlerResult HandleBridge(rtk::EnhancedStore<FRuntimeState> &Store, const FString &CommandKey, const TArray<FString> &Args) */
 HandlerResult HandleBridge(rtk::EnhancedStore<FRuntimeState> &Store,
-                          const FString &CommandKey,
-                          const TArray<FString> &Args) {
+                           const FString &CommandKey,
+                           const TArray<FString> &Args) {
   using func::just;
   using func::nothing;
+  using ForbocAI::CLI::Presentation::formatCliMessage;
+  const ForbocAI::CLI::FCLIState &CLIState = Store.getState().CLI;
+  const ForbocAI::CLI::FCLICommandRoles &Roles =
+      ForbocAI::CLI::selectCliCommandRoles(CLIState);
+  const ForbocAI::CLI::Bridge::FCLIBridgeState &State =
+      ForbocAI::CLI::Bridge::selectCliBridge(CLIState);
+  const int32 First = CLIState.Parsing.FirstTokenIndex;
 
-  return CommandKey == TEXT("bridge_validate")
-             ? (Args.Num() < 1
-                    ? just(Result::Failure(
-                          "Usage: bridge_validate <actionJson>"))
+  return CommandKey == Roles.BridgeValidate
+             ? (Args.Num() < State.Limits.RequiredArgumentCount
+                    ? just(Failure(State.Messages.ValidateUsage))
                     : [&]() -> HandlerResult {
-                        FDecodedBridgePayload Payload;
-                        return !DecodeBridgePayload(Args[0], Payload)
-                                   ? just(Result::Failure(
-                                         "Usage: bridge_validate <inline-json-payload|preset-macro>"))
-                                   : [&]() -> HandlerResult {
-                                       FValidationResult VResult =
-                                           Ops::validateBridgePayload(
-                                               Store, Payload.Action,
-                                               Payload.Context,
-                                               Payload.NpcId);
-                                       UE_LOG(
-                                           LogTemp, Display,
-                                           TEXT("Validation: %s"),
-                                           VResult.bValid ? TEXT("PASS")
-                                                          : TEXT("FAIL"));
-                                       return just(Result::Success(
-                                           "Bridge validation done"));
-                                     }();
+                        const func::Maybe<
+                            ForbocAI::CLI::Bridge::FDecodedBridgePayload>
+                            Payload =
+                                ForbocAI::CLI::Bridge::decodeBridgePayload(
+                                    Args[First], State);
+                        return func::match(
+                            Payload,
+                            [&Store, &State](
+                                const ForbocAI::CLI::Bridge::
+                                    FDecodedBridgePayload &Decoded)
+                                -> HandlerResult {
+                              const FValidationResult Result =
+                                  Ops::validateBridgePayload(
+                                      Store, Decoded.Action, Decoded.Context,
+                                      Decoded.NpcId);
+                              ForbocAI::CLI::Presentation::logCliMessage(
+                                  formatCliMessage(
+                                      State.Messages.Validation,
+                                      Result.bValid ? State.Messages.Pass
+                                                    : State.Messages.Fail));
+                              ForbocAI::CLI::Presentation::logCliMessageWhen(
+                                  !Result.Reason.IsEmpty(),
+                                  formatCliMessage(State.Messages.Reason,
+                                                   Result.Reason));
+                              ForbocAI::CLI::Presentation::logCliMessageWhen(
+                                  !Result.CorrectedAction.Type.IsEmpty(),
+                                  formatCliMessage(
+                                      State.Messages.CorrectedAction,
+                                      JsonInterop::StringifyObject(
+                                          JsonInterop::ActionToObject(
+                                              Result.CorrectedAction))));
+                              return just(
+                                  Success(State.Messages.ValidationDone));
+                            },
+                            [&State]() -> HandlerResult {
+                              return just(
+                                  Failure(State.Messages.ValidateUsage));
+                            });
                       }())
-         : CommandKey == TEXT("bridge_rules")
+         : CommandKey == Roles.BridgeRules
              ? [&]() -> HandlerResult {
-                 TArray<FBridgeRule> Rules = Ops::getBridgeRules(Store);
-                 UE_LOG(LogTemp, Display,
-                        TEXT("Found %d bridge rules"), Rules.Num());
-                 return just(
-                     Result::Success("Bridge rules listed"));
+                 ForbocAI::CLI::Presentation::logCliMessage(
+                     State.Messages.FetchingRules);
+                 const TArray<FBridgeRule> Rules =
+                     Ops::getBridgeRules(Store);
+                 Rules.Num() == State.Limits.EmptyItemCount
+                     ? ForbocAI::CLI::Presentation::logCliMessage(
+                           State.Messages.NoRules)
+                     : func::for_each_array<FBridgeRule>(
+                           Rules, [&State](const FBridgeRule &Rule) {
+                             ForbocAI::CLI::Presentation::logCliMessage(
+                                 formatCliMessage(
+                                     State.Messages.RuleName,
+                                     ForbocAI::CLI::Bridge::
+                                         selectBridgeRuleName(Rule, State)));
+                             ForbocAI::CLI::Presentation::logCliMessage(
+                                 formatCliMessage(
+                                     State.Messages.Description,
+                                     ForbocAI::CLI::Bridge::
+                                         selectBridgeRuleDescription(Rule,
+                                                                     State)));
+                             ForbocAI::CLI::Presentation::logCliMessage(
+                                 formatCliMessage(
+                                     State.Messages.Actions,
+                                     ForbocAI::CLI::Bridge::
+                                         selectBridgeRuleActions(Rule,
+                                                                 State)));
+                           });
+                 return just(Success(State.Messages.RulesListed));
                }()
-         : CommandKey == TEXT("bridge_preset")
-             ? (Args.Num() < 1
-                    ? just(Result::Failure(
-                          "Usage: bridge_preset <presetName>"))
+         : CommandKey == Roles.BridgePreset
+             ? (Args.Num() < State.Limits.RequiredArgumentCount
+                    ? just(Failure(State.Messages.PresetUsage))
                     : [&]() -> HandlerResult {
-                        FDirectiveRuleSet Preset =
-                            Ops::loadBridgePreset(Store, Args[0]);
-                        UE_LOG(LogTemp, Display,
-                               TEXT("Loaded preset: %s"), *Preset.Id);
-                        return just(Result::Success(
-                            "Bridge preset loaded"));
+                        const FDirectiveRuleSet Preset =
+                            Ops::loadBridgePreset(Store, Args[First]);
+                        ForbocAI::CLI::Presentation::logCliMessage(
+                            formatCliMessage(
+                                State.Messages.PresetLoaded,
+                                ForbocAI::CLI::Bridge::selectRulesetId(
+                                    Preset, State),
+                                Preset.RulesetRules.Num()));
+                        return just(Success(State.Messages.PresetDone));
                       }())
-         : CommandKey == TEXT("rules_list")
+         : CommandKey == Roles.RulesList
              ? [&]() -> HandlerResult {
-                 TArray<FDirectiveRuleSet> Rulesets =
+                 const TArray<FDirectiveRuleSet> Rulesets =
                      Ops::listRulesets(Store);
-                 UE_LOG(LogTemp, Display,
-                        TEXT("Found %d rulesets"), Rulesets.Num());
-                 return just(
-                     Result::Success("Rulesets listed"));
+                 Rulesets.Num() == State.Limits.EmptyItemCount
+                     ? ForbocAI::CLI::Presentation::logCliMessage(
+                           State.Messages.NoRulesets)
+                     : func::for_each_array<FDirectiveRuleSet>(
+                           Rulesets,
+                           [&State](const FDirectiveRuleSet &Ruleset) {
+                             ForbocAI::CLI::Presentation::logCliMessage(
+                                 formatCliMessage(
+                                     State.Messages.RulesetItem,
+                                     ForbocAI::CLI::Bridge::selectRulesetId(
+                                         Ruleset, State),
+                                     Ruleset.RulesetRules.Num()));
+                           });
+                 return just(Success(State.Messages.RulesetsListed));
                }()
-         : CommandKey == TEXT("rules_presets")
+         : CommandKey == Roles.RulesPresets
              ? [&]() -> HandlerResult {
-                 TArray<FString> Presets =
+                 const TArray<FString> Presets =
                      Ops::listRulePresets(Store);
-                 UE_LOG(LogTemp, Display,
-                        TEXT("Found %d presets"), Presets.Num());
-                 return just(
-                     Result::Success("Rule presets listed"));
+                 Presets.Num() == State.Limits.EmptyItemCount
+                     ? ForbocAI::CLI::Presentation::logCliMessage(
+                           State.Messages.NoPresets)
+                     : func::for_each_array<FString>(
+                           Presets, [&State](const FString &Preset) {
+                             ForbocAI::CLI::Presentation::logCliMessage(
+                                 formatCliMessage(State.Messages.PresetItem,
+                                                  Preset));
+                           });
+                 return just(Success(State.Messages.PresetsListed));
                }()
-         : CommandKey == TEXT("rules_register")
-             ? (Args.Num() < 1
-                    ? just(Result::Failure(
-                          "Usage: rules_register <rulesetJson>"))
-                    : [&]() -> HandlerResult {
-                        FDirectiveRuleSet Ruleset;
-                        Ruleset.Id = Args[0];
-                        FDirectiveRuleSet Registered =
-                            Ops::registerRuleset(Store, Ruleset);
-                        UE_LOG(LogTemp, Display,
-                               TEXT("Registered ruleset: %s"),
-                               *Registered.Id);
-                        return just(Result::Success(
-                            "Ruleset registered"));
-                      }())
-         : CommandKey == TEXT("rules_delete")
-             ? (Args.Num() < 1
-                    ? just(Result::Failure(
-                          "Usage: rules_delete <rulesetId>"))
-                    : (Ops::deleteRuleset(Store, Args[0]),
-                       just(Result::Success("Ruleset deleted"))))
              : nothing<Result>();
 }
 

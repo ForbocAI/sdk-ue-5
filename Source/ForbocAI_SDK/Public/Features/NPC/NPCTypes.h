@@ -38,6 +38,7 @@ struct FNPCStateLogEntry {
   UPROPERTY(BlueprintReadOnly, Category = "NPC")
   FAgentState State;
 
+  /** User Story: As a features npc consumer, I need to invoke fnpcstate log entry through a stable signature so the features npc workflow remains explicit and composable. @fn FNPCStateLogEntry() */
   FNPCStateLogEntry() : Timestamp(0) {}
 };
 
@@ -66,6 +67,7 @@ struct FNPCInternalState {
   UPROPERTY(BlueprintReadOnly, Category = "NPC")
   TArray<FNPCStateLogEntry> StateLog;
 
+  /** User Story: As a features npc consumer, I need to invoke fnpcinternal state through a stable signature so the features npc workflow remains explicit and composable. @fn FNPCInternalState() */
   FNPCInternalState() : bIsBlocked(false) {}
 };
 

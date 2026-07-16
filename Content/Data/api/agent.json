@@ -1,0 +1,29 @@
+{
+  "persona": {
+    "traits": "traits",
+    "goals": "goals",
+    "relationships": "relationships",
+    "world": "world",
+    "speakingStyle": "speakingStyle",
+    "constraints": "constraints"
+  },
+  "action": {
+    "type": "type",
+    "target": "target",
+    "reason": "reason",
+    "confidence": "confidence",
+    "signature": "signature",
+    "payload": "payload"
+  },
+  "values": {
+    "defaultConfidence": 1.0,
+    "emptyObject": "{}",
+    "minimumTypeLength": 1,
+    "objectType": "object",
+    "numberType": "number",
+    "stringType": "string"
+  },
+  "errors": {
+    "invalidAction": "Invalid agent action response"
+  }
+}

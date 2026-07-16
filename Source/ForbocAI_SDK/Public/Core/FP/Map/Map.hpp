@@ -3,6 +3,7 @@
 #include "Core/FP/Array/Array.hpp"
 
 namespace func {
+/** User Story: As a core fp map consumer, I need to invoke map keys through a stable signature so the core fp map workflow remains explicit and composable. @fn template <typename Key, typename Value> TArray<Key> map_keys(const TMap<Key, Value> &values) */
 template <typename Key, typename Value>
 TArray<Key> map_keys(const TMap<Key, Value> &values) {
   TArray<Key> keys;
@@ -10,12 +11,14 @@ TArray<Key> map_keys(const TMap<Key, Value> &values) {
   return keys;
 }
 
+/** User Story: As a core fp map consumer, I need to invoke append map keys through a stable signature so the core fp map workflow remains explicit and composable. @fn template <typename Key, typename Value> TArray<Key> append_map_keys(TArray<Key> values, const TMap<Key, Value> &map) */
 template <typename Key, typename Value>
 TArray<Key> append_map_keys(TArray<Key> values,
                             const TMap<Key, Value> &map) {
   return append_values<Key>(values, map_keys<Key, Value>(map));
 }
 
+/** User Story: As a core fp map consumer, I need to invoke find map value ptr through a stable signature so the core fp map workflow remains explicit and composable. @fn template <typename Key, typename Value> Maybe<const Value *> find_map_value_ptr(const TMap<Key, Value> &values, const Key &key) */
 template <typename Key, typename Value>
 Maybe<const Value *> find_map_value_ptr(const TMap<Key, Value> &values,
                                         const Key &key) {
@@ -23,6 +26,7 @@ Maybe<const Value *> find_map_value_ptr(const TMap<Key, Value> &values,
   return found ? just<const Value *>(found) : nothing<const Value *>();
 }
 
+/** User Story: As a core fp map consumer, I need to invoke find map value through a stable signature so the core fp map workflow remains explicit and composable. @fn template <typename Key, typename Value> Maybe<Value> find_map_value(const TMap<Key, Value> &values, const Key &key) */
 template <typename Key, typename Value>
 Maybe<Value> find_map_value(const TMap<Key, Value> &values, const Key &key) {
   return match(
@@ -31,12 +35,14 @@ Maybe<Value> find_map_value(const TMap<Key, Value> &values, const Key &key) {
       []() { return nothing<Value>(); });
 }
 
+/** User Story: As a core fp map consumer, I need to invoke map value or through a stable signature so the core fp map workflow remains explicit and composable. @fn template <typename Key, typename Value> Value map_value_or(const TMap<Key, Value> &values, const Key &key, const Value &defaultValue) */
 template <typename Key, typename Value>
 Value map_value_or(const TMap<Key, Value> &values, const Key &key,
                    const Value &defaultValue) {
   return or_else(find_map_value<Key, Value>(values, key), defaultValue);
 }
 
+/** User Story: As a core fp map consumer, I need to invoke update map value when present through a stable signature so the core fp map workflow remains explicit and composable. @fn template <typename Key, typename Value, typename Transform> TMap<Key, Value> update_map_value_when_present(TMap<Key, Value> values, const Key &key, Transform transform) */
 template <typename Key, typename Value, typename Transform>
 TMap<Key, Value> update_map_value_when_present(TMap<Key, Value> values,
                                                const Key &key,
@@ -50,6 +56,7 @@ TMap<Key, Value> update_map_value_when_present(TMap<Key, Value> values,
       [values]() { return values; });
 }
 
+/** User Story: As a core fp map consumer, I need to invoke upsert map value through a stable signature so the core fp map workflow remains explicit and composable. @fn template <typename Key, typename Value, typename Transform> TMap<Key, Value> upsert_map_value(TMap<Key, Value> values, const Key &key, const Value &defaultValue, Transform transform) */
 template <typename Key, typename Value, typename Transform>
 TMap<Key, Value> upsert_map_value(TMap<Key, Value> values, const Key &key,
                                   const Value &defaultValue,
@@ -59,11 +66,13 @@ TMap<Key, Value> upsert_map_value(TMap<Key, Value> values, const Key &key,
   return values;
 }
 
+/** User Story: As a core fp map consumer, I need to invoke map has key through a stable signature so the core fp map workflow remains explicit and composable. @fn template <typename Key, typename Value> std::function<bool(const Key &)> map_has_key(const TMap<Key, Value> &values) */
 template <typename Key, typename Value>
 std::function<bool(const Key &)> map_has_key(const TMap<Key, Value> &values) {
   return [&values](const Key &key) { return values.Contains(key); };
 }
 
+/** User Story: As a core fp map consumer, I need to invoke map array contains through a stable signature so the core fp map workflow remains explicit and composable. @fn template <typename Key, typename Item> bool map_array_contains(const TMap<Key, TArray<Item>> &values, const Key &key, const Item &item) */
 template <typename Key, typename Item>
 bool map_array_contains(const TMap<Key, TArray<Item>> &values,
                         const Key &key, const Item &item) {
@@ -75,6 +84,7 @@ bool map_array_contains(const TMap<Key, TArray<Item>> &values,
       []() { return false; });
 }
 
+/** User Story: As a core fp map consumer, I need to invoke map values equal through a stable signature so the core fp map workflow remains explicit and composable. @fn template <typename Key, typename Value, typename Equals> bool map_values_equal(const TMap<Key, Value> &left, const TMap<Key, Value> &right, Equals equals) */
 template <typename Key, typename Value, typename Equals>
 bool map_values_equal(const TMap<Key, Value> &left,
                       const TMap<Key, Value> &right, Equals equals) {
@@ -92,6 +102,7 @@ bool map_values_equal(const TMap<Key, Value> &left,
              });
 }
 
+/** User Story: As a core fp map consumer, I need to invoke require map key through a stable signature so the core fp map workflow remains explicit and composable. @fn template <typename Key, typename Value, typename ErrorMessage> auto require_map_key(const TMap<Key, Value> &values, ErrorMessage error_message) -> std::function<Either<decltype(error_message( std::declval<const Key &>())), bool>(const Key &)> */
 template <typename Key, typename Value, typename ErrorMessage>
 auto require_map_key(const TMap<Key, Value> &values,
                      ErrorMessage error_message)

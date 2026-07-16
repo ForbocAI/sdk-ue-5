@@ -14,43 +14,28 @@
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Protocol/ProtocolThunks.h"
 #include "Features/Config/ConfigAdapters.h"
+#include "Protocol/NPC/ProcessNPCTestAdapters.h"
 #include "Store.h"
 
 using namespace rtk;
 
 namespace {
 
-bool SkipProcessNpcIntegration() {
-  return FPlatformMisc::GetEnvironmentVariable(
-             TEXT("FORBOC_RUN_PROCESS_NPC_TESTS"))
-             .IsEmpty()
-         ? []() {
-             UE_LOG(LogTemp, Display,
-                    TEXT("Skipping processNPC integration tests until API work resumes."));
-             return true;
-           }()
-         : false;
+/** User Story: As a tests integration consumer, I need to invoke configure live api through a stable signature so the tests integration workflow remains explicit and composable. @fn bool ConfigureLiveApi(FAutomationTestBase &Test) */
+bool ConfigureLiveApi(FAutomationTestBase &Test) {
+  const FString ApiKey =
+      FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_API_KEY"));
+  if (ApiKey.IsEmpty()) {
+    Test.AddError(
+        TEXT("FORBOCAI_API_KEY is required for processNPC integration"));
+    return false;
+  }
+
+  SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(), ApiKey);
+  return true;
 }
 
 } // namespace
-
-/**
- * Shared state for latent async: completed, success, store, response, error
- * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
- */
-struct FProcessNPCTestState {
-  bool bCompleted = false;
-  bool bSuccess = false;
-  FString Error;
-  FAgentResponse Response;
-  TSharedPtr<rtk::EnhancedStore<FRuntimeState>> Store;
-};
-
-struct FProcessNPCParams {
-  FString NpcId;
-  FString Input;
-  FString Persona;
-};
 
 /**
  * Starts processNPC and polls until complete. Uses SDKConfig resolution.
@@ -58,30 +43,16 @@ struct FProcessNPCParams {
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
     FProcessNPCWaitComplete, TSharedPtr<FProcessNPCTestState>, State,
-    FProcessNPCParams, Params, int32, PollCount);
+    FProcessNPCTestParams, Params, int32, PollCount);
 /**
  * User Story: As a developer, I need Update to fulfill its role in the module.
+ * @fn bool FProcessNPCWaitComplete::Update()
  */
 bool FProcessNPCWaitComplete::Update() {
   const int32 MaxPolls = 300;  // ~15s at 50ms
 
   if (!State->Store.IsValid()) {
-    const TSharedPtr<FProcessNPCTestState> SharedState = State;
-    State->Store = MakeShared<rtk::EnhancedStore<FRuntimeState>>(createRuntimeStore());
-    State->Store->dispatch(rtk::processNPC(
-        Params.NpcId, Params.Input, FString(TEXT("{") TEXT("}")), Params.Persona, FAgentState(),
-        rtk::LocalProtocolHandlerContext()))
-        .then([SharedState](const FAgentResponse &R) {
-          SharedState->bCompleted = true;
-          SharedState->bSuccess = true;
-          SharedState->Response = R;
-        })
-        .catch_([SharedState](std::string E) {
-          SharedState->bCompleted = true;
-          SharedState->bSuccess = false;
-          SharedState->Error = FString(UTF8_TO_TCHAR(E.c_str()));
-        })
-        .execute();
+    ProcessNPCTestAdapters::Start(State, Params);
     return false;
   }
   if (State->bCompleted)
@@ -110,19 +81,17 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FProcessNPCLiveFinalizeValidTest::RunTest(const FString &Parameters)
  */
 bool FProcessNPCLiveFinalizeValidTest::RunTest(const FString &Parameters) {
-  if (SkipProcessNpcIntegration()) {
+  if (!ConfigureLiveApi(*this)) {
     return true;
   }
-  SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(),
-                          FPlatformMisc::GetEnvironmentVariable(
-                              TEXT("FORBOCAI_API_KEY")));
 
   auto State = MakeShared<FProcessNPCTestState>();
   ADD_LATENT_AUTOMATION_COMMAND(FProcessNPCWaitComplete(
-      State, FProcessNPCParams{TEXT("npc_valid_1"), TEXT("Hello!"),
-                               TEXT("A friendly merchant")},
+      State, FProcessNPCTestParams{TEXT("npc_valid_1"), TEXT("Hello!"),
+                                   TEXT("A friendly merchant")},
       0));
 
   ADD_LATENT_AUTOMATION_COMMAND(FDelayedFunctionLatentCommand(
@@ -182,20 +151,18 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FProcessNPCLiveFinalizeInvalidTest::RunTest(const FString &Parameters)
  */
 bool FProcessNPCLiveFinalizeInvalidTest::RunTest(const FString &Parameters) {
-  if (SkipProcessNpcIntegration()) {
+  if (!ConfigureLiveApi(*this)) {
     return true;
   }
-  SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(),
-                          FPlatformMisc::GetEnvironmentVariable(
-                              TEXT("FORBOCAI_API_KEY")));
 
   auto State = MakeShared<FProcessNPCTestState>();
   ADD_LATENT_AUTOMATION_COMMAND(FProcessNPCWaitComplete(
-      State, FProcessNPCParams{TEXT("npc_block_1"),
-                               TEXT("I murder the innocent villager."),
-                               TEXT("A village guard")},
+      State, FProcessNPCTestParams{TEXT("npc_block_1"),
+                                   TEXT("I murder the innocent villager."),
+                                   TEXT("A village guard")},
       0));
 
   ADD_LATENT_AUTOMATION_COMMAND(FDelayedFunctionLatentCommand(
@@ -233,19 +200,18 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FProcessNPCDirectiveLifecycleTest::RunTest(const FString &Parameters)
  */
 bool FProcessNPCDirectiveLifecycleTest::RunTest(const FString &Parameters) {
-  if (SkipProcessNpcIntegration()) {
+  if (!ConfigureLiveApi(*this)) {
     return true;
   }
-  SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(),
-                          FPlatformMisc::GetEnvironmentVariable(
-                              TEXT("FORBOCAI_API_KEY")));
 
   auto State = MakeShared<FProcessNPCTestState>();
   ADD_LATENT_AUTOMATION_COMMAND(FProcessNPCWaitComplete(
-      State, FProcessNPCParams{TEXT("npc_lc_1"), TEXT("What do you sell?"),
-                               TEXT("Test merchant")},
+      State, FProcessNPCTestParams{TEXT("npc_lc_1"),
+                                   TEXT("What do you sell?"),
+                                   TEXT("Test merchant")},
       0));
 
   ADD_LATENT_AUTOMATION_COMMAND(FDelayedFunctionLatentCommand(

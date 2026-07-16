@@ -7,6 +7,7 @@ public class ForbocAI_SDK : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HTTP", "Json", "JsonUtilities", "Projects" });
+		AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL");
 
 		/**
 		 * --- NATIVE PARITY: sqlite-vss (vector memory) ---

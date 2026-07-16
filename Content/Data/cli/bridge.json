@@ -1,0 +1,51 @@
+{
+  "limits": {
+    "emptyItemCount": 0,
+    "requiredArgumentCount": 1
+  },
+  "syntax": {
+    "inlineObjectPrefix": "{"
+  },
+  "fields": {
+    "action": "action",
+    "distance": "distance",
+    "npcId": "npcId",
+    "context": "context",
+    "npcState": "npcState",
+    "worldState": "worldState",
+    "constraints": "constraints"
+  },
+  "messages": {
+    "emptyObject": "{}",
+    "fetchingRules": "> Fetching rulesets from API...",
+    "noRules": "> No bridge rules found.",
+    "unknownRule": "unknown_rule",
+    "notAvailable": "N/A",
+    "ruleName": "\n  {0}",
+    "description": "    Description: {0}",
+    "actions": "    Actions: {0}",
+    "actionSeparator": ", ",
+    "validateUsage": "Usage: bridge validate <inline-json-payload|file.json>",
+    "validation": "Validation: {0}",
+    "valid": "Valid: {0}",
+    "pass": "PASS",
+    "fail": "FAIL",
+    "reason": "Reason: {0}",
+    "correctedAction": "Corrected Action: {0}",
+    "validationDone": "Bridge validation done",
+    "rulesCount": "Found {0} bridge rules",
+    "rulesListed": "Bridge rules listed",
+    "presetUsage": "Usage: bridge preset <presetName>",
+    "presetLoaded": "Loaded preset: {0} ({1} rules)",
+    "presetDone": "Bridge preset loaded",
+    "rulesetsCount": "Found {0} rulesets",
+    "rulesetsListed": "Rulesets listed",
+    "noRulesets": "> No rulesets found.",
+    "rulesetItem": "- {0} ({1} rules)",
+    "unknownRuleset": "unknown_ruleset",
+    "presetsCount": "Found {0} presets",
+    "presetsListed": "Rule presets listed",
+    "noPresets": "> No rule presets found.",
+    "presetItem": "- {0}"
+  }
+}

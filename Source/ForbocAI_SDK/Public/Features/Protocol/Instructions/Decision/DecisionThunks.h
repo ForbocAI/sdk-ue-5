@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Features/NPC/NPCSelectors.h"
+#include "Features/Protocol/Instructions/Decision/DecisionAdapters.h"
 #include "Features/Protocol/Turn/TurnAdapters.h"
 
 namespace rtk::detail {
@@ -14,74 +16,29 @@ namespace rtk::detail {
  *
  * Implementation (2026-04-28): Derives goal and actionType from observation
  * and memories, mirroring the API Orchestrator.hs logic.
+ * @fn template <typename RuntimeState> inline func::AsyncResult<FAgentResponse> HandleDecision(const FNPCProcessResponse &Response, const FString &NpcId, const FString &Input, const FString &RunId, int32 Turn, const FProtocolHandlerContext &Runtime, std::function<AnyAction(const AnyAction &)> Dispatch, std::function<const RuntimeState &()> GetState)
  */
+template <typename RuntimeState>
 inline func::AsyncResult<FAgentResponse>
 HandleDecision(const FNPCProcessResponse &Response,
                const FString &NpcId, const FString &Input,
                const FString &RunId, int32 Turn,
                const FProtocolHandlerContext &Runtime,
                std::function<AnyAction(const AnyAction &)> Dispatch,
-               std::function<const FRuntimeState &()> GetState) {
+               std::function<const RuntimeState &()> GetState) {
+  const auto &Data = ProtocolConfiguration::protocolData();
+  const func::Maybe<TArray<FNPCHistoryEntry>> History =
+      NPCSelectors::selectNPCHistory(GetState().NPCs, NpcId);
   FNPCProcessTape NextTape = Response.Tape;
-
-  const FString ObsLower = Response.Tape.Observation.ToLower();
-  const TArray<FString> ActionVerbs = {TEXT("attack"), TEXT("move"), TEXT("take"), TEXT("give"), TEXT("use"), TEXT("open"), TEXT("close"), TEXT("pick")};
-
-  /**
-   * Recursive predicate to detect action verbs without imperative loops.
-   * User Story: As a maintainer, I need this note so the surrounding code intent
-   * stays clear during maintenance and debugging.
-   */
-  const std::function<bool(int32)> ContainsActionVerb = [&](int32 Index) -> bool {
-    return Index >= ActionVerbs.Num()
-               ? false
-               : (ObsLower.Contains(ActionVerbs[Index])
-                      ? true
-                      : ContainsActionVerb(Index + 1));
-  };
-
-  NextTape.DecisionIntent.ActionType = ContainsActionVerb(0) ? TEXT("INTERACT") : TEXT("SPEAK");
-
-  const TArray<FString> TargetTokens = {TEXT("to"), TEXT("at"), TEXT("on"), TEXT("with")};
-
-  /**
-   * Recursive target extractor — walks the preposition list without an
-   * imperative loop. Returns the trimmed substring after the first matching
-   * " <token> " separator, or empty when no token matches.
-   */
-  const std::function<FString(const FString &, int32)> ExtractTargetRecursive =
-      [&](const FString &Obs, int32 Index) -> FString {
-    return Index >= TargetTokens.Num()
-               ? FString(TEXT(""))
-               : [&]() -> FString {
-                   const FString &Token = TargetTokens[Index];
-                   const int32 Pos = Obs.Find(TEXT(" ") + Token + TEXT(" "));
-                   return Pos != INDEX_NONE
-                              ? Obs.RightChop(Pos + Token.Len() + 2)
-                                    .TrimStartAndEnd()
-                              : ExtractTargetRecursive(Obs, Index + 1);
-                 }();
-  };
-
-  NextTape.DecisionIntent.Target =
-      NextTape.DecisionIntent.ActionType == TEXT("INTERACT")
-          ? ExtractTargetRecursive(ObsLower, 0)
-          : FString(TEXT(""));
-
-  NextTape.DecisionIntent.Goal =
-      Response.Tape.Memories.Num() > 0
-          ? FString::Printf(
-                TEXT("Respond to: %s (with %d recalled memories)"),
-                *Response.Tape.Observation, Response.Tape.Memories.Num())
-          : FString::Printf(TEXT("Respond to: %s"),
-                            *Response.Tape.Observation);
-
+  NextTape.DecisionIntent = buildDecisionIntent(
+      Response.Tape,
+      func::is_just(History) ? History.value : TArray<FNPCHistoryEntry>());
   NextTape.bDecisionCompleted = true;
 
   return RunProtocolTurn(
       NpcId, Input, RunId, NextTape,
       SerializeDecisionResult(NextTape.DecisionIntent.Goal, NextTape.DecisionIntent.ActionType, NextTape.DecisionIntent.Target),
-      true, Turn + 1, Runtime, Dispatch, GetState);
+      true, Turn + Data.Iteration.Step, Runtime, Dispatch, GetState);
 }
 
 } // namespace rtk::detail

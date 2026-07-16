@@ -4,6 +4,7 @@
 
 namespace {
 
+/** User Story: As a core fp dispatcher consumer, I need to invoke build entries through a stable signature so the core fp dispatcher workflow remains explicit and composable. @fn template <typename EntryType> std::vector<std::pair<std::string, std::function<int()>>> BuildEntries(const TArray<EntryType> &Fixtures) */
 template <typename EntryType>
 std::vector<std::pair<std::string, std::function<int()>>>
 BuildEntries(const TArray<EntryType> &Fixtures) {
@@ -17,6 +18,7 @@ BuildEntries(const TArray<EntryType> &Fixtures) {
   return Entries;
 }
 
+/** User Story: As a core fp dispatcher consumer, I need to invoke build entry through a stable signature so the core fp dispatcher workflow remains explicit and composable. @fn std::vector<std::pair<std::string, std::function<int()>>> BuildEntry(const Testing::FP::Dispatcher::FEntryFixture &Fixture) */
 std::vector<std::pair<std::string, std::function<int()>>>
 BuildEntry(const Testing::FP::Dispatcher::FEntryFixture &Fixture) {
   const std::string Key = TCHAR_TO_UTF8(*Fixture.Key);
@@ -31,6 +33,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     "ForbocAI.Core.FunctionalCore.Dispatcher.KeyLookup",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
+/** User Story: As a core fp dispatcher consumer, I need to invoke run test through a stable signature so the core fp dispatcher workflow remains explicit and composable. @fn bool FDispatcherKeyLookupTest::RunTest(const FString &Parameters) */
 bool FDispatcherKeyLookupTest::RunTest(const FString &Parameters) {
   const auto &Fixture =
       Testing::FP::Dispatcher::DispatcherFixtures().KeyLookup;
@@ -50,6 +53,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     "ForbocAI.Core.FunctionalCore.Dispatcher.MissingKey",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
+/** User Story: As a core fp dispatcher consumer, I need to invoke run test through a stable signature so the core fp dispatcher workflow remains explicit and composable. @fn bool FDispatcherMissingKeyTest::RunTest(const FString &Parameters) */
 bool FDispatcherMissingKeyTest::RunTest(const FString &Parameters) {
   const auto &Fixture =
       Testing::FP::Dispatcher::DispatcherFixtures().MissingKey;
@@ -66,6 +70,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     "ForbocAI.Core.FunctionalCore.Dispatcher.HasAndKeys",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
+/** User Story: As a core fp dispatcher consumer, I need to invoke run test through a stable signature so the core fp dispatcher workflow remains explicit and composable. @fn bool FDispatcherHasAndKeysTest::RunTest(const FString &Parameters) */
 bool FDispatcherHasAndKeysTest::RunTest(const FString &Parameters) {
   const auto &Fixture =
       Testing::FP::Dispatcher::DispatcherFixtures().HasAndKeys;
@@ -90,6 +95,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     "ForbocAI.Core.FunctionalCore.Dispatcher.EitherMiss",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
+/** User Story: As a core fp dispatcher consumer, I need to invoke run test through a stable signature so the core fp dispatcher workflow remains explicit and composable. @fn bool FDispatcherEitherMissTest::RunTest(const FString &Parameters) */
 bool FDispatcherEitherMissTest::RunTest(const FString &Parameters) {
   const auto &Fixture =
       Testing::FP::Dispatcher::DispatcherFixtures().EitherMiss;
@@ -113,6 +119,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     "ForbocAI.Core.FunctionalCore.Dispatcher.ArgStrict",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
+/** User Story: As a core fp dispatcher consumer, I need to invoke run test through a stable signature so the core fp dispatcher workflow remains explicit and composable. @fn bool FArgDispatcherStrictTest::RunTest(const FString &Parameters) */
 bool FArgDispatcherStrictTest::RunTest(const FString &Parameters) {
   const auto &Fixture =
       Testing::FP::Dispatcher::DispatcherFixtures().ArgStrict;

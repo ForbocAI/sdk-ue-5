@@ -2,23 +2,27 @@
 
 namespace ecs {
 
+/** User Story: As a core ecs domain consumer, I need to invoke create domain path through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline FPath createDomainPath(const TArray<FString> &Segments) */
 inline FPath createDomainPath(const TArray<FString> &Segments) {
   FPath Path;
   Path.Segments = Segments;
   return Path;
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for equality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator==(const FPath &Left, const FPath &Right) */
 inline bool operator==(const FPath &Left, const FPath &Right) {
   return Left.Segments == Right.Segments;
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for inequality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator!=(const FPath &Left, const FPath &Right) */
 inline bool operator!=(const FPath &Left, const FPath &Right) {
   return !(Left == Right);
 }
 
 /**
+ * @fn inline DomainPathKey createDomainPathKey(const FPath &Path)
  * @brief Converts a domain path into its registry key.
- * @signature inline DomainPathKey createDomainPathKey(const FPath &Path)
+ * User Story: As a core ecs domain consumer, I need to invoke create domain path key through a stable signature so the core ecs domain workflow remains explicit and composable.
  */
 inline DomainPathKey createDomainPathKey(const FPath &Path) {
   const FString Separator = FString::Chr(TCHAR('/'));
@@ -26,8 +30,8 @@ inline DomainPathKey createDomainPathKey(const FPath &Path) {
 }
 
 /**
+ * @fn inline FNode createDomainNode(const FCreateDomainNodeRequest &Request)
  * @brief Creates a registry node describing a domain/subdomain boundary.
- * @signature inline FNode createDomainNode(const FCreateDomainNodeRequest &Request)
  *
  * User Story: As a feature maintainer, I need domain-node construction to use
  * one request payload so ECS taxonomy helpers stay unary and composable.
@@ -40,8 +44,8 @@ inline FNode createDomainNode(const FCreateDomainNodeRequest &Request) {
 }
 
 /**
+ * @fn inline FFieldSchema createFieldSchema(const FCreateFieldSchemaRequest &Request)
  * @brief Creates a field schema for component/resource/event contracts.
- * @signature inline FFieldSchema createFieldSchema(const FCreateFieldSchemaRequest &Request)
  *
  * User Story: As a registry author, I need schema fields to be built from one
  * explicit payload so neutral domain metadata composes predictably.
@@ -56,8 +60,8 @@ inline FFieldSchema createFieldSchema(const FCreateFieldSchemaRequest &Request) 
 }
 
 /**
+ * @fn inline FComponentSchema createComponentSchema(const FCreateComponentSchemaRequest &Request)
  * @brief Creates an ECS component schema owned by one domain path.
- * @signature inline FComponentSchema createComponentSchema(const FCreateComponentSchemaRequest &Request)
  *
  * User Story: As a component-domain owner, I need component schema
  * construction to stay unary and data-shaped for registry folds.
@@ -74,8 +78,8 @@ createComponentSchema(const FCreateComponentSchemaRequest &Request) {
 }
 
 /**
+ * @fn inline FCapabilitySpec createCapabilitySpec(const FCreateCapabilitySpecRequest &Request)
  * @brief Creates a capability contract describing component/resource access.
- * @signature inline FCapabilitySpec createCapabilitySpec(const FCreateCapabilitySpecRequest &Request)
  *
  * User Story: As an ECS systems author, I need capability metadata to be a
  * plain request-to-value transform below RTK slices.
@@ -93,8 +97,8 @@ createCapabilitySpec(const FCreateCapabilitySpecRequest &Request) {
 }
 
 /**
+ * @fn inline FSystemSpec createSystemSpec(const FCreateSystemSpecRequest &Request)
  * @brief Creates a system contract for registry inspection and validation.
- * @signature inline FSystemSpec createSystemSpec(const FCreateSystemSpecRequest &Request)
  *
  * User Story: As an ECS system author, I need system metadata to remain a
  * value object that reducers may reference without owning system execution.
@@ -111,8 +115,8 @@ inline FSystemSpec createSystemSpec(const FCreateSystemSpecRequest &Request) {
 }
 
 /**
+ * @fn inline FResourceSpec createResourceSpec(const FCreateResourceSpecRequest &Request)
  * @brief Creates a named ECS resource contract owned by one domain.
- * @signature inline FResourceSpec createResourceSpec(const FCreateResourceSpecRequest &Request)
  *
  * User Story: As a resource-domain maintainer, I need resource specs created
  * from one payload so registration remains foldable and neutral.
@@ -128,8 +132,8 @@ createResourceSpec(const FCreateResourceSpecRequest &Request) {
 }
 
 /**
+ * @fn inline FEventSpec createEventSpec(const FCreateEventSpecRequest &Request)
  * @brief Creates a typed event contract owned by one domain.
- * @signature inline FEventSpec createEventSpec(const FCreateEventSpecRequest &Request)
  *
  * User Story: As an event-domain maintainer, I need event specs to remain ECS
  * metadata rather than replacing RTK action semantics.
@@ -143,16 +147,19 @@ inline FEventSpec createEventSpec(const FCreateEventSpecRequest &Request) {
   return Spec;
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for equality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator==(const FFieldSchema &Left, const FFieldSchema &Right) */
 inline bool operator==(const FFieldSchema &Left, const FFieldSchema &Right) {
   return Left.Name == Right.Name && Left.Kind == Right.Kind &&
          Left.bRequired == Right.bRequired &&
          Left.Description == Right.Description;
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for inequality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator!=(const FFieldSchema &Left, const FFieldSchema &Right) */
 inline bool operator!=(const FFieldSchema &Left, const FFieldSchema &Right) {
   return !(Left == Right);
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for equality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator==(const FComponentSchema &Left, const FComponentSchema &Right) */
 inline bool operator==(const FComponentSchema &Left,
                        const FComponentSchema &Right) {
   return Left.Type == Right.Type && Left.Domain == Right.Domain &&
@@ -160,11 +167,13 @@ inline bool operator==(const FComponentSchema &Left,
          Left.Description == Right.Description;
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for inequality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator!=(const FComponentSchema &Left, const FComponentSchema &Right) */
 inline bool operator!=(const FComponentSchema &Left,
                        const FComponentSchema &Right) {
   return !(Left == Right);
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for equality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator==(const FCapabilitySpec &Left, const FCapabilitySpec &Right) */
 inline bool operator==(const FCapabilitySpec &Left,
                        const FCapabilitySpec &Right) {
   return Left.Name == Right.Name && Left.Domain == Right.Domain &&
@@ -172,11 +181,13 @@ inline bool operator==(const FCapabilitySpec &Left,
          Left.Resources == Right.Resources && Left.Emits == Right.Emits;
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for inequality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator!=(const FCapabilitySpec &Left, const FCapabilitySpec &Right) */
 inline bool operator!=(const FCapabilitySpec &Left,
                        const FCapabilitySpec &Right) {
   return !(Left == Right);
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for equality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator==(const FSystemSpec &Left, const FSystemSpec &Right) */
 inline bool operator==(const FSystemSpec &Left, const FSystemSpec &Right) {
   return Left.Name == Right.Name && Left.Domain == Right.Domain &&
          Left.RequiredComponents == Right.RequiredComponents &&
@@ -184,30 +195,36 @@ inline bool operator==(const FSystemSpec &Left, const FSystemSpec &Right) {
          Left.Resources == Right.Resources && Left.Emits == Right.Emits;
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for inequality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator!=(const FSystemSpec &Left, const FSystemSpec &Right) */
 inline bool operator!=(const FSystemSpec &Left, const FSystemSpec &Right) {
   return !(Left == Right);
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for equality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator==(const FResourceSpec &Left, const FResourceSpec &Right) */
 inline bool operator==(const FResourceSpec &Left,
                        const FResourceSpec &Right) {
   return Left.Name == Right.Name && Left.Domain == Right.Domain &&
          Left.Kind == Right.Kind && Left.Description == Right.Description;
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for inequality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator!=(const FResourceSpec &Left, const FResourceSpec &Right) */
 inline bool operator!=(const FResourceSpec &Left,
                        const FResourceSpec &Right) {
   return !(Left == Right);
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for equality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator==(const FEventSpec &Left, const FEventSpec &Right) */
 inline bool operator==(const FEventSpec &Left, const FEventSpec &Right) {
   return Left.Type == Right.Type && Left.Domain == Right.Domain &&
          Left.Fields == Right.Fields && Left.Description == Right.Description;
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for inequality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator!=(const FEventSpec &Left, const FEventSpec &Right) */
 inline bool operator!=(const FEventSpec &Left, const FEventSpec &Right) {
   return !(Left == Right);
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for equality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator==(const FNode &Left, const FNode &Right) */
 inline bool operator==(const FNode &Left, const FNode &Right) {
   return Left.Path == Right.Path && Left.Kind == Right.Kind &&
          Left.Children == Right.Children &&
@@ -217,10 +234,12 @@ inline bool operator==(const FNode &Left, const FNode &Right) {
          Left.Events == Right.Events;
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for inequality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator!=(const FNode &Left, const FNode &Right) */
 inline bool operator!=(const FNode &Left, const FNode &Right) {
   return !(Left == Right);
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for equality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator==(const FGraph &Left, const FGraph &Right) */
 inline bool operator==(const FGraph &Left,
                        const FGraph &Right) {
   return Left.Nodes.OrderIndependentCompareEqual(Right.Nodes) &&
@@ -232,13 +251,14 @@ inline bool operator==(const FGraph &Left,
          Left.EventSpecs.OrderIndependentCompareEqual(Right.EventSpecs);
 }
 
+/** User Story: As a core ecs domain consumer, I need to compare values for inequality through a stable signature so the core ecs domain workflow remains explicit and composable. @fn inline bool operator!=(const FGraph &Left, const FGraph &Right) */
 inline bool operator!=(const FGraph &Left, const FGraph &Right) {
   return !(Left == Right);
 }
 
 /**
+ * @fn inline FGraph createDomainRegistry()
  * @brief Creates an empty ECS domain registry.
- * @signature inline FGraph createDomainRegistry()
  *
  * User Story: As an ECS feature author, I need a fresh registry value before
  * composing domain registrations into a world.

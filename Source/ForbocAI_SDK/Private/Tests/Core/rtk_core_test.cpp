@@ -11,6 +11,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRtkStoreAndSliceTest,
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FRtkStoreAndSliceTest::RunTest(const FString &Parameters)
  */
 bool FRtkStoreAndSliceTest::RunTest(const FString &Parameters) {
   auto SetInfoAction = createAction<FNpcFixtureState>(TEXT("npc/setInfo"));
@@ -82,6 +83,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRtkCreateSliceTest,
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FRtkCreateSliceTest::RunTest(const FString &Parameters)
  */
 bool FRtkCreateSliceTest::RunTest(const FString &Parameters) {
   rtk::ActionCreator<FNpcFixtureState> SetInfoAction;
@@ -143,6 +145,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRtkConfigureStoreTest,
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FRtkConfigureStoreTest::RunTest(const FString &Parameters)
  */
 bool FRtkConfigureStoreTest::RunTest(const FString &Parameters) {
   /**

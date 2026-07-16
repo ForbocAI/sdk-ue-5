@@ -91,6 +91,8 @@ def validate_contract_shape(contract: dict) -> list[str]:
         failures.append("contract is missing requiredCommandGroups")
     if not isinstance(contract.get("aliasRules"), dict):
         failures.append("contract is missing aliasRules")
+    elif any(not value for value in contract["aliasRules"].values()):
+        failures.append("contract contains an empty alias rule")
     if not isinstance(contract.get("scenarios"), list):
         failures.append("contract is missing scenarios")
     return failures
@@ -155,6 +157,14 @@ def validate_ue_sources(contract: dict) -> list[str]:
     )
     all_sources = source_text(test_game_root)
     contract_sources = source_text(test_game_root / "Features", domain="Contract")
+    runner_data_path = (
+        PLUGIN_ROOT / "test-game-cli" / "Content" / "Data" /
+        "harness" / "command-runner.json"
+    )
+    runner_aliases = json.loads(
+        runner_data_path.read_text(encoding="utf-8")
+    ).get("aliases", {})
+    contract_aliases = contract.get("aliasRules") or {}
 
     required_groups = set(contract.get("requiredCommandGroups") or [])
     mapped_groups = parse_cpp_command_group_mappings(contract_sources)
@@ -175,6 +185,16 @@ def validate_ue_sources(contract: dict) -> list[str]:
     ):
         if f'TEXT("{field}")' not in contract_sources:
             failures.append(f"UE contract parser missing field: {field}")
+    for field in sorted(contract_aliases):
+        if f'TEXT("{field}")' not in contract_sources:
+            failures.append(f"UE contract parser missing alias field: {field}")
+    for runtime_alias, runtime_value in sorted(runner_aliases.items()):
+        contract_field = f"{runtime_alias}Alias"
+        if contract_aliases.get(contract_field) != runtime_value:
+            failures.append(
+                f"UE runtime alias {runtime_alias}={runtime_value} does not match "
+                f"API aliasRules.{contract_field}={contract_aliases.get(contract_field)}"
+            )
     for conversion in ("ToCommandSpec", "ToScenarioStep", "ExpectedRoutes"):
         if conversion not in contract_sources:
             failures.append(f"UE contract conversion missing: {conversion}")

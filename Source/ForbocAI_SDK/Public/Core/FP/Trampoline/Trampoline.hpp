@@ -10,11 +10,11 @@ template <typename Arg, typename Result> struct Bounce {
 };
 
 /**
+ * @fn template <typename Arg, typename Result> Bounce<Arg, Result> call(Arg next)
  * @brief Returns a Bounce object representing the next step in a trampoline.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename Arg, typename Result> Bounce<Arg, Result> call(Arg next)
  *
  * User Story: As a functional programmer, I need a way to return the next step in a recursive function to avoid stack overflows.
  */
@@ -24,11 +24,11 @@ Bounce<Arg, Result> call(Arg next) {
 }
 
 /**
+ * @fn template <typename Arg, typename Result> Bounce<Arg, Result> done(Result result)
  * @brief Returns a Bounce object representing the final result of a trampoline.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename Arg, typename Result> Bounce<Arg, Result> done(Result result)
  *
  * User Story: As a functional programmer, I need a way to return the final result of a recursive function to end the trampoline execution.
  */
@@ -38,11 +38,11 @@ Bounce<Arg, Result> done(Result result) {
 }
 
 /**
+ * @fn template <typename Arg, typename Result, typename Step> Result trampoline(Arg arg, Step step)
  * @brief Executes a trampoline to evaluate a recursive function without blowing the stack.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename Arg, typename Result, typename Step> Result trampoline(Arg arg, Step step)
  *
  * User Story: As a functional programmer, I need a trampoline to safely execute deep recursive algorithms.
  */

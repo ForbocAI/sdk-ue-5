@@ -30,6 +30,7 @@ struct FTestGameState {
   FTranscriptState Transcript;
   FScenarioSliceState Scenario;
   FHarnessState Harness;
+  CommandRunner::FCommandAliasState CommandRunner;
 };
 
 typedef rtk::EnhancedStore<FTestGameState> FTestGameStore;
@@ -41,6 +42,7 @@ struct FGameRunResult {
   TArray<FTranscriptEntry> Transcript;
   FString Summary;
 
+  /** User Story: As a systems harness game consumer, I need to invoke fgame run result through a stable signature so the systems harness game workflow remains explicit and composable. @fn FGameRunResult() */
   FGameRunResult() : bComplete(false) {}
 };
 
@@ -50,6 +52,7 @@ struct FParsedVerdict {
   FPosition TargetHex;
   int32 SuspicionDelta;
 
+  /** User Story: As a systems harness game consumer, I need to invoke fparsed verdict through a stable signature so the systems harness game workflow remains explicit and composable. @fn FParsedVerdict() */
   FParsedVerdict() : bValid(false), SuspicionDelta(0) {}
 };
 
@@ -70,6 +73,7 @@ struct FGameProgress {
   FGameRunResult RunResult;
   FString Message;
 
+  /** User Story: As a systems harness game consumer, I need to invoke fgame progress through a stable signature so the systems harness game workflow remains explicit and composable. @fn FGameProgress() */
   FGameProgress()
       : Type(EGameProgressType::SessionStarted),
         Mode(EPlayMode::Autoplay) {}

@@ -34,12 +34,14 @@ public:
    * Initializes the subsystem and wires the runtime store.
    * User Story: As Unreal runtime startup, I need subsystem initialization so
    * the SDK store and listeners are ready before runtime begins.
+   * @fn virtual void Initialize(FSubsystemCollectionBase &Collection) override
    */
   virtual void Initialize(FSubsystemCollectionBase &Collection) override;
   /**
    * Tears down the subsystem and releases runtime resources.
    * User Story: As Unreal runtime shutdown, I need subsystem cleanup so the SDK
    * store and listeners do not outlive the game instance.
+   * @fn virtual void Deinitialize() override
    */
   virtual void Deinitialize() override;
 
@@ -47,6 +49,7 @@ public:
    * Initializes the SDK with the provided configuration.
    * User Story: As Blueprint callers, I need runtime SDK configuration so API
    * access can be set up before NPC operations begin.
+   * @fn void Init(FString ApiKey, FString ApiUrl = TEXT(""))
    */
   UFUNCTION(BlueprintCallable, Category = "Forboc AI|SDK")
   void Init(FString ApiKey, FString ApiUrl = TEXT(""));
@@ -56,14 +59,16 @@ public:
    * This is an asynchronous operation.
    * User Story: As Blueprint runtime flows, I need one NPC processing entry
    * point so input can drive the full protocol loop.
+   * @fn void ProcessNPC(FString NpcId, FString Input = TEXT(""))
    */
   UFUNCTION(BlueprintCallable, Category = "Forboc AI|NPC")
   void ProcessNPC(FString NpcId, FString Input = TEXT(""));
 
   /**
-   * Exports an NPC's Soul to Arweave.
+   * Exports an NPC's Soul through SDK-owned permanent storage.
    * User Story: As Blueprint soul export flows, I need a callable export entry
    * point so runtime code can publish an NPC soul.
+   * @fn void exportSoul(FString AgentId)
    */
   UFUNCTION(BlueprintCallable, Category = "Forboc AI|Soul")
   void exportSoul(FString AgentId);
@@ -72,6 +77,7 @@ public:
    * Gets the current state of an NPC.
    * User Story: As Blueprint state inspection, I need direct NPC state access
    * so runtime systems can read the latest agent state.
+   * @fn FAgentState GetNPCState(FString NpcId) const
    */
   UFUNCTION(BlueprintPure, Category = "Forboc AI|NPC")
   FAgentState GetNPCState(FString NpcId) const;
@@ -80,6 +86,7 @@ public:
    * Gets the active NPC id, if any.
    * User Story: As Blueprint UI binding, I need the active NPC id so widgets can
    * focus on the currently selected or processed agent.
+   * @fn FString GetActiveNPCId() const
    */
   UFUNCTION(BlueprintPure, Category = "Forboc AI|NPC")
   FString GetActiveNPCId() const;
@@ -88,6 +95,7 @@ public:
    * Gets the active NPC internal state, if any.
    * User Story: As Blueprint runtime systems, I need the active NPC payload so
    * I can read its full runtime state in one call.
+   * @fn bool GetActiveNPC(FNPCInternalState &OutNPC) const
    */
   UFUNCTION(BlueprintPure, Category = "Forboc AI|NPC")
   bool GetActiveNPC(FNPCInternalState &OutNPC) const;
@@ -97,25 +105,28 @@ public:
    * Wrapper over the memory slice selector for Blueprint consumers.
    * User Story: As Blueprint memory views, I need the last recalled memories so
    * runtime or UI can show what influenced the latest turn.
+   * @fn TArray<FMemoryItem> GetRecalledMemories() const
    */
   UFUNCTION(BlueprintPure, Category = "Forboc AI|Memory")
-  TArray<FMemoryItem> GetLastRecalledMemories() const;
+  TArray<FMemoryItem> GetRecalledMemories() const;
 
   /**
    * Gets the last bridge validation result, if present.
    * User Story: As Blueprint validation feedback, I need the last bridge result
    * so runtime can inspect whether an action was accepted.
+   * @fn bool GetBridgeValidationResult(FValidationResult &OutResult) const
    */
   UFUNCTION(BlueprintPure, Category = "Forboc AI|Bridge")
-  bool GetLastBridgeValidation(FValidationResult &OutResult) const;
+  bool GetBridgeValidationResult(FValidationResult &OutResult) const;
 
   /**
    * Gets the last imported Soul, if present.
    * User Story: As Blueprint import flows, I need access to the last imported
    * soul so runtime can inspect or present the imported data.
+   * @fn bool GetImportedSouledSoul(FSoul &OutSoul) const
    */
   UFUNCTION(BlueprintPure, Category = "Forboc AI|Soul")
-  bool GetLastImportedSoul(FSoul &OutSoul) const;
+  bool GetImportedSouledSoul(FSoul &OutSoul) const;
 
   /**
    * Delegate triggered when a new action is received from the NPC.
@@ -164,12 +175,5 @@ private:
    * The underlying functional Redux store.
    * User Story: As an SDK integrator, I need this type or module note so I can understand the role of the surrounding API surface quickly.
    */
-  TSharedPtr<rtk::EnhancedStore<FRuntimeState>> Store;
-
-  /**
-   * Handles store actions emitted through listener middleware.
-   * User Story: As subsystem event bridging, I need action callbacks so the
-   * functional store can drive Blueprint-facing delegates.
-   */
-  void HandleAction(const rtk::AnyAction &Action);
+  rtk::EnhancedStore<FRuntimeState> *Store = nullptr;
 };

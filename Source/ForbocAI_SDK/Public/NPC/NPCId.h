@@ -11,11 +11,13 @@ namespace NPCId {
  * short while preserving timestamp uniqueness.
  */
 namespace detail {
+/** User Story: As a npc consumer, I need to invoke sequence storage through a stable signature so the npc workflow remains explicit and composable. @fn inline std::atomic<uint64> &SequenceStorage() */
 inline std::atomic<uint64> &SequenceStorage() {
   static std::atomic<uint64> Value{0};
   return Value;
 }
 
+/** User Story: As a npc consumer, I need to invoke to base36 recursive through a stable signature so the npc workflow remains explicit and composable. @fn inline FString ToBase36Recursive(uint64 Value, const TCHAR *Digits, const FString &Acc) */
 inline FString ToBase36Recursive(uint64 Value, const TCHAR *Digits,
                                  const FString &Acc) {
   return Value == 0
@@ -26,6 +28,7 @@ inline FString ToBase36Recursive(uint64 Value, const TCHAR *Digits,
 }
 } // namespace detail
 
+/** User Story: As a npc consumer, I need to invoke to base36 through a stable signature so the npc workflow remains explicit and composable. @fn inline FString ToBase36(uint64 Value) */
 inline FString ToBase36(uint64 Value) {
   const TCHAR Digits[] = TEXT("0123456789abcdefghijklmnopqrstuvwxyz");
   return Value == 0 ? FString(TEXT("0"))
@@ -38,6 +41,7 @@ inline FString ToBase36(uint64 Value) {
  * same-frame creates do not collide.
  * User Story: As cross-SDK id generation, I need UE NPC ids to match the TS
  * format so imported and synchronized agents share one identifier shape.
+ * @fn inline FString GenerateNPCId()
  */
 inline FString GenerateNPCId() {
   const int64 UnixTicks =

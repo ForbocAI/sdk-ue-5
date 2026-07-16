@@ -1,0 +1,8 @@
+{
+  "commandlet": {
+    "argumentParameterTemplate": "CliArg{index}=",
+    "indexToken": "{index}",
+    "firstArgumentIndex": 0,
+    "nextArgumentOffset": 1
+  }
+}

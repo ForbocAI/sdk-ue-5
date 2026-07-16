@@ -20,6 +20,7 @@ using Middleware =
         const MiddlewareApi<State> &)>;
 
 namespace detail {
+/** User Story: As a core rtk middleware consumer, I need to invoke apply middleware recursive through a stable signature so the core rtk middleware workflow remains explicit and composable. @fn template <typename State> Dispatcher applyMiddlewareRecursive( typename std::vector<Middleware<State>>::const_reverse_iterator It, typename std::vector<Middleware<State>>::const_reverse_iterator End, const MiddlewareApi<State> &Api, Dispatcher CurrentDispatch) */
 template <typename State>
 Dispatcher applyMiddlewareRecursive(
     typename std::vector<Middleware<State>>::const_reverse_iterator It,
@@ -33,8 +34,8 @@ Dispatcher applyMiddlewareRecursive(
 } // namespace detail
 
 /**
+ * @fn template <typename State> Dispatcher applyMiddleware(Dispatcher baseDispatch, std::function<const State &()> getState, const std::vector<Middleware<State>> &middlewares)
  * @brief Wraps a dispatcher with middleware while preserving RTK-style composition order.
- * @signature template <typename State> Dispatcher applyMiddleware(Dispatcher baseDispatch, std::function<const State &()> getState, const std::vector<Middleware<State>> &middlewares)
  * @param baseDispatch The core store dispatch function.
  * @param getState The function returning current state.
  * @param middlewares The list of middlewares to apply.

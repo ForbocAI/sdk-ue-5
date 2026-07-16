@@ -12,6 +12,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
+/** User Story: As a integration protocol directive consumer, I need to invoke run test through a stable signature so the integration protocol directive workflow remains explicit and composable. @fn bool FProtocolDirectiveLifecycleTest::RunTest(const FString &Parameters) */
 bool FProtocolDirectiveLifecycleTest::RunTest(const FString &Parameters) {
   rtk::EnhancedStore<FRuntimeState> TestStore = createRuntimeStore();
 

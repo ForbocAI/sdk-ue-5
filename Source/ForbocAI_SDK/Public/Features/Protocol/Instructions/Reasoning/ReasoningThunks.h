@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Features/Protocol/Configuration/ConfigurationAdapters.h"
 #include "Features/Protocol/Turn/TurnAdapters.h"
 
 namespace rtk::detail {
@@ -14,21 +15,24 @@ namespace rtk::detail {
  * before returning. The SDK's only remaining responsibility for a Reasoning
  * step is to mark the tape completed and continue. SDK-local inference is
  * deliberately not invoked here.
+ * @fn template <typename RuntimeState> inline func::AsyncResult<FAgentResponse> HandleReasoning(const FNPCProcessResponse &Response, const FString &NpcId, const FString &Input, const FString &RunId, int32 Turn, const FProtocolHandlerContext &Runtime, std::function<AnyAction(const AnyAction &)> Dispatch, std::function<const RuntimeState &()> GetState)
  */
+template <typename RuntimeState>
 inline func::AsyncResult<FAgentResponse>
 HandleReasoning(const FNPCProcessResponse &Response,
                 const FString &NpcId, const FString &Input,
                 const FString &RunId, int32 Turn,
                 const FProtocolHandlerContext &Runtime,
                 std::function<AnyAction(const AnyAction &)> Dispatch,
-                std::function<const FRuntimeState &()> GetState) {
+                std::function<const RuntimeState &()> GetState) {
+  const auto &Data = ProtocolConfiguration::protocolData();
   FNPCProcessTape NextTape = Response.Tape;
   NextTape.bReasoningCompleted = true;
 
   return RunProtocolTurn(
       NpcId, Input, RunId, NextTape,
       SerializeReasoningResult(NextTape.ReasoningOutput.ReasoningText, NextTape.ReasoningOutput.ResponseText),
-      true, Turn + 1, Runtime, Dispatch, GetState);
+      true, Turn + Data.Iteration.Step, Runtime, Dispatch, GetState);
 }
 
 } // namespace rtk::detail

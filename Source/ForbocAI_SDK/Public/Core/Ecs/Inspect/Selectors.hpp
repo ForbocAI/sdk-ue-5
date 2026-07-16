@@ -3,8 +3,8 @@
 namespace ecs {
 
 /**
+ * @fn inline FDomainInspectionSelector selectEntityDomainsForInspection(const FWorld &World)
  * @brief Builds a selector for entity domains used by inspection.
- * @signature inline FDomainInspectionSelector selectEntityDomainsForInspection(const FWorld &World)
  *
  * User Story: As display inspection code, domain lookup should be a unary
  * selector over entity keys instead of nullable pointer logic.
@@ -20,8 +20,8 @@ inline FDomainInspectionSelector selectEntityDomainsForInspection(const FWorld &
 }
 
 /**
+ * @fn inline FEntityComponentInspectionFactory selectEntityComponentsForInspection(const FWorld &World)
  * @brief Builds curried component inspection transforms for one world.
- * @signature inline FEntityComponentInspectionFactory selectEntityComponentsForInspection(const FWorld &World)
  *
  * User Story: As ECS inspection code, component display data should fold
  * through curried transforms instead of component table loops.
@@ -45,8 +45,8 @@ selectEntityComponentsForInspection(const FWorld &World) {
 }
 
 /**
+ * @fn inline FEntityInspection inspectEntity(const FWorld &World, const EntityKey &Entity)
  * @brief Inspects one entity's tags, domains, and component values.
- * @signature inline FEntityInspection inspectEntity(const FWorld &World, const EntityKey &Entity)
  *
  * User Story: As display code, entity inspection should derive read-only
  * projection data from selectors and ECS lookups without owning logic.

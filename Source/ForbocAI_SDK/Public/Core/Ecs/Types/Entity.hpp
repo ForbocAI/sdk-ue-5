@@ -17,8 +17,8 @@ struct FEntityId {
 };
 
 /**
+ * @fn inline FEntityId createEntityId(int64 Index, int32 Generation)
  * @brief Creates a generation-counted entity id.
- * @signature inline FEntityId createEntityId(int64 Index, int32 Generation)
  *
  * User Story: As an ECS caller, I need stable id values so recycled entity slots
  * do not accidentally resolve stale handles.
@@ -31,8 +31,8 @@ inline FEntityId createEntityId(int64 Index, int32 Generation) {
 }
 
 /**
+ * @fn inline EntityKey createEntityKey(const FEntityId &Id)
  * @brief Converts an entity id into the shared string key format.
- * @signature inline EntityKey createEntityKey(const FEntityId &Id)
  *
  * User Story: As component storage, I need a deterministic key for TMap-based
  * component tables.
@@ -42,10 +42,12 @@ inline EntityKey createEntityKey(const FEntityId &Id) {
          LexToString(Id.Generation);
 }
 
+/** User Story: As a core ecs types consumer, I need to compare values for equality through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline bool operator==(const FEntityId &Left, const FEntityId &Right) */
 inline bool operator==(const FEntityId &Left, const FEntityId &Right) {
   return Left.Index == Right.Index && Left.Generation == Right.Generation;
 }
 
+/** User Story: As a core ecs types consumer, I need to compare values for inequality through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline bool operator!=(const FEntityId &Left, const FEntityId &Right) */
 inline bool operator!=(const FEntityId &Left, const FEntityId &Right) {
   return !(Left == Right);
 }
@@ -62,8 +64,8 @@ struct FAllocatedEntity {
 };
 
 /**
+ * @fn inline FAllocator createEntityAllocator()
  * @brief Creates an empty entity allocator.
- * @signature inline FAllocator createEntityAllocator()
  *
  * User Story: As a world author, I need isolated allocator state for each world
  * so tests, levels, and runtime sessions do not share entity id counters.
@@ -74,28 +76,32 @@ inline FAllocator createEntityAllocator() {
   return Allocator;
 }
 
+/** User Story: As a core ecs types consumer, I need to compare values for equality through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline bool operator==(const FAllocator &Left, const FAllocator &Right) */
 inline bool operator==(const FAllocator &Left, const FAllocator &Right) {
   return Left.NextIndex == Right.NextIndex && Left.Freed == Right.Freed &&
          Left.Generations.OrderIndependentCompareEqual(Right.Generations);
 }
 
+/** User Story: As a core ecs types consumer, I need to compare values for inequality through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline bool operator!=(const FAllocator &Left, const FAllocator &Right) */
 inline bool operator!=(const FAllocator &Left, const FAllocator &Right) {
   return !(Left == Right);
 }
 
+/** User Story: As a core ecs types consumer, I need to compare values for equality through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline bool operator==(const FAllocatedEntity &Left, const FAllocatedEntity &Right) */
 inline bool operator==(const FAllocatedEntity &Left,
                        const FAllocatedEntity &Right) {
   return Left.Allocator == Right.Allocator && Left.Entity == Right.Entity;
 }
 
+/** User Story: As a core ecs types consumer, I need to compare values for inequality through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline bool operator!=(const FAllocatedEntity &Left, const FAllocatedEntity &Right) */
 inline bool operator!=(const FAllocatedEntity &Left,
                        const FAllocatedEntity &Right) {
   return !(Left == Right);
 }
 
 /**
+ * @fn inline func::Maybe<FEntityId> findReusableEntityId(const FAllocator &Allocator)
  * @brief Reads the last reusable entity id from the allocator.
- * @signature inline func::Maybe<FEntityId> findReusableEntityId(const FAllocator &Allocator)
  *
  * User Story: As allocation code, I need the reusable-id branch represented as
  * Maybe so fresh allocation composes without imperative checks.
@@ -106,8 +112,8 @@ inline func::Maybe<FEntityId> findReusableEntityId(const FAllocator &Allocator) 
 }
 
 /**
+ * @fn inline FAllocatedEntity allocateRecycledEntity(FAllocator Allocator, const FEntityId &Entity)
  * @brief Allocates a previously freed entity id.
- * @signature inline FAllocatedEntity allocateRecycledEntity(FAllocator Allocator, const FEntityId &Entity)
  *
  * User Story: As allocator code, I need recycled allocation to be a small
  * unary-friendly value transform used by the Maybe match branch.
@@ -122,8 +128,8 @@ inline FAllocatedEntity allocateRecycledEntity(FAllocator Allocator,
 }
 
 /**
+ * @fn inline FAllocatedEntity allocateFreshEntity(FAllocator Allocator)
  * @brief Allocates a fresh entity id and records its generation.
- * @signature inline FAllocatedEntity allocateFreshEntity(FAllocator Allocator)
  *
  * User Story: As allocator code, I need the fresh-id branch isolated so entity
  * allocation composes from reusable branch functions.
@@ -138,8 +144,8 @@ inline FAllocatedEntity allocateFreshEntity(FAllocator Allocator) {
 }
 
 /**
+ * @fn inline FAllocatedEntity allocateEntity(FAllocator Allocator)
  * @brief Allocates a fresh or recycled entity id.
- * @signature inline FAllocatedEntity allocateEntity(FAllocator Allocator)
  *
  * User Story: As a spawn mechanic, I need entity allocation to return new
  * allocator state plus the allocated id so state transitions stay value based.
@@ -154,8 +160,8 @@ inline FAllocatedEntity allocateEntity(FAllocator Allocator) {
 }
 
 /**
+ * @fn inline bool entityGenerationMatches(const FAllocator &Allocator, const FEntityId &Id)
  * @brief Checks whether an entity id matches its allocator generation.
- * @signature inline bool entityGenerationMatches(const FAllocator &Allocator, const FEntityId &Id)
  *
  * User Story: As allocator code, I need stale-handle checks to share one Maybe
  * lookup predicate across free and alive queries.
@@ -169,8 +175,8 @@ inline bool entityGenerationMatches(const FAllocator &Allocator,
 }
 
 /**
+ * @fn inline FAllocator freeMatchedEntity(FAllocator Allocator, const FEntityId &Id)
  * @brief Frees an entity id after its generation is known to match.
- * @signature inline FAllocator freeMatchedEntity(FAllocator Allocator, const FEntityId &Id)
  *
  * User Story: As despawn code, I need generation incrementing isolated from the
  * Maybe predicate that decides whether an id can be released.
@@ -184,8 +190,8 @@ inline FAllocator freeMatchedEntity(FAllocator Allocator, const FEntityId &Id) {
 }
 
 /**
+ * @fn inline FAllocator freeEntityId(FAllocator Allocator, const FEntityId &Id)
  * @brief Frees an entity id and increments its generation for safe reuse.
- * @signature inline FAllocator freeEntityId(FAllocator Allocator, const FEntityId &Id)
  *
  * User Story: As a despawn mechanic, I need old handles to stop resolving after
  * their slot has been released.
@@ -197,8 +203,8 @@ inline FAllocator freeEntityId(FAllocator Allocator, const FEntityId &Id) {
 }
 
 /**
+ * @fn inline bool isEntityAlive(const FAllocator &Allocator, const FEntityId &Id)
  * @brief Checks whether an entity id is still alive in the allocator.
- * @signature inline bool isEntityAlive(const FAllocator &Allocator, const FEntityId &Id)
  *
  * User Story: As a query system, I need to reject stale handles before reading
  * component data.

@@ -1,46 +1,32 @@
 #include "Integration/Unreal/RuntimeSubsystem.h"
 #include "Features/Bridge/BridgeSelectors.h"
 #include "Features/Memory/MemorySelectors.h"
-#include "Features/NPC/NPCActions.h"
 #include "Features/NPC/NPCSelectors.h"
-#include "Features/NPC/NPCSlice.h"
 #include "Features/Config/ConfigAdapters.h"
 #include "Store.h"
 #include "Features/Protocol/ProtocolThunks.h"
 #include "Features/Soul/SoulThunks.h"
 
 /**
- * Initializes the runtime store and wires action middleware for broadcasts.
- * User Story: As game runtime startup, I need the subsystem to create and wire
- * the store so host events can observe SDK state changes. This registers
- * the NPC-removal listener and the action-broadcast middleware before store
- * creation.
+ * Initializes the subsystem against the package-owned root store.
+ * User Story: As game runtime startup, I need every SDK surface to share the
+ * same state authority while completed operations project to Blueprint
+ * delegates.
+ * @fn void UForbocAISubsystem::Initialize(FSubsystemCollectionBase &Collection)
  */
 void UForbocAISubsystem::Initialize(FSubsystemCollectionBase &Collection) {
   Super::Initialize(Collection);
 
-  std::vector<rtk::Middleware<FRuntimeState>> Middlewares;
-  Middlewares.push_back([this](const rtk::MiddlewareApi<FRuntimeState> &Api)
-                            -> std::function<rtk::Dispatcher(rtk::Dispatcher)> {
-    return [this](rtk::Dispatcher Next) -> rtk::Dispatcher {
-      return [this, Next](const rtk::AnyAction &Action) {
-        this->HandleAction(Action);
-        return Next(Action);
-      };
-    };
-  });
-
-  Store = MakeShared<rtk::EnhancedStore<FRuntimeState>>(
-      createRuntimeStore(func::nothing<FRuntimeState>(), Middlewares));
+  Store = &store();
 }
-
 /**
  * Releases the runtime store during subsystem shutdown.
  * User Story: As game runtime shutdown, I need the subsystem to release store
  * resources so teardown does not leak runtime state.
+ * @fn void UForbocAISubsystem::Deinitialize()
  */
 void UForbocAISubsystem::Deinitialize() {
-  Store.Reset();
+  Store = nullptr;
   Super::Deinitialize();
 }
 
@@ -48,6 +34,7 @@ void UForbocAISubsystem::Deinitialize() {
  * Applies API credentials and URL overrides to the runtime config.
  * User Story: As subsystem setup flows, I need one init entry point for API
  * config so host code can point the runtime at the right backend.
+ * @fn void UForbocAISubsystem::Init(FString ApiKey, FString ApiUrl)
  */
 void UForbocAISubsystem::Init(FString ApiKey, FString ApiUrl) {
   SDKConfig::SetApiConfig(
@@ -58,15 +45,17 @@ void UForbocAISubsystem::Init(FString ApiKey, FString ApiUrl) {
  * Runs a protocol turn for an NPC and broadcasts dialogue or actions.
  * User Story: As host interaction flows, I need NPC turns processed from
  * the subsystem so dialogue, typing, and action events are broadcast to game code.
+ * @fn void UForbocAISubsystem::ProcessNPC(FString NpcId, FString Input)
  */
 void UForbocAISubsystem::ProcessNPC(FString NpcId, FString Input) {
-  !Store.IsValid()
+  Store == nullptr
       ? void()
       : (OnTypingStart.Broadcast(),
          Store
              ->dispatch(rtk::processNPC(NpcId, Input, TEXT("{}"), TEXT(""),
                                         FAgentState(),
-                                        rtk::LocalProtocolHandlerContext()))
+                                        rtk::LocalProtocolHandlerContext(
+                                            NpcId)))
              .then([this](const FAgentResponse &Result) {
                !Result.Dialogue.IsEmpty()
                    ? (OnMessageReceived.Broadcast(Result.Dialogue),
@@ -88,11 +77,12 @@ void UForbocAISubsystem::ProcessNPC(FString NpcId, FString Input) {
  * Exports an NPC soul and broadcasts the completed transaction id.
  * User Story: As host soul-export flows, I need subsystem-triggered export
  * events so game code can react when a soul has been published.
+ * @fn void UForbocAISubsystem::exportSoul(FString AgentId)
  */
 void UForbocAISubsystem::exportSoul(FString AgentId) {
-  !Store.IsValid()
+  Store == nullptr
       ? void()
-      : (void)Store->dispatch(rtk::exportSoulThunk(AgentId))
+      : (void)Store->dispatch(rtk::exportSoulThunk()(AgentId))
             .then([this](const FSoulExportResult &Result) {
               OnSoulExportComplete.Broadcast(Result.TxId);
             })
@@ -103,9 +93,10 @@ void UForbocAISubsystem::exportSoul(FString AgentId) {
  * Returns the latest state snapshot for the requested NPC.
  * User Story: As host state queries, I need the latest NPC state from the
  * subsystem so UI and logic can inspect current agent data.
+ * @fn FAgentState UForbocAISubsystem::GetNPCState(FString NpcId) const
  */
 FAgentState UForbocAISubsystem::GetNPCState(FString NpcId) const {
-  return !Store.IsValid()
+  return Store == nullptr
              ? FAgentState()
              : func::or_else(
                    func::fmap(
@@ -118,9 +109,10 @@ FAgentState UForbocAISubsystem::GetNPCState(FString NpcId) const {
  * Returns the id of the active NPC, if any.
  * User Story: As host targeting flows, I need the active NPC id so other
  * systems can address the current actor consistently.
+ * @fn FString UForbocAISubsystem::GetActiveNPCId() const
  */
 FString UForbocAISubsystem::GetActiveNPCId() const {
-  return !Store.IsValid()
+  return Store == nullptr
              ? FString()
              : NPCSelectors::selectActiveNpcId(Store->getState().NPCs);
 }
@@ -129,9 +121,10 @@ FString UForbocAISubsystem::GetActiveNPCId() const {
  * Writes the active NPC into OutNPC when one is present.
  * User Story: As host state queries, I need the active NPC materialized so
  * consumers can read the full runtime record without manual store access.
+ * @fn bool UForbocAISubsystem::GetActiveNPC(FNPCInternalState &OutNPC) const
  */
 bool UForbocAISubsystem::GetActiveNPC(FNPCInternalState &OutNPC) const {
-  return !Store.IsValid()
+  return Store == nullptr
              ? false
              : func::match(
                    NPCSelectors::selectActiveNPC(Store->getState().NPCs),
@@ -146,11 +139,12 @@ bool UForbocAISubsystem::GetActiveNPC(FNPCInternalState &OutNPC) const {
  * Returns the last memory recall result emitted by the store.
  * User Story: As host memory UIs, I need the last recall batch so recent
  * memory results can be rendered without reissuing the query.
+ * @fn TArray<FMemoryItem> UForbocAISubsystem::GetRecalledMemories() const
  */
-TArray<FMemoryItem> UForbocAISubsystem::GetLastRecalledMemories() const {
-  return !Store.IsValid()
+TArray<FMemoryItem> UForbocAISubsystem::GetRecalledMemories() const {
+  return Store == nullptr
              ? TArray<FMemoryItem>()
-             : MemorySelectors::selectLastRecalledMemories(
+             : MemorySelectors::selectRecalledMemories(
                    Store->getState().Memory);
 }
 
@@ -158,13 +152,14 @@ TArray<FMemoryItem> UForbocAISubsystem::GetLastRecalledMemories() const {
  * Writes the most recent bridge validation result into OutResult.
  * User Story: As host validation feedback, I need the latest bridge result
  * so designers can inspect whether an action was valid.
+ * @fn bool UForbocAISubsystem::GetBridgeValidationResult( FValidationResult &OutResult) const
  */
-bool UForbocAISubsystem::GetLastBridgeValidation(
+bool UForbocAISubsystem::GetBridgeValidationResult(
     FValidationResult &OutResult) const {
-  return !Store.IsValid()
+  return Store == nullptr
              ? false
              : func::match(
-                   BridgeSelectors::selectBridgeLastValidation(
+                   BridgeSelectors::selectBridgeValidationResult(
                        Store->getState().Bridge),
                    [&OutResult](const FValidationResult &Result) {
                      OutResult = Result;
@@ -177,30 +172,14 @@ bool UForbocAISubsystem::GetLastBridgeValidation(
  * Writes the last imported soul into OutSoul when one exists.
  * User Story: As host soul-import flows, I need the latest imported soul
  * exposed so game tools can inspect the restored payload.
+ * @fn bool UForbocAISubsystem::GetImportedSouledSoul(FSoul &OutSoul) const
  */
-bool UForbocAISubsystem::GetLastImportedSoul(FSoul &OutSoul) const {
-  return !Store.IsValid() ? false
+bool UForbocAISubsystem::GetImportedSouledSoul(FSoul &OutSoul) const {
+  return Store == nullptr ? false
                           : [this, &OutSoul]() -> bool {
     const FRuntimeState State = Store->getState();
-    return State.Soul.bHasLastImport
-               ? (OutSoul = State.Soul.LastImport, true)
+    return State.Soul.bHasImportedSoul
+               ? (OutSoul = State.Soul.ImportedSoul, true)
                : false;
   }();
-}
-
-/**
- * Broadcasts selected store actions through the subsystem event delegates.
- * User Story: As host event listeners, I need store actions translated
- * into delegates so blueprint and C++ subscribers can react to runtime changes.
- */
-void UForbocAISubsystem::HandleAction(const rtk::AnyAction &Action) {
-  NPCActions::actionReceivedActionCreator().match(Action)
-      ? [this, &Action]() {
-          const auto Payload =
-              NPCActions::actionReceivedActionCreator().extract(Action);
-          Payload.hasValue
-              ? (OnNPCActionReceived.Broadcast(Payload.value.Action), void())
-              : void();
-        }()
-      : void();
 }

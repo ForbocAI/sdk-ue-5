@@ -5,6 +5,7 @@
 
 namespace Testing::FP::Composition {
 
+/** User Story: As a fp composition maybe either consumer, I need to invoke read maybe either labels through a stable signature so the fp composition maybe either workflow remains explicit and composable. @fn inline FMaybeEitherLabels ReadMaybeEitherLabels(const TSharedRef<FJsonObject> &Object) */
 inline FMaybeEitherLabels
 ReadMaybeEitherLabels(const TSharedRef<FJsonObject> &Object) {
   FMaybeEitherLabels Labels;
@@ -42,6 +43,7 @@ ReadMaybeEitherLabels(const TSharedRef<FJsonObject> &Object) {
   return Labels;
 }
 
+/** User Story: As a fp composition maybe either consumer, I need to invoke read maybe either fixture through a stable signature so the fp composition maybe either workflow remains explicit and composable. @fn inline FMaybeEitherFixture ReadMaybeEitherFixture(const DataAdapters::FSettingsSource &Source) */
 inline FMaybeEitherFixture
 ReadMaybeEitherFixture(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =

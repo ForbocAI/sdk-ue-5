@@ -7,9 +7,7 @@
 #include "Store.h"
 
 // @covers:coreThunk:checkApiStatusThunk
-// @covers:coreThunk:clearMemoryRemoteThunk
 // @covers:coreThunk:clearNodeMemoryThunk
-// @covers:coreThunk:deleteRulesetThunk
 // @covers:coreThunk:doctorThunk
 // @covers:coreThunk:exportSoulThunk
 // @covers:coreThunk:generateEmbeddingThunk
@@ -17,13 +15,11 @@
 // @covers:coreThunk:getGhostHistoryThunk
 // @covers:coreThunk:getGhostResultsThunk
 // @covers:coreThunk:getGhostStatusThunk
-// @covers:coreThunk:getSoulListThunk
-// @covers:coreThunk:importNpcFromSoulThunk
-// @covers:coreThunk:importSoulFromArweaveThunk
+// @covers:coreThunk:listSoulsThunk
+// @covers:coreThunk:importSoulThunk
 // @covers:coreThunk:importSoulThunk
 // @covers:coreThunk:initNodeMemoryThunk
 // @covers:coreThunk:initVectorThunk
-// @covers:coreThunk:listMemoryRemoteThunk
 // @covers:coreThunk:listRulePresetsThunk
 // @covers:coreThunk:listRulesetsThunk
 // @covers:coreThunk:loadBridgePresetThunk
@@ -40,13 +36,11 @@
 // @covers:coreThunk:nodeMemoryRecallThunk
 // @covers:coreThunk:nodeMemoryStoreThunk
 // @covers:coreThunk:processNPC
-// @covers:coreThunk:recallMemoryRemoteThunk
 // @covers:coreThunk:recallNodeMemoryThunk
-// @covers:coreThunk:registerRulesetThunk
-// @covers:coreThunk:remoteExportSoulThunk
+// @covers:coreThunk:exportSoulThunk
+// @covers:coreThunk:verifySoulThunk
 // @covers:coreThunk:startGhostThunk
 // @covers:coreThunk:stopGhostThunk
-// @covers:coreThunk:storeMemoryRemoteThunk
 // @covers:coreThunk:storeNodeMemoryThunk
 // @covers:coreThunk:validateBridgeThunk
 // @covers:coreThunk:verifySoulThunk
@@ -56,6 +50,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProtocolStoreWiringTest,
                                  EAutomationTestFlags_ApplicationContextMask |
                                      EAutomationTestFlags::EngineFilter)
 
+/** User Story: As a integration protocol npc consumer, I need to invoke run test through a stable signature so the integration protocol npc workflow remains explicit and composable. @fn bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) */
 bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
   rtk::EnhancedStore<FRuntimeState> TestStore = createRuntimeStore();
 

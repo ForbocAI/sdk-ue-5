@@ -5,16 +5,6 @@
 
 struct FRuntimeState;
 
-// Handler classification is pinned by the canonical instruction sequence.
-//
-// | Instruction        | Classification | Reason                                                       |
-// | ------------------ | -------------- | ------------------------------------------------------------ |
-// | IdentifyActor      | Local          | SDK resolves actor information from the host registry        |
-// | QueryVector        | Local          | SDK runs the configured memory-engine recall                 |
-// | Decision           | Local          | SDK applies the local decision policy                        |
-// | Reasoning          | Pass-through   | API hosts the SLM; SDK acknowledges and continues            |
-// | Finalize           | Local          | SDK persists memory, applies state, and dispatches verdict   |
-
 namespace rtk {
 
 struct FProtocolHandlerContext {
@@ -24,6 +14,7 @@ struct FProtocolHandlerContext {
       const FMemoryRecallRequest &)>
       RecallMemory;
 
+  /** User Story: As a features protocol handlers consumer, I need to invoke has memory through a stable signature so the features protocol handlers workflow remains explicit and composable. @fn bool HasMemory() const */
   bool HasMemory() const {
     return static_cast<bool>(StoreMemory) && static_cast<bool>(RecallMemory);
   }

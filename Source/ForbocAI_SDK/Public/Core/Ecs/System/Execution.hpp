@@ -3,6 +3,7 @@
 namespace ecs {
 
 
+/** User Story: As a core ecs system consumer, I need to invoke create text atom through a stable signature so the core ecs system workflow remains explicit and composable. @fn inline FString createTextAtom(const char *Atom) */
 inline FString createTextAtom(const char *Atom) {
   return FString(UTF8_TO_TCHAR(Atom));
 }
@@ -13,8 +14,8 @@ struct FComponentValueFormatCase {
 };
 
 /**
+ * @fn inline int32 componentValueKindKey(EComponentValueKind Kind)
  * @brief Converts a component value kind into a dispatcher key.
- * @signature inline int32 componentValueKindKey(EComponentValueKind Kind)
  *
  * User Story: As ECS inspection code, enum formatting should use a stable
  * dispatcher key that composes with fp dispatch helpers.
@@ -24,8 +25,8 @@ inline int32 componentValueKindKey(EComponentValueKind Kind) {
 }
 
 /**
+ * @fn inline std::function<FComponentValueFormatter(FComponentValueFormatter)> registerComponentValueFormatter( EComponentValueKind Kind, std::function<FString(const FComponentValue &)> Format)
  * @brief Creates a reusable formatter registration function.
- * @signature inline std::function<FComponentValueFormatter(FComponentValueFormatter)> registerComponentValueFormatter(EComponentValueKind Kind, std::function<FString(const FComponentValue &)> Format)
  *
  * User Story: As ECS inspection code, component formatter registration should
  * be a reusable function factory for pipeline composition.
@@ -41,7 +42,9 @@ registerComponentValueFormatter(
 }
 
 /**
+ * @fn inline FComponentValueFormatter createComponentValueFormatter( std::initializer_list<FComponentValueFormatCase> Cases)
  * @brief Builds the formatter dispatcher from registered case declarations.
+ * User Story: As a core ecs system consumer, I need to invoke create component value formatter through a stable signature so the core ecs system workflow remains explicit and composable.
  */
 inline FComponentValueFormatter createComponentValueFormatter(
     std::initializer_list<FComponentValueFormatCase> Cases) {
@@ -57,8 +60,8 @@ inline FComponentValueFormatter createComponentValueFormatter(
 }
 
 /**
+ * @fn inline FComponentValueFormatter createComponentValueFormatter()
  * @brief Builds the component value formatter through functional composition.
- * @signature inline FComponentValueFormatter createComponentValueFormatter()
  *
  * User Story: As ECS inspection code, component formatting should be a
  * dispatcher assembled from reusable registrations instead of a branch ladder.
@@ -102,8 +105,8 @@ inline FComponentValueFormatter createComponentValueFormatter() {
 }
 
 /**
+ * @fn inline const FComponentValueFormatter &componentValueFormatter()
  * @brief Returns the lazily initialized component value formatter.
- * @signature inline const FComponentValueFormatter &componentValueFormatter()
  *
  * User Story: As ECS inspection code, formatter registration should be built
  * once and reused by every inspection call.
@@ -115,8 +118,8 @@ inline const FComponentValueFormatter &componentValueFormatter() {
 }
 
 /**
+ * @fn inline FString componentValueToString(const FComponentValue &Value)
  * @brief Formats a component value for ECS inspection output.
- * @signature inline FString componentValueToString(const FComponentValue &Value)
  *
  * User Story: As ECS inspection code, component formatting should dispatch
  * through a reusable functional table.

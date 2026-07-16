@@ -5,12 +5,14 @@
 
 namespace TestGame {
 
+/** User Story: As a features systems bridge consumer, I need to invoke bridge settings source through a stable signature so the features systems bridge workflow remains explicit and composable. @fn inline const DataAdapters::FSettingsSource &BridgeSettingsSource() */
 inline const DataAdapters::FSettingsSource &BridgeSettingsSource() {
   static const DataAdapters::FSettingsSource Source =
       DataAdapters::SettingsSource(TEXT("systems/bridge.json"));
   return Source;
 }
 
+/** User Story: As a features systems bridge consumer, I need to invoke create bridge initial state through a stable signature so the features systems bridge workflow remains explicit and composable. @fn inline FBridgeState CreateBridgeInitialState() */
 inline FBridgeState CreateBridgeInitialState() {
   const TSharedRef<FJsonObject> Initial = DataAdapters::ReadObjectField(
       BridgeSettingsSource(), TEXT("initialState"));
@@ -24,6 +26,7 @@ inline FBridgeState CreateBridgeInitialState() {
   return State;
 }
 
+/** User Story: As a features systems bridge consumer, I need to invoke resolve bridge preset move distance through a stable signature so the features systems bridge workflow remains explicit and composable. @fn inline TOptional<int32> ResolveBridgePresetMoveDistance( const FString &Preset) */
 inline TOptional<int32> ResolveBridgePresetMoveDistance(
     const FString &Preset) {
   const TSharedRef<FJsonObject> Presets = DataAdapters::ReadObjectField(
@@ -34,6 +37,7 @@ inline TOptional<int32> ResolveBridgePresetMoveDistance(
              : TOptional<int32>();
 }
 
+/** User Story: As a features systems bridge consumer, I need to invoke format jump force exceeded through a stable signature so the features systems bridge workflow remains explicit and composable. @fn inline FString FormatJumpForceExceeded(int32 Force, int32 Maximum) */
 inline FString FormatJumpForceExceeded(int32 Force, int32 Maximum) {
   const TSharedRef<FJsonObject> Messages = DataAdapters::ReadObjectField(
       BridgeSettingsSource(), TEXT("messages"));

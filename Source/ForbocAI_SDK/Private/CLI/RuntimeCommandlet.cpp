@@ -1,9 +1,11 @@
 #include "CLI/RuntimeCommandlet.h"
 #include "CLI/CLIModule.h"
-#include "Features/CLI/CLIAdapters.h"
+#include "Features/CLI/CLISelectors.h"
 #include "Features/CLI/Invocation/InvocationAdapters.h"
 #include "Features/Config/ConfigAdapters.h"
+#include "Store.h"
 
+/** User Story: As a cli consumer, I need to invoke uforboc aicommandlet through a stable signature so the cli workflow remains explicit and composable. @fn UForbocAICommandlet::UForbocAICommandlet() */
 UForbocAICommandlet::UForbocAICommandlet() {
   IsClient = false;
   IsEditor = false;
@@ -11,10 +13,12 @@ UForbocAICommandlet::UForbocAICommandlet() {
   LogToConsole = true;
 }
 
+/** User Story: As a cli consumer, I need to invoke main through a stable signature so the cli workflow remains explicit and composable. @fn int32 UForbocAICommandlet::Main(const FString &Params) */
 int32 UForbocAICommandlet::Main(const FString &Params) {
   SDKConfig::InitializeConfig();
   const CommandletInvocation::FInvocation Invocation =
-      CommandletInvocation::ResolveInvocation(Params);
+      CommandletInvocation::ResolveInvocation(Params,
+                                              store().getState().CLI);
 
   (!Invocation.ApiUrl.IsEmpty() || !Invocation.ApiKey.IsEmpty())
       ? (SDKConfig::SetApiConfig(
@@ -45,12 +49,14 @@ int32 UForbocAICommandlet::Main(const FString &Params) {
   return bCommandFailed ? 1 : 0;
 }
 
+/** User Story: As a cli consumer, I need to invoke execute command through a stable signature so the cli workflow remains explicit and composable. @fn UForbocAICommandlet::CommandResult UForbocAICommandlet::executeCommand(const FString &Command, const TArray<FString> &Args) */
 UForbocAICommandlet::CommandResult
 UForbocAICommandlet::executeCommand(const FString &Command,
                                     const TArray<FString> &Args) {
   return CLIOps::DispatchCommand(Command, Args);
 }
 
+/** User Story: As a cli consumer, I need to invoke create command pipeline through a stable signature so the cli workflow remains explicit and composable. @fn UForbocAICommandlet::CommandExecution UForbocAICommandlet::createCommandPipeline(const FString &Command, const TArray<FString> &Args) */
 UForbocAICommandlet::CommandExecution
 UForbocAICommandlet::createCommandPipeline(const FString &Command,
                                            const TArray<FString> &Args) {
@@ -83,6 +89,7 @@ UForbocAICommandlet::createCommandPipeline(const FString &Command,
       });
 }
 
+/** User Story: As a cli consumer, I need to invoke command validation pipeline through a stable signature so the cli workflow remains explicit and composable. @fn CLITypes::ValidationPipeline<FString, FString> UForbocAICommandlet::commandValidationPipeline() */
 CLITypes::ValidationPipeline<FString, FString>
 UForbocAICommandlet::commandValidationPipeline() {
   return func::validationPipeline<FString, FString>() |
@@ -93,7 +100,8 @@ UForbocAICommandlet::commandValidationPipeline() {
                       : CLITypes::make_right(FString(), Command);
          } |
          [](const FString &Command) -> CLITypes::Either<FString, FString> {
-           return !ForbocAI::CLI::IsValidCommandKey(Command)
+           return !ForbocAI::CLI::isValidCommandKey(
+                      store().getState().CLI, Command)
                       ? CLITypes::make_left(
                             FString::Printf(TEXT("Invalid command: %s"),
                                              *Command),

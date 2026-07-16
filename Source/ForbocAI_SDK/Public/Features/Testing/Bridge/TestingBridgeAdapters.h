@@ -1,31 +1,55 @@
 #pragma once
 
 #include "Features/Data/DataAdapters.h"
+#include "Features/Testing/Action/ActionAdapters.h"
 #include "Features/Testing/Bridge/TestingBridgeTypes.h"
 
 namespace Testing::Bridge {
 
+/**
+ * User Story: As a bridge reducer-test consumer, I need the complete semantic action registry so fixture behavior cannot drift when enum declarations change.
+ * @fn inline const TArray<Testing::Action::TTestingActionKind<EBridgeTestActionKind>> & BridgeTestActionKinds()
+ */
+inline const TArray<Testing::Action::TTestingActionKind<EBridgeTestActionKind>> &
+BridgeTestActionKinds() {
+#define FORBOC_BRIDGE_TEST_ACTION_KIND(Name) {FString(TEXT(#Name)), EBridgeTestActionKind::Name}
+  static const TArray<Testing::Action::TTestingActionKind<
+      EBridgeTestActionKind>> Kinds = {
+      FORBOC_BRIDGE_TEST_ACTION_KIND(ValidationRequested),
+      FORBOC_BRIDGE_TEST_ACTION_KIND(ValidationSucceeded),
+      FORBOC_BRIDGE_TEST_ACTION_KIND(ValidationFailed),
+      FORBOC_BRIDGE_TEST_ACTION_KIND(ActivePresetsReceived),
+      FORBOC_BRIDGE_TEST_ACTION_KIND(ActivePresetAdded),
+      FORBOC_BRIDGE_TEST_ACTION_KIND(RulesetsReceived),
+      FORBOC_BRIDGE_TEST_ACTION_KIND(PresetIdsReceived),
+      FORBOC_BRIDGE_TEST_ACTION_KIND(ValidationCleared),
+      FORBOC_BRIDGE_TEST_ACTION_KIND(Inspect),
+  };
+#undef FORBOC_BRIDGE_TEST_ACTION_KIND
+  check(Kinds.Num() == static_cast<int32>(EBridgeTestActionKind::Count));
+  return Kinds;
+}
+
+/** User Story: As a features testing bridge consumer, I need to invoke read bridge test ruleset through a stable signature so the features testing bridge workflow remains explicit and composable. @fn inline FDirectiveRuleSet ReadBridgeTestRuleset(const TSharedPtr<FJsonObject> &Object) */
 inline FDirectiveRuleSet
 ReadBridgeTestRuleset(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
   const TSharedRef<FJsonObject> Value = Object.ToSharedRef();
   FDirectiveRuleSet Ruleset;
-  Ruleset.Id = DataAdapters::ReadStringField(Value, TEXT("id"));
   Ruleset.RulesetId =
       DataAdapters::ReadStringField(Value, TEXT("rulesetId"));
   return Ruleset;
 }
 
+/** User Story: As a features testing bridge consumer, I need to invoke read bridge test action through a stable signature so the features testing bridge workflow remains explicit and composable. @fn inline FBridgeTestAction ReadBridgeTestAction(const TSharedPtr<FJsonObject> &Object) */
 inline FBridgeTestAction
 ReadBridgeTestAction(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
   const TSharedRef<FJsonObject> Value = Object.ToSharedRef();
-  const int32 Kind = DataAdapters::ReadNumberField(Value, TEXT("kind"));
-  check(Kind >= static_cast<int32>(
-                    EBridgeTestActionKind::ValidationRequested));
-  check(Kind < static_cast<int32>(EBridgeTestActionKind::Count));
   return {
-      static_cast<EBridgeTestActionKind>(Kind),
+      Testing::Action::ReadTestingActionKind<EBridgeTestActionKind>(
+          DataAdapters::ReadStringField(Value, TEXT("kind")),
+          BridgeTestActionKinds()),
       func::map_array<TSharedPtr<FJsonObject>, FDirectiveRuleSet>(
           DataAdapters::ReadObjectArrayField(Value, TEXT("rulesets")),
           ReadBridgeTestRuleset),
@@ -36,6 +60,7 @@ ReadBridgeTestAction(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing bridge consumer, I need to invoke read bridge test expected through a stable signature so the features testing bridge workflow remains explicit and composable. @fn inline FBridgeTestExpected ReadBridgeTestExpected(const TSharedPtr<FJsonObject> &Object) */
 inline FBridgeTestExpected
 ReadBridgeTestExpected(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -56,6 +81,7 @@ ReadBridgeTestExpected(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing bridge consumer, I need to invoke read bridge test step through a stable signature so the features testing bridge workflow remains explicit and composable. @fn inline FBridgeTestStep ReadBridgeTestStep(const TSharedPtr<FJsonObject> &Object) */
 inline FBridgeTestStep
 ReadBridgeTestStep(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -68,6 +94,7 @@ ReadBridgeTestStep(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing bridge consumer, I need to invoke read bridge test scenario through a stable signature so the features testing bridge workflow remains explicit and composable. @fn inline FBridgeTestScenario ReadBridgeTestScenario(const TSharedPtr<FJsonObject> &Object) */
 inline FBridgeTestScenario
 ReadBridgeTestScenario(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -80,12 +107,14 @@ ReadBridgeTestScenario(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing bridge consumer, I need to invoke read bridge test scenarios through a stable signature so the features testing bridge workflow remains explicit and composable. @fn inline TArray<FBridgeTestScenario> ReadBridgeTestScenarios(const DataAdapters::FArraySource &Source) */
 inline TArray<FBridgeTestScenario>
 ReadBridgeTestScenarios(const DataAdapters::FArraySource &Source) {
   return func::map_array<TSharedPtr<FJsonObject>, FBridgeTestScenario>(
       DataAdapters::ReadObjectArray(Source), ReadBridgeTestScenario);
 }
 
+/** User Story: As a features testing bridge consumer, I need to invoke read bridge test labels through a stable signature so the features testing bridge workflow remains explicit and composable. @fn inline FBridgeTestLabels ReadBridgeTestLabels(const DataAdapters::FSettingsSource &Source) */
 inline FBridgeTestLabels
 ReadBridgeTestLabels(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Labels =
@@ -110,6 +139,7 @@ ReadBridgeTestLabels(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As a features testing bridge consumer, I need to invoke testing bridge fixtures through a stable signature so the features testing bridge workflow remains explicit and composable. @fn inline const FBridgeTestFixtures &TestingBridgeFixtures() */
 inline const FBridgeTestFixtures &TestingBridgeFixtures() {
   static const DataAdapters::FSettingsSource Settings =
       DataAdapters::SettingsSource(
@@ -135,6 +165,7 @@ inline const FBridgeTestFixtures &TestingBridgeFixtures() {
   return Fixtures;
 }
 
+/** User Story: As a features testing bridge consumer, I need to invoke find bridge test scenario through a stable signature so the features testing bridge workflow remains explicit and composable. @fn inline func::Maybe<FBridgeTestScenario> FindBridgeTestScenario(const FString &Name) */
 inline func::Maybe<FBridgeTestScenario>
 FindBridgeTestScenario(const FString &Name) {
   return func::find_array<FBridgeTestScenario>(

@@ -12,7 +12,7 @@ $Build = Join-Path $UERoot "Engine\Build\BatchFiles\Build.bat"
 $EditorCmd = Join-Path $UERoot "Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
 
 . (Join-Path $ScriptsDir "lib\TestEnvironment.ps1")
-Import-ForbocTestEnvironment -KeyRequirement Optional
+Import-ForbocTestEnvironment -KeyRequirement Required
 . (Join-Path $ScriptsDir "lib\PluginHost.ps1")
 
 if (-not (Test-Path $Project)) {
@@ -28,7 +28,7 @@ if (-not (Test-Path $EditorCmd)) {
 Initialize-ForbocPluginHost -Root $Root
 
 if ($env:FORBOCAI_UE_SKIP_BUILD -ne "1") {
-    & $Build "ForbocAI_SDK_Editor" "Win64" "Development" "-Project=$Project" "-WaitMutex" "-NoHotReloadFromIDE"
+    & $Build "ForbocAI_SDK_Editor" "Win64" "Development" "-Project=$Project" "-WaitMutex" "-NoHotReloadFromIDE" "-NoUBTMakefiles"
     if ($LASTEXITCODE -ne 0) {
         exit $LASTEXITCODE
     }
@@ -61,6 +61,9 @@ if (-not $Output.Contains("Automation Test Queue Empty")) {
 }
 if ($Output -match 'Test Completed\. Result=\{(Fail|NotRun)\}') {
     throw "One or more Unreal automation tests did not pass."
+}
+if ($Output -match '(?i)(LogAutomationController|LogAutomationWorker):.*(skip:|skipping\s)|LogTemp:.*skipping\s.*(test|integration)') {
+    throw "Unreal automation reported a skipped test as completed."
 }
 
 $FoundMatches = [regex]::Matches($Output, 'Found ([0-9]+) automation tests based on')

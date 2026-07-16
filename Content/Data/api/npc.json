@@ -1,0 +1,106 @@
+{
+  "response": {
+    "instruction": "instruction",
+    "tape": "tape"
+  },
+  "request": {
+    "tape": "tape",
+    "lastResult": "lastResult"
+  },
+  "tape": {
+    "observation": "observation",
+    "context": "context",
+    "npcState": "npcState",
+    "structuredPersona": "structuredPersona",
+    "samplerProfile": "samplerProfile",
+    "actor": "actor",
+    "memories": "memories",
+    "decisionIntent": "decisionIntent",
+    "reasoningOutput": "reasoningOutput",
+    "prompt": "prompt",
+    "constraints": "constraints",
+    "generatedOutput": "generatedOutput",
+    "rulesetId": "rulesetId",
+    "vectorQueried": "vectorQueried"
+  },
+  "actor": {
+    "id": "npcId",
+    "structuredPersona": "structuredPersona",
+    "data": "data"
+  },
+  "decisionIntent": {
+    "goal": "goal",
+    "actionType": "actionType",
+    "target": "target",
+    "metadata": "metadata"
+  },
+  "reasoningOutput": {
+    "reasoningText": "reasoningText",
+    "responseText": "responseText"
+  },
+  "promptConstraints": {
+    "maxTokens": "maxTokens",
+    "temperature": "temperature",
+    "stop": "stop",
+    "repeatPenalty": "repeatPenalty",
+    "seed": "seed"
+  },
+  "instruction": {
+    "type": "type",
+    "query": "query",
+    "limit": "limit",
+    "threshold": "threshold"
+  },
+  "instructionTypes": {
+    "identifyActor": "IdentifyActor",
+    "queryVector": "QueryVector",
+    "decision": "Decision",
+    "reasoning": "Reasoning",
+    "finalize": "Finalize"
+  },
+  "resultTypes": {
+    "identifyActor": "IdentifyActorResult",
+    "queryVector": "QueryVectorResult",
+    "decision": "Decision",
+    "reasoning": "Reasoning"
+  },
+  "finalize": {
+    "valid": "valid",
+    "signature": "signature",
+    "memoryStore": "memoryStore",
+    "stateTransform": "stateTransform",
+    "action": "action",
+    "dialogue": "dialogue",
+    "ruleAudit": "ruleAudit"
+  },
+  "ruleAudit": {
+    "preset": "preset",
+    "appliedRules": "appliedRules"
+  },
+  "ruleVerdict": {
+    "ruleId": "ruleId",
+    "verdict": "verdict",
+    "reason": "reason"
+  },
+  "verdicts": {
+    "pass": "pass",
+    "blocked": "blocked"
+  },
+  "values": {
+    "objectType": "object",
+    "stringType": "string",
+    "numberType": "number",
+    "booleanType": "boolean"
+  },
+  "errors": {
+    "invalidResponse": "Invalid NPC process response",
+    "invalidTape": "Invalid NPC process tape response",
+    "invalidInstruction": "Invalid NPC process instruction response",
+    "invalidPersona": "Invalid structured persona response",
+    "invalidActor": "Invalid NPC actor response",
+    "invalidDecisionIntent": "Invalid NPC decision intent response",
+    "invalidReasoningOutput": "Invalid NPC reasoning output response",
+    "invalidPromptConstraints": "Invalid NPC prompt constraints response",
+    "invalidRuleAudit": "Invalid NPC rule audit response"
+  }
+}

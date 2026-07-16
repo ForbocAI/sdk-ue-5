@@ -5,8 +5,8 @@
 namespace rtk {
 namespace detail {
 /**
+ * @fn template <typename Result, typename State, typename Combiner, typename InputTuple, size_t... Is> Result evaluateSelector(const State &state, Combiner &combiner, const InputTuple &inputs, func::seq<Is...>)
  * @brief Evaluates a selector combiner against each input selector in a tuple.
- * @signature template <typename Result, typename State, typename Combiner, typename InputTuple, size_t... Is> Result evaluateSelector(const State &state, Combiner &combiner, const InputTuple &inputs, func::seq<Is...>)
  * @param state The current state to evaluate against.
  * @param combiner The combinatorial function.
  * @param inputs A tuple of input selectors.
@@ -25,8 +25,8 @@ Result evaluateSelector(const State &state, Combiner &combiner,
 } // namespace detail
 
 /**
+ * @fn template <typename State, typename Result, typename... InSelectors> std::function<Result(const State &)> createSelector( const std::tuple<InSelectors...> &inputSelectors, std::function< Result(decltype(std::declval<InSelectors>()( std::declval<const State &>()))...)> combiner)
  * @brief Creates a memoized selector from input selectors and a combiner.
- * @signature template <typename State, typename Result, typename... InSelectors> std::function<Result(const State &)> createSelector(const std::tuple<InSelectors...> &inputSelectors, std::function<Result(decltype(std::declval<InSelectors>()(std::declval<const State &>()))...)> combiner)
  * @param inputSelectors A tuple of input selector functions.
  * @param combiner A function combining the outputs of the input selectors.
  * @return std::function<Result(const State &)> The memoized selector.

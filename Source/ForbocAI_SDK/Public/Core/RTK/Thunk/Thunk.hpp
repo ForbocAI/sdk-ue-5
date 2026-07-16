@@ -30,16 +30,47 @@ struct AsyncThunkConfig {
 
   std::function<ThunkAction<Result, State>(const Arg &)> thunkActionCreator;
 
+  /** User Story: As a core rtk thunk consumer, I need to invoke the callable value through a stable signature so the core rtk thunk workflow remains explicit and composable. @fn ThunkAction<Result, State> operator()(const Arg &arg) const */
   ThunkAction<Result, State> operator()(const Arg &arg) const {
     return thunkActionCreator(arg);
   }
 };
+
+/** User Story: As a core rtk thunk consumer, I need to invoke create async thunk through a stable signature so the core rtk thunk workflow remains explicit and composable. @fn template <typename Result, typename Arg, typename State> AsyncThunkConfig<Result, Arg, State> createAsyncThunk( const FString &TypePrefix, std::function<func::AsyncResult<Result>(const Arg &, const ThunkApi<State> &)> PayloadCreator) */
+template <typename Result, typename Arg, typename State>
+AsyncThunkConfig<Result, Arg, State> createAsyncThunk(
+    const FString &TypePrefix,
+    std::function<func::AsyncResult<Result>(const Arg &,
+                                            const ThunkApi<State> &)>
+        PayloadCreator);
+
+struct AsyncThunkCreator {
+  /** User Story: As a core rtk thunk consumer, I need to invoke the callable value through a stable signature so the core rtk thunk workflow remains explicit and composable. @fn template <typename Result, typename Arg, typename State> AsyncThunkConfig<Result, Arg, State> operator()( const FString &TypePrefix, std::function<func::AsyncResult<Result>(const Arg &, const ThunkApi<State> &)> PayloadCreator) const */
+  template <typename Result, typename Arg, typename State>
+  AsyncThunkConfig<Result, Arg, State> operator()(
+      const FString &TypePrefix,
+      std::function<func::AsyncResult<Result>(const Arg &,
+                                              const ThunkApi<State> &)>
+          PayloadCreator) const {
+    return createAsyncThunk<Result, Arg, State>(TypePrefix, PayloadCreator);
+  }
+};
+
+static const AsyncThunkCreator asyncThunkCreator = AsyncThunkCreator();
+
+/** User Story: As a core rtk thunk consumer, I need to invoke unwrap result through a stable signature so the core rtk thunk workflow remains explicit and composable. @fn template <typename Error, typename Result> Result unwrapResult(const func::Either<Error, Result> &Value) */
+template <typename Error, typename Result>
+Result unwrapResult(const func::Either<Error, Result> &Value) {
+  checkf(!Value.isLeft, TEXT("unwrapResult received a rejected result"));
+  return Value.right;
+}
 
 namespace detail {
 /**
  * Wraps an already available value in a resolved AsyncResult.
  * User Story: As thunk authors, I need synchronous values adapted into
  * AsyncResult so feature workflows can compose through the RTK async contract.
+ * @fn template <typename T> inline func::AsyncResult<T> ResolveAsync(const T &Value)
  */
 template <typename T>
 inline func::AsyncResult<T> ResolveAsync(const T &Value) {
@@ -52,6 +83,7 @@ inline func::AsyncResult<T> ResolveAsync(const T &Value) {
  * Wraps a UE string error in a rejected AsyncResult.
  * User Story: As thunk authors, I need UE-string failures adapted into
  * AsyncResult so feature workflows can reject through the RTK async contract.
+ * @fn template <typename T> inline func::AsyncResult<T> RejectAsync(const FString &Error)
  */
 template <typename T>
 inline func::AsyncResult<T> RejectAsync(const FString &Error) {
@@ -63,6 +95,7 @@ inline func::AsyncResult<T> RejectAsync(const FString &Error) {
       });
 }
 
+/** User Story: As a core rtk thunk consumer, I need to invoke add async thunk case when through a stable signature so the core rtk thunk workflow remains explicit and composable. @fn template <typename State, typename CreatorT, typename ReducerT> ActionReducerMapBuilder<State> & addAsyncThunkCaseWhen(ActionReducerMapBuilder<State> &Builder, bool bHasReducer, const CreatorT &Creator, const ReducerT &Reducer) */
 template <typename State, typename CreatorT, typename ReducerT>
 ActionReducerMapBuilder<State> &
 addAsyncThunkCaseWhen(ActionReducerMapBuilder<State> &Builder,
@@ -71,6 +104,7 @@ addAsyncThunkCaseWhen(ActionReducerMapBuilder<State> &Builder,
   return bHasReducer ? Builder.addCase(Creator, Reducer) : Builder;
 }
 
+/** User Story: As a core rtk thunk consumer, I need to invoke add async thunk settled matcher when through a stable signature so the core rtk thunk workflow remains explicit and composable. @fn template <typename State, typename Returned, typename ThunkArg> ActionReducerMapBuilder<State> &addAsyncThunkSettledMatcherWhen( ActionReducerMapBuilder<State> &Builder, bool bHasSettled, const AsyncThunkConfig<Returned, ThunkArg, State> &AsyncThunk, const AsyncThunkReducers<State, ThunkArg, Returned> &Reducers) */
 template <typename State, typename Returned, typename ThunkArg>
 ActionReducerMapBuilder<State> &addAsyncThunkSettledMatcherWhen(
     ActionReducerMapBuilder<State> &Builder, bool bHasSettled,
@@ -90,9 +124,9 @@ ActionReducerMapBuilder<State> &addAsyncThunkSettledMatcherWhen(
 } // namespace detail
 
 /**
+ * @fn template <typename Result, typename Arg, typename State> AsyncThunkConfig<Result, Arg, State> createAsyncThunk( const FString &TypePrefix, std::function<func::AsyncResult<Result>(const Arg &, const ThunkApi<State> &)> PayloadCreator, ConditionCallback<Arg, State> Condition)
  * @brief Creates a thunk config with pending, fulfilled, and rejected lifecycle
  * actions, plus an optional condition guard.
- * @signature template <typename Result, typename Arg, typename State> AsyncThunkConfig<Result, Arg, State> createAsyncThunk(const FString &TypePrefix, PayloadCreator, Condition)
  * @param TypePrefix The prefix string used for action types.
  * @param PayloadCreator The async function returning an AsyncResult.
  * @param Condition Optional guard - return false to skip execution.
@@ -191,7 +225,9 @@ AsyncThunkConfig<Result, Arg, State> createAsyncThunk(
 }
 
 /**
+ * @fn template <typename Result, typename Arg, typename State> AsyncThunkConfig<Result, Arg, State> createAsyncThunk( const FString &TypePrefix, std::function<func::AsyncResult<Result>(const Arg &, const ThunkApi<State> &)> PayloadCreator)
  * @brief Convenience overload without a condition guard (always proceeds).
+ * User Story: As a core rtk thunk consumer, I need to invoke create async thunk through a stable signature so the core rtk thunk workflow remains explicit and composable.
  */
 template <typename Result, typename Arg, typename State>
 AsyncThunkConfig<Result, Arg, State> createAsyncThunk(
@@ -203,6 +239,7 @@ AsyncThunkConfig<Result, Arg, State> createAsyncThunk(
       TypePrefix, PayloadCreator, ConditionCallback<Arg, State>{});
 }
 
+/** User Story: As a core rtk thunk consumer, I need to invoke add async thunk through a stable signature so the core rtk thunk workflow remains explicit and composable. @fn template <typename State> template <typename Returned, typename ThunkArg> ActionReducerMapBuilder<State> &ActionReducerMapBuilder<State>::addAsyncThunk( const AsyncThunkConfig<Returned, ThunkArg, State> &AsyncThunk, const AsyncThunkReducers<State, ThunkArg, Returned> &Reducers) */
 template <typename State>
 template <typename Returned, typename ThunkArg>
 ActionReducerMapBuilder<State> &ActionReducerMapBuilder<State>::addAsyncThunk(

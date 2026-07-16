@@ -10,6 +10,7 @@
 #   2. No no-op assertions like `TestTrue(..., true)` or `TestFalse(..., false)`.
 #   3. No hard-coded JSON strings (e.g. `TEXT("{\"action\":...}")`).
 #   4. No swallowing failures via AddWarning() instead of failing.
+#   5. No opt-in gates or success-returning skip markers in tests.
 #
 # Run from the SDK plugin root:
 #   bash scripts/check-test-quality.sh
@@ -113,6 +114,30 @@ if [ -n "$HITS" ]; then
   VIOLATIONS=$((VIOLATIONS + 1))
 else
   echo "  ✓ No AddWarning usage found."
+fi
+echo ""
+
+# ── Rule 5: No skip-as-success paths ──
+echo "[Rule 5] No opt-in or skip-as-success test paths..."
+SKIP_TERMS='ShouldSkip|Skip[A-Za-z0-9_]*Integration|FORBOC_RUN_[A-Z0-9_]*TESTS|TEXT\("(Skip:|Skipping[[:space:]])|AddInfo\([^\n]*(Skip:|Skipping[[:space:]])'
+HITS=$($SEARCH_CMD "$SKIP_TERMS" "${TEST_DIRS[@]}" 2>/dev/null || true)
+if [ -n "$HITS" ]; then
+  echo "  ✗ Skip-as-success paths found:"
+  printf '%s\n' "$HITS"
+  VIOLATIONS=$((VIOLATIONS + 1))
+else
+  echo "  ✓ No opt-in or skip-as-success test paths found."
+fi
+echo ""
+
+# ── Rule 6: Reducer-test actions use semantic names with full coverage ──
+echo "[Rule 6] Semantic reducer-test action fixture contracts..."
+if PYTHONDONTWRITEBYTECODE=1 python3 \
+  "$PLUGIN_ROOT/scripts/testing/check-test-action-kinds.py"; then
+  echo "  ✓ Reducer-test action fixtures match their C++ enums."
+else
+  echo "  ✗ Reducer-test action fixture contract violations found."
+  VIOLATIONS=$((VIOLATIONS + 1))
 fi
 echo ""
 

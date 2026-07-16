@@ -6,6 +6,7 @@
 namespace CLIOps {
 namespace Handlers {
 
+/** User Story: As a cli cli handlers consumer, I need to invoke handle ghost through a stable signature so the cli cli handlers workflow remains explicit and composable. @fn HandlerResult HandleGhost(rtk::EnhancedStore<FRuntimeState> &Store, const FString &CommandKey, const TArray<FString> &Args) */
 HandlerResult HandleGhost(rtk::EnhancedStore<FRuntimeState> &Store,
                          const FString &CommandKey,
                          const TArray<FString> &Args) {
@@ -22,17 +23,18 @@ HandlerResult HandleGhost(rtk::EnhancedStore<FRuntimeState> &Store,
                      Ops::startGhost(Store, Suite, Duration);
                  UE_LOG(LogTemp, Display,
                         TEXT("Ghost session started: %s"), *Resp.SessionId);
-                 return just(Result::Success("Ghost run started"));
+                 return just(Result::Success(
+                     TCHAR_TO_UTF8(*Resp.SessionId)));
                }()
          : CommandKey == TEXT("ghost_status")
              ? (Args.Num() < 1
                     ? just(Result::Failure(
                           "Usage: ghost_status <sessionId>"))
                     : [&]() -> HandlerResult {
-                        FGhostStatusResponse Resp =
+                        FGhostStatus Resp =
                             Ops::getGhostStatus(Store, Args[0]);
                         UE_LOG(LogTemp, Display, TEXT("Ghost status: %s"),
-                               *Resp.getGhostStatus);
+                               *Resp.Status);
                         return just(
                             Result::Success("Ghost status retrieved"));
                       }())

@@ -3,69 +3,69 @@
 #include "Features/API/APIAdapters.h"
 #include "Features/API/Endpoints/EndpointsTypes.h"
 
-namespace APISlice {
-namespace Endpoints {
+namespace APISlice::Endpoints {
 
-inline Thunk<FSoulExportPhase1Response>
-postSoulExport(const FString &NpcId,
-               const FSoulExportPhase1Request &Request) {
-  return Detail::MakePostWithCodec<FSoulExportPhase1Request,
-                                   FSoulExportPhase1Response>(
-      TEXT("postSoulExport"),
-      SDKConfig::GetApiUrl() + TEXT("/npcs/") + Detail::Encode(NpcId) +
-          TEXT("/soul/export"),
-      Request, Detail::EncodeSoulExportPhase1Request,
-      Detail::DecodeSoulExportPhase1Response);
+/**
+ * User Story: As a Soul exporter, I need the API to bind the precomputed
+ * immutable transaction ID to the encrypted payload digest before upload.
+ * @fn inline Thunk<FSoulExportPreparation> postSoulExportPreparation( const FString &NpcId, const FSoulExportPreparationRequest &Request)
+ */
+inline Thunk<FSoulExportPreparation> postSoulExportPreparation(
+    const FString &NpcId, const FSoulExportPreparationRequest &Request) {
+  const Configuration::FEndpointConfigurationData &Data =
+      Configuration::endpointData();
+  const Transport::FTransportQueryData &TransportData =
+      Transport::transportQueryData();
+  return Detail::MakePostWithCodec<FSoulExportPreparationRequest,
+                                   FSoulExportPreparation>(
+      Data.Names.PostSoulExportPreparation,
+      Configuration::apiEndpoint(Configuration::endpointPath(
+          {Data.Segments.Npcs, NpcId, Data.Segments.Soul,
+           Data.Segments.Export})),
+      Request, Detail::EncodeSoulExportPreparationRequest,
+      Detail::DecodeSoulExportPreparationResponse,
+      {Configuration::endpointTag(TransportData.Tags.Soul)});
 }
 
-inline Thunk<FSoulExportResponse>
-postSoulExportConfirm(const FString &NpcId,
-                      const FSoulExportConfirmRequest &Request) {
-  return Detail::MakePostWithCodec<FSoulExportConfirmRequest,
+/**
+ * User Story: As a Soul exporter, I need provider evidence confirmed against
+ * the API-issued token before durable local catalog publication.
+ * @fn inline Thunk<FSoulExportResponse> postSoulExportConfirmation( const FString &NpcId, const FSoulExportConfirmationRequest &Request)
+ */
+inline Thunk<FSoulExportResponse> postSoulExportConfirmation(
+    const FString &NpcId, const FSoulExportConfirmationRequest &Request) {
+  const Configuration::FEndpointConfigurationData &Data =
+      Configuration::endpointData();
+  const Transport::FTransportQueryData &TransportData =
+      Transport::transportQueryData();
+  return Detail::MakePostWithCodec<FSoulExportConfirmationRequest,
                                    FSoulExportResponse>(
-      TEXT("postSoulExportConfirm"),
-      SDKConfig::GetApiUrl() + TEXT("/npcs/") + Detail::Encode(NpcId) +
-          TEXT("/soul/confirm"),
-      Request, Detail::EncodeSoulExportConfirmRequest,
-      Detail::DecodeSoulExportResponse);
+      Data.Names.PostSoulExportConfirmation,
+      Configuration::apiEndpoint(Configuration::endpointPath(
+          {Data.Segments.Npcs, NpcId, Data.Segments.Soul,
+           Data.Segments.Confirm})),
+      Request, Detail::EncodeSoulExportConfirmationRequest,
+      Detail::DecodeSoulExportConfirmationResponse,
+      {Configuration::endpointTag(TransportData.Tags.Soul)});
 }
 
-inline Thunk<FSoulListResponse> getSouls(int32 Limit = 50) {
-  return Detail::MakeGet<FSoulListResponse>(
-      TEXT("getSouls"),
-      SDKConfig::GetApiUrl() + TEXT("/souls?limit=") + FString::FromInt(Limit));
+/**
+ * User Story: As a Soul importer, I need catalog metadata verified without
+ * sending decrypted character content to the API.
+ * @fn inline Thunk<FSoulVerifyResult> postSoulVerification(const FString &TxId, const FSoulVerificationRequest &Request)
+ */
+inline Thunk<FSoulVerifyResult>
+postSoulVerification(const FString &TxId,
+                     const FSoulVerificationRequest &Request) {
+  const Configuration::FEndpointConfigurationData &Data =
+      Configuration::endpointData();
+  return Detail::MakePostWithCodec<FSoulVerificationRequest,
+                                   FSoulVerifyResult>(
+      Data.Names.PostSoulVerification,
+      Configuration::apiEndpoint(Configuration::endpointPath(
+          {Data.Segments.Souls, TxId, Data.Segments.Verify})),
+      Request, Detail::EncodeSoulVerificationRequest,
+      Detail::DecodeSoulVerifyResponse);
 }
 
-inline Thunk<FSoulImportPhase1Response> getSoulImport(const FString &TxId) {
-  return Detail::MakeGet<FSoulImportPhase1Response>(
-      TEXT("getSoulImport"),
-      SDKConfig::GetApiUrl() + TEXT("/souls/") + Detail::Encode(TxId));
-}
-
-inline Thunk<FSoulVerifyResult> postSoulVerify(const FString &TxId) {
-  return Detail::MakePostRawWithCodec<FSoulVerifyResult>(
-      TEXT("postSoulVerify"),
-      SDKConfig::GetApiUrl() + TEXT("/souls/") + Detail::Encode(TxId) +
-          TEXT("/verify"),
-      TEXT("{}"), Detail::DecodeSoulVerifyResponse);
-}
-
-inline Thunk<FSoulImportPhase1Response>
-postNpcImport(const FSoulImportPhase1Request &Request) {
-  return Detail::MakePostWithCodec<FSoulImportPhase1Request,
-                                   FSoulImportPhase1Response>(
-      TEXT("postNpcImport"), SDKConfig::GetApiUrl() + TEXT("/npcs/import"),
-      Request, Detail::EncodeSoulImportPhase1Request,
-      Detail::DecodeSoulImportPhase1Response);
-}
-
-inline Thunk<FImportedNpc>
-postNpcImportConfirm(const FSoulImportConfirmRequest &Request) {
-  return Detail::MakePostWithCodec<FSoulImportConfirmRequest, FImportedNpc>(
-      TEXT("postNpcImportConfirm"),
-      SDKConfig::GetApiUrl() + TEXT("/npcs/import/confirm"), Request,
-      Detail::EncodeSoulImportConfirmRequest, Detail::DecodeImportedNpc);
-}
-
-} // namespace Endpoints
-} // namespace APISlice
+} // namespace APISlice::Endpoints

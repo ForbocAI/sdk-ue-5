@@ -5,6 +5,7 @@
 
 namespace Testing::FP::Composition {
 
+/** User Story: As a fp composition name parity consumer, I need to invoke read name parity labels through a stable signature so the fp composition name parity workflow remains explicit and composable. @fn inline FNameParityLabels ReadNameParityLabels(const TSharedRef<FJsonObject> &Object) */
 inline FNameParityLabels
 ReadNameParityLabels(const TSharedRef<FJsonObject> &Object) {
   FNameParityLabels Labels;
@@ -55,6 +56,7 @@ ReadNameParityLabels(const TSharedRef<FJsonObject> &Object) {
   return Labels;
 }
 
+/** User Story: As a fp composition name parity consumer, I need to invoke read name parity fixture through a stable signature so the fp composition name parity workflow remains explicit and composable. @fn inline FNameParityFixture ReadNameParityFixture(const DataAdapters::FSettingsSource &Source) */
 inline FNameParityFixture
 ReadNameParityFixture(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =

@@ -7,6 +7,7 @@
 namespace TestGame {
 namespace GameSelectors {
 
+/** User Story: As a systems harness game consumer, I need to invoke select game run result through a stable signature so the systems harness game workflow remains explicit and composable. @fn inline FGameRunResult SelectGameRunResult( const FTestGameState &State, const TArray<ECommandGroup> &RequiredGroups) */
 inline FGameRunResult SelectGameRunResult(
     const FTestGameState &State,
     const TArray<ECommandGroup> &RequiredGroups) {

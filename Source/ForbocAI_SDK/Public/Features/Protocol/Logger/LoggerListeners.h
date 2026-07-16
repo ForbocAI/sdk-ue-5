@@ -10,6 +10,7 @@ namespace LoggerListeners {
 using ProtocolActionPredicate =
     std::function<bool(const rtk::AnyAction &)>;
 
+/** User Story: As a features protocol logger consumer, I need to invoke create protocol logger middleware through a stable signature so the features protocol logger workflow remains explicit and composable. @fn template <typename State> inline rtk::Middleware<State> createProtocolLoggerMiddleware( const FProtocolLoggerOptions &Options = FProtocolLoggerOptions(), const ProtocolActionPredicate &Predicate = LoggerSelectors::selectIsProtocolAction) */
 template <typename State>
 inline rtk::Middleware<State> createProtocolLoggerMiddleware(
     const FProtocolLoggerOptions &Options = FProtocolLoggerOptions(),

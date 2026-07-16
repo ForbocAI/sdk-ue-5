@@ -6,6 +6,7 @@
 
 namespace VectorSlice {
 
+/** User Story: As a features vector consumer, I need to invoke create vector slice through a stable signature so the features vector workflow remains explicit and composable. @fn inline rtk::Slice<FVectorState> createVectorSlice() */
 inline rtk::Slice<FVectorState> createVectorSlice() {
   return rtk::createSlice<FVectorState>(
       TEXT("vector"), FVectorState(),

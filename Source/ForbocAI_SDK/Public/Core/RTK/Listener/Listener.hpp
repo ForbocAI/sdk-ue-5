@@ -11,6 +11,7 @@ template <typename State> struct ListenerMiddleware {
 };
 
 namespace detail {
+/** User Story: As a core rtk listener consumer, I need to invoke invoke listener effects recursive through a stable signature so the core rtk listener workflow remains explicit and composable. @fn template <typename State> void invokeListenerEffectsRecursive( const TArray<typename ListenerMiddleware<State>::EffectCallback> &Effects, int32 Index, const AnyAction &Action, const MiddlewareApi<State> &Api) */
 template <typename State>
 void invokeListenerEffectsRecursive(
     const TArray<typename ListenerMiddleware<State>::EffectCallback> &Effects,
@@ -22,6 +23,7 @@ void invokeListenerEffectsRecursive(
                                                Api));
 }
 
+/** User Story: As a core rtk listener consumer, I need to invoke run listener effects through a stable signature so the core rtk listener workflow remains explicit and composable. @fn template <typename State> void runListenerEffects( const TMap<FString, TArray<typename ListenerMiddleware<State>::EffectCallback>> &Listeners, const AnyAction &Action, const MiddlewareApi<State> &Api) */
 template <typename State>
 void runListenerEffects(
     const TMap<FString, TArray<typename ListenerMiddleware<State>::EffectCallback>>
@@ -36,8 +38,8 @@ void runListenerEffects(
 } // namespace detail
 
 /**
+ * @fn template <typename State> ListenerMiddleware<State> createListenerMiddleware()
  * @brief Creates a new empty ListenerMiddleware instance.
- * @signature template <typename State> ListenerMiddleware<State> createListenerMiddleware()
  * @return ListenerMiddleware<State> The created middleware instance.
  *
  * User Story: As a functional store implementer, I need to instantiate an empty listener registry before adding side effects.
@@ -48,8 +50,8 @@ ListenerMiddleware<State> createListenerMiddleware() {
 }
 
 /**
+ * @fn template <typename State> ListenerMiddleware<State> addListener(ListenerMiddleware<State> MiddlewareValue, const FString &ActionType, typename ListenerMiddleware<State>::EffectCallback Effect)
  * @brief Adds an effect callback to the listener middleware for a specific action type.
- * @signature template <typename State> ListenerMiddleware<State> addListener(ListenerMiddleware<State> MiddlewareValue, const FString &ActionType, typename ListenerMiddleware<State>::EffectCallback Effect)
  * @param MiddlewareValue The middleware instance (passed by value for functional updates).
  * @param ActionType The action type string to listen for.
  * @param Effect The side effect callback to execute.
@@ -66,9 +68,26 @@ addListener(ListenerMiddleware<State> MiddlewareValue,
   return MiddlewareValue;
 }
 
+/** User Story: As a core rtk listener consumer, I need to invoke remove listener through a stable signature so the core rtk listener workflow remains explicit and composable. @fn template <typename State> ListenerMiddleware<State> removeListener(ListenerMiddleware<State> MiddlewareValue, const FString &ActionType) */
+template <typename State>
+ListenerMiddleware<State>
+removeListener(ListenerMiddleware<State> MiddlewareValue,
+               const FString &ActionType) {
+  MiddlewareValue.listeners.Remove(ActionType);
+  return MiddlewareValue;
+}
+
+/** User Story: As a core rtk listener consumer, I need to invoke clear all listeners through a stable signature so the core rtk listener workflow remains explicit and composable. @fn template <typename State> ListenerMiddleware<State> clearAllListeners(ListenerMiddleware<State> MiddlewareValue) */
+template <typename State>
+ListenerMiddleware<State>
+clearAllListeners(ListenerMiddleware<State> MiddlewareValue) {
+  MiddlewareValue.listeners.Empty();
+  return MiddlewareValue;
+}
+
 /**
+ * @fn template <typename State> Middleware<State> buildListenerMiddleware(const ListenerMiddleware<State> &MiddlewareValue)
  * @brief Builds the final Middleware function from the ListenerMiddleware registry.
- * @signature template <typename State> Middleware<State> buildListenerMiddleware(const ListenerMiddleware<State> &MiddlewareValue)
  * @param MiddlewareValue The configured listener middleware.
  * @return Middleware<State> A middleware function usable with applyMiddleware.
  *

@@ -159,8 +159,10 @@ struct FPathRegistration {
   TArray<FString> Segments;
   EKind Kind = EKind::Unknown;
 
+  /** User Story: As a core ecs domain consumer, I need to invoke fpath registration through a stable signature so the core ecs domain workflow remains explicit and composable. @fn FPathRegistration() */
   FPathRegistration() {}
 
+  /** User Story: As a core ecs domain consumer, I need to invoke fpath registration through a stable signature so the core ecs domain workflow remains explicit and composable. @fn FPathRegistration(std::initializer_list<const char *> InSegments, EKind InKind) */
   FPathRegistration(std::initializer_list<const char *> InSegments,
                           EKind InKind)
       : Kind(InKind) {

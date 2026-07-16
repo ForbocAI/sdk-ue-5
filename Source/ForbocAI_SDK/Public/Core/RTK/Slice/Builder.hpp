@@ -45,6 +45,7 @@ template <typename State> struct ActionReducerMapBuilder {
    * Registers a typed reducer case for an existing action creator.
    * User Story: As slice authors, I need builder.addCase semantics so C++
    * slices mirror Redux Toolkit extraReducers callbacks.
+   * @fn template <typename Payload, typename ReducerFn> ActionReducerMapBuilder<State> & addCase(const ActionCreator<Payload> &Creator, ReducerFn ReducerFunc)
    */
   template <typename Payload, typename ReducerFn>
   ActionReducerMapBuilder<State> &
@@ -78,6 +79,7 @@ template <typename State> struct ActionReducerMapBuilder {
    * Registers an empty-payload reducer case for an existing action creator.
    * User Story: As slice authors, I need builder.addCase for lifecycle actions
    * that carry no domain payload.
+   * @fn template <typename ReducerFn> ActionReducerMapBuilder<State> & addCase(const ActionCreatorWithoutPayload &Creator, ReducerFn ReducerFunc)
    */
   template <typename ReducerFn>
   ActionReducerMapBuilder<State> &
@@ -108,6 +110,7 @@ template <typename State> struct ActionReducerMapBuilder {
    * Registers a matcher reducer for action predicates.
    * User Story: As createReducer/createSlice users, I need addMatcher semantics
    * so multiple matching reducers can run after exact addCase reducers.
+   * @fn ActionReducerMapBuilder<State> & addMatcher(std::function<bool(const AnyAction &)> Matcher, CaseReducer<State> ReducerFunc)
    */
   ActionReducerMapBuilder<State> &
   addMatcher(std::function<bool(const AnyAction &)> Matcher,
@@ -125,6 +128,7 @@ template <typename State> struct ActionReducerMapBuilder {
    * User Story: As createReducer/createSlice users, I need addDefaultCase
    * semantics so default-case behavior only runs when no case or matcher handled
    * the action.
+   * @fn ActionReducerMapBuilder<State> &addDefaultCase(CaseReducer<State> ReducerFunc)
    */
   ActionReducerMapBuilder<State> &addDefaultCase(CaseReducer<State> ReducerFunc) {
     checkf(!bHasDefaultCaseReducer,
@@ -134,6 +138,7 @@ template <typename State> struct ActionReducerMapBuilder {
     return *this;
   }
 
+  /** User Story: As a core rtk slice consumer, I need to invoke add async thunk through a stable signature so the core rtk slice workflow remains explicit and composable. @fn template <typename Returned, typename ThunkArg> ActionReducerMapBuilder<State> & addAsyncThunk(const AsyncThunkConfig<Returned, ThunkArg, State> &AsyncThunk, const AsyncThunkReducers<State, ThunkArg, Returned> &Reducers) */
   template <typename Returned, typename ThunkArg>
   ActionReducerMapBuilder<State> &
   addAsyncThunk(const AsyncThunkConfig<Returned, ThunkArg, State> &AsyncThunk,

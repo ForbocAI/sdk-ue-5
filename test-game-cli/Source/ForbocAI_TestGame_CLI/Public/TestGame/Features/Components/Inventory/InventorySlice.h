@@ -8,11 +8,13 @@
 namespace TestGame {
 
 namespace InventorySelectors {
+/** User Story: As a features components inventory consumer, I need to invoke select inventory by owner through a stable signature so the features components inventory workflow remains explicit and composable. @fn inline TMap<FString, TArray<FString>> SelectInventoryByOwner(const FInventoryState &S) */
 inline TMap<FString, TArray<FString>>
 SelectInventoryByOwner(const FInventoryState &S) {
   return S.ByOwner;
 }
 
+/** User Story: As a features components inventory consumer, I need to invoke select owner inventory through a stable signature so the features components inventory workflow remains explicit and composable. @fn inline TArray<FString> SelectOwnerInventory(const FInventoryState &S, const FString &OwnerId) */
 inline TArray<FString> SelectOwnerInventory(const FInventoryState &S,
                                             const FString &OwnerId) {
   const TArray<FString> *Items = S.ByOwner.Find(OwnerId);
@@ -20,6 +22,7 @@ inline TArray<FString> SelectOwnerInventory(const FInventoryState &S,
 }
 } // namespace InventorySelectors
 
+/** User Story: As a features components inventory consumer, I need to invoke create inventory slice through a stable signature so the features components inventory workflow remains explicit and composable. @fn inline rtk::Slice<FInventoryState> CreateInventorySlice() */
 inline rtk::Slice<FInventoryState> CreateInventorySlice() {
   return rtk::createSlice<FInventoryState>(
       TEXT("testgame/inventory"), FInventoryState(),

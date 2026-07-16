@@ -1,0 +1,246 @@
+{
+  "labels": {
+    "suite": "NPC process API adapters",
+    "queryVector": "normalizes a complete QueryVector process response",
+    "finalize": "normalizes a complete Finalize process response",
+    "rejectsAction": "rejects a Finalize response with a malformed action",
+    "rejectsMemory": "rejects a process response with a malformed recalled memory",
+    "rejectsActor": "rejects a process response with malformed actor data",
+    "rejectsInstruction": "rejects an unknown process instruction"
+  },
+  "queryVectorResponse": {
+    "instruction": {
+      "type": "QueryVector",
+      "query": "prior promise",
+      "limit": 5,
+      "threshold": 0.4
+    },
+    "tape": {
+      "observation": "What happened?",
+      "context": { "turn": 2 },
+      "npcState": { "alert": true },
+      "structuredPersona": {
+        "traits": ["patient"],
+        "goals": [],
+        "relationships": [],
+        "world": [],
+        "speakingStyle": ["brief"],
+        "constraints": []
+      },
+      "samplerProfile": null,
+      "actor": null,
+      "memories": [],
+      "decisionIntent": null,
+      "reasoningOutput": null,
+      "prompt": "Respond to the observation",
+      "constraints": {
+        "maxTokens": 128,
+        "temperature": 0.7,
+        "stop": ["END"],
+        "repeatPenalty": 1.2,
+        "seed": 42
+      },
+      "generatedOutput": null,
+      "rulesetId": "preset_default",
+      "vectorQueried": true
+    }
+  },
+  "queryVectorExpected": {
+    "instruction": {
+      "type": "QueryVector",
+      "query": "prior promise",
+      "limit": 5,
+      "threshold": 0.4
+    },
+    "tape": {
+      "observation": "What happened?",
+      "context": { "turn": 2 },
+      "npcState": { "alert": true },
+      "structuredPersona": {
+        "traits": ["patient"],
+        "goals": [],
+        "relationships": [],
+        "world": [],
+        "speakingStyle": ["brief"],
+        "constraints": []
+      },
+      "memories": [],
+      "prompt": "Respond to the observation",
+      "constraints": {
+        "maxTokens": 128,
+        "temperature": 0.7,
+        "stop": ["END"],
+        "repeatPenalty": 1.2,
+        "seed": 42
+      },
+      "rulesetId": "preset_default",
+      "vectorQueried": true
+    }
+  },
+  "finalizeResponse": {
+    "instruction": {
+      "type": "Finalize",
+      "valid": true,
+      "signature": "signed",
+      "memoryStore": [
+        {
+          "text": "Remember this response",
+          "type": "dialogue",
+          "importance": 0.75
+        }
+      ],
+      "stateTransform": { "lastIntent": "reply" },
+      "action": {
+        "type": "SPEAK",
+        "target": "player",
+        "reason": "answer",
+        "confidence": 0.9
+      },
+      "dialogue": "I remember.",
+      "ruleAudit": {
+        "preset": "preset_default",
+        "appliedRules": [
+          { "ruleId": "rule-1", "verdict": "pass", "reason": null }
+        ]
+      }
+    },
+    "tape": {
+      "observation": "Do you remember?",
+      "context": {},
+      "npcState": {},
+      "structuredPersona": null,
+      "samplerProfile": null,
+      "actor": {
+        "npcId": "npc-1",
+        "structuredPersona": null,
+        "data": { "active": true }
+      },
+      "memories": [
+        {
+          "text": "A prior answer",
+          "type": "dialogue",
+          "importance": 0.7,
+          "similarity": 0.8
+        }
+      ],
+      "decisionIntent": {
+        "goal": "answer",
+        "actionType": "SPEAK",
+        "target": "player",
+        "metadata": { "source": "memory" }
+      },
+      "reasoningOutput": {
+        "reasoningText": "The memory is relevant.",
+        "responseText": "I remember."
+      },
+      "prompt": null,
+      "constraints": null,
+      "generatedOutput": "I remember.",
+      "rulesetId": null,
+      "vectorQueried": true
+    }
+  },
+  "finalizeExpected": {
+    "instruction": {
+      "type": "Finalize",
+      "valid": true,
+      "signature": "signed",
+      "memoryStore": [
+        {
+          "text": "Remember this response",
+          "type": "dialogue",
+          "importance": 0.75
+        }
+      ],
+      "stateTransform": { "lastIntent": "reply" },
+      "action": {
+        "type": "SPEAK",
+        "target": "player",
+        "reason": "answer",
+        "confidence": 0.9
+      },
+      "dialogue": "I remember.",
+      "ruleAudit": {
+        "preset": "preset_default",
+        "appliedRules": [
+          { "ruleId": "rule-1", "verdict": "pass" }
+        ]
+      }
+    },
+    "tape": {
+      "observation": "Do you remember?",
+      "context": {},
+      "npcState": {},
+      "actor": {
+        "npcId": "npc-1",
+        "data": { "active": true }
+      },
+      "memories": [
+        {
+          "text": "A prior answer",
+          "type": "dialogue",
+          "importance": 0.7,
+          "similarity": 0.8
+        }
+      ],
+      "decisionIntent": {
+        "goal": "answer",
+        "actionType": "SPEAK",
+        "target": "player",
+        "metadata": { "source": "memory" }
+      },
+      "reasoningOutput": {
+        "reasoningText": "The memory is relevant.",
+        "responseText": "I remember."
+      },
+      "generatedOutput": "I remember.",
+      "vectorQueried": true
+    }
+  },
+  "malformedActionResponse": {
+    "instruction": {
+      "type": "Finalize",
+      "valid": true,
+      "memoryStore": [],
+      "stateTransform": {},
+      "action": { "gaType": "SPEAK" },
+      "dialogue": "Invalid"
+    },
+    "tape": {
+      "observation": "Test",
+      "context": {},
+      "npcState": {},
+      "memories": []
+    }
+  },
+  "malformedMemoryResponse": {
+    "instruction": { "type": "Decision" },
+    "tape": {
+      "observation": "Test",
+      "context": {},
+      "npcState": {},
+      "memories": [
+        { "text": "Missing importance", "type": "observation" }
+      ]
+    }
+  },
+  "malformedActorResponse": {
+    "instruction": { "type": "Reasoning" },
+    "tape": {
+      "observation": "Test",
+      "context": {},
+      "npcState": {},
+      "actor": { "npcId": "npc-1", "data": "not-an-object" },
+      "memories": []
+    }
+  },
+  "unknownInstructionResponse": {
+    "instruction": { "type": "UnknownInstruction" },
+    "tape": {
+      "observation": "Test",
+      "context": {},
+      "npcState": {},
+      "memories": []
+    }
+  }
+}

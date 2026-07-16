@@ -16,14 +16,17 @@ struct LoggedDispatchResult {
   FString Error;
 };
 
+/** User Story: As a core redux logger consumer, I need to invoke logged success through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline LoggedDispatchResult loggedSuccess(const AnyAction &ReturnedValue) */
 inline LoggedDispatchResult loggedSuccess(const AnyAction &ReturnedValue) {
   return LoggedDispatchResult{ReturnedValue, false, FString()};
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke logged failure through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline LoggedDispatchResult loggedFailure(const FString &Error) */
 inline LoggedDispatchResult loggedFailure(const FString &Error) {
   return LoggedDispatchResult{AnyAction(), true, Error};
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke dispatch with error capture through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> LoggedDispatchResult dispatchWithErrorCapture(const ReduxLoggerOptions<State> &Options, Dispatcher Next, const AnyAction &Action) */
 template <typename State>
 LoggedDispatchResult
 dispatchWithErrorCapture(const ReduxLoggerOptions<State> &Options,
@@ -43,6 +46,7 @@ dispatchWithErrorCapture(const ReduxLoggerOptions<State> &Options,
 #endif
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke dispatch next through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> LoggedDispatchResult dispatchNext(const ReduxLoggerOptions<State> &Options, Dispatcher Next, const AnyAction &Action) */
 template <typename State>
 LoggedDispatchResult dispatchNext(const ReduxLoggerOptions<State> &Options,
                                   Dispatcher Next,
@@ -52,6 +56,7 @@ LoggedDispatchResult dispatchNext(const ReduxLoggerOptions<State> &Options,
              : loggedSuccess(Next(Action));
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke apply dispatch result through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline LogEntry applyDispatchResult(LogEntry Entry, const LoggedDispatchResult &Result) */
 inline LogEntry applyDispatchResult(LogEntry Entry,
                                     const LoggedDispatchResult &Result) {
   Entry.bHasError = Result.bHasError;
@@ -59,6 +64,7 @@ inline LogEntry applyDispatchResult(LogEntry Entry,
   return Entry;
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke start log entry through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> LogEntry startLogEntry(const ReduxLoggerOptions<State> &Options, const MiddlewareApi<State> &Api, const AnyAction &Action) */
 template <typename State>
 LogEntry startLogEntry(const ReduxLoggerOptions<State> &Options,
                        const MiddlewareApi<State> &Api,
@@ -71,6 +77,7 @@ LogEntry startLogEntry(const ReduxLoggerOptions<State> &Options,
   return Entry;
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke finish log entry through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> LogEntry finishLogEntry(const ReduxLoggerOptions<State> &Options, const MiddlewareApi<State> &Api, LogEntry Entry) */
 template <typename State>
 LogEntry finishLogEntry(const ReduxLoggerOptions<State> &Options,
                         const MiddlewareApi<State> &Api, LogEntry Entry) {
@@ -79,6 +86,7 @@ LogEntry finishLogEntry(const ReduxLoggerOptions<State> &Options,
   return Entry;
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke with resolved diff through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> ReduxLoggerOptions<State> withResolvedDiff(const ReduxLoggerOptions<State> &Options, const std::function<const State &()> &GetState, const AnyAction &Action) */
 template <typename State>
 ReduxLoggerOptions<State>
 withResolvedDiff(const ReduxLoggerOptions<State> &Options,
@@ -91,6 +99,7 @@ withResolvedDiff(const ReduxLoggerOptions<State> &Options,
   return PrintOptions;
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke rethrow logged error through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline void rethrowLoggedError(const LogEntry &Entry) */
 inline void rethrowLoggedError(const LogEntry &Entry) {
 #if !PLATFORM_EXCEPTIONS_DISABLED
   Entry.bHasError
@@ -101,6 +110,7 @@ inline void rethrowLoggedError(const LogEntry &Entry) {
 #endif
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke dispatch with logging through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> AnyAction dispatchWithLogging( const ReduxLoggerOptions<State> &Options, const std::function<void(const FString &)> &Logger, const std::shared_ptr<std::vector<LogEntry>> &LogBuffer, const MiddlewareApi<State> &Api, Dispatcher Next, const AnyAction &Action, const std::function<const State &()> &GetState) */
 template <typename State>
 AnyAction dispatchWithLogging(
     const ReduxLoggerOptions<State> &Options,
@@ -120,6 +130,7 @@ AnyAction dispatchWithLogging(
   return DispatchResult.ReturnedValue;
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke dispatch or skip through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> AnyAction dispatchOrSkip( const ReduxLoggerOptions<State> &Options, const std::function<void(const FString &)> &Logger, const std::shared_ptr<std::vector<LogEntry>> &LogBuffer, const MiddlewareApi<State> &Api, Dispatcher Next, const AnyAction &Action) */
 template <typename State>
 AnyAction dispatchOrSkip(
     const ReduxLoggerOptions<State> &Options,
@@ -135,6 +146,7 @@ AnyAction dispatchOrSkip(
                                    Action, GetState);
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke pass through middleware through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> Middleware<State> passThroughMiddleware() */
 template <typename State> Middleware<State> passThroughMiddleware() {
   return [](const MiddlewareApi<State> &)
              -> std::function<Dispatcher(Dispatcher)> {
@@ -144,6 +156,7 @@ template <typename State> Middleware<State> passThroughMiddleware() {
   };
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke resolve logger through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> std::function<void(const FString &)> resolveLogger(const ReduxLoggerOptions<State> &Options) */
 template <typename State>
 std::function<void(const FString &)>
 resolveLogger(const ReduxLoggerOptions<State> &Options) {
@@ -153,6 +166,7 @@ resolveLogger(const ReduxLoggerOptions<State> &Options) {
                           };
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke active logger middleware through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> Middleware<State> activeLoggerMiddleware(const ReduxLoggerOptions<State> &Options) */
 template <typename State>
 Middleware<State>
 activeLoggerMiddleware(const ReduxLoggerOptions<State> &Options) {
@@ -173,6 +187,7 @@ activeLoggerMiddleware(const ReduxLoggerOptions<State> &Options) {
 
 namespace rtk::logger {
 
+/** User Story: As a core redux logger consumer, I need to invoke create logger through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> Middleware<State> createLogger(const ReduxLoggerOptions<State> &Options = ReduxLoggerOptions<State>()) */
 template <typename State>
 Middleware<State>
 createLogger(const ReduxLoggerOptions<State> &Options =
@@ -182,6 +197,7 @@ createLogger(const ReduxLoggerOptions<State> &Options =
              : detail::passThroughMiddleware<State>();
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke default logger through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> Middleware<State> defaultLogger() */
 template <typename State> Middleware<State> defaultLogger() {
   return createLogger<State>();
 }

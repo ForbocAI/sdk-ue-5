@@ -7,6 +7,7 @@
 
 namespace TestGame {
 
+/** User Story: As a systems harness scenario consumer, I need to invoke create scenario slice through a stable signature so the systems harness scenario workflow remains explicit and composable. @fn inline rtk::Slice<FScenarioSliceState> CreateScenarioSlice() */
 inline rtk::Slice<FScenarioSliceState> CreateScenarioSlice() {
   FScenarioSliceState Initial;
   Initial.Steps = {};

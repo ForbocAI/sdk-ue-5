@@ -8,6 +8,7 @@ struct FRuntimeState;
 
 namespace rtk {
 
+/** User Story: As a features dependencies consumer, I need to invoke check native dependencies thunk through a stable signature so the features dependencies workflow remains explicit and composable. @fn inline const AsyncThunkConfig<FNativeDependenciesReport, FEmptyPayload, FRuntimeState> & checkNativeDependenciesThunk() */
 inline const AsyncThunkConfig<FNativeDependenciesReport, FEmptyPayload, FRuntimeState> &
 checkNativeDependenciesThunk() {
   const ConditionCallback<FEmptyPayload, FRuntimeState> Condition =
@@ -25,6 +26,7 @@ checkNativeDependenciesThunk() {
   return Thunk;
 }
 
+/** User Story: As a features dependencies consumer, I need to invoke setup native dependencies thunk through a stable signature so the features dependencies workflow remains explicit and composable. @fn inline const AsyncThunkConfig<FDependenciesResult, FDependenciesOptions, FRuntimeState> & setupNativeDependenciesThunk() */
 inline const AsyncThunkConfig<FDependenciesResult, FDependenciesOptions, FRuntimeState> &
 setupNativeDependenciesThunk() {
   const ConditionCallback<FDependenciesOptions, FRuntimeState> Condition =
@@ -42,6 +44,7 @@ setupNativeDependenciesThunk() {
   return Thunk;
 }
 
+/** User Story: As a features dependencies consumer, I need to invoke refresh native dependencies thunk through a stable signature so the features dependencies workflow remains explicit and composable. @fn inline const AsyncThunkConfig<FDependenciesResult, FDependenciesOptions, FRuntimeState> & refreshNativeDependenciesThunk() */
 inline const AsyncThunkConfig<FDependenciesResult, FDependenciesOptions, FRuntimeState> &
 refreshNativeDependenciesThunk() {
   const ConditionCallback<FDependenciesOptions, FRuntimeState> Condition =

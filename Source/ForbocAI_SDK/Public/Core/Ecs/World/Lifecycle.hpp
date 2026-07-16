@@ -2,6 +2,7 @@
 
 namespace ecs {
 
+/** User Story: As a core ecs world consumer, I need to invoke spawn entity through a stable signature so the core ecs world workflow remains explicit and composable. @fn inline FSpawnedEntity spawnEntity(FWorld World) */
 inline FSpawnedEntity spawnEntity(FWorld World) {
   const FAllocatedEntity Allocated = allocateEntity(World.Allocator);
   World.Allocator = Allocated.Allocator;
@@ -14,6 +15,7 @@ inline FSpawnedEntity spawnEntity(FWorld World) {
   return Spawned;
 }
 
+/** User Story: As a core ecs world consumer, I need to invoke spawn entity in domain through a stable signature so the core ecs world workflow remains explicit and composable. @fn inline FSpawnedEntity spawnEntityInDomain(const FSpawnEntityInDomainRequest &Request) */
 inline FSpawnedEntity
 spawnEntityInDomain(const FSpawnEntityInDomainRequest &Request) {
   const FSpawnedEntity Spawned = spawnEntity(Request.World);
@@ -23,6 +25,7 @@ spawnEntityInDomain(const FSpawnEntityInDomainRequest &Request) {
   return WithDomain;
 }
 
+/** User Story: As a core ecs world consumer, I need to invoke remove entity from component type through a stable signature so the core ecs world workflow remains explicit and composable. @fn inline FComponentTypeWorldTransformFactory removeEntityFromComponentType(const EntityKey &Entity) */
 inline FComponentTypeWorldTransformFactory
 removeEntityFromComponentType(const EntityKey &Entity) {
   return [Entity](const ComponentType &Type) {
@@ -36,6 +39,7 @@ removeEntityFromComponentType(const EntityKey &Entity) {
   };
 }
 
+/** User Story: As a core ecs world consumer, I need to invoke remove entity component indexes through a stable signature so the core ecs world workflow remains explicit and composable. @fn inline FWorldTransform removeEntityComponentIndexes(const EntityKey &Entity) */
 inline FWorldTransform removeEntityComponentIndexes(const EntityKey &Entity) {
   return [Entity](const FWorld &World) {
     const FComponentTypeWorldTransformFactory RemoveFromType =
@@ -48,6 +52,7 @@ inline FWorldTransform removeEntityComponentIndexes(const EntityKey &Entity) {
   };
 }
 
+/** User Story: As a core ecs world consumer, I need to invoke remove entity direct indexes through a stable signature so the core ecs world workflow remains explicit and composable. @fn inline FWorldTransform removeEntityDirectIndexes(const EntityKey &Entity) */
 inline FWorldTransform removeEntityDirectIndexes(const EntityKey &Entity) {
   return [Entity](const FWorld &World) {
     FWorld Next = World;
@@ -59,6 +64,7 @@ inline FWorldTransform removeEntityDirectIndexes(const EntityKey &Entity) {
   };
 }
 
+/** User Story: As a core ecs world consumer, I need to invoke remove entity relationship child indexes through a stable signature so the core ecs world workflow remains explicit and composable. @fn inline FWorldTransform removeEntityRelationshipChildIndexes(const EntityKey &Entity) */
 inline FWorldTransform
 removeEntityRelationshipChildIndexes(const EntityKey &Entity) {
   return [Entity](const FWorld &World) {
@@ -67,6 +73,7 @@ removeEntityRelationshipChildIndexes(const EntityKey &Entity) {
   };
 }
 
+/** User Story: As a core ecs world consumer, I need to invoke remove entity through a stable signature so the core ecs world workflow remains explicit and composable. @fn inline FWorld removeEntity(const FRemoveEntityRequest &Request) */
 inline FWorld removeEntity(const FRemoveEntityRequest &Request) {
   const FWorld World = applyWorldTransformCatalog(
       Request.World,
@@ -77,6 +84,7 @@ inline FWorld removeEntity(const FRemoveEntityRequest &Request) {
       createRecordEntityDirtyRequest(World, Request.Entity));
 }
 
+/** User Story: As a core ecs world consumer, I need to invoke despawn entity through a stable signature so the core ecs world workflow remains explicit and composable. @fn inline FWorld despawnEntity(const FDespawnEntityRequest &Request) */
 inline FWorld despawnEntity(const FDespawnEntityRequest &Request) {
   FWorld World = Request.World;
   World.Allocator = freeEntityId(World.Allocator, Request.Id);
@@ -84,6 +92,7 @@ inline FWorld despawnEntity(const FDespawnEntityRequest &Request) {
       createRemoveEntityRequest(World, createEntityKey(Request.Id)));
 }
 
+/** User Story: As a core ecs world consumer, I need to invoke set relationship parent through a stable signature so the core ecs world workflow remains explicit and composable. @fn inline FWorld setRelationshipParent(const FSetRelationshipParentRequest &Request) */
 inline FWorld
 setRelationshipParent(const FSetRelationshipParentRequest &Request) {
   return applyRelationshipWriteDeclarations(
@@ -94,11 +103,13 @@ setRelationshipParent(const FSetRelationshipParentRequest &Request) {
         func::just(Request.Child)}});
 }
 
+/** User Story: As a core ecs world consumer, I need to invoke add relationship child through a stable signature so the core ecs world workflow remains explicit and composable. @fn inline FWorld addRelationshipChild(const FAddRelationshipChildRequest &Request) */
 inline FWorld
 addRelationshipChild(const FAddRelationshipChildRequest &Request) {
   return setRelationshipParent({Request.World, Request.Child, Request.Parent});
 }
 
+/** User Story: As a core ecs world consumer, I need to invoke remove relationship child through a stable signature so the core ecs world workflow remains explicit and composable. @fn inline FWorld removeRelationshipChild(const FRemoveRelationshipChildRequest &Request) */
 inline FWorld
 removeRelationshipChild(const FRemoveRelationshipChildRequest &Request) {
   return applyRelationshipWriteDeclarations(
@@ -109,6 +120,7 @@ removeRelationshipChild(const FRemoveRelationshipChildRequest &Request) {
         func::nothing<EntityKey>()}});
 }
 
+/** User Story: As a core ecs world consumer, I need to invoke collect entity keys through a stable signature so the core ecs world workflow remains explicit and composable. @fn inline TArray<EntityKey> collectEntityKeys(const FWorld &World) */
 inline TArray<EntityKey> collectEntityKeys(const FWorld &World) {
   const TArray<EntityKey> DomainEntities =
       func::map_keys<EntityKey, TArray<DomainPathKey>>(World.EntityDomains);

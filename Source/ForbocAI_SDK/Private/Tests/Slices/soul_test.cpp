@@ -1,6 +1,8 @@
 #include "Core/rtk.hpp"
 #include "Features/Soul/SoulSelectors.h"
 #include "Features/Soul/SoulSlice.h"
+#include "Features/Soul/Storage/Configuration/ConfigurationAdapters.h"
+#include "Features/Soul/Storage/Provider/ProviderAdapters.h"
 #include "Features/Testing/Soul/TestingSoulAdapters.h"
 #include "Misc/AutomationTest.h"
 
@@ -18,22 +20,26 @@ typedef func::ArgDispatcher<ESoulTestActionKind, FSoulTestActionInput,
                             FSoulSliceState>
     FSoulTestActionDispatcher;
 
+/** User Story: As a tests slices consumer, I need to invoke required soul field message through a stable signature so the tests slices workflow remains explicit and composable. @fn inline std::string RequiredSoulFieldMessage() */
 inline std::string RequiredSoulFieldMessage() {
   return std::string(
       TCHAR_TO_UTF8(*TestingSoulFixtures().Labels.RequiredField));
 }
 
+/** User Story: As a tests slices consumer, I need to invoke required soul field through a stable signature so the tests slices workflow remains explicit and composable. @fn template <typename T> T RequiredSoulField(const func::Maybe<T> &Value) */
 template <typename T>
 T RequiredSoulField(const func::Maybe<T> &Value) {
   return func::requireJust<T>(Value, RequiredSoulFieldMessage());
 }
 
+/** User Story: As a tests slices consumer, I need to invoke soul test slice through a stable signature so the tests slices workflow remains explicit and composable. @fn inline const rtk::Slice<FSoulSliceState> &SoulTestSlice() */
 inline const rtk::Slice<FSoulSliceState> &SoulTestSlice() {
   static const rtk::Slice<FSoulSliceState> Slice =
       SoulSlice::createSoulSlice();
   return Slice;
 }
 
+/** User Story: As a tests slices consumer, I need to invoke soul list items through a stable signature so the tests slices workflow remains explicit and composable. @fn inline TArray<FSoulListItem> SoulListItems(const TArray<FString> &TxIds) */
 inline TArray<FSoulListItem>
 SoulListItems(const TArray<FString> &TxIds) {
   return func::map_array<FString, FSoulListItem>(
@@ -44,6 +50,7 @@ SoulListItems(const TArray<FString> &TxIds) {
       });
 }
 
+/** User Story: As a tests slices consumer, I need to invoke build soul test action dispatcher through a stable signature so the tests slices workflow remains explicit and composable. @fn inline FSoulTestActionDispatcher BuildSoulTestActionDispatcher() */
 inline FSoulTestActionDispatcher BuildSoulTestActionDispatcher() {
   FSoulTestActionDispatcher Dispatcher =
       func::create_arg_dispatcher<ESoulTestActionKind,
@@ -54,7 +61,7 @@ inline FSoulTestActionDispatcher BuildSoulTestActionDispatcher() {
       Dispatcher, ESoulTestActionKind::ExportPending,
       [](const FSoulTestActionInput &Input) {
         return SoulTestSlice().Reducer(
-            Input.State, SoulSlice::Actions::remoteExportSoulPending());
+            Input.State, rtk::exportSoulThunk().pending(FString()));
       });
   Dispatcher = func::arg_dispatcher_register<
       ESoulTestActionKind, FSoulTestActionInput, FSoulSliceState>(
@@ -63,15 +70,14 @@ inline FSoulTestActionDispatcher BuildSoulTestActionDispatcher() {
         FSoulExportResult Result;
         Result.TxId = RequiredSoulField(Input.Action.TxId);
         return SoulTestSlice().Reducer(
-            Input.State,
-            SoulSlice::Actions::remoteExportSoulSuccess(Result));
+            Input.State, rtk::exportSoulThunk().fulfilled(Result));
       });
   Dispatcher = func::arg_dispatcher_register<
       ESoulTestActionKind, FSoulTestActionInput, FSoulSliceState>(
       Dispatcher, ESoulTestActionKind::ExportFailed,
       [](const FSoulTestActionInput &Input) {
         return SoulTestSlice().Reducer(
-            Input.State, SoulSlice::Actions::remoteExportSoulFailed(
+            Input.State, rtk::exportSoulThunk().rejected(
                              RequiredSoulField(Input.Action.Error)));
       });
   Dispatcher = func::arg_dispatcher_register<
@@ -79,7 +85,7 @@ inline FSoulTestActionDispatcher BuildSoulTestActionDispatcher() {
       Dispatcher, ESoulTestActionKind::ImportPending,
       [](const FSoulTestActionInput &Input) {
         return SoulTestSlice().Reducer(
-            Input.State, SoulSlice::Actions::importSoulPending());
+            Input.State, rtk::importSoulThunk().pending(FString()));
       });
   Dispatcher = func::arg_dispatcher_register<
       ESoulTestActionKind, FSoulTestActionInput, FSoulSliceState>(
@@ -87,16 +93,16 @@ inline FSoulTestActionDispatcher BuildSoulTestActionDispatcher() {
       [](const FSoulTestActionInput &Input) {
         FSoul Soul;
         Soul.Id = RequiredSoulField(Input.Action.SoulId);
-        Soul.Persona = RequiredSoulField(Input.Action.Persona);
+        Soul.StructuredPersona = RequiredSoulField(Input.Action.Persona);
         return SoulTestSlice().Reducer(
-            Input.State, SoulSlice::Actions::importSoulSuccess(Soul));
+            Input.State, rtk::importSoulThunk().fulfilled(Soul));
       });
   Dispatcher = func::arg_dispatcher_register<
       ESoulTestActionKind, FSoulTestActionInput, FSoulSliceState>(
       Dispatcher, ESoulTestActionKind::ImportFailed,
       [](const FSoulTestActionInput &Input) {
         return SoulTestSlice().Reducer(
-            Input.State, SoulSlice::Actions::importSoulFailed(
+            Input.State, rtk::importSoulThunk().rejected(
                              RequiredSoulField(Input.Action.Error)));
       });
   Dispatcher = func::arg_dispatcher_register<
@@ -104,7 +110,7 @@ inline FSoulTestActionDispatcher BuildSoulTestActionDispatcher() {
       Dispatcher, ESoulTestActionKind::SetList,
       [](const FSoulTestActionInput &Input) {
         return SoulTestSlice().Reducer(
-            Input.State, SoulSlice::Actions::setSoulList(
+            Input.State, rtk::listSoulsThunk().fulfilled(
                              SoulListItems(Input.Action.TxIds)));
       });
   Dispatcher = func::arg_dispatcher_register<
@@ -120,12 +126,14 @@ inline FSoulTestActionDispatcher BuildSoulTestActionDispatcher() {
       [](const FSoulTestActionInput &Input) { return Input.State; });
 }
 
+/** User Story: As a tests slices consumer, I need to invoke soul test action dispatcher through a stable signature so the tests slices workflow remains explicit and composable. @fn inline const FSoulTestActionDispatcher &SoulTestActionDispatcher() */
 inline const FSoulTestActionDispatcher &SoulTestActionDispatcher() {
   static const FSoulTestActionDispatcher Dispatcher =
       BuildSoulTestActionDispatcher();
   return Dispatcher;
 }
 
+/** User Story: As a tests slices consumer, I need to invoke apply soul test action through a stable signature so the tests slices workflow remains explicit and composable. @fn inline FSoulSliceState ApplySoulTestAction( const FSoulSliceState &State, const FSoulTestAction &Action) */
 inline FSoulSliceState ApplySoulTestAction(
     const FSoulSliceState &State, const FSoulTestAction &Action) {
   const FSoulTestActionInput Input{State, Action};
@@ -145,6 +153,7 @@ IMPLEMENT_COMPLEX_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
+/** User Story: As a tests slices consumer, I need to invoke get tests through a stable signature so the tests slices workflow remains explicit and composable. @fn void FSoulTest::GetTests(TArray<FString> &OutBeautifiedNames, TArray<FString> &OutTestCommands) const */
 void FSoulTest::GetTests(TArray<FString> &OutBeautifiedNames,
                          TArray<FString> &OutTestCommands) const {
   func::for_each_array<FSoulTestScenario>(
@@ -156,8 +165,35 @@ void FSoulTest::GetTests(TArray<FString> &OutBeautifiedNames,
       });
 }
 
+/** User Story: As a tests slices consumer, I need to invoke run test through a stable signature so the tests slices workflow remains explicit and composable. @fn bool FSoulTest::RunTest(const FString &Parameters) */
 bool FSoulTest::RunTest(const FString &Parameters) {
   const FSoulTestFixtures &Fixtures = TestingSoulFixtures();
+  const SoulStorage::Configuration::FSoulStorageConfigurationData &Data =
+      SoulStorage::Configuration::soulStorageData();
+  TestEqual(
+      Fixtures.Labels.ProviderRetryWithinCycle,
+      SoulStorage::Provider::soulProviderRetryDelayAdapter(
+          Fixtures.ProviderRetry.WithinCycleAttempt,
+          Fixtures.ProviderRetry.UrlCount),
+      Data.Numbers.Zero);
+  TestEqual(
+      Fixtures.Labels.ProviderRetryCycleBoundary,
+      SoulStorage::Provider::soulProviderRetryDelayAdapter(
+          Fixtures.ProviderRetry.CycleBoundaryAttempt,
+          Fixtures.ProviderRetry.UrlCount),
+      Data.Retrieval.DelayMs);
+  const int32 MaximumAttempt =
+      Data.Retrieval.MaximumCycles * Fixtures.ProviderRetry.UrlCount;
+  TestFalse(Fixtures.Labels.ProviderRetryBeforeMaximumCycle,
+            SoulStorage::Provider::soulProviderRetryExhaustedAdapter(
+                MaximumAttempt - Data.Retrieval.AttemptStep,
+                Fixtures.ProviderRetry.UrlCount));
+  TestTrue(Fixtures.Labels.ProviderRetryAtMaximumCycle,
+           SoulStorage::Provider::soulProviderRetryExhaustedAdapter(
+               MaximumAttempt, Fixtures.ProviderRetry.UrlCount));
+  TestTrue(Fixtures.Labels.ProviderRetryWithoutGateways,
+           SoulStorage::Provider::soulProviderRetryExhaustedAdapter(
+               Data.Retrieval.InitialAttempt, Data.Numbers.Zero));
   const func::Maybe<FSoulTestScenario> Scenario =
       FindSoulTestScenario(Parameters);
   TestTrue(Fixtures.Labels.ScenarioPresent, Scenario.hasValue);
@@ -176,7 +212,7 @@ bool FSoulTest::RunTest(const FString &Parameters) {
                   []() { return true; });
             };
         func::fold_array<FSoulTestStep, FSoulSliceState>(
-            Value.Steps, FSoulSliceState(),
+            Value.Steps, SoulTestSlice().InitialState,
             [this, &Fixtures, &TestValue](const FSoulSliceState &State,
                                          const FSoulTestStep &Step) {
               const FSoulSliceState Next =
@@ -189,19 +225,20 @@ bool FSoulTest::RunTest(const FString &Parameters) {
                         SoulSelectors::selectSoulImportStatus(Next));
               TestValue(Fixtures.Labels.HasExport,
                         Step.Expected.HasExport,
-                        SoulSelectors::selectSoulHasLastExport(Next));
+                        SoulSelectors::selectSoulHasExportResult(Next));
               TestValue(Fixtures.Labels.ExportTxId,
                         Step.Expected.ExportTxId,
-                        SoulSelectors::selectSoulLastExport(Next).TxId);
+                        SoulSelectors::selectSoulExportResult(Next).TxId);
               TestValue(Fixtures.Labels.HasImport,
                         Step.Expected.HasImport,
-                        SoulSelectors::selectSoulHasLastImport(Next));
+                        SoulSelectors::selectSoulHasImportedSoul(Next));
               TestValue(Fixtures.Labels.ImportId,
                         Step.Expected.ImportId,
-                        SoulSelectors::selectSoulLastImport(Next).Id);
+                        SoulSelectors::selectSoulImportedSoul(Next).Id);
               TestValue(Fixtures.Labels.ImportPersona,
                         Step.Expected.ImportPersona,
-                        SoulSelectors::selectSoulLastImport(Next).Persona);
+                        SoulSelectors::selectSoulImportedSoul(Next)
+                            .StructuredPersona);
               const TArray<FSoulListItem> &AvailableSouls =
                   SoulSelectors::selectSoulAvailableSouls(Next);
               TestValue(Fixtures.Labels.AvailableSoulCount,

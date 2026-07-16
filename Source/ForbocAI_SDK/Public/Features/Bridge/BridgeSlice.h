@@ -6,25 +6,24 @@
 
 namespace BridgeSlice {
 
-struct FBridgeSliceState {
-  rtk::EntityState<FDirectiveRuleSet> ActivePresets;
-  rtk::EntityState<FDirectiveRuleSet> AvailableRulesets;
-  TArray<FString> AvailablePresetIds;
-  FValidationResult LastValidation;
-  bool bHasLastValidation;
-  FString Status;
-  FString Error;
+/**
+ * User Story: As bridge initialization, I need adapter-owned entity state and
+ * authored status values composed at the slice boundary.
+ * @fn inline FBridgeSliceState createBridgeInitialState()
+ */
+inline FBridgeSliceState createBridgeInitialState() {
+  FBridgeSliceState State;
+  State.ActivePresets = bridgeRulesetAdapter().getInitialState();
+  State.AvailableRulesets = bridgeRulesetAdapter().getInitialState();
+  State.Status =
+      bridgeStatuses()[static_cast<int32>(EBridgeStatus::Idle)];
+  return State;
+}
 
-  FBridgeSliceState()
-      : ActivePresets(bridgeRulesetAdapter().getInitialState()),
-        AvailableRulesets(bridgeRulesetAdapter().getInitialState()),
-        bHasLastValidation(false),
-        Status(bridgeStatuses()[static_cast<int32>(EBridgeStatus::Idle)]) {}
-};
-
+/** User Story: As a features bridge consumer, I need to invoke create bridge slice through a stable signature so the features bridge workflow remains explicit and composable. @fn inline rtk::Slice<FBridgeSliceState> createBridgeSlice() */
 inline rtk::Slice<FBridgeSliceState> createBridgeSlice() {
   return rtk::createSlice<FBridgeSliceState>(
-      TEXT("bridge"), FBridgeSliceState(),
+      TEXT("bridge"), createBridgeInitialState(),
       [](rtk::ActionReducerMapBuilder<FBridgeSliceState> &Builder) {
         Builder.addCase(
             Actions::validationRequestedActionCreator(),
@@ -34,8 +33,8 @@ inline rtk::Slice<FBridgeSliceState> createBridgeSlice() {
               Next.Status = bridgeStatuses()[
                   static_cast<int32>(EBridgeStatus::Validating)];
               Next.Error.Empty();
-              Next.LastValidation = FValidationResult();
-              Next.bHasLastValidation = false;
+              Next.ValidationResult = FValidationResult();
+              Next.bHasValidationResult = false;
               return Next;
             });
         Builder.addCase(
@@ -46,8 +45,8 @@ inline rtk::Slice<FBridgeSliceState> createBridgeSlice() {
               Next.Status = bridgeStatuses()[
                   static_cast<int32>(EBridgeStatus::Idle)];
               Next.Error.Empty();
-              Next.LastValidation = Action.PayloadValue;
-              Next.bHasLastValidation = true;
+              Next.ValidationResult = Action.PayloadValue;
+              Next.bHasValidationResult = true;
               return Next;
             });
         Builder.addCase(
@@ -58,8 +57,8 @@ inline rtk::Slice<FBridgeSliceState> createBridgeSlice() {
               Next.Status = bridgeStatuses()[
                   static_cast<int32>(EBridgeStatus::Error)];
               Next.Error = Action.PayloadValue;
-              Next.LastValidation = FValidationResult();
-              Next.bHasLastValidation = false;
+              Next.ValidationResult = FValidationResult();
+              Next.bHasValidationResult = false;
               return Next;
             });
         Builder.addCase(
@@ -92,24 +91,6 @@ inline rtk::Slice<FBridgeSliceState> createBridgeSlice() {
               return Next;
             });
         Builder.addCase(
-            Actions::rulesetRegisteredActionCreator(),
-            [](const FBridgeSliceState &State,
-               const rtk::Action<FDirectiveRuleSet> &Action) {
-              FBridgeSliceState Next = State;
-              Next.AvailableRulesets = bridgeRulesetAdapter().upsertOne(
-                  Next.AvailableRulesets, Action.PayloadValue);
-              return Next;
-            });
-        Builder.addCase(
-            Actions::rulesetDeletedActionCreator(),
-            [](const FBridgeSliceState &State,
-               const rtk::Action<FString> &Action) {
-              FBridgeSliceState Next = State;
-              Next.AvailableRulesets = bridgeRulesetAdapter().removeOne(
-                  Next.AvailableRulesets, Action.PayloadValue);
-              return Next;
-            });
-        Builder.addCase(
             Actions::presetIdsReceivedActionCreator(),
             [](const FBridgeSliceState &State,
                const rtk::Action<TArray<FString>> &Action) {
@@ -122,8 +103,8 @@ inline rtk::Slice<FBridgeSliceState> createBridgeSlice() {
             [](const FBridgeSliceState &State,
                const rtk::Action<rtk::FEmptyPayload> &) {
               FBridgeSliceState Next = State;
-              Next.LastValidation = FValidationResult();
-              Next.bHasLastValidation = false;
+              Next.ValidationResult = FValidationResult();
+              Next.bHasValidationResult = false;
               Next.Status = bridgeStatuses()[
                   static_cast<int32>(EBridgeStatus::Idle)];
               Next.Error.Empty();

@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Core/fp.hpp"
-#include "Features/Config/File/ConfigFileAdapters.h"
+#include "Features/Config/File/FileAdapters.h"
 
 namespace SDKConfig {
 
+/** User Story: As a features config values consumer, I need to invoke load from config file through a stable signature so the features config values workflow remains explicit and composable. @fn inline void LoadFromConfigFile() */
 inline void LoadFromConfigFile() {
   const TSharedPtr<FJsonObject> Json = LoadConfigJsonObject();
   !Json.IsValid()
@@ -33,6 +34,7 @@ inline void LoadFromConfigFile() {
         }();
 }
 
+/** User Story: As a features config values consumer, I need to invoke save to config file through a stable signature so the features config values workflow remains explicit and composable. @fn inline bool SaveToConfigFile() */
 inline bool SaveToConfigFile() {
   EnsureInitialized();
   const TSharedRef<FJsonObject> Json = MakeShared<FJsonObject>();
@@ -48,6 +50,7 @@ inline bool SaveToConfigFile() {
   return WriteConfigJsonObject(Json);
 }
 
+/** User Story: As a features config values consumer, I need to invoke set config value through a stable signature so the features config values workflow remains explicit and composable. @fn inline void SetConfigValue(const FString &Key, const FString &Value) */
 inline void SetConfigValue(const FString &Key, const FString &Value) {
   TSharedPtr<FJsonObject> Json = LoadConfigJsonObject();
   Json = Json.IsValid() ? Json : MakeShared<FJsonObject>();
@@ -94,6 +97,7 @@ inline void SetConfigValue(const FString &Key, const FString &Value) {
       : void();
 }
 
+/** User Story: As a features config values consumer, I need to invoke get config value through a stable signature so the features config values workflow remains explicit and composable. @fn inline FString GetConfigValue(const FString &Key) */
 inline FString GetConfigValue(const FString &Key) {
   return Key == TEXT("version")
              ? GetSdkVersion()

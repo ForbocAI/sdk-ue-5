@@ -10,6 +10,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
+/** User Story: As a tests slices npcs consumer, I need to invoke run test through a stable signature so the tests slices npcs workflow remains explicit and composable. @fn bool FTestGameNpcPatchAndSelectorsTest::RunTest(const FString &Parameters) */
 bool FTestGameNpcPatchAndSelectorsTest::RunTest(const FString &Parameters) {
   (void)Parameters;
 

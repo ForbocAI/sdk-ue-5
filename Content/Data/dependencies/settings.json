@@ -13,6 +13,20 @@
   },
   "download": {
     "timeoutSeconds": 120.0,
+    "http": {
+      "method": "GET",
+      "locationHeader": "Location",
+      "redirectStatusCodes": [301, 302, 303, 307, 308],
+      "successStatusMinimum": 200,
+      "successStatusMaximumExclusive": 300,
+      "initialRedirectCount": 0,
+      "redirectStep": 1,
+      "maxRedirects": 8,
+      "saveFailed": "Failed to save downloaded dependency to disk",
+      "networkFailed": "Network failure downloading dependency",
+      "redirectLimitFailed": "Dependency download exceeded redirect limit",
+      "httpErrorPrefix": "Dependency download HTTP error "
+    },
     "sqlite": {
       "archiveVersion": "3460100",
       "headerFile": "sqlite3.h",

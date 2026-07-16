@@ -40,11 +40,11 @@ struct Curried {
   }
 
 /**
+ * @fn template <typename... NewArgs> auto operator()(NewArgs &&...new_args) const -> typename std::enable_if< (std::tuple_size<CapturedArgs>::value + sizeof...(NewArgs) >= Arity), decltype(func::apply(func, std::tuple_cat(args, std::make_tuple(std::forward<NewArgs>( new_args)...))))>::type
  * @brief Full application: enough args, invoke the function
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename... NewArgs> auto operator()(NewArgs &&...new_args) const -> typename std::enable_if< (std::tuple_size<CapturedArgs>::value + sizeof...(NewArgs) >= Arity), decltype(func::apply(func, std::tuple_cat(args, std::make_tuple(std::forward<NewArgs>( new_args)...))))>::type
  *
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
@@ -61,11 +61,11 @@ struct Curried {
 };
 
 /**
+ * @fn template <size_t Arity, typename Func> Curried<Arity, Func> curry(Func f)
  * @brief Converts a callable into a curried wrapper with the requested arity.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <size_t Arity, typename Func> Curried<Arity, Func> curry(Func f)
  *
  * User Story: As functional composition code, I need currying so larger
  * runtime helpers can be partially applied in readable C++11.

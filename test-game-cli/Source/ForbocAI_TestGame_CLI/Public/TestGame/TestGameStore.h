@@ -1,7 +1,7 @@
 #pragma once
 /**
  * Test-game store composition — mirrors TS test-game-cli/src/store.ts
- * Combines 13 game slices into a single Redux store
+ * Combines game slices into a single Redux store
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 
@@ -13,6 +13,7 @@
 #include "TestGame/Features/Systems/Bridge/BridgeSlice.h"
 #include "TestGame/Features/Components/Spatial/Grid/GridSlice.h"
 #include "TestGame/Features/Systems/Harness/Coverage/CoverageSlice.h"
+#include "TestGame/Features/Systems/Harness/CommandRunner/CommandRunnerSlice.h"
 #include "TestGame/Features/Systems/Harness/Game/GameTypes.h"
 #include "TestGame/Features/Components/Inventory/InventorySlice.h"
 #include "TestGame/Features/Systems/Memory/MemorySlice.h"
@@ -29,6 +30,7 @@ namespace TestGame {
 typedef FTestGameState FRootState;
 typedef ecs::FWorld FTestGameEcsWorld;
 
+/** User Story: As a test game store consumer, I need to invoke create initial test game ecs world through a stable signature so the test game store workflow remains explicit and composable. @fn inline FTestGameEcsWorld CreateInitialTestGameEcsWorld() */
 inline FTestGameEcsWorld CreateInitialTestGameEcsWorld() {
   return ecs::createWorld();
 }
@@ -44,6 +46,7 @@ namespace GameSlices {
  * Returns the NPC slice singleton for the test game store.
  * User Story: As root reducer composition, I need access to the NPC slice so
  * root state reduction reuses one canonical slice instance.
+ * @fn inline const rtk::Slice<FNPCsSliceState> &NPCs()
  */
 inline const rtk::Slice<FNPCsSliceState> &NPCs() {
   static const auto S = CreateNPCsSlice();
@@ -53,6 +56,7 @@ inline const rtk::Slice<FNPCsSliceState> &NPCs() {
  * Returns the player slice singleton for the test game store.
  * User Story: As root reducer composition, I need access to the player slice
  * so player state reduction reuses one canonical slice instance.
+ * @fn inline const rtk::Slice<FPlayerState> &Player()
  */
 inline const rtk::Slice<FPlayerState> &Player() {
   static const auto S = CreatePlayerSlice();
@@ -62,6 +66,7 @@ inline const rtk::Slice<FPlayerState> &Player() {
  * Returns the grid slice singleton for the test game store.
  * User Story: As root reducer composition, I need access to the grid slice so
  * world layout state is reduced through one shared slice instance.
+ * @fn inline const rtk::Slice<FGridState> &Grid()
  */
 inline const rtk::Slice<FGridState> &Grid() {
   static const auto S = CreateGridSlice();
@@ -71,6 +76,7 @@ inline const rtk::Slice<FGridState> &Grid() {
  * Returns the stealth slice singleton for the test game store.
  * User Story: As root reducer composition, I need access to the stealth slice
  * so alert and door state are reduced through one shared slice instance.
+ * @fn inline const rtk::Slice<FStealthState> &Stealth()
  */
 inline const rtk::Slice<FStealthState> &Stealth() {
   static const auto S = CreateStealthSlice();
@@ -80,6 +86,7 @@ inline const rtk::Slice<FStealthState> &Stealth() {
  * Returns the social slice singleton for the test game store.
  * User Story: As root reducer composition, I need access to the social slice
  * so dialogue and trade state are reduced through one shared slice instance.
+ * @fn inline const rtk::Slice<FSocialState> &Social()
  */
 inline const rtk::Slice<FSocialState> &Social() {
   static const auto S = CreateSocialSlice();
@@ -89,6 +96,7 @@ inline const rtk::Slice<FSocialState> &Social() {
  * Returns the bridge slice singleton for the test game store.
  * User Story: As root reducer composition, I need access to the bridge slice
  * so local bridge rules are reduced through one shared slice instance.
+ * @fn inline const rtk::Slice<FBridgeRulesState> &Bridge()
  */
 inline const rtk::Slice<FBridgeRulesState> &Bridge() {
   static const auto S = CreateGameBridgeSlice();
@@ -98,6 +106,7 @@ inline const rtk::Slice<FBridgeRulesState> &Bridge() {
  * Returns the memory slice singleton for the test game store.
  * User Story: As root reducer composition, I need access to the memory slice
  * so local memory records are reduced through one shared slice instance.
+ * @fn inline const rtk::Slice<FGameMemorySliceState> &Memory()
  */
 inline const rtk::Slice<FGameMemorySliceState> &Memory() {
   static const auto S = CreateGameMemorySlice();
@@ -107,6 +116,7 @@ inline const rtk::Slice<FGameMemorySliceState> &Memory() {
  * Returns the inventory slice singleton for the test game store.
  * User Story: As root reducer composition, I need access to the inventory
  * slice so owner item lists are reduced through one shared slice instance.
+ * @fn inline const rtk::Slice<FInventoryState> &Inventory()
  */
 inline const rtk::Slice<FInventoryState> &Inventory() {
   static const auto S = CreateInventorySlice();
@@ -116,6 +126,7 @@ inline const rtk::Slice<FInventoryState> &Inventory() {
  * Returns the soul slice singleton for the test game store.
  * User Story: As root reducer composition, I need access to the soul slice so
  * export and import tracking are reduced through one shared slice instance.
+ * @fn inline const rtk::Slice<FSoulTrackingState> &Soul()
  */
 inline const rtk::Slice<FSoulTrackingState> &Soul() {
   static const auto S = CreateGameSoulSlice();
@@ -134,6 +145,7 @@ inline const rtk::Slice<FUIState> &UI() {
  * Returns the transcript slice singleton for the test game store.
  * User Story: As root reducer composition, I need access to the transcript
  * slice so command history is reduced through one shared slice instance.
+ * @fn inline const rtk::Slice<FTranscriptState> &Transcript()
  */
 inline const rtk::Slice<FTranscriptState> &Transcript() {
   static const auto S = CreateTranscriptSlice();
@@ -143,6 +155,7 @@ inline const rtk::Slice<FTranscriptState> &Transcript() {
  * Returns the scenario slice singleton for the test game store.
  * User Story: As root reducer composition, I need access to the scenario slice
  * so the default step list is reduced through one shared slice instance.
+ * @fn inline const rtk::Slice<FScenarioSliceState> &Scenario()
  */
 inline const rtk::Slice<FScenarioSliceState> &Scenario() {
   static const auto S = CreateScenarioSlice();
@@ -152,9 +165,19 @@ inline const rtk::Slice<FScenarioSliceState> &Scenario() {
  * Returns the harness slice singleton for the test game store.
  * User Story: As root reducer composition, I need access to the harness slice
  * so CLI coverage state is reduced through one shared slice instance.
+ * @fn inline const rtk::Slice<FHarnessState> &Harness()
  */
 inline const rtk::Slice<FHarnessState> &Harness() {
   static const auto S = CreateHarnessSlice();
+  return S;
+}
+/**
+ * Returns the command-runner slice singleton for runtime alias ownership.
+ * User Story: As a test game store consumer, I need to invoke command runner through a stable signature so the test game store workflow remains explicit and composable.
+ * @fn inline const rtk::Slice<CommandRunner::FCommandAliasState> &CommandRunner()
+ */
+inline const rtk::Slice<CommandRunner::FCommandAliasState> &CommandRunner() {
+  static const auto S = CreateCommandRunnerSlice();
   return S;
 }
 
@@ -164,6 +187,7 @@ inline const rtk::Slice<FHarnessState> &Harness() {
  * Reduces one action across all test-game slices.
  * User Story: As test-game store updates, I need a root reducer so every slice
  * receives the same action and the combined state stays in sync.
+ * @fn inline FTestGameState TestGameReducer(const FTestGameState &State, const rtk::AnyAction &Action)
  */
 inline FTestGameState TestGameReducer(const FTestGameState &State,
                                       const rtk::AnyAction &Action) {
@@ -182,9 +206,12 @@ inline FTestGameState TestGameReducer(const FTestGameState &State,
       GameSlices::Transcript().Reducer(State.Transcript, Action);
   Next.Scenario = GameSlices::Scenario().Reducer(State.Scenario, Action);
   Next.Harness = GameSlices::Harness().Reducer(State.Harness, Action);
+  Next.CommandRunner =
+      GameSlices::CommandRunner().Reducer(State.CommandRunner, Action);
   return Next;
 }
 
+/** User Story: As a test game store consumer, I need to invoke create initial test game state through a stable signature so the test game store workflow remains explicit and composable. @fn inline FTestGameState CreateInitialTestGameState() */
 inline FTestGameState CreateInitialTestGameState() {
   FTestGameState Initial;
   Initial.Scenario.Steps = {};
@@ -195,6 +222,7 @@ inline FTestGameState CreateInitialTestGameState() {
  * Creates a fresh test-game store instance.
  * User Story: As deterministic game runs, I need a new store per session so
  * each run starts from a clean, reproducible state baseline.
+ * @fn inline FTestGameStore createTestGameStore()
  */
 inline FTestGameStore createTestGameStore() {
   std::vector<rtk::Middleware<FTestGameState>> Middlewares;

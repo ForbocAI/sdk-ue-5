@@ -11,6 +11,7 @@ DEFINE_SPEC(FBddCoverageSpec, "ForbocAI.Build.BDDCoverage",
                 EAutomationTestFlags_ApplicationContextMask)
 
 namespace {
+/** User Story: As a tests bdd consumer, I need to invoke find files through a stable signature so the tests bdd workflow remains explicit and composable. @fn TArray<FString> FindFiles(const FString& Directory, const FString& Extension) */
 TArray<FString> FindFiles(const FString& Directory, const FString& Extension) {
     TArray<FString> Files;
     IFileManager::Get().FindFilesRecursive(Files, *Directory, *FString::Printf(TEXT("*%s"), *Extension), true, false, false);
@@ -19,6 +20,7 @@ TArray<FString> FindFiles(const FString& Directory, const FString& Extension) {
 
 /**
  * User Story: As a developer, I need ReadFile to fulfill its role in the module.
+ * @fn FString ReadFile(const FString& Path)
  */
 FString ReadFile(const FString& Path) {
     FString Content;
@@ -28,6 +30,7 @@ FString ReadFile(const FString& Path) {
 
 /**
  * User Story: As a developer, I need ExtractRegexMatches to fulfill its role in the module.
+ * @fn void ExtractRegexMatches(const FString& Content, const FString& PatternStr, int32 GroupIndex, TSet<FString>& OutMatches)
  */
 void ExtractRegexMatches(const FString& Content, const FString& PatternStr, int32 GroupIndex, TSet<FString>& OutMatches) {
     FRegexPattern Pattern(PatternStr);
@@ -40,6 +43,7 @@ void ExtractRegexMatches(const FString& Content, const FString& PatternStr, int3
 
 /**
  * User Story: As a developer, I need Define to fulfill its role in the module.
+ * @fn void FBddCoverageSpec::Define()
  */
 void FBddCoverageSpec::Define() {
   Describe("BDD Coverage", [this]() {

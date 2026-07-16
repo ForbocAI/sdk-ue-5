@@ -8,6 +8,7 @@
 
 namespace AsyncAdapters {
 
+/** User Story: As a features async consumer, I need to invoke wait for result through a stable signature so the features async workflow remains explicit and composable. @fn template <typename T> T waitForResult(func::AsyncResult<T> &&Async, double TimeoutSeconds = 15.0) */
 template <typename T>
 T waitForResult(func::AsyncResult<T> &&Async, double TimeoutSeconds = 15.0) {
   bool bCompleted = false;

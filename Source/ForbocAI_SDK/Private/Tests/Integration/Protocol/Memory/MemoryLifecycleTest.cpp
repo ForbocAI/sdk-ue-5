@@ -11,6 +11,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
+/** User Story: As a integration protocol memory consumer, I need to invoke run test through a stable signature so the integration protocol memory workflow remains explicit and composable. @fn bool FProtocolMemoryLifecycleTest::RunTest(const FString &Parameters) */
 bool FProtocolMemoryLifecycleTest::RunTest(const FString &Parameters) {
   rtk::EnhancedStore<FRuntimeState> TestStore = createRuntimeStore();
 
@@ -46,10 +47,10 @@ bool FProtocolMemoryLifecycleTest::RunTest(const FString &Parameters) {
   State = TestStore.getState();
   TestEqual("Recall status idle", State.Memory.RecallStatus,
             FString(TEXT("idle")));
-  TArray<FMemoryItem> LastRecalled =
-      MemorySelectors::selectLastRecalledMemories(State.Memory);
-  TestEqual("One recalled memory", LastRecalled.Num(), 1);
-  TestEqual("Recalled text", LastRecalled[0].Text,
+  const TArray<FMemoryItem> RecalledState =
+      MemorySelectors::selectRecalledMemories(State.Memory);
+  TestEqual("One recalled memory", RecalledState.Num(), 1);
+  TestEqual("Recalled text", RecalledState[0].Text,
             FString(TEXT("The player found a key")));
 
   TestStore.dispatch(MemorySlice::Actions::memoryStoreStart());

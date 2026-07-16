@@ -8,6 +8,7 @@
 namespace TestGame {
 namespace GameAdapters {
 
+/** User Story: As a systems harness game consumer, I need to invoke parse verdict through a stable signature so the systems harness game workflow remains explicit and composable. @fn inline FParsedVerdict ParseVerdict(const FString &Output) */
 inline FParsedVerdict ParseVerdict(const FString &Output) {
   FParsedVerdict Verdict;
   TSharedPtr<FJsonObject> Root;
@@ -54,6 +55,7 @@ inline FParsedVerdict ParseVerdict(const FString &Output) {
                }();
 }
 
+/** User Story: As a systems harness game consumer, I need to invoke extract npc id through a stable signature so the systems harness game workflow remains explicit and composable. @fn inline FString ExtractNpcId(const FString &Command) */
 inline FString ExtractNpcId(const FString &Command) {
   const TArray<FString> Tokens = CommandRunner::detail::Tokenize(Command);
   return Tokens.Num() > 3 && Tokens[1] == TEXT("npc") &&

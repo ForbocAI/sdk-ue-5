@@ -11,6 +11,7 @@
 
 namespace NPCListeners {
 
+/** User Story: As a features npc consumer, I need to invoke create npc removal listener through a stable signature so the features npc workflow remains explicit and composable. @fn template <typename State> inline rtk::Middleware<State> createNpcRemovalListener() */
 template <typename State>
 inline rtk::Middleware<State> createNpcRemovalListener() {
   return [](const rtk::MiddlewareApi<State> &Api)

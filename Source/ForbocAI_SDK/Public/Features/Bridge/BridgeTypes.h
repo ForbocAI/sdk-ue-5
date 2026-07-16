@@ -40,6 +40,7 @@ struct FValidationResult {
   UPROPERTY(BlueprintReadOnly, Category = "Bridge")
   FAgentAction CorrectedAction;
 
+  /** User Story: As a features bridge consumer, I need to invoke fvalidation result through a stable signature so the features bridge workflow remains explicit and composable. @fn FValidationResult() */
   FValidationResult() : bValid(false) {}
 };
 
@@ -61,6 +62,7 @@ struct FBridgeValidationContext {
   UPROPERTY(BlueprintReadOnly, Category = "Bridge")
   FString ConstraintsJson;
 
+  /** User Story: As a features bridge consumer, I need to invoke fbridge validation context through a stable signature so the features bridge workflow remains explicit and composable. @fn FBridgeValidationContext() */
   FBridgeValidationContext() {}
 };
 
@@ -82,7 +84,57 @@ struct FBridgeRule {
   UPROPERTY(BlueprintReadOnly, Category = "Bridge")
   TArray<FString> RuleActionTypes;
 
+  /** User Story: As a features bridge consumer, I need to invoke fbridge rule through a stable signature so the features bridge workflow remains explicit and composable. @fn FBridgeRule() */
   FBridgeRule() {}
+};
+
+USTRUCT(BlueprintType)
+struct FDirectiveRuleCondition {
+  GENERATED_BODY()
+
+  UPROPERTY(BlueprintReadOnly, Category = "Bridge")
+  FString Key;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Bridge")
+  FString Value;
+
+  /** User Story: As a directive-rule consumer, I need a typed condition pair so API tuple values do not leak into feature code. @fn FDirectiveRuleCondition() */
+  FDirectiveRuleCondition() {}
+};
+
+USTRUCT(BlueprintType)
+struct FDirectiveRule {
+  GENERATED_BODY()
+
+  UPROPERTY(BlueprintReadOnly, Category = "Bridge")
+  FString RuleId;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Bridge")
+  FString Name;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Bridge")
+  TArray<FDirectiveRuleCondition> Conditions;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Bridge")
+  FString Action;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Bridge")
+  FString Reason;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Bridge")
+  FString Target;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Bridge")
+  int32 Priority;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Bridge")
+  FString ObservationPattern;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Bridge")
+  FString PromptSuffix;
+
+  /** User Story: As a directive-rule consumer, I need the full API rule contract represented in the feature domain so registration and catalog reads are lossless. @fn FDirectiveRule() */
+  FDirectiveRule() : Priority(0) {}
 };
 
 /**
@@ -95,14 +147,15 @@ struct FDirectiveRuleSet {
   GENERATED_BODY()
 
   UPROPERTY(BlueprintReadOnly, Category = "Bridge")
-  FString Id;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Bridge")
   FString RulesetId;
 
   UPROPERTY(BlueprintReadOnly, Category = "Bridge")
-  TArray<FBridgeRule> RulesetRules;
+  TArray<FDirectiveRule> RulesetRules;
 
+  UPROPERTY(BlueprintReadOnly, Category = "Bridge")
+  FString Template;
+
+  /** User Story: As a features bridge consumer, I need to invoke fdirective rule set through a stable signature so the features bridge workflow remains explicit and composable. @fn FDirectiveRuleSet() */
   FDirectiveRuleSet() {}
 };
 
@@ -123,6 +176,7 @@ namespace TypeFactory {
  * Builds a successful bridge validation result.
  * User Story: As bridge validation, I need a factory for success results so
  * reducers and callers can construct valid outcomes consistently.
+ * @fn inline FValidationResult Valid(FString Reason)
  */
 inline FValidationResult Valid(FString Reason) {
   FValidationResult R;
@@ -135,6 +189,7 @@ inline FValidationResult Valid(FString Reason) {
  * Builds a failed bridge validation result.
  * User Story: As bridge validation, I need a factory for invalid results so
  * rejection reasons are carried through one shared shape.
+ * @fn inline FValidationResult Invalid(FString Reason)
  */
 inline FValidationResult Invalid(FString Reason) {
   FValidationResult R;
@@ -147,6 +202,7 @@ inline FValidationResult Invalid(FString Reason) {
  * Builds the bridge validation request payload.
  * User Story: As bridge API calls, I need a request factory so action and
  * context are packaged consistently before dispatch.
+ * @fn inline FBridgeValidateRequest BridgeValidateRequest(const FAgentAction &Action, const FBridgeValidationContext &Context)
  */
 inline FBridgeValidateRequest
 BridgeValidateRequest(const FAgentAction &Action,
@@ -158,3 +214,17 @@ BridgeValidateRequest(const FAgentAction &Action,
 }
 
 } // namespace TypeFactory
+
+namespace BridgeSlice {
+
+struct FBridgeSliceState {
+  rtk::EntityState<FDirectiveRuleSet> ActivePresets;
+  rtk::EntityState<FDirectiveRuleSet> AvailableRulesets;
+  TArray<FString> AvailablePresetIds;
+  FValidationResult ValidationResult;
+  bool bHasValidationResult{};
+  FString Status;
+  FString Error;
+};
+
+} // namespace BridgeSlice

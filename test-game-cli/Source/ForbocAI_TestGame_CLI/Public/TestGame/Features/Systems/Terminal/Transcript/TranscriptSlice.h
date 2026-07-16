@@ -6,6 +6,7 @@
 
 namespace TestGame {
 
+/** User Story: As a systems terminal transcript consumer, I need to invoke create transcript slice through a stable signature so the systems terminal transcript workflow remains explicit and composable. @fn inline rtk::Slice<FTranscriptState> CreateTranscriptSlice() */
 inline rtk::Slice<FTranscriptState> CreateTranscriptSlice() {
   return rtk::createSlice<FTranscriptState>(
       TEXT("testgame/transcript"), FTranscriptState(),

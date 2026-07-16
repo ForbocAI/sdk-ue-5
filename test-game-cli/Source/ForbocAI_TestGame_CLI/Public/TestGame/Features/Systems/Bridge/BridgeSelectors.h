@@ -14,6 +14,7 @@ struct FMoveDistanceResult {
   bool bCapped{};
 };
 
+/** User Story: As a features systems bridge consumer, I need to invoke validate jump through a stable signature so the features systems bridge workflow remains explicit and composable. @fn inline FJumpValidation ValidateJump(const FBridgeState &Rules, int32 Force) */
 inline FJumpValidation ValidateJump(const FBridgeState &Rules, int32 Force) {
   return Force > Rules.MaxJumpForce
              ? FJumpValidation{
@@ -21,6 +22,7 @@ inline FJumpValidation ValidateJump(const FBridgeState &Rules, int32 Force) {
              : FJumpValidation{true, FString()};
 }
 
+/** User Story: As a features systems bridge consumer, I need to invoke cap move distance through a stable signature so the features systems bridge workflow remains explicit and composable. @fn inline FMoveDistanceResult CapMoveDistance(const FBridgeState &Rules, int32 RequestedDistance) */
 inline FMoveDistanceResult CapMoveDistance(const FBridgeState &Rules,
                                            int32 RequestedDistance) {
   return {FMath::Min(RequestedDistance, Rules.MaxMoveDistance),

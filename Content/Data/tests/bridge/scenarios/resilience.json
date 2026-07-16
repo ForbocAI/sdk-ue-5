@@ -1,16 +1,9 @@
 [
   {
-    "name": "RulesetDeleteMissingIsNoop",
-    "steps": [
-      {"action":{"kind":5,"rulesets":[{"id":"ruleset-a","rulesetId":"ruleset-a"}],"presetIds":[],"targetId":null,"valid":null,"reason":null},"expected":{"status":null,"error":null,"hasValidation":null,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":1,"availableFirstId":"ruleset-a","availableSelectedRulesetId":null,"presetIdCount":null}},
-      {"action":{"kind":7,"rulesets":[],"presetIds":[],"targetId":"missing","valid":null,"reason":null},"expected":{"status":null,"error":null,"hasValidation":null,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":1,"availableFirstId":"ruleset-a","availableSelectedRulesetId":null,"presetIdCount":null}}
-    ]
-  },
-  {
     "name": "FailureClearsPreviousValidation",
     "steps": [
-      {"action":{"kind":1,"rulesets":[],"presetIds":[],"targetId":null,"valid":true,"reason":"accepted"},"expected":{"status":null,"error":null,"hasValidation":true,"validationValid":true,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}},
-      {"action":{"kind":2,"rulesets":[],"presetIds":[],"targetId":null,"valid":null,"reason":"request failed"},"expected":{"status":"error","error":"request failed","hasValidation":false,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}}
+      {"action":{"kind":"ValidationSucceeded","rulesets":[],"presetIds":[],"targetId":null,"valid":true,"reason":"accepted"},"expected":{"status":null,"error":null,"hasValidation":true,"validationValid":true,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}},
+      {"action":{"kind":"ValidationFailed","rulesets":[],"presetIds":[],"targetId":null,"valid":null,"reason":"request failed"},"expected":{"status":"error","error":"request failed","hasValidation":false,"validationValid":null,"validationReason":null,"activeCount":null,"activeFirstId":null,"availableCount":null,"availableFirstId":null,"availableSelectedRulesetId":null,"presetIdCount":null}}
     ]
   }
 ]

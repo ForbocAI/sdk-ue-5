@@ -20,15 +20,15 @@ using func::make_right;
  * User Story: As Unreal command-line automation, I need one commandlet entry
  * point so SDK operations can run from editor and CI command invocations.
  * Usage:
- *   ./UnrealEditorCmd -run=ForbocAI -Command=<CommandName> [Args...]
+ *   scripts/forbocai-ue <command> [subcommand] [args]
  *
  * Canonical commands:
  *   doctor
- *   npc_create -Persona="..."
- *   npc_process -Id="..." -Input="..."
- *   soul_export -Id="..."
- *   config_set -Key="..." -Value="..."
- *   config_get -Key="..."
+ *   npc create "..."
+ *   npc process <id> "..."
+ *   soul export <id>
+ *   config set <key> <value>
+ *   config get <key>
  */
 UCLASS()
 class UForbocAICommandlet : public UCommandlet {
@@ -39,6 +39,7 @@ public:
    * Constructs the ForbocAI commandlet with its metadata defaults.
    * User Story: As editor command execution, I need the commandlet initialized
    * with predictable defaults before parsing CLI input.
+   * @fn UForbocAICommandlet()
    */
   UForbocAICommandlet();
 
@@ -46,6 +47,7 @@ public:
    * Runs the requested CLI command from raw commandlet parameters.
    * User Story: As commandlet execution, I need raw params translated into a
    * command result so Unreal CLI entrypoints can drive SDK operations.
+   * @fn virtual int32 Main(const FString &Params) override
    */
   virtual int32 Main(const FString &Params) override;
   /**
@@ -59,6 +61,7 @@ public:
    * Executes one validated CLI command with parsed arguments.
    * User Story: As command dispatch, I need a single execution entrypoint so
    * validated commands can be run uniformly.
+   * @fn CommandResult executeCommand(const FString &Command, const TArray<FString> &Args)
    */
   CommandResult executeCommand(const FString &Command,
                                const TArray<FString> &Args);
@@ -67,6 +70,7 @@ public:
    * Builds the async execution pipeline for one CLI command.
    * User Story: As command orchestration, I need an async pipeline wrapper so
    * CLI handlers can compose work without blocking the calling code directly.
+   * @fn CommandExecution createCommandPipeline(const FString &Command, const TArray<FString> &Args)
    */
   CommandExecution createCommandPipeline(const FString &Command,
                                          const TArray<FString> &Args);
@@ -75,6 +79,7 @@ public:
    * Builds the validation pipeline for incoming CLI commands.
    * User Story: As command parsing, I need validation staged before execution
    * so invalid commands fail early with useful errors.
+   * @fn CLITypes::ValidationPipeline<FString, FString> commandValidationPipeline()
    */
   CLITypes::ValidationPipeline<FString, FString> commandValidationPipeline();
 };

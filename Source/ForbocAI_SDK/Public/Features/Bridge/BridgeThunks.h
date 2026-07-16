@@ -9,6 +9,7 @@
 
 namespace rtk {
 
+/** User Story: As a features bridge consumer, I need to invoke validate bridge thunk through a stable signature so the features bridge workflow remains explicit and composable. @fn inline ThunkAction<FValidationResult, FRuntimeState> validateBridgeThunk(const FAgentAction &Action, const FBridgeValidationContext &Context, const FString &NpcId = TEXT("")) */
 inline ThunkAction<FValidationResult, FRuntimeState>
 validateBridgeThunk(const FAgentAction &Action,
                     const FBridgeValidationContext &Context,
@@ -26,7 +27,7 @@ validateBridgeThunk(const FAgentAction &Action,
                   detail::RejectAsync<FValidationResult>(ApiKeyError.value))
                : func::AsyncChain::then<FValidationResult,
                                         FValidationResult>(
-                     APISlice::Endpoints::postBridgeValidate(
+                     APISlice::Endpoints::getBridgeValidation(
                          NpcId,
                          TypeFactory::BridgeValidateRequest(Action, Context))(
                          Dispatch, GetState),
@@ -42,6 +43,7 @@ validateBridgeThunk(const FAgentAction &Action,
   };
 }
 
+/** User Story: As a features bridge consumer, I need to invoke load bridge preset thunk through a stable signature so the features bridge workflow remains explicit and composable. @fn inline ThunkAction<FDirectiveRuleSet, FRuntimeState> loadBridgePresetThunk(const FString &PresetName) */
 inline ThunkAction<FDirectiveRuleSet, FRuntimeState>
 loadBridgePresetThunk(const FString &PresetName) {
   return [PresetName](std::function<AnyAction(const AnyAction &)> Dispatch,
@@ -55,18 +57,15 @@ loadBridgePresetThunk(const FString &PresetName) {
                                         FDirectiveRuleSet>(
                      APISlice::Endpoints::postBridgePreset(PresetName)(
                          Dispatch, GetState),
-                     [Dispatch, PresetName](const FDirectiveRuleSet &Ruleset) {
-                       FDirectiveRuleSet ActiveRuleset = Ruleset;
-                       ActiveRuleset.Id = ActiveRuleset.Id.IsEmpty()
-                                              ? PresetName
-                                              : ActiveRuleset.Id;
-                       Dispatch(BridgeSlice::Actions::activePresetAdded(
-                           ActiveRuleset));
+                     [Dispatch](const FDirectiveRuleSet &Ruleset) {
+                       Dispatch(
+                           BridgeSlice::Actions::activePresetAdded(Ruleset));
                        return detail::ResolveAsync(Ruleset);
                      });
   };
 }
 
+/** User Story: As a features bridge consumer, I need to invoke get bridge rules thunk through a stable signature so the features bridge workflow remains explicit and composable. @fn inline ThunkAction<TArray<FBridgeRule>, FRuntimeState> getBridgeRulesThunk() */
 inline ThunkAction<TArray<FBridgeRule>, FRuntimeState> getBridgeRulesThunk() {
   return [](std::function<AnyAction(const AnyAction &)> Dispatch,
             std::function<const FRuntimeState &()> GetState)
@@ -79,6 +78,7 @@ inline ThunkAction<TArray<FBridgeRule>, FRuntimeState> getBridgeRulesThunk() {
   };
 }
 
+/** User Story: As a features bridge consumer, I need to invoke list rulesets thunk through a stable signature so the features bridge workflow remains explicit and composable. @fn inline ThunkAction<TArray<FDirectiveRuleSet>, FRuntimeState> listRulesetsThunk() */
 inline ThunkAction<TArray<FDirectiveRuleSet>, FRuntimeState>
 listRulesetsThunk() {
   return [](std::function<AnyAction(const AnyAction &)> Dispatch,
@@ -100,6 +100,7 @@ listRulesetsThunk() {
   };
 }
 
+/** User Story: As a features bridge consumer, I need to invoke list rule presets thunk through a stable signature so the features bridge workflow remains explicit and composable. @fn inline ThunkAction<TArray<FString>, FRuntimeState> listRulePresetsThunk() */
 inline ThunkAction<TArray<FString>, FRuntimeState> listRulePresetsThunk() {
   return [](std::function<AnyAction(const AnyAction &)> Dispatch,
             std::function<const FRuntimeState &()> GetState)
@@ -115,49 +116,6 @@ inline ThunkAction<TArray<FString>, FRuntimeState> listRulePresetsThunk() {
                        Dispatch(BridgeSlice::Actions::presetIdsReceived(
                            PresetIds));
                        return detail::ResolveAsync(PresetIds);
-                     });
-  };
-}
-
-inline ThunkAction<FDirectiveRuleSet, FRuntimeState>
-registerRulesetThunk(const FDirectiveRuleSet &Ruleset) {
-  return [Ruleset](std::function<AnyAction(const AnyAction &)> Dispatch,
-                   std::function<const FRuntimeState &()> GetState)
-             -> func::AsyncResult<FDirectiveRuleSet> {
-    const auto ApiKeyError = Errors::requireApiKeyGuidance(
-        SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
-    return ApiKeyError.hasValue
-               ? detail::RejectAsync<FDirectiveRuleSet>(ApiKeyError.value)
-               : func::AsyncChain::then<FDirectiveRuleSet,
-                                        FDirectiveRuleSet>(
-                     APISlice::Endpoints::postRuleRegister(Ruleset)(Dispatch,
-                                                                    GetState),
-                     [Dispatch](const FDirectiveRuleSet &Registered) {
-                       Dispatch(BridgeSlice::Actions::rulesetRegistered(
-                           Registered));
-                       return detail::ResolveAsync(Registered);
-                     });
-  };
-}
-
-inline ThunkAction<rtk::FEmptyPayload, FRuntimeState>
-deleteRulesetThunk(const FString &RulesetId) {
-  return [RulesetId](std::function<AnyAction(const AnyAction &)> Dispatch,
-                     std::function<const FRuntimeState &()> GetState)
-             -> func::AsyncResult<rtk::FEmptyPayload> {
-    const auto ApiKeyError = Errors::requireApiKeyGuidance(
-        SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
-    return ApiKeyError.hasValue
-               ? detail::RejectAsync<rtk::FEmptyPayload>(ApiKeyError.value)
-               : func::AsyncChain::then<rtk::FEmptyPayload,
-                                        rtk::FEmptyPayload>(
-                     APISlice::Endpoints::deleteRule(RulesetId)(Dispatch,
-                                                                 GetState),
-                     [Dispatch, RulesetId](
-                         const rtk::FEmptyPayload &Payload) {
-                       Dispatch(
-                           BridgeSlice::Actions::rulesetDeleted(RulesetId));
-                       return detail::ResolveAsync(Payload);
                      });
   };
 }

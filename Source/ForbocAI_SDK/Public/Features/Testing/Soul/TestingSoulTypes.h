@@ -65,10 +65,22 @@ struct FSoulTestLabels {
   FString AvailableSoulCount;
   FString AvailableSoulFirstTxId;
   FString Error;
+  FString ProviderRetryWithinCycle;
+  FString ProviderRetryCycleBoundary;
+  FString ProviderRetryBeforeMaximumCycle;
+  FString ProviderRetryAtMaximumCycle;
+  FString ProviderRetryWithoutGateways;
+};
+
+struct FSoulProviderRetryTestData {
+  int32 WithinCycleAttempt;
+  int32 CycleBoundaryAttempt;
+  int32 UrlCount;
 };
 
 struct FSoulTestFixtures {
   FSoulTestLabels Labels;
+  FSoulProviderRetryTestData ProviderRetry;
   TArray<FSoulTestScenario> Scenarios;
 };
 

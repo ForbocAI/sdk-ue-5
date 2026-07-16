@@ -1,0 +1,160 @@
+{
+  "iteration": {
+    "initialIndex": 0,
+    "step": 1,
+    "sqliteVariableLength": -1
+  },
+  "defaults": {
+    "memoryType": "observation",
+    "importance": 0.5,
+    "similarity": 0.0,
+    "queryLimit": 5,
+    "recallLimit": 10,
+    "recallThreshold": 0.5,
+    "listLimit": 50,
+    "listOffset": 0,
+    "maxMemories": 10000
+  },
+  "status": {
+    "idle": "idle",
+    "storing": "storing",
+    "recalling": "recalling",
+    "error": "error"
+  },
+  "text": {
+    "empty": "",
+    "space": " "
+  },
+  "identity": {
+    "memoryPrefix": "mem_"
+  },
+  "vector": {
+    "dimension": 384,
+    "hashSeed": 2166136261,
+    "hashPrime": 16777619,
+    "tokenPattern": "[a-z0-9_]+",
+    "tokenFlags": "g",
+    "featureSeparator": ":",
+    "signMask": 1,
+    "evenRemainder": 0,
+    "positiveWeight": 1.0,
+    "negativeWeight": -1.0
+  },
+  "registry": {
+    "nodeMemory": "nodeMemory",
+    "browserMemory": "browserMemory",
+    "browserMemoryMeta": "browserMemoryMeta",
+    "vector": "vector",
+    "vectorDatabase": "lancedb",
+    "vectorizer": "vectorizer",
+    "vectorizerImplementation": "sdk-native"
+  },
+  "storage": {
+    "paths": {
+      "infrastructureDirectory": "local_infrastructure",
+      "vectorsDirectory": "vectors",
+      "databaseNamePattern": "^[a-zA-Z0-9_-]+$"
+    },
+    "fields": {
+      "id": "id",
+      "text": "text",
+      "timestamp": "timestamp",
+      "type": "type",
+      "importance": "importance",
+      "vector": "vector",
+      "embedding": "embedding",
+      "distance": "_distance"
+    },
+    "lance": {
+      "defaultDatabase": "forbocai_vectors",
+      "table": "memories",
+      "databaseExtension": ".lance",
+      "tableExtension": ".lance"
+    },
+    "orama": {
+      "defaultDatabase": "default",
+      "searchMode": "vector",
+      "schema": {
+        "id": "string",
+        "text": "string",
+        "timestamp": "number",
+        "type": "string",
+        "importance": "number",
+        "embedding": "vector[384]"
+      }
+    },
+    "sqlite": {
+      "defaultDatabase": "forbocai_vectors",
+      "databaseExtension": ".db",
+      "sidecarExtensions": ["-wal", "-shm"],
+      "inMemoryPath": ":memory:",
+      "unsafePathSegment": "..",
+      "jsonOpen": "[",
+      "jsonClose": "]",
+      "jsonSeparator": ",",
+      "createVectorTable": "CREATE VIRTUAL TABLE IF NOT EXISTS memories USING vec0(embedding float[384], +id text, +text text, +type text, +importance float, +timestamp integer);",
+      "clear": "DELETE FROM memories;",
+      "upsert": "INSERT OR REPLACE INTO memories (id, text, type, importance, timestamp, embedding) VALUES (?, ?, ?, ?, ?, ?);",
+      "search": "SELECT id, text, type, importance, timestamp, distance FROM memories WHERE embedding MATCH ? ORDER BY distance LIMIT ?;",
+      "list": "SELECT id, text, type, importance, timestamp, 1.0 AS distance FROM memories ORDER BY timestamp DESC LIMIT ? OFFSET ?;",
+      "columns": {
+        "id": 0,
+        "text": 1,
+        "type": 2,
+        "importance": 3,
+        "timestamp": 4,
+        "distance": 5
+      },
+      "bindings": {
+        "id": 1,
+        "text": 2,
+        "type": 3,
+        "importance": 4,
+        "timestamp": 5,
+        "embedding": 6,
+        "queryEmbedding": 1,
+        "queryLimit": 2,
+        "listLimit": 1,
+        "listOffset": 2
+      },
+      "distanceOrigin": 1.0
+    }
+  },
+  "runtimeTypes": {
+    "undefined": "undefined",
+    "string": "string",
+    "number": "number"
+  },
+  "errors": {
+    "browserEnvironmentRequired": "Browser memory requires a browser environment",
+    "browserInitializationFailed": "Browser memory initialization failed",
+    "browserStoreFailed": "Browser memory store failed",
+    "browserRecallFailed": "Browser memory recall failed",
+    "browserDatabaseMissing": "Browser memory database is not initialized",
+    "browserSearchModeInvalid": "Browser memory search mode is invalid",
+    "nodeInitializationFailed": "Node memory initialization failed",
+    "nodeStoreFailed": "Node memory store failed",
+    "nodeRecallFailed": "Node memory recall failed",
+    "nodeClearFailed": "Node memory clear failed",
+    "invalidDatabaseName": "Invalid memory database name",
+    "databasePathEscape": "Resolved memory database path escapes vector storage directory",
+    "invalidVectorRecord": "Vector database returned an invalid memory record",
+    "emptyQuery": "Memory recall query cannot be empty",
+    "localInitializationFailed": "Failed to initialize local memory database",
+    "localNotInitialized": "Local memory is not initialized",
+    "localStoreFailed": "Failed to store local memory",
+    "localRecallFailed": "Failed to recall local memory",
+    "localClearFailed": "Failed to clear local memory",
+    "sqliteUnavailable": "Native sqlite-vec support is unavailable",
+    "sqlitePathRejected": "Rejected memory database path: ",
+    "sqliteDirectoryFailed": "Failed to create memory database directory: ",
+    "sqliteOpenFailed": "Failed to open memory database: ",
+    "sqliteExtensionFailed": "Failed to initialize sqlite-vec",
+    "sqliteSchemaFailed": "Failed to initialize memory database schema",
+    "sqlitePrepareFailed": "Failed to prepare memory database statement",
+    "sqliteBindFailed": "Failed to bind memory database statement",
+    "sqliteStepFailed": "Failed to execute memory database statement",
+    "sqliteInvalidLimit": "Memory query limit must be greater than zero",
+    "sqliteInvalidOffset": "Memory query offset cannot be negative"
+  }
+}

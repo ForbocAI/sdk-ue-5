@@ -8,22 +8,14 @@ FILTER="${1:-ForbocAI}"
 
 # shellcheck source=../lib/test-environment.sh
 source "$SCRIPTS_DIR/lib/test-environment.sh"
-forbocai_load_test_environment optional
+forbocai_load_test_environment required
 # shellcheck source=../lib/plugin-host.sh
 source "$SCRIPTS_DIR/lib/plugin-host.sh"
-
-append_wsl_env_entry() {
-  local current="${WSLENV:-}"
-  local entry="$1"
-  case ":$current:" in
-    *":$entry:"*) printf '%s' "$current" ;;
-    *) printf '%s' "${current:+$current:}$entry" ;;
-  esac
-}
+# shellcheck source=../lib/wsl-environment.sh
+source "$SCRIPTS_DIR/lib/wsl-environment.sh"
 
 if grep -qi microsoft /proc/version 2>/dev/null && command -v powershell.exe >/dev/null 2>&1; then
-  WSLENV="$(append_wsl_env_entry "FORBOCAI_UE_SKIP_BUILD")"
-  export WSLENV
+  forbocai_export_wsl_environment
   powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
     -File "$(wslpath -w "$SCRIPT_DIR/run-ue-automation-tests.ps1")" \
     -Filter "$FILTER"
@@ -66,7 +58,7 @@ fi
 
 if [[ "${FORBOCAI_UE_SKIP_BUILD:-0}" != "1" ]]; then
   "$BUILD" ForbocAI_SDK_Editor "$PLATFORM" Development \
-    -Project="$PROJECT" -WaitMutex -NoHotReloadFromIDE
+    -Project="$PROJECT" -WaitMutex -NoHotReloadFromIDE -NoUBTMakefiles
 fi
 
 OUTPUT="$(mktemp)"
@@ -90,6 +82,11 @@ if ! grep -Fq "Automation Test Queue Empty" "$OUTPUT"; then
 fi
 if grep -Eq 'Test Completed\. Result=\{(Fail|NotRun)\}' "$OUTPUT"; then
   echo "One or more Unreal automation tests did not pass." >&2
+  exit 1
+fi
+if grep -Eqi '(LogAutomationController|LogAutomationWorker):.*(skip:|skipping[[:space:]])|LogTemp:.*skipping[[:space:]].*(test|integration)' "$OUTPUT"; then
+  echo "Unreal automation reported a skipped test as completed." >&2
+  grep -Ei '(LogAutomationController|LogAutomationWorker):.*(skip:|skipping[[:space:]])|LogTemp:.*skipping[[:space:]].*(test|integration)' "$OUTPUT" >&2 || true
   exit 1
 fi
 

@@ -8,6 +8,7 @@
 
 namespace TestGame {
 
+/** User Story: As a features systems memory consumer, I need to invoke create game memory slice through a stable signature so the features systems memory workflow remains explicit and composable. @fn inline rtk::Slice<FGameMemorySliceState> CreateGameMemorySlice() */
 inline rtk::Slice<FGameMemorySliceState> CreateGameMemorySlice() {
   return rtk::createSlice<FGameMemorySliceState>(
       TEXT("testgame/memory"), FGameMemorySliceState(),

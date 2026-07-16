@@ -16,6 +16,7 @@ struct FTestGameCliInvocation {
   FString ApiKey;
 };
 
+/** User Story: As a cli consumer, I need to invoke build cli arg tokens recursive through a stable signature so the cli workflow remains explicit and composable. @fn TArray<FString> BuildCliArgTokensRecursive(const FString &Params, int32 Index, TArray<FString> Tokens) */
 TArray<FString> BuildCliArgTokensRecursive(const FString &Params, int32 Index,
                                            TArray<FString> Tokens) {
   FString Value;
@@ -27,18 +28,22 @@ TArray<FString> BuildCliArgTokensRecursive(const FString &Params, int32 Index,
                                            MoveTemp(Tokens)));
 }
 
+/** User Story: As a cli consumer, I need to invoke build cli arg tokens through a stable signature so the cli workflow remains explicit and composable. @fn TArray<FString> BuildCliArgTokens(const FString &Params) */
 TArray<FString> BuildCliArgTokens(const FString &Params) {
   return BuildCliArgTokensRecursive(Params, 0, TArray<FString>());
 }
 
+/** User Story: As a cli consumer, I need to invoke is api url flag through a stable signature so the cli workflow remains explicit and composable. @fn bool IsApiUrlFlag(const FString &Token) */
 bool IsApiUrlFlag(const FString &Token) {
   return Token == TEXT("--api-url") || Token == TEXT("--apiUrl");
 }
 
+/** User Story: As a cli consumer, I need to invoke is api key flag through a stable signature so the cli workflow remains explicit and composable. @fn bool IsApiKeyFlag(const FString &Token) */
 bool IsApiKeyFlag(const FString &Token) {
   return Token == TEXT("--api-key") || Token == TEXT("--apiKey");
 }
 
+/** User Story: As a cli consumer, I need to invoke normalize invocation recursive through a stable signature so the cli workflow remains explicit and composable. @fn FTestGameCliInvocation NormalizeInvocationRecursive( const TArray<FString> &RawTokens, int32 Index, FTestGameCliInvocation Invocation) */
 FTestGameCliInvocation NormalizeInvocationRecursive(
     const TArray<FString> &RawTokens, int32 Index,
     FTestGameCliInvocation Invocation) {
@@ -90,10 +95,12 @@ FTestGameCliInvocation NormalizeInvocationRecursive(
                                                         MoveTemp(Invocation)));
 }
 
+/** User Story: As a cli consumer, I need to invoke normalize invocation through a stable signature so the cli workflow remains explicit and composable. @fn FTestGameCliInvocation NormalizeInvocation(const TArray<FString> &RawTokens) */
 FTestGameCliInvocation NormalizeInvocation(const TArray<FString> &RawTokens) {
   return NormalizeInvocationRecursive(RawTokens, 0, FTestGameCliInvocation());
 }
 
+/** User Story: As a cli consumer, I need to invoke token after recursive through a stable signature so the cli workflow remains explicit and composable. @fn FString TokenAfterRecursive(const TArray<FString> &Tokens, const FString &Needle, int32 Index) */
 FString TokenAfterRecursive(const TArray<FString> &Tokens,
                             const FString &Needle, int32 Index) {
   return Index >= Tokens.Num()
@@ -103,6 +110,7 @@ FString TokenAfterRecursive(const TArray<FString> &Tokens,
                    : TokenAfterRecursive(Tokens, Needle, Index + 1);
 }
 
+/** User Story: As a cli consumer, I need to invoke has token recursive through a stable signature so the cli workflow remains explicit and composable. @fn bool HasTokenRecursive(const TArray<FString> &Tokens, const FString &Needle, int32 Index) */
 bool HasTokenRecursive(const TArray<FString> &Tokens, const FString &Needle,
                        int32 Index) {
   return Index >= Tokens.Num()
@@ -112,6 +120,7 @@ bool HasTokenRecursive(const TArray<FString> &Tokens, const FString &Needle,
                    : HasTokenRecursive(Tokens, Needle, Index + 1);
 }
 
+/** User Story: As a cli consumer, I need to invoke resolve mode through a stable signature so the cli workflow remains explicit and composable. @fn FString ResolveMode(const TArray<FString> &Tokens) */
 FString ResolveMode(const TArray<FString> &Tokens) {
   const FString ExplicitMode = TokenAfterRecursive(Tokens, TEXT("--mode"), 0);
   return !ExplicitMode.IsEmpty()
@@ -122,25 +131,30 @@ FString ResolveMode(const TArray<FString> &Tokens) {
                    : FString(TEXT("autoplay"));
 }
 
+/** User Story: As a cli consumer, I need to invoke resolve api url through a stable signature so the cli workflow remains explicit and composable. @fn FString ResolveApiUrl(const FTestGameCliInvocation &Invocation) */
 FString ResolveApiUrl(const FTestGameCliInvocation &Invocation) {
   return !Invocation.ApiUrl.IsEmpty() ? Invocation.ApiUrl
                                       : SDKConfig::GetApiUrl();
 }
 
+/** User Story: As a cli consumer, I need to invoke resolve api key through a stable signature so the cli workflow remains explicit and composable. @fn FString ResolveApiKey(const FTestGameCliInvocation &Invocation) */
 FString ResolveApiKey(const FTestGameCliInvocation &Invocation) {
   return !Invocation.ApiKey.IsEmpty() ? Invocation.ApiKey
                                       : SDKConfig::GetApiKey();
 }
 
+/** User Story: As a cli consumer, I need to invoke parse play mode through a stable signature so the cli workflow remains explicit and composable. @fn TestGame::EPlayMode ParsePlayMode(const FString &Mode) */
 TestGame::EPlayMode ParsePlayMode(const FString &Mode) {
   return Mode == TEXT("manual") ? TestGame::EPlayMode::Manual
                                 : TestGame::EPlayMode::Autoplay;
 }
 
+/** User Story: As a cli consumer, I need to invoke print usage through a stable signature so the cli workflow remains explicit and composable. @fn void PrintUsage() */
 void PrintUsage() {
   TestGame::PresentProgress(TestGame::SelectUsageViewModel());
 }
 
+/** User Story: As a cli consumer, I need to invoke run contract command through a stable signature so the cli workflow remains explicit and composable. @fn int32 RunContractCommand(const FString &ApiUrl) */
 int32 RunContractCommand(const FString &ApiUrl) {
   TestGame::FTestGameStore Store = TestGame::createTestGameStore();
   const TestGame::Contract::FRawContractResponse Raw =
@@ -149,6 +163,7 @@ int32 RunContractCommand(const FString &ApiUrl) {
   return Raw.bSuccess ? 0 : 1;
 }
 
+/** User Story: As a cli consumer, I need to invoke run game command through a stable signature so the cli workflow remains explicit and composable. @fn int32 RunGameCommand(const FString &Mode, const FString &ApiUrl) */
 int32 RunGameCommand(const FString &Mode, const FString &ApiUrl) {
   TestGame::FTestGameStore Store = TestGame::createTestGameStore();
   const TestGame::FGameProgressSink ProgressSink =
@@ -163,6 +178,7 @@ int32 RunGameCommand(const FString &Mode, const FString &ApiUrl) {
 
 } // namespace
 
+/** User Story: As a cli consumer, I need to invoke uforboc aitest game commandlet through a stable signature so the cli workflow remains explicit and composable. @fn UForbocAITestGameCommandlet::UForbocAITestGameCommandlet() */
 UForbocAITestGameCommandlet::UForbocAITestGameCommandlet() {
   IsClient = false;
   IsEditor = false;
@@ -170,6 +186,7 @@ UForbocAITestGameCommandlet::UForbocAITestGameCommandlet() {
   LogToConsole = true;
 }
 
+/** User Story: As a cli consumer, I need to invoke main through a stable signature so the cli workflow remains explicit and composable. @fn int32 UForbocAITestGameCommandlet::Main(const FString &Params) */
 int32 UForbocAITestGameCommandlet::Main(const FString &Params) {
   SDKConfig::InitializeConfig();
   const FTestGameCliInvocation Invocation =

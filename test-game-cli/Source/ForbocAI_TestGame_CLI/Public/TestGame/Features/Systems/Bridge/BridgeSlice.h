@@ -8,17 +8,21 @@
 namespace TestGame {
 
 namespace GameBridgeSelectors {
+/** User Story: As a features systems bridge consumer, I need to invoke select bridge max jump force through a stable signature so the features systems bridge workflow remains explicit and composable. @fn inline int32 SelectBridgeMaxJumpForce(const FBridgeRulesState &S) */
 inline int32 SelectBridgeMaxJumpForce(const FBridgeRulesState &S) {
   return S.MaxJumpForce;
 }
+/** User Story: As a features systems bridge consumer, I need to invoke select bridge max move distance through a stable signature so the features systems bridge workflow remains explicit and composable. @fn inline int32 SelectBridgeMaxMoveDistance(const FBridgeRulesState &S) */
 inline int32 SelectBridgeMaxMoveDistance(const FBridgeRulesState &S) {
   return S.MaxMoveDistance;
 }
+/** User Story: As a features systems bridge consumer, I need to invoke select bridge active preset through a stable signature so the features systems bridge workflow remains explicit and composable. @fn inline FString SelectBridgeActivePreset(const FBridgeRulesState &S) */
 inline FString SelectBridgeActivePreset(const FBridgeRulesState &S) {
   return S.ActivePreset;
 }
 } // namespace GameBridgeSelectors
 
+/** User Story: As a features systems bridge consumer, I need to invoke create game bridge slice through a stable signature so the features systems bridge workflow remains explicit and composable. @fn inline rtk::Slice<FBridgeRulesState> CreateGameBridgeSlice() */
 inline rtk::Slice<FBridgeRulesState> CreateGameBridgeSlice() {
   return rtk::createSlice<FBridgeRulesState>(
       TEXT("testgame/bridge"), CreateBridgeInitialState(),

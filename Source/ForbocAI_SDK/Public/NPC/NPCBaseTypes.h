@@ -27,6 +27,7 @@ struct FAgentState {
   UPROPERTY(BlueprintReadOnly, Category = "NPC")
   FString JsonData;
 
+  /** User Story: As a npc consumer, I need to invoke fagent state through a stable signature so the npc workflow remains explicit and composable. @fn FAgentState() */
   FAgentState() : JsonData(TEXT("{}")) {}
 };
 
@@ -57,6 +58,7 @@ struct FAgentAction {
   UPROPERTY(BlueprintReadOnly, Category = "NPC")
   FString PayloadJson;
 
+  /** User Story: As a npc consumer, I need to invoke fagent action through a stable signature so the npc workflow remains explicit and composable. @fn FAgentAction() */
   FAgentAction() : Confidence(1.0f) {}
 };
 
@@ -84,6 +86,7 @@ struct FAgent {
   UPROPERTY(BlueprintReadOnly, Category = "NPC")
   FString ApiUrl;
 
+  /** User Story: As a npc consumer, I need to invoke fagent through a stable signature so the npc workflow remains explicit and composable. @fn FAgent() */
   FAgent() {}
 };
 
@@ -149,6 +152,7 @@ struct FImportedNpc {
   UPROPERTY(BlueprintReadOnly, Category = "NPC")
   FString DataJson;
 
+  /** User Story: As a npc consumer, I need to invoke fimported npc through a stable signature so the npc workflow remains explicit and composable. @fn FImportedNpc() */
   FImportedNpc() {}
 };
 
@@ -158,6 +162,7 @@ namespace TypeFactory {
  * Builds an agent state value from serialized JSON.
  * User Story: As NPC state hydration, I need a simple factory so JSON payloads
  * can be wrapped into the SDK state type consistently.
+ * @fn inline FAgentState AgentState(FString JsonData)
  */
 inline FAgentState AgentState(FString JsonData) {
   FAgentState S;
@@ -169,6 +174,7 @@ inline FAgentState AgentState(FString JsonData) {
  * Builds an agent action value from type, target, and reason.
  * User Story: As action construction, I need a factory so runtime and protocol
  * code can create normalized action payloads without manual field wiring.
+ * @fn inline FAgentAction Action(FString Type, FString Target, FString Reason = TEXT(""))
  */
 inline FAgentAction Action(FString Type, FString Target,
                            FString Reason = TEXT("")) {
@@ -183,6 +189,7 @@ inline FAgentAction Action(FString Type, FString Target,
  * Builds an imported NPC payload from core soul metadata.
  * User Story: As soul import flows, I need a factory so imported NPC metadata
  * can be packaged into one transferable structure.
+ * @fn inline FImportedNpc ImportedNpc(FString NpcId, FString Persona, FString DataJson = TEXT("{}"))
  */
 inline FImportedNpc ImportedNpc(FString NpcId, FString Persona,
                                 FString DataJson = TEXT("{}")) {

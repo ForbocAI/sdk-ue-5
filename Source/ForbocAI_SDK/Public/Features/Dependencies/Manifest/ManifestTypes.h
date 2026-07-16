@@ -4,6 +4,21 @@
 
 namespace Dependencies::Manifest {
 
+struct FHttp {
+  FString Method;
+  FString LocationHeader;
+  TArray<int32> RedirectStatusCodes;
+  int32 SuccessStatusMinimum;
+  int32 SuccessStatusMaximumExclusive;
+  int32 InitialRedirectCount;
+  int32 RedirectStep;
+  int32 MaxRedirects;
+  FString SaveFailed;
+  FString NetworkFailed;
+  FString RedirectLimitFailed;
+  FString HttpErrorPrefix;
+};
+
 struct FSqlite {
   FString ArchiveVersion;
   FString HeaderFile;
@@ -57,6 +72,7 @@ struct FManifest {
   FString VectorsDirectory;
   FString DatabaseFile;
   float DownloadTimeoutSeconds;
+  FHttp Http;
   FSqlite Sqlite;
   FSqliteVec SqliteVec;
   FReadiness Readiness;

@@ -11,6 +11,7 @@
 
 namespace TestGame {
 
+/** User Story: As a features entities npcs consumer, I need to invoke is move verdict action through a stable signature so the features entities npcs workflow remains explicit and composable. @fn inline bool IsMoveVerdictAction(const FString &ActionType) */
 inline bool IsMoveVerdictAction(const FString &ActionType) {
   static const DataAdapters::FSettingsSource Source =
       DataAdapters::SettingsSource(TEXT("entities/npcs.json"));
@@ -24,6 +25,7 @@ inline bool IsMoveVerdictAction(const FString &ActionType) {
  * Returns the entity adapter used for test-game NPC state.
  * User Story: As test-game entity reducers, I need one shared adapter so NPC
  * CRUD actions update and query a consistent normalized state shape.
+ * @fn inline rtk::EntityAdapter<FGameNPC> &GetNPCAdapter()
  */
 inline rtk::EntityAdapter<FGameNPC> &GetNPCAdapter() {
   static rtk::EntityAdapter<FGameNPC> Adapter =
@@ -32,6 +34,7 @@ inline rtk::EntityAdapter<FGameNPC> &GetNPCAdapter() {
   return Adapter;
 }
 
+/** User Story: As a features entities npcs consumer, I need to invoke patch npc through a stable signature so the features entities npcs workflow remains explicit and composable. @fn inline FGameNPC PatchNpc(const FGameNPC &Existing, const NPCsActions::FPatchNPCChanges &Patch) */
 inline FGameNPC PatchNpc(const FGameNPC &Existing,
                          const NPCsActions::FPatchNPCChanges &Patch) {
   FGameNPC Updated = Existing;

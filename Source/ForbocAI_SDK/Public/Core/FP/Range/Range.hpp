@@ -3,6 +3,7 @@
 #include "Core/FP/Array/Array.hpp"
 
 namespace func {
+/** User Story: As a core fp range consumer, I need to invoke fold index range through a stable signature so the core fp range workflow remains explicit and composable. @fn template <typename Acc, typename Step> Acc fold_index_range(int32 count, Acc seed, Step step, int32 index = 0) */
 template <typename Acc, typename Step>
 Acc fold_index_range(int32 count, Acc seed, Step step, int32 index = 0) {
   return index >= count
@@ -11,6 +12,7 @@ Acc fold_index_range(int32 count, Acc seed, Step step, int32 index = 0) {
                                            index + 1);
 }
 
+/** User Story: As a core fp range consumer, I need to invoke index range through a stable signature so the core fp range workflow remains explicit and composable. @fn inline TArray<int32> index_range(int32 count) */
 inline TArray<int32> index_range(int32 count) {
   return fold_index_range<TArray<int32>>(
       count, TArray<int32>(),
@@ -19,6 +21,7 @@ inline TArray<int32> index_range(int32 count) {
       });
 }
 
+/** User Story: As a core fp range consumer, I need to invoke map index range through a stable signature so the core fp range workflow remains explicit and composable. @fn template <typename Map> auto map_index_range(int32 count, Map map) -> TArray<decltype(map(std::declval<int32>()))> */
 template <typename Map>
 auto map_index_range(int32 count, Map map)
     -> TArray<decltype(map(std::declval<int32>()))> {
@@ -54,6 +57,7 @@ auto traverse_maybe_array_with_index(const TArray<Source> &values, Map map)
       });
 }
 
+/** User Story: As a core fp range consumer, I need to invoke traverse maybe array with index through a stable signature so the core fp range workflow remains explicit and composable. @fn template <typename Source, typename Output, typename Map> Maybe<TArray<Output>> traverse_maybe_array_with_index(const TArray<Source> &values, Map map) */
 template <typename Source, typename Output, typename Map>
 Maybe<TArray<Output>>
 traverse_maybe_array_with_index(const TArray<Source> &values, Map map) {
@@ -75,6 +79,7 @@ traverse_maybe_array_with_index(const TArray<Source> &values, Map map) {
       });
 }
 
+/** User Story: As a core fp range consumer, I need to invoke fold grid range through a stable signature so the core fp range workflow remains explicit and composable. @fn template <typename Acc, typename Step> Acc fold_grid_range(size_t rows, size_t columns, Acc seed, Step step) */
 template <typename Acc, typename Step>
 Acc fold_grid_range(size_t rows, size_t columns, Acc seed, Step step) {
   return fold_index_range<Acc>(
@@ -90,6 +95,7 @@ Acc fold_grid_range(size_t rows, size_t columns, Acc seed, Step step) {
       });
 }
 
+/** User Story: As a core fp range consumer, I need to invoke map grid array through a stable signature so the core fp range workflow remains explicit and composable. @fn template <typename Output, typename Map> TArray<Output> map_grid_array(size_t rows, size_t columns, Map map) */
 template <typename Output, typename Map>
 TArray<Output> map_grid_array(size_t rows, size_t columns, Map map) {
   return fold_grid_range<TArray<Output>>(

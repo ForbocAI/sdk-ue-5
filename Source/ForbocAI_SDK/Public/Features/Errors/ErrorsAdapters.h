@@ -3,11 +3,13 @@
 #include "Core/fp.hpp"
 namespace Errors {
 
+/** User Story: As a features errors consumer, I need to invoke is http error html through a stable signature so the features errors workflow remains explicit and composable. @fn inline bool isHttpErrorHtml(const FString &Message) */
 inline bool isHttpErrorHtml(const FString &Message) {
   return Message.Contains(TEXT("<html"), ESearchCase::IgnoreCase) ||
          Message.Contains(TEXT("<!doctype html"), ESearchCase::IgnoreCase);
 }
 
+/** User Story: As a features errors consumer, I need to invoke strip html tags recursive through a stable signature so the features errors workflow remains explicit and composable. @fn inline FString stripHtmlTagsRecursive(const FString &Message, int32 Index, bool bInTag, bool bLastWasWhitespace, FString Out) */
 inline FString stripHtmlTagsRecursive(const FString &Message, int32 Index,
                                       bool bInTag,
                                       bool bLastWasWhitespace, FString Out) {
@@ -33,10 +35,12 @@ inline FString stripHtmlTagsRecursive(const FString &Message, int32 Index,
                                        MoveTemp(Out)));
 }
 
+/** User Story: As a features errors consumer, I need to invoke strip html tags through a stable signature so the features errors workflow remains explicit and composable. @fn inline FString stripHtmlTags(const FString &Message) */
 inline FString stripHtmlTags(const FString &Message) {
   return stripHtmlTagsRecursive(Message, 0, false, false, FString());
 }
 
+/** User Story: As a features errors consumer, I need to invoke read html title through a stable signature so the features errors workflow remains explicit and composable. @fn inline FString readHtmlTitle(const FString &Message) */
 inline FString readHtmlTitle(const FString &Message) {
   const int32 TitleStart = Message.Find(TEXT("<title"), ESearchCase::IgnoreCase);
   return TitleStart == INDEX_NONE
@@ -62,6 +66,7 @@ inline FString readHtmlTitle(const FString &Message) {
                }();
 }
 
+/** User Story: As a features errors consumer, I need to invoke parse leading status code through a stable signature so the features errors workflow remains explicit and composable. @fn inline int32 parseLeadingStatusCode(const FString &Message) */
 inline int32 parseLeadingStatusCode(const FString &Message) {
   return Message.Len() >= 3 && FChar::IsDigit(Message[0]) &&
                  FChar::IsDigit(Message[1]) && FChar::IsDigit(Message[2])
@@ -69,6 +74,7 @@ inline int32 parseLeadingStatusCode(const FString &Message) {
              : 0;
 }
 
+/** User Story: As a features errors consumer, I need to invoke remove leading status code through a stable signature so the features errors workflow remains explicit and composable. @fn inline FString removeLeadingStatusCode(const FString &Message, int32 StatusCode) */
 inline FString removeLeadingStatusCode(const FString &Message, int32 StatusCode) {
   return StatusCode <= 0 ||
                  !Message.StartsWith(FString::FromInt(StatusCode))
@@ -84,6 +90,7 @@ inline FString removeLeadingStatusCode(const FString &Message, int32 StatusCode)
  * Summarizes provider HTML error pages into stable HTTP error text.
  * User Story: As CLI and test-game diagnostics, I need non-2xx provider pages
  * reduced to status and title so strict failures stay readable.
+ * @fn inline FString summarizeHttpError(int32 StatusCode, const FString &Message)
  */
 inline FString summarizeHttpError(int32 StatusCode, const FString &Message) {
   return !isHttpErrorHtml(Message)
@@ -118,6 +125,7 @@ inline FString summarizeHttpError(int32 StatusCode, const FString &Message) {
  * Returns a non-empty thunk error message for FString-based failures.
  * User Story: As thunk adapters, I need a guaranteed message string so CLI and
  * UI surfaces never render empty failure text.
+ * @fn inline FString extractThunkErrorMessage(const FString &Message, const FString &DefaultMessage = TEXT("Request failed"))
  */
 inline FString extractThunkErrorMessage(const FString &Message,
                                         const FString &DefaultMessage =
@@ -129,6 +137,7 @@ inline FString extractThunkErrorMessage(const FString &Message,
  * Returns a non-empty thunk error message for std::string-based failures.
  * User Story: As thunk adapters, I need a guaranteed message string even for
  * native std::string errors so reporting stays consistent across layers.
+ * @fn inline FString extractThunkErrorMessage(const std::string &Message, const FString &DefaultMessage = TEXT("Request failed"))
  */
 inline FString extractThunkErrorMessage(const std::string &Message,
                                         const FString &DefaultMessage =
@@ -143,6 +152,7 @@ inline FString extractThunkErrorMessage(const std::string &Message,
  * Returns guidance when production API calls are missing an API key.
  * User Story: As SDK setup flows, I need targeted guidance for missing keys so
  * production calls fail with actionable remediation instead of a dead end.
+ * @fn inline func::Maybe<FString> requireApiKeyGuidance(const FString &ApiUrl, const FString &ApiKey)
  */
 inline func::Maybe<FString>
 requireApiKeyGuidance(const FString &ApiUrl, const FString &ApiKey) {

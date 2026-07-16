@@ -25,8 +25,8 @@ struct FRunSystemDescriptorRequest {
 };
 
 /**
+ * @fn inline std::function<bool(const EntityKey &)> requireEntityTags(const FWorld &World, const TArray<Tag> &Tags)
  * @brief Creates a reusable predicate that checks all required tags.
- * @signature inline std::function<bool(const EntityKey &)> requireEntityTags(const FWorld &World, const TArray<Tag> &Tags)
  *
  * User Story: As ECS system matching, tag requirements should be expressed as
  * a function factory returning a unary predicate over entities.
@@ -43,8 +43,8 @@ requireEntityTags(const FWorld &World, const TArray<Tag> &Tags) {
 }
 
 /**
+ * @fn inline std::function<bool(const EntityKey &)> requireEntityOptionalDomain(const FWorld &World, const func::Maybe<DomainPathKey> &Domain)
  * @brief Creates a reusable predicate that checks an optional domain guard.
- * @signature inline std::function<bool(const EntityKey &)> requireEntityOptionalDomain(const FWorld &World, const func::Maybe<DomainPathKey> &Domain)
  *
  * User Story: As ECS system matching, optional domain guards should be
  * first-class unary predicates that compose with tag predicates.
@@ -63,8 +63,8 @@ requireEntityOptionalDomain(const FWorld &World,
 }
 
 /**
+ * @fn inline std::function<bool(const EntityKey &)> requireSystemDescriptor(const FWorld &World, const FDescriptor &Descriptor)
  * @brief Creates a reusable predicate for descriptor tag/domain requirements.
- * @signature inline std::function<bool(const EntityKey &)> requireSystemDescriptor(const FWorld &World, const FDescriptor &Descriptor)
  *
  * User Story: As ECS system execution, descriptor matching should be a
  * functional composition of smaller entity predicates.
@@ -78,8 +78,8 @@ requireSystemDescriptor(const FWorld &World,
 }
 
 /**
+ * @fn inline FWorld runSystem(const FRunSystemRequest &Request)
  * @brief Runs one pure ECS system over matching entities.
- * @signature inline FWorld runSystem(const FRunSystemRequest &Request)
  *
  * User Story: As ECS execution code, running a system should fold over matching
  * entities and invoke systems with a single execution payload.
@@ -97,9 +97,9 @@ inline FWorld runSystem(const FRunSystemRequest &Request) {
 }
 
 /**
+ * @fn inline FWorld runSystemDescriptor(const FRunSystemDescriptorRequest &Request)
  * @brief Runs a system descriptor over entities matching components, tags, and
  * optional domain.
- * @signature inline FWorld runSystemDescriptor(const FRunSystemDescriptorRequest &Request)
  *
  * User Story: As ECS execution code, descriptor execution should compose
  * component queries, descriptor guards, and system invocation through shared
@@ -130,8 +130,8 @@ struct FValidateSystemSpecRequest {
 };
 
 /**
+ * @fn inline std::function<func::Either<FString, bool>(const DomainPathKey &)> requireDomain(const FGraph &Registry)
  * @brief Creates a reusable domain-exists validator for a registry.
- * @signature inline std::function<func::Either<FString, bool>(const DomainPathKey &)> requireDomain(const FGraph &Registry)
  *
  * User Story: As registry validation, domain validation should be a reusable
  * function factory over a registry.
@@ -145,8 +145,8 @@ requireDomain(const FGraph &Registry) {
 }
 
 /**
+ * @fn inline std::function<func::Either<FString, bool>(const ComponentType &)> requireComponentSchema(const FGraph &Registry)
  * @brief Creates a reusable component-schema validator for a registry.
- * @signature inline std::function<func::Either<FString, bool>(const ComponentType &)> requireComponentSchema(const FGraph &Registry)
  *
  * User Story: As registry validation, component schema validation should be a
  * reusable function factory over a registry.
@@ -161,8 +161,8 @@ requireComponentSchema(const FGraph &Registry) {
 }
 
 /**
+ * @fn inline FValidateSystemSpecRequest createValidateSystemSpecRequest(const FGraph &Registry, const FSystemSpec &Spec)
  * @brief Builds a system-spec validation request payload.
- * @signature inline FValidateSystemSpecRequest createValidateSystemSpecRequest(const FGraph &Registry, const FSystemSpec &Spec)
  *
  * User Story: As registry validation, system spec validation remains one
  * payload at the public multi-input boundary.
@@ -174,8 +174,8 @@ createValidateSystemSpecRequest(const FGraph &Registry,
 }
 
 /**
+ * @fn inline func::Either<FString, bool> validateEntityDomain(const FValidateEntityDomainRequest &Request)
  * @brief Validates entity membership in a domain.
- * @signature inline func::Either<FString, bool> validateEntityDomain(const FValidateEntityDomainRequest &Request)
  *
  * User Story: As ECS validation, domain membership failures should return
  * Either errors and reuse entity-domain predicates.
@@ -190,8 +190,8 @@ validateEntityDomain(const FValidateEntityDomainRequest &Request) {
 }
 
 /**
+ * @fn inline func::Either<FString, bool> validateSystemSpec(const FValidateSystemSpecRequest &Request)
  * @brief Validates a system spec against registered domain/component contracts.
- * @signature inline func::Either<FString, bool> validateSystemSpec(const FValidateSystemSpecRequest &Request)
  *
  * User Story: As registry validation, system spec checks should compose domain
  * and component validation through fp Either semantics.

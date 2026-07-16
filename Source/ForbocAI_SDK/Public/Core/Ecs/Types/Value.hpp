@@ -27,6 +27,7 @@ struct FComponentValue {
   TArray<TSharedPtr<FComponentValue>> ListValue;
 };
 
+/** User Story: As a core ecs types consumer, I need to invoke create none component value through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline FComponentValue createNoneComponentValue() */
 inline FComponentValue createNoneComponentValue() {
   FComponentValue Value;
   Value.Kind = EComponentValueKind::None;
@@ -36,6 +37,7 @@ inline FComponentValue createNoneComponentValue() {
   return Value;
 }
 
+/** User Story: As a core ecs types consumer, I need to invoke create bool component value through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline FComponentValue createBoolComponentValue(bool RawValue) */
 inline FComponentValue createBoolComponentValue(bool RawValue) {
   FComponentValue Value = createNoneComponentValue();
   Value.Kind = EComponentValueKind::Bool;
@@ -43,6 +45,7 @@ inline FComponentValue createBoolComponentValue(bool RawValue) {
   return Value;
 }
 
+/** User Story: As a core ecs types consumer, I need to invoke create int component value through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline FComponentValue createIntComponentValue(int64 RawValue) */
 inline FComponentValue createIntComponentValue(int64 RawValue) {
   FComponentValue Value = createNoneComponentValue();
   Value.Kind = EComponentValueKind::Int;
@@ -50,6 +53,7 @@ inline FComponentValue createIntComponentValue(int64 RawValue) {
   return Value;
 }
 
+/** User Story: As a core ecs types consumer, I need to invoke create float component value through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline FComponentValue createFloatComponentValue(float RawValue) */
 inline FComponentValue createFloatComponentValue(float RawValue) {
   FComponentValue Value = createNoneComponentValue();
   Value.Kind = EComponentValueKind::Float;
@@ -57,6 +61,7 @@ inline FComponentValue createFloatComponentValue(float RawValue) {
   return Value;
 }
 
+/** User Story: As a core ecs types consumer, I need to invoke create text component value through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline FComponentValue createTextComponentValue(const FString &RawValue) */
 inline FComponentValue createTextComponentValue(const FString &RawValue) {
   FComponentValue Value = createNoneComponentValue();
   Value.Kind = EComponentValueKind::Text;
@@ -64,6 +69,7 @@ inline FComponentValue createTextComponentValue(const FString &RawValue) {
   return Value;
 }
 
+/** User Story: As a core ecs types consumer, I need to invoke create vec3 component value through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline FComponentValue createVec3ComponentValue(const FVector &RawValue) */
 inline FComponentValue createVec3ComponentValue(const FVector &RawValue) {
   FComponentValue Value = createNoneComponentValue();
   Value.Kind = EComponentValueKind::Vec3;
@@ -71,6 +77,7 @@ inline FComponentValue createVec3ComponentValue(const FVector &RawValue) {
   return Value;
 }
 
+/** User Story: As a core ecs types consumer, I need to invoke create vec2 component value through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline FComponentValue createVec2ComponentValue(const FVector2D &RawValue) */
 inline FComponentValue createVec2ComponentValue(const FVector2D &RawValue) {
   FComponentValue Value = createNoneComponentValue();
   Value.Kind = EComponentValueKind::Vec2;
@@ -78,6 +85,7 @@ inline FComponentValue createVec2ComponentValue(const FVector2D &RawValue) {
   return Value;
 }
 
+/** User Story: As a core ecs types consumer, I need to invoke create map component value through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline FComponentValue createMapComponentValue(const TMap<FString, FComponentValue> &RawValue) */
 inline FComponentValue
 createMapComponentValue(const TMap<FString, FComponentValue> &RawValue) {
   FComponentValue Value = createNoneComponentValue();
@@ -100,6 +108,7 @@ createMapComponentValue(const TMap<FString, FComponentValue> &RawValue) {
   return Value;
 }
 
+/** User Story: As a core ecs types consumer, I need to invoke create list component value through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline FComponentValue createListComponentValue(const TArray<FComponentValue> &RawValue) */
 inline FComponentValue createListComponentValue(const TArray<FComponentValue> &RawValue) {
   FComponentValue Value = createNoneComponentValue();
   Value.Kind = EComponentValueKind::List;
@@ -116,8 +125,8 @@ inline FComponentValue createListComponentValue(const TArray<FComponentValue> &R
 }
 
 /**
+ * @fn template <typename Source> inline TArray<FComponentValue> mapComponentValues(const TArray<Source> &Items, std::function<FComponentValue(const Source &)> MapValue)
  * @brief Maps source rows into ECS component values through the neutral array mapper.
- * @signature template <typename Source> inline TArray<FComponentValue> mapComponentValues(const TArray<Source> &Items, std::function<FComponentValue(const Source &)> MapValue)
  *
  * User Story: As projection adapters, component-list values should share one
  * ECS mapper instead of building request/factory families per source noun.
@@ -129,9 +138,11 @@ mapComponentValues(const TArray<Source> &Items,
   return func::map_array<Source, FComponentValue>(Items, MapValue);
 }
 
+/** User Story: As a core ecs types consumer, I need to invoke component value ptr equals through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline bool componentValuePtrEquals(const TSharedPtr<FComponentValue> &Left, const TSharedPtr<FComponentValue> &Right) */
 inline bool componentValuePtrEquals(const TSharedPtr<FComponentValue> &Left,
                                     const TSharedPtr<FComponentValue> &Right);
 
+/** User Story: As a core ecs types consumer, I need to invoke component map equals through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline bool componentMapEquals( const TMap<FString, TSharedPtr<FComponentValue>> &Left, const TMap<FString, TSharedPtr<FComponentValue>> &Right) */
 inline bool componentMapEquals(
     const TMap<FString, TSharedPtr<FComponentValue>> &Left,
     const TMap<FString, TSharedPtr<FComponentValue>> &Right) {
@@ -143,6 +154,7 @@ inline bool componentMapEquals(
       });
 }
 
+/** User Story: As a core ecs types consumer, I need to invoke component list equals through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline bool componentListEquals( const TArray<TSharedPtr<FComponentValue>> &Left, const TArray<TSharedPtr<FComponentValue>> &Right) */
 inline bool componentListEquals(
     const TArray<TSharedPtr<FComponentValue>> &Left,
     const TArray<TSharedPtr<FComponentValue>> &Right) {
@@ -155,6 +167,7 @@ inline bool componentListEquals(
              });
 }
 
+/** User Story: As a core ecs types consumer, I need to compare values for equality through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline bool operator==(const FComponentValue &Left, const FComponentValue &Right) */
 inline bool operator==(const FComponentValue &Left,
                        const FComponentValue &Right) {
   return Left.Kind == Right.Kind && Left.BoolValue == Right.BoolValue &&
@@ -167,11 +180,13 @@ inline bool operator==(const FComponentValue &Left,
          componentListEquals(Left.ListValue, Right.ListValue);
 }
 
+/** User Story: As a core ecs types consumer, I need to compare values for inequality through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline bool operator!=(const FComponentValue &Left, const FComponentValue &Right) */
 inline bool operator!=(const FComponentValue &Left,
                        const FComponentValue &Right) {
   return !(Left == Right);
 }
 
+/** User Story: As a core ecs types consumer, I need to invoke component value ptr equals through a stable signature so the core ecs types workflow remains explicit and composable. @fn inline bool componentValuePtrEquals(const TSharedPtr<FComponentValue> &Left, const TSharedPtr<FComponentValue> &Right) */
 inline bool componentValuePtrEquals(const TSharedPtr<FComponentValue> &Left,
                                     const TSharedPtr<FComponentValue> &Right) {
   return (!Left.IsValid() && !Right.IsValid()) ||

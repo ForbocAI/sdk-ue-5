@@ -11,6 +11,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRtkMiddlewareTest,
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FRtkMiddlewareTest::RunTest(const FString &Parameters)
  */
 bool FRtkMiddlewareTest::RunTest(const FString &Parameters) {
   TArray<FString> EventLog;

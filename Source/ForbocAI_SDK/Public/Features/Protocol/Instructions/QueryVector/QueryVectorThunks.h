@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Features/Directive/DirectiveSlice.h"
+#include "Features/Protocol/Configuration/ConfigurationAdapters.h"
 #include "Features/Protocol/Turn/TurnAdapters.h"
 
 namespace rtk::detail {
@@ -10,7 +11,9 @@ namespace rtk::detail {
  * and building the recalled-memory tape for the next turn.
  * User Story: As protocol instruction dispatch, I need vector queries handled
  * as a pure expression so the instruction ternary stays flat.
+ * @fn template <typename RuntimeState> inline func::AsyncResult<FAgentResponse> HandleQueryVector(const FNPCProcessResponse &Response, const FNPCInstruction &Instruction, const FString &NpcId, const FString &Input, const FString &RunId, int32 Turn, const FProtocolHandlerContext &Runtime, std::function<AnyAction(const AnyAction &)> Dispatch, std::function<const RuntimeState &()> GetState)
  */
+template <typename RuntimeState>
 inline func::AsyncResult<FAgentResponse>
 HandleQueryVector(const FNPCProcessResponse &Response,
                   const FNPCInstruction &Instruction,
@@ -18,15 +21,12 @@ HandleQueryVector(const FNPCProcessResponse &Response,
                   const FString &RunId, int32 Turn,
                   const FProtocolHandlerContext &Runtime,
                   std::function<AnyAction(const AnyAction &)> Dispatch,
-                  std::function<const FRuntimeState &()> GetState) {
+                  std::function<const RuntimeState &()> GetState) {
+  const auto &Data = ProtocolConfiguration::protocolData();
   return !Runtime.HasMemory()
              ? (Dispatch(DirectiveSlice::Actions::directiveRunFailed(
-                    RunId,
-                    TEXT("API requested memory recall, but no memory engine "
-                         "is configured"))),
-                RejectAsync<FAgentResponse>(
-                    TEXT("API requested memory recall, but no memory engine "
-                         "is configured")))
+                    RunId, Data.Errors.MissingVectorMemory)),
+                RejectAsync<FAgentResponse>(Data.Errors.MissingVectorMemory))
              : [&]() -> func::AsyncResult<FAgentResponse> {
     FDirectiveResponse Directive;
     Directive.recallMemory = TypeFactory::MemoryRecallInstruction(
@@ -41,15 +41,14 @@ HandleQueryVector(const FNPCProcessResponse &Response,
 
     return func::AsyncChain::then<TArray<FMemoryItem>, FAgentResponse>(
         Runtime.RecallMemory(RecallRequest)(Dispatch, GetState),
-        [NpcId, Input, RunId, Response, Turn, Dispatch, GetState,
-         Runtime](const TArray<FMemoryItem> &Memories) {
+        [NpcId, Input, RunId, Response, Turn, Dispatch, GetState, Runtime,
+         Step = Data.Iteration.Step](const TArray<FMemoryItem> &Memories) {
           FNPCProcessTape NextTape = Response.Tape;
-          NextTape.Memories =
-              PopulateRecalledMemoriesRecursive(Memories, 0, TArray<FRecalledMemory>());
+          NextTape.Memories = MemoryItemsToRecalled(Memories);
           NextTape.bVectorQueried = true;
           return RunProtocolTurn(
               NpcId, Input, RunId, NextTape,
-              SerializeQueryVectorResult(Memories), true, Turn + 1,
+              SerializeQueryVectorResult(Memories), true, Turn + Step,
               Runtime, Dispatch, GetState);
         });
   }();

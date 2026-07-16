@@ -7,6 +7,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     "ForbocAI.Core.FunctionalCore.Cookbook.Collections",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
+/** User Story: As a core fp composition consumer, I need to invoke run test through a stable signature so the core fp composition workflow remains explicit and composable. @fn bool FFunctionalCookbookCollectionsTest::RunTest(const FString &Parameters) */
 bool FFunctionalCookbookCollectionsTest::RunTest(const FString &Parameters) {
   const auto &Fixture =
       Testing::FP::Composition::CompositionFixtures().Collections;
@@ -47,6 +48,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     "ForbocAI.Core.FunctionalCore.Cookbook.MaybeEither",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
+/** User Story: As a core fp composition consumer, I need to invoke run test through a stable signature so the core fp composition workflow remains explicit and composable. @fn bool FFunctionalCookbookMaybeEitherTest::RunTest(const FString &Parameters) */
 bool FFunctionalCookbookMaybeEitherTest::RunTest(const FString &Parameters) {
   const auto &Fixture =
       Testing::FP::Composition::CompositionFixtures().MaybeEither;
@@ -144,6 +146,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     "ForbocAI.Core.FunctionalCore.TSNameParity",
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
+/** User Story: As a core fp composition consumer, I need to invoke run test through a stable signature so the core fp composition workflow remains explicit and composable. @fn bool FFunctionalCoreTsNameParityTest::RunTest(const FString &Parameters) */
 bool FFunctionalCoreTsNameParityTest::RunTest(const FString &Parameters) {
   const auto &Fixture =
       Testing::FP::Composition::CompositionFixtures().NameParity;

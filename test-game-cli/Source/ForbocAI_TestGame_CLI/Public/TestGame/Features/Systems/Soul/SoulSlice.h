@@ -9,15 +9,18 @@
 namespace TestGame {
 
 namespace GameSoulSelectors {
+/** User Story: As a features systems soul consumer, I need to invoke select soul exports by npc through a stable signature so the features systems soul workflow remains explicit and composable. @fn inline TMap<FString, FString> SelectSoulExportsByNpc(const FSoulTrackingState &S) */
 inline TMap<FString, FString>
 SelectSoulExportsByNpc(const FSoulTrackingState &S) {
   return S.ExportsByNpc;
 }
 
+/** User Story: As a features systems soul consumer, I need to invoke select imported soul tx ids through a stable signature so the features systems soul workflow remains explicit and composable. @fn inline TArray<FString> SelectImportedSoulTxIds(const FSoulTrackingState &S) */
 inline TArray<FString> SelectImportedSoulTxIds(const FSoulTrackingState &S) {
   return S.ImportedSoulTxIds;
 }
 
+/** User Story: As a features systems soul consumer, I need to invoke select soul export tx id through a stable signature so the features systems soul workflow remains explicit and composable. @fn inline func::Maybe<FString> SelectSoulExportTxId( const FSoulTrackingState &S, const FString &NpcId) */
 inline func::Maybe<FString> SelectSoulExportTxId(
     const FSoulTrackingState &S, const FString &NpcId) {
   const FString *TxId = S.ExportsByNpc.Find(NpcId);
@@ -26,6 +29,7 @@ inline func::Maybe<FString> SelectSoulExportTxId(
 }
 } // namespace GameSoulSelectors
 
+/** User Story: As a features systems soul consumer, I need to invoke create game soul slice through a stable signature so the features systems soul workflow remains explicit and composable. @fn inline rtk::Slice<FSoulTrackingState> CreateGameSoulSlice() */
 inline rtk::Slice<FSoulTrackingState> CreateGameSoulSlice() {
   return rtk::createSlice<FSoulTrackingState>(
       TEXT("testgame/soul"), FSoulTrackingState(),

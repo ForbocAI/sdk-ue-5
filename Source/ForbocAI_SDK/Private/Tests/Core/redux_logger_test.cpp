@@ -9,6 +9,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FReduxLoggerMiddlewareTest,
                                  "ForbocAI.Core.ReduxLogger.Middleware",
                                  EAutomationTestFlags_ApplicationContextMask |
                                      EAutomationTestFlags::EngineFilter)
+/** User Story: As a tests core consumer, I need to invoke run test through a stable signature so the tests core workflow remains explicit and composable. @fn bool FReduxLoggerMiddlewareTest::RunTest(const FString &Parameters) */
 bool FReduxLoggerMiddlewareTest::RunTest(const FString &Parameters) {
   (void)Parameters;
 

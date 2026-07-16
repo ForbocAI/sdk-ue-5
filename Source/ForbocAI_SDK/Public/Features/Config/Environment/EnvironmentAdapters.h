@@ -6,6 +6,7 @@
 
 namespace SDKConfig {
 
+/** User Story: As a features config environment consumer, I need to invoke load from environment through a stable signature so the features config environment workflow remains explicit and composable. @fn inline void LoadFromEnvironment() */
 inline void LoadFromEnvironment() {
   const FString ApiUrl =
       FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_API_URL"));

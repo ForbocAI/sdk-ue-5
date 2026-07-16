@@ -8,6 +8,7 @@ struct FRuntimeState;
 
 namespace Ops {
 
+/** User Story: As a features cli system consumer, I need to invoke check api status through a stable signature so the features cli system workflow remains explicit and composable. @fn template <typename RuntimeState = FRuntimeState> inline FApiStatusResponse checkApiStatus(rtk::EnhancedStore<RuntimeState> &Store) */
 template <typename RuntimeState = FRuntimeState>
 inline FApiStatusResponse
 checkApiStatus(rtk::EnhancedStore<RuntimeState> &Store) {

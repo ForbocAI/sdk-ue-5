@@ -10,6 +10,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
+/** User Story: As a tests slices store consumer, I need to invoke run test through a stable signature so the tests slices store workflow remains explicit and composable. @fn bool FTestGameStoreDomainSelectorsTest::RunTest(const FString &Parameters) */
 bool FTestGameStoreDomainSelectorsTest::RunTest(const FString &Parameters) {
   (void)Parameters;
 

@@ -19,6 +19,7 @@ template <typename Key, typename Result> struct Dispatcher {
 };
 
 namespace detail {
+/** User Story: As a core fp dispatcher consumer, I need to invoke create dispatcher recursive through a stable signature so the core fp dispatcher workflow remains explicit and composable. @fn template <typename Key, typename Result> Dispatcher<Key, Result> createDispatcherRecursive( const std::vector<std::pair<Key, std::function<Result()>>> &Entries, size_t Index, Dispatcher<Key, Result> Current) */
 template <typename Key, typename Result>
 Dispatcher<Key, Result>
 createDispatcherRecursive(
@@ -31,6 +32,7 @@ createDispatcherRecursive(
                                                        std::move(Current)));
 }
 
+/** User Story: As a core fp dispatcher consumer, I need to invoke dispatcher keys recursive through a stable signature so the core fp dispatcher workflow remains explicit and composable. @fn template <typename Key, typename Result> std::vector<Key> dispatcherKeysRecursive( typename std::unordered_map<Key, std::function<Result()>>::const_iterator It, typename std::unordered_map<Key, std::function<Result()>>::const_iterator End, std::vector<Key> Current) */
 template <typename Key, typename Result>
 std::vector<Key> dispatcherKeysRecursive(
     typename std::unordered_map<Key, std::function<Result()>>::const_iterator It,
@@ -45,11 +47,11 @@ std::vector<Key> dispatcherKeysRecursive(
 } // namespace detail
 
 /**
+ * @fn template <typename Key, typename Result> Dispatcher<Key, Result> createDispatcher( std::vector<std::pair<Key, std::function<Result()>>> entries)
  * @brief Builds a dispatcher table from key-to-handler entries.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename Key, typename Result> Dispatcher<Key, Result> createDispatcher( std::vector<std::pair<Key, std::function<Result()>>> entries)
  *
  * User Story: As keyed dispatch flows, I need a typed dispatcher table so
  * string or enum keys can resolve handlers declaratively.
@@ -62,11 +64,11 @@ Dispatcher<Key, Result> createDispatcher(
 }
 
 /**
+ * @fn template <typename Key, typename Result> Maybe<Result> dispatch(const Dispatcher<Key, Result> &d, const Key &key)
  * @brief Looks up and invokes a handler by key when one exists.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename Key, typename Result> Maybe<Result> dispatch(const Dispatcher<Key, Result> &d, const Key &key)
  *
  * User Story: As keyed dispatch flows, I need dispatch to return Maybe so
  * missing handlers do not require exceptions or sentinels.
@@ -79,9 +81,9 @@ Maybe<Result> dispatch(const Dispatcher<Key, Result> &d, const Key &key) {
 }
 
 /**
+ * @fn template <typename E, typename Key, typename Result> Either<E, Result> dispatch_either(const Dispatcher<Key, Result> &d, const Key &key, E error)
  * @brief Looks up and invokes a handler or returns a typed error.
  *
- * @signature template <typename E, typename Key, typename Result> Either<E, Result> dispatch_either(const Dispatcher<Key, Result> &d, const Key &key, E error)
  *
  * User Story: As reducer and ECS code, I need strict dispatch misses to remain
  * explicit errors instead of falling through to hidden defaults.
@@ -95,11 +97,11 @@ Either<E, Result> dispatch_either(const Dispatcher<Key, Result> &d,
 }
 
 /**
+ * @fn template <typename Key, typename Result> bool has(const Dispatcher<Key, Result> &d, const Key &key)
  * @brief Reports whether a dispatcher has a handler for the given key.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename Key, typename Result> bool has(const Dispatcher<Key, Result> &d, const Key &key)
  *
  * User Story: As keyed dispatch flows, I need a presence check so callers can
  * branch before invoking optional handlers.
@@ -110,11 +112,11 @@ bool has(const Dispatcher<Key, Result> &d, const Key &key) {
 }
 
 /**
+ * @fn template <typename Key, typename Result> std::vector<Key> keys(const Dispatcher<Key, Result> &d)
  * @brief Returns every key currently registered in the dispatcher.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename Key, typename Result> std::vector<Key> keys(const Dispatcher<Key, Result> &d)
  *
  * User Story: As keyed dispatch flows, I need access to registered keys so
  * tools and tests can inspect available handlers.
@@ -155,9 +157,9 @@ struct ArgDispatcherDispatch {
 };
 
 /**
+ * @fn template <typename Key, typename Arg, typename Result> ArgDispatcher<Key, Arg, Result> create_arg_dispatcher()
  * @brief Creates an empty strict argument dispatcher.
  *
- * @signature template <typename Key, typename Arg, typename Result> ArgDispatcher<Key, Arg, Result> create_arg_dispatcher()
  *
  * User Story: As keyed dispatch setup code, I need an empty value that can be
  * extended through registration functions and lazy cached when needed.
@@ -168,9 +170,9 @@ ArgDispatcher<Key, Arg, Result> create_arg_dispatcher() {
 }
 
 /**
+ * @fn template <typename Key, typename Arg, typename Result> ArgDispatcher<Key, Arg, Result> arg_dispatcher_register( ArgDispatcher<Key, Arg, Result> dispatcher, Key key, std::function<Result(const Arg &)> handler)
  * @brief Registers a key-to-argument-handler entry.
  *
- * @signature template <typename Key, typename Arg, typename Result> ArgDispatcher<Key, Arg, Result> arg_dispatcher_register(ArgDispatcher<Key, Arg, Result> dispatcher, Key key, std::function<Result(const Arg &)> handler)
  *
  * User Story: As formatter and adapter code, I need registration to return the
  * next dispatcher value so tables compose through pipe/lazy helpers.
@@ -184,9 +186,9 @@ ArgDispatcher<Key, Arg, Result> arg_dispatcher_register(
 }
 
 /**
+ * @fn template <typename Key, typename Arg, typename Result> Maybe<Result> arg_dispatcher_dispatch_maybe( const ArgDispatcherDispatch<Key, Arg, Result> &request)
  * @brief Looks up and invokes an argument handler when one exists.
  *
- * @signature template <typename Key, typename Arg, typename Result> Maybe<Result> arg_dispatcher_dispatch_maybe(const ArgDispatcherDispatch<Key, Arg, Result> &request)
  *
  * User Story: As ECS code, I need formatter and routing misses to be explicit
  * Maybe values instead of implicit substitute paths.
@@ -201,9 +203,9 @@ Maybe<Result> arg_dispatcher_dispatch_maybe(
 }
 
 /**
+ * @fn template <typename E, typename Key, typename Arg, typename Result> Either<E, Result> arg_dispatcher_dispatch_either( const ArgDispatcherDispatch<Key, Arg, Result> &request, E error)
  * @brief Looks up and invokes an argument handler or returns a typed error.
  *
- * @signature template <typename E, typename Key, typename Arg, typename Result> Either<E, Result> arg_dispatcher_dispatch_either(const ArgDispatcherDispatch<Key, Arg, Result> &request, E error)
  *
  * User Story: As reducer and ECS code, I need strict dispatch to return a typed
  * error when a table misses instead of silently choosing a default branch.

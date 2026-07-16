@@ -8,8 +8,8 @@
 namespace frmt {
 
 /**
+ * @fn inline FString Arg(const FString &Value)
  * @brief Adapts an FString into the runtime formatter argument list.
- * @signature inline FString Arg(const FString &Value)
  * @return The input string unchanged.
  *
  * User Story: As RTK reducer and ECS projection code, I need authored text
@@ -19,8 +19,8 @@ namespace frmt {
 inline FString Arg(const FString &Value) { return Value; }
 
 /**
+ * @fn inline FString Arg(const TCHAR *Value)
  * @brief Adapts a TCHAR string literal into the runtime formatter argument list.
- * @signature inline FString Arg(const TCHAR *Value)
  * @return An FString copy of the literal pointer value.
  *
  * User Story: As feature code, I need literal labels to share the same small
@@ -29,8 +29,8 @@ inline FString Arg(const FString &Value) { return Value; }
 inline FString Arg(const TCHAR *Value) { return FString(Value); }
 
 /**
+ * @fn inline FString Arg(TCHAR Value)
  * @brief Adapts one TCHAR into the runtime formatter argument list.
- * @signature inline FString Arg(TCHAR Value)
  * @return An FString containing the single character.
  *
  * User Story: As speech and UI formatting code, I need character values to
@@ -39,8 +39,8 @@ inline FString Arg(const TCHAR *Value) { return FString(Value); }
 inline FString Arg(TCHAR Value) { return FString::Printf(TEXT("%c"), Value); }
 
 /**
+ * @fn inline FString Arg(int32 Value)
  * @brief Adapts an int32 into the runtime formatter argument list.
- * @signature inline FString Arg(int32 Value)
  * @return The decimal FString representation of the integer.
  *
  * User Story: As selector-derived UI and logger text, numeric RTK/ECS state
@@ -49,8 +49,8 @@ inline FString Arg(TCHAR Value) { return FString::Printf(TEXT("%c"), Value); }
 inline FString Arg(int32 Value) { return FString::FromInt(Value); }
 
 /**
+ * @fn inline FString Arg(int64 Value)
  * @brief Adapts an int64 into the runtime formatter argument list.
- * @signature inline FString Arg(int64 Value)
  * @return The decimal FString representation of the integer.
  *
  * User Story: As runtime stats UI, larger aggregate counters should format
@@ -59,8 +59,8 @@ inline FString Arg(int32 Value) { return FString::FromInt(Value); }
 inline FString Arg(int64 Value) { return LexToString(Value); }
 
 /**
+ * @fn inline FString Arg(float Value)
  * @brief Adapts a float into the runtime formatter argument list.
- * @signature inline FString Arg(float Value)
  * @return The sanitized FString representation of the float.
  *
  * User Story: As rendering and speech thunks, numeric effect payloads should
@@ -69,8 +69,8 @@ inline FString Arg(int64 Value) { return LexToString(Value); }
 inline FString Arg(float Value) { return FString::SanitizeFloat(Value); }
 
 /**
+ * @fn inline FString Arg(double Value)
  * @brief Adapts a double into the runtime formatter argument list.
- * @signature inline FString Arg(double Value)
  * @return The sanitized FString representation of the double.
  *
  * User Story: As runtime adapters, wider numeric values should collapse into
@@ -79,8 +79,8 @@ inline FString Arg(float Value) { return FString::SanitizeFloat(Value); }
 inline FString Arg(double Value) { return FString::SanitizeFloat(Value); }
 
 /**
+ * @fn inline TArray<FString> Args(std::initializer_list<FString> Values)
  * @brief Builds the ordered runtime formatter argument array.
- * @signature inline TArray<FString> Args(std::initializer_list<FString> Values)
  * @return A UE array preserving the initializer-list argument order.
  *
  * User Story: As FP-style feature code, I need grouped declaration data for
@@ -91,8 +91,8 @@ inline TArray<FString> Args(std::initializer_list<FString> Values) {
 }
 
 /**
+ * @fn inline int32 EarlierTokenIndex(int32 Left, int32 Right)
  * @brief Selects the earlier valid runtime format token index.
- * @signature inline int32 EarlierTokenIndex(int32 Left, int32 Right)
  * @return The lower valid index, or INDEX_NONE when neither index is valid.
  *
  * User Story: As formatter internals, token selection should stay as a pure
@@ -105,8 +105,8 @@ inline int32 EarlierTokenIndex(int32 Left, int32 Right) {
 }
 
 /**
+ * @fn inline int32 FirstRuntimeFormatTokenIndex(const FString &Pattern)
  * @brief Finds the first supported runtime format token in a pattern.
- * @signature inline int32 FirstRuntimeFormatTokenIndex(const FString &Pattern)
  * @return The first %s, %d, %f, or %c token index, or INDEX_NONE when absent.
  *
  * User Story: As feature text formatting, supported token lookup should be a
@@ -119,11 +119,12 @@ inline int32 FirstRuntimeFormatTokenIndex(const FString &Pattern) {
       EarlierTokenIndex(Pattern.Find(TEXT("%f")), Pattern.Find(TEXT("%c"))));
 }
 
+/** User Story: As a core consumer, I need to invoke runtime format token width through a stable signature so the core workflow remains explicit and composable. @fn inline int32 RuntimeFormatTokenWidth() */
 inline int32 RuntimeFormatTokenWidth() { return FString(TEXT("%s")).Len(); }
 
 /**
+ * @fn inline FString ReplaceRuntimeFormatToken(const FString &Pattern, const FString &Value)
  * @brief Replaces the first supported runtime format token with one value.
- * @signature inline FString ReplaceRuntimeFormatToken(const FString &Pattern, const FString &Value)
  * @return The pattern with its first token replaced, or the pattern unchanged.
  *
  * User Story: As UI and logger reducers, each replacement should be an
@@ -139,8 +140,8 @@ inline FString ReplaceRuntimeFormatToken(const FString &Pattern,
 }
 
 /**
+ * @fn inline FString RuntimeString(const FString &Pattern, const TArray<FString> &Values)
  * @brief Formats a runtime string by replacing supported tokens in order.
- * @signature inline FString RuntimeString(const FString &Pattern, const TArray<FString> &Values)
  * @return The pattern formatted with the supplied argument values.
  *
  * User Story: As host UI, RTK logger, and ECS projection code, I need one

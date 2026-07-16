@@ -50,9 +50,9 @@ def main() -> int:
         return 1
 
     contracts = {
-        "SerializeDecisionResult": 'SetObjectField(TEXT("decisionIntent")',
-        "SerializeReasoningResult": 'SetObjectField(TEXT("reasoningOutput")',
-        "SerializeIdentifyActorResult": 'SetObjectField(TEXT("actor")',
+        "SerializeDecisionResult": "SetObjectField(Data.Tape.DecisionIntent",
+        "SerializeReasoningResult": "SetObjectField(Data.Tape.ReasoningOutput",
+        "SerializeIdentifyActorResult": "SetObjectField(Data.Tape.Actor",
     }
     failures: list[str] = []
 

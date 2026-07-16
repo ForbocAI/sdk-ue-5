@@ -11,6 +11,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRtkAsyncThunkTest,
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FRtkAsyncThunkTest::RunTest(const FString &Parameters)
  */
 bool FRtkAsyncThunkTest::RunTest(const FString &Parameters) {
   /**

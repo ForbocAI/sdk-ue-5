@@ -23,14 +23,14 @@ template <> struct AsyncResult<void> {
   std::shared_ptr<State> state = std::make_shared<State>();
 
 /**
+ * @fn static AsyncResult<void> create(std::function<void(std::function<void()>, std::function<void(std::string)>)> executor)
  * @brief Builds a void async result from an executor callback.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature static AsyncResult<void> create(std::function<void(std::function<void()>, std::function<void(std::string)>)> executor)
  *
  * User Story: As async composition code, I need a void factory so fire-and-
-   * signal tasks can share the same chaining surface as valued tasks.
+ * signal tasks can share the same chaining surface as valued tasks.
  */
   static AsyncResult<void>
   create(std::function<void(std::function<void()>,
@@ -40,28 +40,28 @@ template <> struct AsyncResult<void> {
   }
 
 /**
+ * @fn const AsyncResult<void> &then(std::function<void()> handler) const
  * @brief Registers a success handler on the void async result.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature const AsyncResult<void> &then(std::function<void()> handler) const
  *
  * User Story: As async composition code, I need success callbacks so
-   * completion-only tasks can notify later stages without return values.
+ * completion-only tasks can notify later stages without return values.
  */
   const AsyncResult<void> &then(std::function<void()> handler) const {
     return thenAsync(*this, std::move(handler));
   }
 
 /**
+ * @fn const AsyncResult<void> & catch_(std::function<void(std::string)> handler) const
  * @brief Registers an error handler on the void async result.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature const AsyncResult<void> & catch_(std::function<void(std::string)> handler) const
  *
  * User Story: As async composition code, I need error callbacks so void
-   * tasks can surface failures through the same fluent interface.
+ * tasks can surface failures through the same fluent interface.
  */
   const AsyncResult<void> &
   catch_(std::function<void(std::string)> handler) const {
@@ -69,19 +69,20 @@ template <> struct AsyncResult<void> {
   }
 
 /**
+ * @fn void execute() const
  * @brief Executes the stored void async operation.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature void execute() const
  *
  * User Story: As async composition code, I need an explicit execute step so
-   * completion-only async pipelines run on demand.
+ * completion-only async pipelines run on demand.
  */
   void execute() const { executeAsync(*this); }
 };
 
 namespace detail {
+/** User Story: As a core fp async consumer, I need to invoke invoke success handlers recursive through a stable signature so the core fp async workflow remains explicit and composable. @fn template <typename T> void invokeSuccessHandlersRecursive( const std::vector<std::function<void(T)>> &Handlers, size_t Index, T Value) */
 template <typename T>
 void invokeSuccessHandlersRecursive(
     const std::vector<std::function<void(T)>> &Handlers, size_t Index,
@@ -92,6 +93,7 @@ void invokeSuccessHandlersRecursive(
          invokeSuccessHandlersRecursive<T>(Handlers, Index + 1, Value));
 }
 
+/** User Story: As a core fp async consumer, I need to invoke invoke void handlers recursive through a stable signature so the core fp async workflow remains explicit and composable. @fn inline void invokeVoidHandlersRecursive(const std::vector<std::function<void()>> &Handlers, size_t Index) */
 inline void
 invokeVoidHandlersRecursive(const std::vector<std::function<void()>> &Handlers,
                             size_t Index) {
@@ -100,6 +102,7 @@ invokeVoidHandlersRecursive(const std::vector<std::function<void()>> &Handlers,
       : (Handlers[Index](), invokeVoidHandlersRecursive(Handlers, Index + 1));
 }
 
+/** User Story: As a core fp async consumer, I need to invoke invoke error handlers recursive through a stable signature so the core fp async workflow remains explicit and composable. @fn inline void invokeErrorHandlersRecursive( const std::vector<std::function<void(std::string)>> &Handlers, size_t Index, const std::string &Error) */
 inline void invokeErrorHandlersRecursive(
     const std::vector<std::function<void(std::string)>> &Handlers,
     size_t Index, const std::string &Error) {
@@ -109,6 +112,7 @@ inline void invokeErrorHandlersRecursive(
          invokeErrorHandlersRecursive(Handlers, Index + 1, Error));
 }
 
+/** User Story: As a core fp async consumer, I need to invoke run async executor through a stable signature so the core fp async workflow remains explicit and composable. @fn template <typename T> void runAsyncExecutor( const std::shared_ptr<typename AsyncResult<T>::State> &CapturedState) */
 template <typename T>
 void runAsyncExecutor(
     const std::shared_ptr<typename AsyncResult<T>::State> &CapturedState) {
@@ -122,6 +126,7 @@ void runAsyncExecutor(
       });
 }
 
+/** User Story: As a core fp async consumer, I need to invoke run async executor through a stable signature so the core fp async workflow remains explicit and composable. @fn inline void runAsyncExecutor( const std::shared_ptr<typename AsyncResult<void>::State> &CapturedState) */
 inline void runAsyncExecutor(
     const std::shared_ptr<typename AsyncResult<void>::State> &CapturedState) {
   CapturedState->executor(
@@ -134,6 +139,7 @@ inline void runAsyncExecutor(
 }
 } // namespace detail
 
+/** User Story: As a core fp async consumer, I need to invoke create async result through a stable signature so the core fp async workflow remains explicit and composable. @fn template <typename T> AsyncResult<T> createAsyncResult(std::function<void(std::function<void(T)>, std::function<void(std::string)>)> executor) */
 template <typename T>
 AsyncResult<T>
 createAsyncResult(std::function<void(std::function<void(T)>,
@@ -144,6 +150,7 @@ createAsyncResult(std::function<void(std::function<void(T)>,
   return Result;
 }
 
+/** User Story: As a core fp async consumer, I need to invoke then async through a stable signature so the core fp async workflow remains explicit and composable. @fn template <typename T, typename Handler> const AsyncResult<T> &thenAsync(const AsyncResult<T> &result, Handler handler) */
 template <typename T, typename Handler>
 const AsyncResult<T> &thenAsync(const AsyncResult<T> &result,
                                 Handler handler) {
@@ -154,6 +161,7 @@ const AsyncResult<T> &thenAsync(const AsyncResult<T> &result,
              : result;
 }
 
+/** User Story: As a core fp async consumer, I need to invoke catch async through a stable signature so the core fp async workflow remains explicit and composable. @fn template <typename T, typename Handler> const AsyncResult<T> &catchAsync(const AsyncResult<T> &result, Handler handler) */
 template <typename T, typename Handler>
 const AsyncResult<T> &catchAsync(const AsyncResult<T> &result,
                                  Handler handler) {
@@ -164,6 +172,7 @@ const AsyncResult<T> &catchAsync(const AsyncResult<T> &result,
              : result;
 }
 
+/** User Story: As a core fp async consumer, I need to invoke execute async through a stable signature so the core fp async workflow remains explicit and composable. @fn template <typename T> void executeAsync(const AsyncResult<T> &result) */
 template <typename T> void executeAsync(const AsyncResult<T> &result) {
   const std::shared_ptr<typename AsyncResult<T>::State> CapturedState =
       result.state;
@@ -172,6 +181,7 @@ template <typename T> void executeAsync(const AsyncResult<T> &result) {
       : void();
 }
 
+/** User Story: As a core fp async consumer, I need to invoke create async result through a stable signature so the core fp async workflow remains explicit and composable. @fn inline AsyncResult<void> createAsyncResult(std::function<void(std::function<void()>, std::function<void(std::string)>)> executor) */
 inline AsyncResult<void>
 createAsyncResult(std::function<void(std::function<void()>,
                                      std::function<void(std::string)>)>
@@ -181,6 +191,7 @@ createAsyncResult(std::function<void(std::function<void()>,
   return Result;
 }
 
+/** User Story: As a core fp async consumer, I need to invoke then async through a stable signature so the core fp async workflow remains explicit and composable. @fn template <typename Handler> inline const AsyncResult<void> &thenAsync(const AsyncResult<void> &result, Handler handler) */
 template <typename Handler>
 inline const AsyncResult<void> &thenAsync(const AsyncResult<void> &result,
                                           Handler handler) {
@@ -191,6 +202,7 @@ inline const AsyncResult<void> &thenAsync(const AsyncResult<void> &result,
              : result;
 }
 
+/** User Story: As a core fp async consumer, I need to invoke catch async through a stable signature so the core fp async workflow remains explicit and composable. @fn template <typename Handler> inline const AsyncResult<void> &catchAsync(const AsyncResult<void> &result, Handler handler) */
 template <typename Handler>
 inline const AsyncResult<void> &catchAsync(const AsyncResult<void> &result,
                                            Handler handler) {
@@ -201,6 +213,7 @@ inline const AsyncResult<void> &catchAsync(const AsyncResult<void> &result,
              : result;
 }
 
+/** User Story: As a core fp async consumer, I need to invoke execute async through a stable signature so the core fp async workflow remains explicit and composable. @fn inline void executeAsync(const AsyncResult<void> &result) */
 inline void executeAsync(const AsyncResult<void> &result) {
   const std::shared_ptr<typename AsyncResult<void>::State> CapturedState =
       result.state;

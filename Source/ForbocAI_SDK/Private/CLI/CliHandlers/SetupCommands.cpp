@@ -25,6 +25,7 @@ struct FSetupPresentation {
   FString FailedMessage;
 };
 
+/** User Story: As a cli cli handlers consumer, I need to invoke setup presentation through a stable signature so the cli cli handlers workflow remains explicit and composable. @fn const FSetupPresentation &setupPresentation() */
 const FSetupPresentation &setupPresentation() {
   static const DataAdapters::FSettingsSource Source =
       DataAdapters::SettingsSource(
@@ -51,14 +52,17 @@ const FSetupPresentation &setupPresentation() {
   return Presentation;
 }
 
+/** User Story: As a cli cli handlers consumer, I need to invoke print line through a stable signature so the cli cli handlers workflow remains explicit and composable. @fn void printLine(const FString &Line) */
 void printLine(const FString &Line) {
   UE_LOG(LogTemp, Display, TEXT("%s"), *Line);
 }
 
+/** User Story: As a cli cli handlers consumer, I need to invoke print dependency detail through a stable signature so the cli cli handlers workflow remains explicit and composable. @fn void printDependencyDetail(const FString &Detail) */
 void printDependencyDetail(const FString &Detail) {
   printLine(FString::Format(*setupPresentation().DetailFormat, {Detail}));
 }
 
+/** User Story: As a cli cli handlers consumer, I need to invoke print dependency through a stable signature so the cli cli handlers workflow remains explicit and composable. @fn void printDependency(const FNativeDependencyStatus &Dependency) */
 void printDependency(const FNativeDependencyStatus &Dependency) {
   const FSetupPresentation &Presentation = setupPresentation();
   const FString VersionSuffix = Dependency.Version.IsEmpty()
@@ -78,6 +82,7 @@ void printDependency(const FNativeDependencyStatus &Dependency) {
       : printDependencyDetail(Dependency.Detail);
 }
 
+/** User Story: As a cli cli handlers consumer, I need to invoke check dependencies through a stable signature so the cli cli handlers workflow remains explicit and composable. @fn CLIOps::Handlers::Result checkDependencies( rtk::EnhancedStore<FRuntimeState> &Store) */
 CLIOps::Handlers::Result checkDependencies(
     rtk::EnhancedStore<FRuntimeState> &Store) {
   const FSetupPresentation &Presentation = setupPresentation();
@@ -92,6 +97,7 @@ CLIOps::Handlers::Result checkDependencies(
                    TCHAR_TO_UTF8(*Presentation.NotReadyMessage));
 }
 
+/** User Story: As a cli cli handlers consumer, I need to invoke run setup through a stable signature so the cli cli handlers workflow remains explicit and composable. @fn CLIOps::Handlers::Result runSetup(rtk::EnhancedStore<FRuntimeState> &Store, const TArray<FString> &Arguments) */
 CLIOps::Handlers::Result
 runSetup(rtk::EnhancedStore<FRuntimeState> &Store,
          const TArray<FString> &Arguments) {
@@ -128,6 +134,7 @@ runSetup(rtk::EnhancedStore<FRuntimeState> &Store,
 namespace CLIOps {
 namespace Handlers {
 
+/** User Story: As a cli cli handlers consumer, I need to invoke handle setup through a stable signature so the cli cli handlers workflow remains explicit and composable. @fn HandlerResult HandleSetup(rtk::EnhancedStore<FRuntimeState> &Store, const FString &CommandKey, const TArray<FString> &Arguments) */
 HandlerResult HandleSetup(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
                           const TArray<FString> &Arguments) {

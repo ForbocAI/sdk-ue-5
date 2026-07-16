@@ -37,24 +37,40 @@ struct FBridgeRulesFixture {
 
 struct FRulesetLabels {
   FString Decode;
-  FString Id;
   FString RulesetId;
   FString RuleCount;
+  FString RuleId;
   FString RuleName;
-  FString ActionCount;
+  FString ConditionCount;
+  FString ConditionKey;
+  FString ConditionValue;
   FString Action;
+  FString Reason;
+  FString Target;
+  FString Priority;
+  FString ObservationPattern;
+  FString PromptSuffix;
+  FString Template;
 };
 
 struct FRulesetFixture {
   FString ResponseJson;
-  FString ExpectedId;
   FString ExpectedRulesetId;
   int32 ExpectedRuleCount;
   int32 FirstRuleIndex;
+  FString ExpectedRuleId;
   FString ExpectedRuleName;
-  int32 ExpectedActionCount;
-  int32 FirstActionIndex;
+  int32 ExpectedConditionCount;
+  int32 FirstConditionIndex;
+  FString ExpectedConditionKey;
+  FString ExpectedConditionValue;
   FString ExpectedAction;
+  FString ExpectedReason;
+  FString ExpectedTarget;
+  int32 ExpectedPriority;
+  FString ExpectedObservationPattern;
+  FString ExpectedPromptSuffix;
+  FString ExpectedTemplate;
   FRulesetLabels Labels;
 };
 
@@ -63,10 +79,14 @@ struct FNullableProtocolLabels {
   FString Signature;
   FString Persona;
   FString RulesetId;
+  FString RejectsMalformedStore;
+  FString RejectsMalformedRecall;
 };
 
 struct FNullableProtocolFixture {
   FString ResponseJson;
+  FString MalformedStoreResponseJson;
+  FString MalformedRecallResponseJson;
   FNullableProtocolLabels Labels;
 };
 
@@ -74,27 +94,32 @@ struct FBridgeValidationLabels {
   FString Decode;
   FString Valid;
   FString Reason;
+  FString RejectsInvalidAction;
 };
 
 struct FBridgeValidationFixture {
   FString ResponseJson;
+  FString InvalidActionResponseJson;
   bool bExpectedValid;
   FString ExpectedReason;
   FBridgeValidationLabels Labels;
 };
 
-struct FActionAliasesLabels {
+struct FActionContractLabels {
+  FString Decode;
   FString Type;
   FString Target;
   FString Reason;
+  FString RejectsInternalNames;
 };
 
-struct FActionAliasesFixture {
+struct FActionContractFixture {
   TSharedRef<FJsonObject> Input;
+  TSharedRef<FJsonObject> InternalInput;
   FString ExpectedType;
   FString ExpectedTarget;
   FString ExpectedReason;
-  FActionAliasesLabels Labels;
+  FActionContractLabels Labels;
 };
 
 struct FIdentifyActorPayloadLabels {
@@ -102,7 +127,7 @@ struct FIdentifyActorPayloadLabels {
   FString Type;
   FString NpcId;
   FString Persona;
-  FString Health;
+  FString Data;
 };
 
 struct FIdentifyActorPayloadFixture {
@@ -110,7 +135,6 @@ struct FIdentifyActorPayloadFixture {
   FString Persona;
   FString DataJson;
   FString ExpectedType;
-  int32 ExpectedHealth;
   FIdentifyActorPayloadLabels Labels;
 };
 
@@ -167,7 +191,7 @@ struct FCodecFixtures {
   FRulesetFixture Ruleset;
   FNullableProtocolFixture NullableProtocol;
   FBridgeValidationFixture BridgeValidation;
-  FActionAliasesFixture ActionAliases;
+  FActionContractFixture ActionContract;
   FIdentifyActorPayloadFixture IdentifyActorPayload;
   FDecisionPayloadFixture DecisionPayload;
   FReasoningPayloadFixture ReasoningPayload;

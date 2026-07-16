@@ -1,10 +1,35 @@
 #pragma once
 
 #include "Features/Data/DataAdapters.h"
+#include "Features/Testing/Action/ActionAdapters.h"
 #include "Features/Testing/Memory/TestingMemoryTypes.h"
 
 namespace Testing::Memory {
 
+/**
+ * User Story: As a memory reducer-test consumer, I need the complete semantic action registry so fixture behavior cannot drift when enum declarations change.
+ * @fn inline const TArray<Testing::Action::TTestingActionKind<EMemoryTestActionKind>> & MemoryTestActionKinds()
+ */
+inline const TArray<Testing::Action::TTestingActionKind<EMemoryTestActionKind>> &
+MemoryTestActionKinds() {
+#define FORBOC_MEMORY_TEST_ACTION_KIND(Name) {FString(TEXT(#Name)), EMemoryTestActionKind::Name}
+  static const TArray<Testing::Action::TTestingActionKind<
+      EMemoryTestActionKind>> Kinds = {
+      FORBOC_MEMORY_TEST_ACTION_KIND(StoreStarted),
+      FORBOC_MEMORY_TEST_ACTION_KIND(StoreSucceeded),
+      FORBOC_MEMORY_TEST_ACTION_KIND(StoreFailed),
+      FORBOC_MEMORY_TEST_ACTION_KIND(RecallStarted),
+      FORBOC_MEMORY_TEST_ACTION_KIND(RecallSucceeded),
+      FORBOC_MEMORY_TEST_ACTION_KIND(RecallFailed),
+      FORBOC_MEMORY_TEST_ACTION_KIND(Cleared),
+      FORBOC_MEMORY_TEST_ACTION_KIND(Inspect),
+  };
+#undef FORBOC_MEMORY_TEST_ACTION_KIND
+  check(Kinds.Num() == static_cast<int32>(EMemoryTestActionKind::Count));
+  return Kinds;
+}
+
+/** User Story: As a features testing memory consumer, I need to invoke read memory test item through a stable signature so the features testing memory workflow remains explicit and composable. @fn inline FMemoryItem ReadMemoryTestItem(const TSharedPtr<FJsonObject> &Object) */
 inline FMemoryItem
 ReadMemoryTestItem(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -17,15 +42,15 @@ ReadMemoryTestItem(const TSharedPtr<FJsonObject> &Object) {
       DataAdapters::ReadNumberField(Value, TEXT("timestamp")));
 }
 
+/** User Story: As a features testing memory consumer, I need to invoke read memory test action through a stable signature so the features testing memory workflow remains explicit and composable. @fn inline FMemoryTestAction ReadMemoryTestAction(const TSharedPtr<FJsonObject> &Object) */
 inline FMemoryTestAction
 ReadMemoryTestAction(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
   const TSharedRef<FJsonObject> Value = Object.ToSharedRef();
-  const int32 Kind = DataAdapters::ReadNumberField(Value, TEXT("kind"));
-  check(Kind >= static_cast<int32>(EMemoryTestActionKind::StoreStarted));
-  check(Kind < static_cast<int32>(EMemoryTestActionKind::Count));
   return {
-      static_cast<EMemoryTestActionKind>(Kind),
+      Testing::Action::ReadTestingActionKind<EMemoryTestActionKind>(
+          DataAdapters::ReadStringField(Value, TEXT("kind")),
+          MemoryTestActionKinds()),
       func::map_array<TSharedPtr<FJsonObject>, FMemoryItem>(
           DataAdapters::ReadObjectArrayField(Value, TEXT("items")),
           ReadMemoryTestItem),
@@ -34,6 +59,7 @@ ReadMemoryTestAction(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing memory consumer, I need to invoke read memory test expected through a stable signature so the features testing memory workflow remains explicit and composable. @fn inline FMemoryTestExpected ReadMemoryTestExpected(const TSharedPtr<FJsonObject> &Object) */
 inline FMemoryTestExpected
 ReadMemoryTestExpected(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -49,6 +75,7 @@ ReadMemoryTestExpected(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing memory consumer, I need to invoke read memory test step through a stable signature so the features testing memory workflow remains explicit and composable. @fn inline FMemoryTestStep ReadMemoryTestStep(const TSharedPtr<FJsonObject> &Object) */
 inline FMemoryTestStep
 ReadMemoryTestStep(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -61,6 +88,7 @@ ReadMemoryTestStep(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing memory consumer, I need to invoke read memory test scenario through a stable signature so the features testing memory workflow remains explicit and composable. @fn inline FMemoryTestScenario ReadMemoryTestScenario(const TSharedPtr<FJsonObject> &Object) */
 inline FMemoryTestScenario
 ReadMemoryTestScenario(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
@@ -73,12 +101,14 @@ ReadMemoryTestScenario(const TSharedPtr<FJsonObject> &Object) {
   };
 }
 
+/** User Story: As a features testing memory consumer, I need to invoke read memory test scenarios through a stable signature so the features testing memory workflow remains explicit and composable. @fn inline TArray<FMemoryTestScenario> ReadMemoryTestScenarios(const DataAdapters::FArraySource &Source) */
 inline TArray<FMemoryTestScenario>
 ReadMemoryTestScenarios(const DataAdapters::FArraySource &Source) {
   return func::map_array<TSharedPtr<FJsonObject>, FMemoryTestScenario>(
       DataAdapters::ReadObjectArray(Source), ReadMemoryTestScenario);
 }
 
+/** User Story: As a features testing memory consumer, I need to invoke read memory test labels through a stable signature so the features testing memory workflow remains explicit and composable. @fn inline FMemoryTestLabels ReadMemoryTestLabels(const DataAdapters::FSettingsSource &Source) */
 inline FMemoryTestLabels
 ReadMemoryTestLabels(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Labels =
@@ -98,6 +128,7 @@ ReadMemoryTestLabels(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As a features testing memory consumer, I need to invoke testing memory fixtures through a stable signature so the features testing memory workflow remains explicit and composable. @fn inline const FMemoryTestFixtures &TestingMemoryFixtures() */
 inline const FMemoryTestFixtures &TestingMemoryFixtures() {
   static const DataAdapters::FSettingsSource Settings =
       DataAdapters::SettingsSource(
@@ -120,6 +151,7 @@ inline const FMemoryTestFixtures &TestingMemoryFixtures() {
   return Fixtures;
 }
 
+/** User Story: As a features testing memory consumer, I need to invoke find memory test scenario through a stable signature so the features testing memory workflow remains explicit and composable. @fn inline func::Maybe<FMemoryTestScenario> FindMemoryTestScenario(const FString &Name) */
 inline func::Maybe<FMemoryTestScenario>
 FindMemoryTestScenario(const FString &Name) {
   return func::find_array<FMemoryTestScenario>(

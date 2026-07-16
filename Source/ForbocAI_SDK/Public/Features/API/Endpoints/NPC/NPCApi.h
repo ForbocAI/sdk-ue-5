@@ -6,42 +6,21 @@
 namespace APISlice {
 namespace Endpoints {
 
-inline Thunk<TArray<FAgent>> getNPCs() {
-  TArray<FApiEndpointTag> Tags;
-  Tags.Add(FApiEndpointTag{TEXT("NPC"), TEXT("LIST")});
-  return Detail::MakeGet<TArray<FAgent>>(
-      TEXT("getNPCs"), SDKConfig::GetApiUrl() + TEXT("/npcs"), Tags);
-}
-
-inline Thunk<FAgent> getNPC(const FString &NpcId) {
-  TArray<FApiEndpointTag> Tags;
-  Tags.Add(FApiEndpointTag{TEXT("NPC"), NpcId});
-  return Detail::MakeGet<FAgent>(TEXT("getNPC"), SDKConfig::GetApiUrl() +
-                                                   TEXT("/npcs/") +
-                                                   Detail::Encode(NpcId),
-                                 Tags);
-}
-
-inline Thunk<FAgent> postNPC(const FAgentConfig &Config) {
-  TArray<FApiEndpointTag> Invalidates;
-  Invalidates.Add(FApiEndpointTag{TEXT("NPC"), TEXT("LIST")});
-  return (!Config.Id.IsEmpty()
-              ? (Invalidates.Add(FApiEndpointTag{TEXT("NPC"), Config.Id}),
-                 void())
-              : void(),
-          Detail::MakePost<FAgentConfig, FAgent>(
-              TEXT("postNPC"), SDKConfig::GetApiUrl() + TEXT("/npcs"), Config,
-              Invalidates));
-}
-
+/** User Story: As a api endpoints npc consumer, I need to invoke post npc process through a stable signature so the api endpoints npc workflow remains explicit and composable. @fn inline Thunk<FNPCProcessResponse> postNpcProcess(const FString &NpcId, const FNPCProcessRequest &Request) */
 inline Thunk<FNPCProcessResponse>
 postNpcProcess(const FString &NpcId, const FNPCProcessRequest &Request) {
+  const Configuration::FEndpointConfigurationData &Data =
+      Configuration::endpointData();
+  const Transport::FTransportQueryData &TransportData =
+      Transport::transportQueryData();
+  const TArray<FApiEndpointTag> Invalidates{
+      Configuration::endpointTag(TransportData.Tags.Npc, NpcId)};
   return Detail::MakePostWithCodec<FNPCProcessRequest, FNPCProcessResponse>(
-      TEXT("postNpcProcess"),
-      SDKConfig::GetApiUrl() + TEXT("/npcs/") + Detail::Encode(NpcId) +
-          TEXT("/process"),
+      Data.Names.PostNpcProcess,
+      Configuration::apiEndpoint(Configuration::endpointPath(
+          {Data.Segments.Npcs, NpcId, Data.Segments.Process})),
       Request, Detail::EncodeNpcProcessRequest,
-      Detail::DecodeNpcProcessResponse);
+      Detail::DecodeNpcProcessResponse, Invalidates);
 }
 
 } // namespace Endpoints

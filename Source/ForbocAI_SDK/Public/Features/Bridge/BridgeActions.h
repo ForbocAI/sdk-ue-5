@@ -5,6 +5,7 @@
 
 namespace BridgeSlice::Actions {
 
+/** User Story: As a features bridge consumer, I need to invoke validation requested action creator through a stable signature so the features bridge workflow remains explicit and composable. @fn inline const rtk::ActionCreatorWithoutPayload & validationRequestedActionCreator() */
 inline const rtk::ActionCreatorWithoutPayload &
 validationRequestedActionCreator() {
   static const rtk::ActionCreatorWithoutPayload Creator =
@@ -12,6 +13,7 @@ validationRequestedActionCreator() {
   return Creator;
 }
 
+/** User Story: As a features bridge consumer, I need to invoke validation succeeded action creator through a stable signature so the features bridge workflow remains explicit and composable. @fn inline const rtk::ActionCreator<FValidationResult> & validationSucceededActionCreator() */
 inline const rtk::ActionCreator<FValidationResult> &
 validationSucceededActionCreator() {
   static const rtk::ActionCreator<FValidationResult> Creator =
@@ -19,12 +21,14 @@ validationSucceededActionCreator() {
   return Creator;
 }
 
+/** User Story: As a features bridge consumer, I need to invoke validation failed action creator through a stable signature so the features bridge workflow remains explicit and composable. @fn inline const rtk::ActionCreator<FString> &validationFailedActionCreator() */
 inline const rtk::ActionCreator<FString> &validationFailedActionCreator() {
   static const rtk::ActionCreator<FString> Creator =
       rtk::createAction<FString>(TEXT("bridge/validationFailed"));
   return Creator;
 }
 
+/** User Story: As a features bridge consumer, I need to invoke active presets received action creator through a stable signature so the features bridge workflow remains explicit and composable. @fn inline const rtk::ActionCreator<TArray<FDirectiveRuleSet>> & activePresetsReceivedActionCreator() */
 inline const rtk::ActionCreator<TArray<FDirectiveRuleSet>> &
 activePresetsReceivedActionCreator() {
   static const rtk::ActionCreator<TArray<FDirectiveRuleSet>> Creator =
@@ -33,6 +37,7 @@ activePresetsReceivedActionCreator() {
   return Creator;
 }
 
+/** User Story: As a features bridge consumer, I need to invoke active preset added action creator through a stable signature so the features bridge workflow remains explicit and composable. @fn inline const rtk::ActionCreator<FDirectiveRuleSet> & activePresetAddedActionCreator() */
 inline const rtk::ActionCreator<FDirectiveRuleSet> &
 activePresetAddedActionCreator() {
   static const rtk::ActionCreator<FDirectiveRuleSet> Creator =
@@ -40,6 +45,7 @@ activePresetAddedActionCreator() {
   return Creator;
 }
 
+/** User Story: As a features bridge consumer, I need to invoke rulesets received action creator through a stable signature so the features bridge workflow remains explicit and composable. @fn inline const rtk::ActionCreator<TArray<FDirectiveRuleSet>> & rulesetsReceivedActionCreator() */
 inline const rtk::ActionCreator<TArray<FDirectiveRuleSet>> &
 rulesetsReceivedActionCreator() {
   static const rtk::ActionCreator<TArray<FDirectiveRuleSet>> Creator =
@@ -48,19 +54,7 @@ rulesetsReceivedActionCreator() {
   return Creator;
 }
 
-inline const rtk::ActionCreator<FDirectiveRuleSet> &
-rulesetRegisteredActionCreator() {
-  static const rtk::ActionCreator<FDirectiveRuleSet> Creator =
-      rtk::createAction<FDirectiveRuleSet>(TEXT("bridge/rulesetRegistered"));
-  return Creator;
-}
-
-inline const rtk::ActionCreator<FString> &rulesetDeletedActionCreator() {
-  static const rtk::ActionCreator<FString> Creator =
-      rtk::createAction<FString>(TEXT("bridge/rulesetDeleted"));
-  return Creator;
-}
-
+/** User Story: As a features bridge consumer, I need to invoke preset ids received action creator through a stable signature so the features bridge workflow remains explicit and composable. @fn inline const rtk::ActionCreator<TArray<FString>> & presetIdsReceivedActionCreator() */
 inline const rtk::ActionCreator<TArray<FString>> &
 presetIdsReceivedActionCreator() {
   static const rtk::ActionCreator<TArray<FString>> Creator =
@@ -68,6 +62,7 @@ presetIdsReceivedActionCreator() {
   return Creator;
 }
 
+/** User Story: As a features bridge consumer, I need to invoke validation cleared action creator through a stable signature so the features bridge workflow remains explicit and composable. @fn inline const rtk::ActionCreatorWithoutPayload & validationClearedActionCreator() */
 inline const rtk::ActionCreatorWithoutPayload &
 validationClearedActionCreator() {
   static const rtk::ActionCreatorWithoutPayload Creator =
@@ -75,44 +70,44 @@ validationClearedActionCreator() {
   return Creator;
 }
 
+/** User Story: As a features bridge consumer, I need to invoke validation requested through a stable signature so the features bridge workflow remains explicit and composable. @fn inline rtk::AnyAction validationRequested() */
 inline rtk::AnyAction validationRequested() {
   return validationRequestedActionCreator()();
 }
 
+/** User Story: As a features bridge consumer, I need to invoke validation succeeded through a stable signature so the features bridge workflow remains explicit and composable. @fn inline rtk::AnyAction validationSucceeded(const FValidationResult &Result) */
 inline rtk::AnyAction validationSucceeded(const FValidationResult &Result) {
   return validationSucceededActionCreator()(Result);
 }
 
+/** User Story: As a features bridge consumer, I need to invoke validation failed through a stable signature so the features bridge workflow remains explicit and composable. @fn inline rtk::AnyAction validationFailed(const FString &Error) */
 inline rtk::AnyAction validationFailed(const FString &Error) {
   return validationFailedActionCreator()(Error);
 }
 
+/** User Story: As a features bridge consumer, I need to invoke active presets received through a stable signature so the features bridge workflow remains explicit and composable. @fn inline rtk::AnyAction activePresetsReceived(const TArray<FDirectiveRuleSet> &Presets) */
 inline rtk::AnyAction
 activePresetsReceived(const TArray<FDirectiveRuleSet> &Presets) {
   return activePresetsReceivedActionCreator()(Presets);
 }
 
+/** User Story: As a features bridge consumer, I need to invoke active preset added through a stable signature so the features bridge workflow remains explicit and composable. @fn inline rtk::AnyAction activePresetAdded(const FDirectiveRuleSet &Preset) */
 inline rtk::AnyAction activePresetAdded(const FDirectiveRuleSet &Preset) {
   return activePresetAddedActionCreator()(Preset);
 }
 
+/** User Story: As a features bridge consumer, I need to invoke rulesets received through a stable signature so the features bridge workflow remains explicit and composable. @fn inline rtk::AnyAction rulesetsReceived(const TArray<FDirectiveRuleSet> &Rulesets) */
 inline rtk::AnyAction
 rulesetsReceived(const TArray<FDirectiveRuleSet> &Rulesets) {
   return rulesetsReceivedActionCreator()(Rulesets);
 }
 
-inline rtk::AnyAction rulesetRegistered(const FDirectiveRuleSet &Ruleset) {
-  return rulesetRegisteredActionCreator()(Ruleset);
-}
-
-inline rtk::AnyAction rulesetDeleted(const FString &RulesetId) {
-  return rulesetDeletedActionCreator()(RulesetId);
-}
-
+/** User Story: As a features bridge consumer, I need to invoke preset ids received through a stable signature so the features bridge workflow remains explicit and composable. @fn inline rtk::AnyAction presetIdsReceived(const TArray<FString> &PresetIds) */
 inline rtk::AnyAction presetIdsReceived(const TArray<FString> &PresetIds) {
   return presetIdsReceivedActionCreator()(PresetIds);
 }
 
+/** User Story: As a features bridge consumer, I need to invoke validation cleared through a stable signature so the features bridge workflow remains explicit and composable. @fn inline rtk::AnyAction validationCleared() */
 inline rtk::AnyAction validationCleared() {
   return validationClearedActionCreator()();
 }

@@ -3,6 +3,7 @@
 
 namespace GhostInternal {
 
+/** User Story: As a ghost consumer, I need to invoke validate test config through a stable signature so the ghost workflow remains explicit and composable. @fn GhostTypes::Either<FString, FGhostConfig> ValidateTestConfig(const FGhostConfig &Config) */
 GhostTypes::Either<FString, FGhostConfig>
 ValidateTestConfig(const FGhostConfig &Config) {
   return Config.Scenarios.Num() == 0
@@ -16,6 +17,7 @@ ValidateTestConfig(const FGhostConfig &Config) {
              : GhostTypes::make_right(FString(), Config);
 }
 
+/** User Story: As a ghost consumer, I need to invoke generate test summary through a stable signature so the ghost workflow remains explicit and composable. @fn GhostTypes::Either<FString, FString> GenerateTestSummary(const FGhostTestReport &Report) */
 GhostTypes::Either<FString, FString>
 GenerateTestSummary(const FGhostTestReport &Report) {
   FString Summary = FString::Printf(TEXT("Ghost Test Summary for Agent: %s\n"),
@@ -28,6 +30,7 @@ GenerateTestSummary(const FGhostTestReport &Report) {
   return GhostTypes::make_right(FString(), Summary);
 }
 
+/** User Story: As a ghost consumer, I need to invoke export results to json through a stable signature so the ghost workflow remains explicit and composable. @fn GhostTypes::Either<FString, FString> ExportResultsToJson(const FGhostTestReport &Report) */
 GhostTypes::Either<FString, FString>
 ExportResultsToJson(const FGhostTestReport &Report) {
   struct AppendResults {
@@ -56,6 +59,7 @@ ExportResultsToJson(const FGhostTestReport &Report) {
       AppendResults::apply(Report.Results, 0, Header) + TEXT("  ]\n}"));
 }
 
+/** User Story: As a ghost consumer, I need to invoke export results to csv through a stable signature so the ghost workflow remains explicit and composable. @fn GhostTypes::Either<FString, FString> ExportResultsToCsv(const FGhostTestReport &Report) */
 GhostTypes::Either<FString, FString>
 ExportResultsToCsv(const FGhostTestReport &Report) {
   struct AppendRows {

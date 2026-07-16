@@ -19,21 +19,25 @@ typedef func::ArgDispatcher<EDirectiveTestActionKind,
                             FDirectiveSliceState>
     FDirectiveTestActionDispatcher;
 
+/** User Story: As a tests slices consumer, I need to invoke required field message through a stable signature so the tests slices workflow remains explicit and composable. @fn inline std::string RequiredFieldMessage() */
 inline std::string RequiredFieldMessage() {
   return std::string(
       TCHAR_TO_UTF8(*DirectiveTestFixtures().Labels.RequiredField));
 }
 
+/** User Story: As a tests slices consumer, I need to invoke required action field through a stable signature so the tests slices workflow remains explicit and composable. @fn template <typename T> T RequiredActionField(const func::Maybe<T> &Value) */
 template <typename T>
 T RequiredActionField(const func::Maybe<T> &Value) {
   return func::requireJust<T>(Value, RequiredFieldMessage());
 }
 
+/** User Story: As a tests slices consumer, I need to invoke directive test slice through a stable signature so the tests slices workflow remains explicit and composable. @fn inline const rtk::Slice<FDirectiveSliceState> &DirectiveTestSlice() */
 inline const rtk::Slice<FDirectiveSliceState> &DirectiveTestSlice() {
   static const rtk::Slice<FDirectiveSliceState> Slice = createDirectiveSlice();
   return Slice;
 }
 
+/** User Story: As a tests slices consumer, I need to invoke build directive test action dispatcher through a stable signature so the tests slices workflow remains explicit and composable. @fn inline FDirectiveTestActionDispatcher BuildDirectiveTestActionDispatcher() */
 inline FDirectiveTestActionDispatcher BuildDirectiveTestActionDispatcher() {
   FDirectiveTestActionDispatcher Dispatcher =
       func::create_arg_dispatcher<EDirectiveTestActionKind,
@@ -132,6 +136,7 @@ inline FDirectiveTestActionDispatcher BuildDirectiveTestActionDispatcher() {
       });
 }
 
+/** User Story: As a tests slices consumer, I need to invoke directive test action dispatcher through a stable signature so the tests slices workflow remains explicit and composable. @fn inline const FDirectiveTestActionDispatcher & DirectiveTestActionDispatcher() */
 inline const FDirectiveTestActionDispatcher &
 DirectiveTestActionDispatcher() {
   static const FDirectiveTestActionDispatcher Dispatcher =
@@ -139,6 +144,7 @@ DirectiveTestActionDispatcher() {
   return Dispatcher;
 }
 
+/** User Story: As a tests slices consumer, I need to invoke apply directive test action through a stable signature so the tests slices workflow remains explicit and composable. @fn inline FDirectiveSliceState ApplyDirectiveTestAction(const FDirectiveSliceState &State, const FDirectiveTestAction &Action) */
 inline FDirectiveSliceState
 ApplyDirectiveTestAction(const FDirectiveSliceState &State,
                          const FDirectiveTestAction &Action) {
@@ -159,6 +165,7 @@ IMPLEMENT_COMPLEX_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
+/** User Story: As a tests slices consumer, I need to invoke get tests through a stable signature so the tests slices workflow remains explicit and composable. @fn void FDirectiveTest::GetTests(TArray<FString> &OutBeautifiedNames, TArray<FString> &OutTestCommands) const */
 void FDirectiveTest::GetTests(TArray<FString> &OutBeautifiedNames,
                               TArray<FString> &OutTestCommands) const {
   func::for_each_array<FDirectiveTestScenario>(
@@ -170,6 +177,7 @@ void FDirectiveTest::GetTests(TArray<FString> &OutBeautifiedNames,
       });
 }
 
+/** User Story: As a tests slices consumer, I need to invoke run test through a stable signature so the tests slices workflow remains explicit and composable. @fn bool FDirectiveTest::RunTest(const FString &Parameters) */
 bool FDirectiveTest::RunTest(const FString &Parameters) {
   const FDirectiveTestFixtures &Fixtures = DirectiveTestFixtures();
   const func::Maybe<FDirectiveTestScenario> Scenario =
@@ -180,7 +188,7 @@ bool FDirectiveTest::RunTest(const FString &Parameters) {
       [this, &Fixtures](const FDirectiveTestScenario &Value) {
         const FDirectiveSliceState State =
             func::fold_array<FDirectiveTestAction, FDirectiveSliceState>(
-                Value.Actions, FDirectiveSliceState(),
+                Value.Actions, DirectiveTestSlice().InitialState,
                 ApplyDirectiveTestAction);
         TestEqual(Fixtures.Labels.DirectiveCount,
                   selectAllDirectives(State).Num(),

@@ -40,6 +40,7 @@ struct FGhostTestResult {
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
   int64 Duration;
 
+  /** User Story: As a features ghost consumer, I need to invoke fghost test result through a stable signature so the features ghost workflow remains explicit and composable. @fn FGhostTestResult() */
   FGhostTestResult() : bPassed(false), Iteration(0), Duration(0) {}
 };
 USTRUCT(BlueprintType)
@@ -53,10 +54,10 @@ struct FGhostHistoryEntry {
   FString TestSuite;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  int64 StartedAt;
+  FString StartedAt;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  int64 CompletedAt;
+  FString CompletedAt;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
   FString Status;
@@ -64,7 +65,8 @@ struct FGhostHistoryEntry {
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
   float PassRate;
 
-  FGhostHistoryEntry() : StartedAt(0), CompletedAt(0), PassRate(0.0f) {}
+  /** User Story: As a features ghost consumer, I need to invoke fghost history entry through a stable signature so the features ghost workflow remains explicit and composable. @fn FGhostHistoryEntry() */
+  FGhostHistoryEntry() : PassRate(0.0f) {}
 };
 
 USTRUCT(BlueprintType)
@@ -88,6 +90,7 @@ struct FGhostRunRequest {
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
   int32 Duration;
 
+  /** User Story: As a features ghost consumer, I need to invoke fghost run request through a stable signature so the features ghost workflow remains explicit and composable. @fn FGhostRunRequest() */
   FGhostRunRequest() : Duration(300) {}
 };
 
@@ -119,6 +122,7 @@ struct FGhostConfig {
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
   int32 Duration;
 
+  /** User Story: As a features ghost consumer, I need to invoke fghost config through a stable signature so the features ghost workflow remains explicit and composable. @fn FGhostConfig() */
   FGhostConfig() : MaxIterations(100), bVerbose(false), Duration(300) {}
 };
 
@@ -162,6 +166,7 @@ struct FGhostTestReport {
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
   FString Summary;
 
+  /** User Story: As a features ghost consumer, I need to invoke fghost test report through a stable signature so the features ghost workflow remains explicit and composable. @fn FGhostTestReport() */
   FGhostTestReport()
       : TotalTests(0), PassedTests(0), FailedTests(0), SkippedTests(0),
         Duration(0), Coverage(0.0f), SuccessRate(0.0f) {}
@@ -171,33 +176,34 @@ struct FGhost {
   FGhostConfig Config;
   bool bInitialized;
 
+  /** User Story: As a features ghost consumer, I need to invoke fghost through a stable signature so the features ghost workflow remains explicit and composable. @fn FGhost() */
   FGhost() : bInitialized(false) {}
 };
 
 USTRUCT(BlueprintType)
-struct FGhostStatusResponse {
+struct FGhostStatus {
   GENERATED_BODY()
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  FString GhostSessionId;
+  FString SessionId;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  FString getGhostStatus;
+  FString Status;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  float GhostProgress;
+  float Progress;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  int64 GhostStartedAt;
+  FString StartedAt;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  int32 GhostDuration;
+  int32 Duration;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  TArray<FString> GhostErrors;
+  int32 Errors;
 
-  FGhostStatusResponse()
-      : GhostProgress(0.0f), GhostStartedAt(0), GhostDuration(0) {}
+  /** User Story: As a features ghost consumer, I need to invoke fghost status through a stable signature so the features ghost workflow remains explicit and composable. @fn FGhostStatus() */
+  FGhostStatus() : Progress(0.0f), Duration(0), Errors(0) {}
 };
 
 USTRUCT(BlueprintType)
@@ -219,43 +225,45 @@ struct FGhostResultRecord {
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
   FString TestScreenshot;
 
+  /** User Story: As a features ghost consumer, I need to invoke fghost result record through a stable signature so the features ghost workflow remains explicit and composable. @fn FGhostResultRecord() */
   FGhostResultRecord() : bTestPassed(false), TestDuration(0) {}
 };
 
 USTRUCT(BlueprintType)
-struct FGhostResultsResponse {
+struct FGhostResults {
   GENERATED_BODY()
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  FString ResultsSessionId;
+  FString SessionId;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  int32 ResultsTotalTests;
+  int32 TotalTests;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  int32 ResultsPassed;
+  int32 Passed;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  int32 ResultsFailed;
+  int32 Failed;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  int32 ResultsSkipped;
+  int32 Skipped;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  int64 ResultsDuration;
+  int64 Duration;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  TArray<FGhostResultRecord> ResultsTests;
+  TArray<FGhostResultRecord> Tests;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  float ResultsCoverage;
+  float Coverage;
 
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
-  TMap<FString, float> ResultsMetrics;
+  TMap<FString, float> Metrics;
 
-  FGhostResultsResponse()
-      : ResultsTotalTests(0), ResultsPassed(0), ResultsFailed(0),
-        ResultsSkipped(0), ResultsDuration(0), ResultsCoverage(0.0f) {}
+  /** User Story: As a features ghost consumer, I need to invoke fghost results through a stable signature so the features ghost workflow remains explicit and composable. @fn FGhostResults() */
+  FGhostResults()
+      : TotalTests(0), Passed(0), Failed(0), Skipped(0), Duration(0),
+        Coverage(0.0f) {}
 };
 
 USTRUCT(BlueprintType)
@@ -271,6 +279,7 @@ struct FGhostStopResponse {
   UPROPERTY(BlueprintReadOnly, Category = "Ghost")
   FString StopSessionId;
 
+  /** User Story: As a features ghost consumer, I need to invoke fghost stop response through a stable signature so the features ghost workflow remains explicit and composable. @fn FGhostStopResponse() */
   FGhostStopResponse() : bStopped(false) {}
 };
 

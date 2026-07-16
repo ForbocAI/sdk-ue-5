@@ -1,89 +1,109 @@
 #include "Features/Memory/Local/Storage/Sqlite/Codec/CodecAdapters.h"
 
+#include "Features/Memory/Configuration/ConfigurationAdapters.h"
+
 #if WITH_FORBOC_SQLITE_VEC
-extern "C" {
 #include "sqlite3.h"
-}
 #endif
 
 namespace Native::Sqlite::CodecAdapters {
 namespace {
 
-uint64 StableHashRecursive(const FString &Value, int32 Index, uint64 Hash) {
-  return Index == Value.Len()
-             ? Hash
-             : StableHashRecursive(
-                   Value, Index + 1,
-                   (Hash ^ static_cast<uint64>(FChar::ToLower(Value[Index]))) *
-                       1099511628211ull);
-}
-
-FString BuildJsonVectorRecursive(const TArray<float> &Vector, int32 Index,
+/** User Story: As SQLite vector storage, I need recursive encoding so the FP core owns collection traversal. @fn FString buildJsonVectorRecursive(const TArray<float> &Vector, int32 Index, FString JsonVector) */
+FString buildJsonVectorRecursive(const TArray<float> &Vector, int32 Index,
                                  FString JsonVector) {
+  const MemoryConfiguration::FMemoryData &Data =
+      MemoryConfiguration::memoryData();
   return Index == Vector.Num()
-             ? JsonVector + TEXT("]")
-             : BuildJsonVectorRecursive(
-                   Vector, Index + 1,
+             ? JsonVector + Data.Storage.Sqlite.JsonClose
+             : buildJsonVectorRecursive(
+                   Vector, Index + Data.Iteration.Step,
                    JsonVector + FString::SanitizeFloat(Vector[Index]) +
-                       (Index + 1 < Vector.Num() ? TEXT(",") : TEXT("")));
+                       (Index + Data.Iteration.Step < Vector.Num()
+                            ? Data.Storage.Sqlite.JsonSeparator
+                            : Data.Text.Empty));
 }
 
 #if WITH_FORBOC_SQLITE_VEC
-FMemoryItem ReadMemoryItem(sqlite3_stmt *Statement) {
-  FMemoryItem Item;
-  const unsigned char *IdText = sqlite3_column_text(Statement, 0);
-  const unsigned char *Text = sqlite3_column_text(Statement, 1);
-  const unsigned char *TypeText = sqlite3_column_text(Statement, 2);
-  Item.Id = IdText ? UTF8_TO_TCHAR(reinterpret_cast<const char *>(IdText))
-                   : TEXT("");
-  Item.Text = Text ? UTF8_TO_TCHAR(reinterpret_cast<const char *>(Text))
-                   : TEXT("");
-  Item.Type = TypeText
-                  ? UTF8_TO_TCHAR(reinterpret_cast<const char *>(TypeText))
-                  : TEXT("observation");
-  Item.Importance = static_cast<float>(sqlite3_column_double(Statement, 3));
-  Item.Timestamp = static_cast<int64>(sqlite3_column_int64(Statement, 4));
-  Item.Similarity =
-      static_cast<float>(1.0 - sqlite3_column_double(Statement, 5));
-  return Item;
+/** User Story: As SQLite row decoding, I need nullable native text converted through one boundary so record validation remains explicit. @fn FString readColumnText(sqlite3_stmt *Statement, int32 Column) */
+FString readColumnText(sqlite3_stmt *Statement, int32 Column) {
+  const unsigned char *Value = sqlite3_column_text(Statement, Column);
+  return Value ? UTF8_TO_TCHAR(reinterpret_cast<const char *>(Value))
+               : MemoryConfiguration::memoryData().Text.Empty;
 }
 
-void CollectSearchRowsRecursive(sqlite3_stmt *Statement,
-                                TArray<FMemoryItem> &Results) {
+/** User Story: As SQLite recall, I need each native row validated before it enters SDK state so malformed records fail the whole query. @fn func::Either<FString, FMemoryItem> readMemoryItem(sqlite3_stmt *Statement) */
+func::Either<FString, FMemoryItem> readMemoryItem(sqlite3_stmt *Statement) {
+  const MemoryConfiguration::FMemoryData &Data =
+      MemoryConfiguration::memoryData();
+  FMemoryItem Item;
+  Item.Id = readColumnText(Statement, Data.Storage.Sqlite.Columns.Id);
+  Item.Text = readColumnText(Statement, Data.Storage.Sqlite.Columns.Text);
+  Item.Type = readColumnText(Statement, Data.Storage.Sqlite.Columns.Type);
+  Item.Importance = static_cast<float>(sqlite3_column_double(
+      Statement, Data.Storage.Sqlite.Columns.Importance));
+  Item.Timestamp = static_cast<int64>(sqlite3_column_int64(
+      Statement, Data.Storage.Sqlite.Columns.Timestamp));
+  Item.Similarity = static_cast<float>(
+      Data.Storage.Sqlite.DistanceOrigin - sqlite3_column_double(
+                                               Statement,
+                                               Data.Storage.Sqlite.Columns.Distance));
+  return Item.Id.IsEmpty() || Item.Type.IsEmpty()
+             ? func::make_left<FString, FMemoryItem>(
+                   Data.Errors.InvalidVectorRecord)
+             : func::make_right<FString, FMemoryItem>(Item);
+}
+
+/**
+ * User Story: As SQLite recall, I need row collection to preserve native failure state while traversing functionally.
+ * @fn func::Either<FString, TArray<FMemoryItem>> collectSearchRowsRecursive( sqlite3_stmt *Statement, const TArray<FMemoryItem> &Results)
+ */
+func::Either<FString, TArray<FMemoryItem>> collectSearchRowsRecursive(
+    sqlite3_stmt *Statement, const TArray<FMemoryItem> &Results) {
   const int StepResult = sqlite3_step(Statement);
-  StepResult == SQLITE_ROW
-      ? (Results.Add(ReadMemoryItem(Statement)),
-         CollectSearchRowsRecursive(Statement, Results))
-      : void();
+  return StepResult == SQLITE_DONE
+             ? func::make_right<FString, TArray<FMemoryItem>>(Results)
+             : StepResult != SQLITE_ROW
+                   ? func::make_left<FString, TArray<FMemoryItem>>(
+                         MemoryConfiguration::memoryData()
+                             .Errors.SqliteStepFailed)
+                   : func::ematch(
+                         readMemoryItem(Statement),
+                         [](const FString &Error) {
+                           return func::make_left<
+                               FString, TArray<FMemoryItem>>(Error);
+                         },
+                         [Statement, &Results](const FMemoryItem &Item) {
+                           return collectSearchRowsRecursive(
+                               Statement,
+                               func::append_value<FMemoryItem>(Results, Item));
+                         });
 }
 #endif
 
 } // namespace
 
-FString BuildJsonVector(const TArray<float> &Vector) {
-  return BuildJsonVectorRecursive(Vector, 0, TEXT("["));
+/** User Story: As SQLite vector storage, I need vectors encoded through the authored wire format so schema changes stay outside source. @fn FString buildJsonVector(const TArray<float> &Vector) */
+FString buildJsonVector(const TArray<float> &Vector) {
+  const MemoryConfiguration::FMemoryData &Data =
+      MemoryConfiguration::memoryData();
+  return buildJsonVectorRecursive(Vector, Data.Iteration.InitialIndex,
+                                  Data.Storage.Sqlite.JsonOpen);
 }
 
-FMemoryItem PrepareStoredItem(const FMemoryItem &Item) {
+/** User Story: As SQLite vector storage, I need persisted records normalized without inventing identity so imports remain lossless. @fn FMemoryItem prepareStoredItem(const FMemoryItem &Item) */
+FMemoryItem prepareStoredItem(const FMemoryItem &Item) {
   FMemoryItem StoredItem = Item;
-  const FString Seed = FString::Printf(TEXT("%s|%s|%lld"), *Item.Type,
-                                       *Item.Text,
-                                       static_cast<long long>(Item.Timestamp));
-  StoredItem.Id = StoredItem.Id.IsEmpty()
-                      ? FString::Printf(
-                            TEXT("mem_%016llx"),
-                            static_cast<unsigned long long>(
-                                StableHashRecursive(
-                                    Seed, 0, 1469598103934665603ull)))
-                      : StoredItem.Id;
-  StoredItem.Similarity = 0.0f;
+  StoredItem.Similarity =
+      MemoryConfiguration::memoryData().Defaults.Similarity;
   return StoredItem;
 }
 
 #if WITH_FORBOC_SQLITE_VEC
-void CollectSearchRows(sqlite3_stmt *Statement,
-                       TArray<FMemoryItem> &Results) {
-  CollectSearchRowsRecursive(Statement, Results);
+/** User Story: As SQLite recall, I need row decoding to distinguish completion from native errors so failed queries cannot look empty. @fn func::Either<FString, TArray<FMemoryItem>> collectSearchRows(sqlite3_stmt *Statement) */
+func::Either<FString, TArray<FMemoryItem>>
+collectSearchRows(sqlite3_stmt *Statement) {
+  return collectSearchRowsRecursive(Statement, TArray<FMemoryItem>());
 }
 #endif
 

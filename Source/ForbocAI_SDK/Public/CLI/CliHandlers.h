@@ -25,6 +25,7 @@ using HandlerResult = func::Maybe<Result>;
  * Handles system-scoped CLI commands such as version and doctor.
  * User Story: As CLI users, I need system commands routed together so runtime
  * health and version checks are dispatched through one handler.
+ * @fn HandlerResult HandleSystem(rtk::EnhancedStore<FRuntimeState> &Store, const FString &CommandKey, const TArray<FString> &Args)
  */
 HandlerResult HandleSystem(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
@@ -34,6 +35,7 @@ HandlerResult HandleSystem(rtk::EnhancedStore<FRuntimeState> &Store,
  * Handles NPC lifecycle and interaction CLI commands.
  * User Story: As CLI users, I need NPC commands grouped under one handler so
  * agent creation, updates, and chat share consistent routing.
+ * @fn HandlerResult HandleNpc(rtk::EnhancedStore<FRuntimeState> &Store, const FString &CommandKey, const TArray<FString> &Args)
  */
 HandlerResult HandleNpc(rtk::EnhancedStore<FRuntimeState> &Store,
                        const FString &CommandKey,
@@ -43,6 +45,7 @@ HandlerResult HandleNpc(rtk::EnhancedStore<FRuntimeState> &Store,
  * Handles memory-related CLI commands.
  * User Story: As CLI users, I need memory commands routed together so store,
  * recall, and clear operations share consistent parsing.
+ * @fn HandlerResult HandleMemory(rtk::EnhancedStore<FRuntimeState> &Store, const FString &CommandKey, const TArray<FString> &Args)
  */
 HandlerResult HandleMemory(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
@@ -52,6 +55,7 @@ HandlerResult HandleMemory(rtk::EnhancedStore<FRuntimeState> &Store,
  * Handles ghost QA CLI commands.
  * User Story: As CLI users, I need ghost commands grouped so run control and
  * history lookups share one command handler.
+ * @fn HandlerResult HandleGhost(rtk::EnhancedStore<FRuntimeState> &Store, const FString &CommandKey, const TArray<FString> &Args)
  */
 HandlerResult HandleGhost(rtk::EnhancedStore<FRuntimeState> &Store,
                          const FString &CommandKey,
@@ -61,6 +65,7 @@ HandlerResult HandleGhost(rtk::EnhancedStore<FRuntimeState> &Store,
  * Handles bridge validation and ruleset CLI commands.
  * User Story: As CLI users, I need bridge commands grouped so validation and
  * ruleset management share consistent dispatch logic.
+ * @fn HandlerResult HandleBridge(rtk::EnhancedStore<FRuntimeState> &Store, const FString &CommandKey, const TArray<FString> &Args)
  */
 HandlerResult HandleBridge(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
@@ -70,6 +75,7 @@ HandlerResult HandleBridge(rtk::EnhancedStore<FRuntimeState> &Store,
  * Handles soul import, export, and verification CLI commands.
  * User Story: As CLI users, I need soul commands grouped so lifecycle actions
  * on souls share one routing surface.
+ * @fn HandlerResult HandleSoul(rtk::EnhancedStore<FRuntimeState> &Store, const FString &CommandKey, const TArray<FString> &Args)
  */
 HandlerResult HandleSoul(rtk::EnhancedStore<FRuntimeState> &Store,
                         const FString &CommandKey,
@@ -79,6 +85,7 @@ HandlerResult HandleSoul(rtk::EnhancedStore<FRuntimeState> &Store,
  * Handles runtime configuration CLI commands.
  * User Story: As CLI users, I need config commands grouped so reads and writes
  * of SDK configuration use one handler.
+ * @fn HandlerResult HandleConfig(rtk::EnhancedStore<FRuntimeState> &Store, const FString &CommandKey, const TArray<FString> &Args)
  */
 HandlerResult HandleConfig(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
@@ -88,6 +95,7 @@ HandlerResult HandleConfig(rtk::EnhancedStore<FRuntimeState> &Store,
  * Handles dependency setup CLI commands.
  * User Story: As CLI users, I need setup commands grouped so dependency checks
  * and installation flows share one dispatch path.
+ * @fn HandlerResult HandleSetup(rtk::EnhancedStore<FRuntimeState> &Store, const FString &CommandKey, const TArray<FString> &Args)
  */
 HandlerResult HandleSetup(rtk::EnhancedStore<FRuntimeState> &Store,
                          const FString &CommandKey,

@@ -14,6 +14,7 @@ namespace TestGame {
  * Returns the entity adapter used for game-side memory records.
  * User Story: As test-game memory reducers, I need one shared adapter so local
  * memory records use a consistent normalized state structure.
+ * @fn inline rtk::EntityAdapter<FMemoryRecord> &GetGameMemoryAdapter()
  */
 inline rtk::EntityAdapter<FMemoryRecord> &GetGameMemoryAdapter() {
   static rtk::EntityAdapter<FMemoryRecord> Adapter =

@@ -6,15 +6,18 @@
 
 namespace rtk::logger::detail {
 
+/** User Story: As a core redux logger consumer, I need to invoke has object level through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> bool hasObjectLevel(const ReduxLoggerOptions<State> &Options) */
 template <typename State>
 bool hasObjectLevel(const ReduxLoggerOptions<State> &Options) {
   return Options.LevelByType.Num() > 0 || Options.LevelByTypeFn.Num() > 0;
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke default level value through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline FString defaultLevelValue(const FString *FoundLevel) */
 inline FString defaultLevelValue(const FString *FoundLevel) {
   return FoundLevel ? *FoundLevel : FString();
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke invoke level callback through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline FString invokeLevelCallback(const LevelCallback *FoundCallback, const AnyAction &FormattedAction, const TArray<FString> &Payload, const FString *FoundLevel) */
 inline FString invokeLevelCallback(const LevelCallback *FoundCallback,
                                    const AnyAction &FormattedAction,
                                    const TArray<FString> &Payload,
@@ -24,6 +27,7 @@ inline FString invokeLevelCallback(const LevelCallback *FoundCallback,
              : defaultLevelValue(FoundLevel);
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke get log level through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> FString getLogLevel(const ReduxLoggerOptions<State> &Options, const AnyAction &FormattedAction, const TArray<FString> &Payload, const FString &Type) */
 template <typename State>
 FString getLogLevel(const ReduxLoggerOptions<State> &Options,
                     const AnyAction &FormattedAction,
@@ -36,6 +40,7 @@ FString getLogLevel(const ReduxLoggerOptions<State> &Options,
                                 : Options.Level);
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke transform state through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> FString transformState(const ReduxLoggerOptions<State> &Options, const State &StateValue) */
 template <typename State>
 FString transformState(const ReduxLoggerOptions<State> &Options,
                        const State &StateValue) {
@@ -43,6 +48,7 @@ FString transformState(const ReduxLoggerOptions<State> &Options,
                              : Options.StateTransformer(StateValue);
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke format action text through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> FString formatActionText(const ReduxLoggerOptions<State> &Options, const AnyAction &Action) */
 template <typename State>
 FString formatActionText(const ReduxLoggerOptions<State> &Options,
                          const AnyAction &Action) {
@@ -50,6 +56,7 @@ FString formatActionText(const ReduxLoggerOptions<State> &Options,
                                  : formatAction(Action);
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke default title formatter through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> FString defaultTitleFormatter(const ReduxLoggerOptions<State> &Options, const AnyAction &Action, const FString &Time, double Took) */
 template <typename State>
 FString defaultTitleFormatter(const ReduxLoggerOptions<State> &Options,
                               const AnyAction &Action, const FString &Time,
@@ -62,6 +69,7 @@ FString defaultTitleFormatter(const ReduxLoggerOptions<State> &Options,
               : FString());
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke log row through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline void logRow(const std::function<void(const FString &)> &Logger, const FString &Level, const FString &Label, const FString &Value) */
 inline void logRow(const std::function<void(const FString &)> &Logger,
                    const FString &Level, const FString &Label,
                    const FString &Value) {
@@ -70,6 +78,7 @@ inline void logRow(const std::function<void(const FString &)> &Logger,
       : void();
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke default diff logger through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline void defaultDiffLogger( const FString &PreviousState, const FString &NextState, const std::function<void(const FString &)> &Logger, bool bCollapsed) */
 inline void defaultDiffLogger(
     const FString &PreviousState, const FString &NextState,
     const std::function<void(const FString &)> &Logger, bool bCollapsed) {
@@ -81,6 +90,7 @@ inline void defaultDiffLogger(
   Logger(TEXT("  -- diff end --"));
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke next state for buffer key through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline FString nextStateForBufferKey(const std::vector<LogEntry> &Buffer, size_t Index, const LogEntry &Entry) */
 inline FString nextStateForBufferKey(const std::vector<LogEntry> &Buffer,
                                      size_t Index,
                                      const LogEntry &Entry) {
@@ -88,6 +98,7 @@ inline FString nextStateForBufferKey(const std::vector<LogEntry> &Buffer,
                                    : Entry.NextState;
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke took for buffer key through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline double tookForBufferKey(const std::vector<LogEntry> &Buffer, size_t Index, const LogEntry &Entry) */
 inline double tookForBufferKey(const std::vector<LogEntry> &Buffer,
                                size_t Index, const LogEntry &Entry) {
   return Index + 1 < Buffer.size()
@@ -95,6 +106,7 @@ inline double tookForBufferKey(const std::vector<LogEntry> &Buffer,
              : Entry.Took;
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke resolve collapsed through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline bool resolveCollapsed( const std::function<bool(const std::function<FString()> &, const AnyAction &, const LogEntry &)> &Resolver, bool bCollapsed, const std::function<FString()> &GetNextState, const AnyAction &FormattedAction, const LogEntry &Entry) */
 inline bool resolveCollapsed(
     const std::function<bool(const std::function<FString()> &,
                              const AnyAction &, const LogEntry &)> &Resolver,
@@ -104,6 +116,7 @@ inline bool resolveCollapsed(
                   : bCollapsed;
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke log trace when through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline void logTraceWhen(const std::function<void(const FString &)> &Logger, bool bWithTrace) */
 inline void logTraceWhen(const std::function<void(const FString &)> &Logger,
                          bool bWithTrace) {
   bWithTrace ? (Logger(TEXT("  TRACE")),
@@ -112,6 +125,7 @@ inline void logTraceWhen(const std::function<void(const FString &)> &Logger,
              : void();
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke log error when through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline void logErrorWhen(const std::function<void(const FString &)> &Logger, const FString &ErrorLevel, const LogEntry &Entry) */
 inline void logErrorWhen(const std::function<void(const FString &)> &Logger,
                          const FString &ErrorLevel, const LogEntry &Entry) {
   Entry.bHasError
@@ -119,6 +133,7 @@ inline void logErrorWhen(const std::function<void(const FString &)> &Logger,
       : void();
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke log diff when through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> void logDiffWhen(const ReduxLoggerOptions<State> &Options, const std::function<void(const FString &)> &Logger, const FString &PreviousState, const FString &NextState, bool bCollapsed) */
 template <typename State>
 void logDiffWhen(const ReduxLoggerOptions<State> &Options,
                  const std::function<void(const FString &)> &Logger,
@@ -131,6 +146,7 @@ void logDiffWhen(const ReduxLoggerOptions<State> &Options,
       : void();
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke print buffer entry through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> void printBufferEntry(const std::vector<LogEntry> &Buffer, size_t Index, const ReduxLoggerOptions<State> &Options, const std::function<void(const FString &)> &Logger) */
 template <typename State>
 void printBufferEntry(const std::vector<LogEntry> &Buffer, size_t Index,
                       const ReduxLoggerOptions<State> &Options,
@@ -177,6 +193,7 @@ void printBufferEntry(const std::vector<LogEntry> &Buffer, size_t Index,
   logDiffWhen(Options, Logger, Entry.PrevState, NextState, bCollapsed);
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke print buffer recursive through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> void printBufferRecursive(const std::vector<LogEntry> &Buffer, size_t Index, const ReduxLoggerOptions<State> &Options, const std::function<void(const FString &)> &Logger) */
 template <typename State>
 void printBufferRecursive(const std::vector<LogEntry> &Buffer, size_t Index,
                           const ReduxLoggerOptions<State> &Options,
@@ -187,6 +204,7 @@ void printBufferRecursive(const std::vector<LogEntry> &Buffer, size_t Index,
          printBufferRecursive(Buffer, Index + 1, Options, Logger));
 }
 
+/** User Story: As a core redux logger consumer, I need to invoke print buffer through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> void printBuffer(const std::vector<LogEntry> &Buffer, const ReduxLoggerOptions<State> &Options, const std::function<void(const FString &)> &Logger) */
 template <typename State>
 void printBuffer(const std::vector<LogEntry> &Buffer,
                  const ReduxLoggerOptions<State> &Options,

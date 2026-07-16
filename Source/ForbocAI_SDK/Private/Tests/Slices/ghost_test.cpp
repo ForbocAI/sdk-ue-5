@@ -18,22 +18,26 @@ typedef func::ArgDispatcher<EGhostTestActionKind, FGhostTestActionInput,
                             FGhostSliceState>
     FGhostTestActionDispatcher;
 
+/** User Story: As a tests slices consumer, I need to invoke required ghost field message through a stable signature so the tests slices workflow remains explicit and composable. @fn inline std::string RequiredGhostFieldMessage() */
 inline std::string RequiredGhostFieldMessage() {
   return std::string(
       TCHAR_TO_UTF8(*TestingGhostFixtures().Labels.RequiredField));
 }
 
+/** User Story: As a tests slices consumer, I need to invoke required ghost field through a stable signature so the tests slices workflow remains explicit and composable. @fn template <typename T> T RequiredGhostField(const func::Maybe<T> &Value) */
 template <typename T>
 T RequiredGhostField(const func::Maybe<T> &Value) {
   return func::requireJust<T>(Value, RequiredGhostFieldMessage());
 }
 
+/** User Story: As a tests slices consumer, I need to invoke ghost test slice through a stable signature so the tests slices workflow remains explicit and composable. @fn inline const rtk::Slice<FGhostSliceState> &GhostTestSlice() */
 inline const rtk::Slice<FGhostSliceState> &GhostTestSlice() {
   static const rtk::Slice<FGhostSliceState> Slice =
       GhostSlice::createGhostSlice();
   return Slice;
 }
 
+/** User Story: As a tests slices consumer, I need to invoke ghost test results through a stable signature so the tests slices workflow remains explicit and composable. @fn inline TArray<FGhostTestResult> GhostTestResults(const TArray<FString> &Scenarios) */
 inline TArray<FGhostTestResult>
 GhostTestResults(const TArray<FString> &Scenarios) {
   return func::map_array<FString, FGhostTestResult>(
@@ -45,6 +49,7 @@ GhostTestResults(const TArray<FString> &Scenarios) {
       });
 }
 
+/** User Story: As a tests slices consumer, I need to invoke ghost history through a stable signature so the tests slices workflow remains explicit and composable. @fn inline TArray<FGhostHistoryEntry> GhostHistory(const TArray<FString> &SessionIds) */
 inline TArray<FGhostHistoryEntry>
 GhostHistory(const TArray<FString> &SessionIds) {
   return func::map_array<FString, FGhostHistoryEntry>(
@@ -55,6 +60,7 @@ GhostHistory(const TArray<FString> &SessionIds) {
       });
 }
 
+/** User Story: As a tests slices consumer, I need to invoke build ghost test action dispatcher through a stable signature so the tests slices workflow remains explicit and composable. @fn inline FGhostTestActionDispatcher BuildGhostTestActionDispatcher() */
 inline FGhostTestActionDispatcher BuildGhostTestActionDispatcher() {
   FGhostTestActionDispatcher Dispatcher =
       func::create_arg_dispatcher<EGhostTestActionKind,
@@ -120,12 +126,14 @@ inline FGhostTestActionDispatcher BuildGhostTestActionDispatcher() {
       [](const FGhostTestActionInput &Input) { return Input.State; });
 }
 
+/** User Story: As a tests slices consumer, I need to invoke ghost test action dispatcher through a stable signature so the tests slices workflow remains explicit and composable. @fn inline const FGhostTestActionDispatcher &GhostTestActionDispatcher() */
 inline const FGhostTestActionDispatcher &GhostTestActionDispatcher() {
   static const FGhostTestActionDispatcher Dispatcher =
       BuildGhostTestActionDispatcher();
   return Dispatcher;
 }
 
+/** User Story: As a tests slices consumer, I need to invoke apply ghost test action through a stable signature so the tests slices workflow remains explicit and composable. @fn inline FGhostSliceState ApplyGhostTestAction( const FGhostSliceState &State, const FGhostTestAction &Action) */
 inline FGhostSliceState ApplyGhostTestAction(
     const FGhostSliceState &State, const FGhostTestAction &Action) {
   const FGhostTestActionInput Input{State, Action};
@@ -145,6 +153,7 @@ IMPLEMENT_COMPLEX_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
+/** User Story: As a tests slices consumer, I need to invoke get tests through a stable signature so the tests slices workflow remains explicit and composable. @fn void FGhostTest::GetTests(TArray<FString> &OutBeautifiedNames, TArray<FString> &OutTestCommands) const */
 void FGhostTest::GetTests(TArray<FString> &OutBeautifiedNames,
                           TArray<FString> &OutTestCommands) const {
   func::for_each_array<FGhostTestScenario>(
@@ -156,6 +165,7 @@ void FGhostTest::GetTests(TArray<FString> &OutBeautifiedNames,
       });
 }
 
+/** User Story: As a tests slices consumer, I need to invoke run test through a stable signature so the tests slices workflow remains explicit and composable. @fn bool FGhostTest::RunTest(const FString &Parameters) */
 bool FGhostTest::RunTest(const FString &Parameters) {
   const FGhostTestFixtures &Fixtures = TestingGhostFixtures();
   const func::Maybe<FGhostTestScenario> Scenario =
@@ -176,7 +186,7 @@ bool FGhostTest::RunTest(const FString &Parameters) {
                   []() { return true; });
             };
         func::fold_array<FGhostTestStep, FGhostSliceState>(
-            Value.Steps, FGhostSliceState(),
+            Value.Steps, GhostTestSlice().InitialState,
             [this, &Fixtures, &TestValue](const FGhostSliceState &State,
                                          const FGhostTestStep &Step) {
               const FGhostSliceState Next =

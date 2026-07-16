@@ -2,6 +2,9 @@
 #include "CoreMinimal.h"
 #include "Features/Async/AsyncAdapters.h"
 #include "Features/Testing/Dependencies/Command/CommandAdapters.h"
+#include "Features/Testing/CLI/Invocation/InvocationAdapters.h"
+#include "Features/CLI/CLISelectors.h"
+#include "Features/CLI/Invocation/InvocationAdapters.h"
 #include "Misc/AutomationTest.h"
 #include "CLI/RuntimeCommandlet.h"
 #include "Store.h"
@@ -19,6 +22,7 @@ struct FCommandOutcome {
   FString Error;
 };
 
+/** User Story: As a tests integration consumer, I need to invoke run command through a stable signature so the tests integration workflow remains explicit and composable. @fn FCommandOutcome RunCommand(UForbocAICommandlet &Commandlet, const FString &Command, const TArray<FString> &Arguments) */
 FCommandOutcome RunCommand(UForbocAICommandlet &Commandlet,
                            const FString &Command,
                            const TArray<FString> &Arguments) {
@@ -32,6 +36,7 @@ FCommandOutcome RunCommand(UForbocAICommandlet &Commandlet,
   return Outcome;
 }
 
+/** User Story: As a tests integration consumer, I need to invoke test successful outcome through a stable signature so the tests integration workflow remains explicit and composable. @fn void TestSuccessfulOutcome(FAutomationTestBase &Test, const FString &Command, const FCommandOutcome &Outcome) */
 void TestSuccessfulOutcome(FAutomationTestBase &Test,
                            const FString &Command,
                            const FCommandOutcome &Outcome) {
@@ -53,6 +58,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FSetupCommandletValidationTest::RunTest(const FString &Parameters)
  */
 bool FSetupCommandletValidationTest::RunTest(const FString &Parameters) {
   UForbocAICommandlet *Commandlet = NewObject<UForbocAICommandlet>();
@@ -64,6 +70,34 @@ bool FSetupCommandletValidationTest::RunTest(const FString &Parameters) {
             *this, Command.Label,
             RunCommand(*Commandlet, Command.Key, Command.Arguments));
       });
+  const auto &Fixtures =
+      Testing::CLI::Invocation::InvocationTestFixtures();
+  const ForbocAI::CLI::FCLIState &CLIState = store().getState().CLI;
+  TestEqual(
+      Fixtures.Labels.NodeCommandCount,
+      ForbocAI::CLI::selectCliCommandKeys(
+          CLIState, ForbocAI::CLI::selectNodeCliSurface(CLIState))
+          .Num(),
+      Fixtures.ExpectedNodeCommandCount);
+  func::for_each_array<Testing::CLI::Invocation::FInvocationTestScenario>(
+      Fixtures.Scenarios,
+      [this, &Fixtures, &CLIState](
+          const Testing::CLI::Invocation::FInvocationTestScenario &Scenario) {
+        const CommandletInvocation::FInvocation Invocation =
+            CommandletInvocation::ResolveInvocation(
+                Scenario.CommandletParams, CLIState);
+        TestEqual(Fixtures.Labels.CommandMatched,
+                  !Invocation.Command.IsEmpty(),
+                  Scenario.bExpectedMatched);
+        TestEqual(Fixtures.Labels.CommandKey, Invocation.Command,
+                  func::or_else(Scenario.ExpectedKey, FString()));
+        TestTrue(Fixtures.Labels.Arguments,
+                 Invocation.Args == Scenario.ExpectedArgs);
+        TestEqual(Fixtures.Labels.ApiUrl, Invocation.ApiUrl,
+                  func::or_else(Scenario.ExpectedApiUrl, FString()));
+        TestEqual(Fixtures.Labels.ApiKey, Invocation.ApiKey,
+                  func::or_else(Scenario.ExpectedApiKey, FString()));
+      });
   return true;
 }
 
@@ -73,6 +107,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
+/** User Story: As a tests integration consumer, I need to invoke run test through a stable signature so the tests integration workflow remains explicit and composable. @fn bool FDependenciesStoreLifecycleTest::RunTest(const FString &Parameters) */
 bool FDependenciesStoreLifecycleTest::RunTest(const FString &Parameters) {
   rtk::EnhancedStore<FRuntimeState> Store = createRuntimeStore();
   Store.dispatch(rtk::checkNativeDependenciesThunk().pending(rtk::FEmptyPayload{}));
@@ -101,6 +136,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
+/** User Story: As a tests integration consumer, I need to invoke run test through a stable signature so the tests integration workflow remains explicit and composable. @fn bool FVectorStoreLifecycleTest::RunTest(const FString &Parameters) */
 bool FVectorStoreLifecycleTest::RunTest(const FString &Parameters) {
   rtk::EnhancedStore<FRuntimeState> Store = createRuntimeStore();
   Store.dispatch(rtk::initVectorThunk().pending(rtk::FEmptyPayload{}));

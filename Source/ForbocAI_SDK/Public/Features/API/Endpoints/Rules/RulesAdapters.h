@@ -1,202 +1,195 @@
 #pragma once
 
-#include "Features/API/Endpoints/NPC/Directive/NPCDirectiveAdapters.h"
+#include "Features/API/Endpoints/Bridge/BridgeAdapters.h"
+#include "Features/API/Endpoints/Rules/Configuration/ConfigurationAdapters.h"
 
 namespace APISlice::Detail {
 
-/**
- * Reads a string array field from a JSON object.
- * User Story: As codec helpers, I need a reusable array reader so repeated
- * string-list decoding stays consistent across bridge and ruleset payloads.
- */
-inline TArray<FString>
-DecodeStringArrayField(const TSharedPtr<FJsonObject> &Object,
-                       const FString &FieldName) {
-  TArray<FString> Values;
-  const TArray<TSharedPtr<FJsonValue>> *RawValues = nullptr;
-  return (!Object.IsValid() ||
-          !Object->TryGetArrayField(FieldName, RawValues) || !RawValues)
-             ? Values
-             : (Values.Reserve(RawValues->Num()),
-                detail::ExtractStringValuesRecursive(*RawValues, Values, 0),
-                Values);
-}
-
-/**
- * Decodes a bridge-rule object into a typed bridge rule.
- * User Story: As bridge rule management, I need rule-object decoding so mixed
- * API field shapes still produce one normalized bridge-rule value.
- */
-inline bool DecodeBridgeRuleObject(const TSharedPtr<FJsonObject> &Object,
-                                   FBridgeRule &Rule) {
-  return !Object.IsValid()
-             ? false
-             : [&]() -> bool {
-                 const FString RuleName1 =
-                     JsonInterop::OptionalStringFromField(Object,
-                                                          TEXT("ruleName"));
-                 const FString RuleName2 =
-                     !RuleName1.IsEmpty()
-                         ? RuleName1
-                         : JsonInterop::OptionalStringFromField(
-                               Object, TEXT("brRuleId"));
-                 Rule.RuleName =
-                     !RuleName2.IsEmpty()
-                         ? RuleName2
-                         : JsonInterop::OptionalStringFromField(
-                               Object, TEXT("ruleId"));
-
-                 const FString RuleDesc1 =
-                     JsonInterop::OptionalStringFromField(
-                         Object, TEXT("ruleDescription"));
-                 Rule.RuleDescription =
-                     !RuleDesc1.IsEmpty()
-                         ? RuleDesc1
-                         : JsonInterop::OptionalStringFromField(
-                               Object, TEXT("ruleReason"));
-
-                 const TArray<FString> Actions1 =
-                     DecodeStringArrayField(Object, TEXT("ruleActionTypes"));
-                 const TArray<FString> Actions2 =
-                     Actions1.Num() > 0
-                         ? Actions1
-                         : DecodeStringArrayField(Object,
-                                                  TEXT("affectedActions"));
-                 Rule.RuleActionTypes =
-                     Actions2.Num() > 0
-                         ? Actions2
-                         : [&]() -> TArray<FString> {
-                             const FString SingleAction =
-                                 JsonInterop::OptionalStringFromField(
-                                     Object, TEXT("ruleAction"));
-                             TArray<FString> Result;
-                             !SingleAction.IsEmpty()
-                                 ? (Result.Add(SingleAction), void())
-                                 : void();
-                             return Result;
-                           }();
-
-                 return true;
+/** User Story: As a directive-rule consumer, I need API condition tuples validated against the authored tuple structure before entering feature state. @fn inline func::Maybe<FDirectiveRuleCondition> DecodeDirectiveRuleCondition(const TSharedPtr<FJsonValue> &Value) */
+inline func::Maybe<FDirectiveRuleCondition>
+DecodeDirectiveRuleCondition(const TSharedPtr<FJsonValue> &Value) {
+  const RulesConfiguration::FRulesContractData &Data =
+      RulesConfiguration::rulesContractData();
+  return !Value.IsValid() || Value->Type != EJson::Array
+             ? func::nothing<FDirectiveRuleCondition>()
+             : [&]() {
+                 const TArray<TSharedPtr<FJsonValue>> &Pair =
+                     Value->AsArray();
+                 const bool bValid =
+                     Pair.Num() == Data.Condition.PairSize &&
+                     Pair.IsValidIndex(Data.Condition.KeyIndex) &&
+                     Pair.IsValidIndex(Data.Condition.ValueIndex) &&
+                     Pair[Data.Condition.KeyIndex].IsValid() &&
+                     Pair[Data.Condition.KeyIndex]->Type == EJson::String &&
+                     Pair[Data.Condition.ValueIndex].IsValid() &&
+                     Pair[Data.Condition.ValueIndex]->Type == EJson::String;
+                 return !bValid
+                            ? func::nothing<FDirectiveRuleCondition>()
+                            : [&]() {
+                                FDirectiveRuleCondition Condition;
+                                Condition.Key =
+                                    Pair[Data.Condition.KeyIndex]->AsString();
+                                Condition.Value = Pair[Data.Condition.ValueIndex]
+                                                      ->AsString();
+                                return func::just(Condition);
+                              }();
                }();
 }
 
-/**
- * Recursive bridge-rule extraction definition.
- * User Story: As a maintainer, I need this note so the surrounding code intent
- * stays clear during maintenance and debugging.
- */
-namespace detail {
-inline void ExtractBridgeRulesRecursive(
-    const TArray<TSharedPtr<FJsonValue>> &Source, TArray<FBridgeRule> &Out,
-    int32 Index) {
-  Index < Source.Num()
-      ? ((Source[Index].IsValid() && Source[Index]->Type == EJson::Object)
-             ? [&]() {
-                 FBridgeRule Rule;
-                 DecodeBridgeRuleObject(Source[Index]->AsObject(), Rule)
-                     ? (Out.Add(Rule), void())
-                     : void();
-               }()
-             : void(),
-         ExtractBridgeRulesRecursive(Source, Out, Index + 1), void())
-      : void();
-}
-} // namespace detail
-
-/**
- * Decodes a directive ruleset object into a typed ruleset value.
- * User Story: As directive rule management, I need ruleset-object decoding so
- * nested rule arrays become a usable runtime ruleset structure.
- */
-inline bool DecodeDirectiveRuleSetObject(const TSharedPtr<FJsonObject> &Object,
-                                         FDirectiveRuleSet &Ruleset) {
-  return !Object.IsValid()
-             ? false
-             : (Ruleset.Id = JsonInterop::OptionalStringFromField(
-                    Object, TEXT("id")),
-                Ruleset.RulesetId = JsonInterop::OptionalStringFromField(
-                    Object, TEXT("rulesetId")),
-                Ruleset.Id.IsEmpty()
-                    ? (Ruleset.Id = Ruleset.RulesetId, void())
-                    : void(),
-                Ruleset.RulesetRules.Empty(),
-                [&]() {
-                  const TArray<TSharedPtr<FJsonValue>> *RuleValues = nullptr;
-                  (Object->TryGetArrayField(TEXT("rulesetRules"), RuleValues) &&
-                   RuleValues)
-                      ? (Ruleset.RulesetRules.Reserve(RuleValues->Num()),
-                         detail::ExtractBridgeRulesRecursive(
-                             *RuleValues, Ruleset.RulesetRules, 0),
-                         void())
-                      : void();
-                }(),
-                true);
+/** User Story: As a directive-rule consumer, I need every canonical API rule field decoded losslessly without collapsing it into a Bridge rule. @fn inline func::Maybe<FDirectiveRule> DecodeDirectiveRuleObject(const TSharedPtr<FJsonObject> &Object) */
+inline func::Maybe<FDirectiveRule>
+DecodeDirectiveRuleObject(const TSharedPtr<FJsonObject> &Object) {
+  const RulesConfiguration::FRulesContractData &Data =
+      RulesConfiguration::rulesContractData();
+  const TArray<TSharedPtr<FJsonValue>> *Conditions = nullptr;
+  double Priority = 0.0;
+  const bool bValid =
+      Object.IsValid() &&
+      Object->HasTypedField<EJson::String>(Data.Rule.Id) &&
+      Object->HasTypedField<EJson::String>(Data.Rule.Name) &&
+      Object->TryGetArrayField(Data.Rule.Conditions, Conditions) && Conditions &&
+      Object->HasTypedField<EJson::String>(Data.Rule.Action) &&
+      Object->HasTypedField<EJson::String>(Data.Rule.Reason) &&
+      Object->TryGetNumberField(Data.Rule.Priority, Priority) &&
+      FMath::IsFinite(Priority);
+  return !bValid
+             ? func::nothing<FDirectiveRule>()
+             : func::match(
+      func::traverse_maybe_array<TSharedPtr<FJsonValue>,
+                                 FDirectiveRuleCondition>(
+          *Conditions, DecodeDirectiveRuleCondition),
+      [&Object, &Data, Priority](
+          const TArray<FDirectiveRuleCondition> &DecodedConditions) {
+        FDirectiveRule Rule;
+        Rule.RuleId = Object->GetStringField(Data.Rule.Id);
+        Rule.Name = Object->GetStringField(Data.Rule.Name);
+        Rule.Conditions = DecodedConditions;
+        Rule.Action = Object->GetStringField(Data.Rule.Action);
+        Rule.Reason = Object->GetStringField(Data.Rule.Reason);
+        Rule.Target = JsonInterop::OptionalStringFromField(
+            Object, Data.Rule.Target);
+        Rule.Priority = static_cast<int32>(Priority);
+        Rule.ObservationPattern = JsonInterop::OptionalStringFromField(
+            Object, Data.Rule.ObservationPattern);
+        Rule.PromptSuffix = JsonInterop::OptionalStringFromField(
+            Object, Data.Rule.PromptSuffix);
+        return func::just(Rule);
+      },
+      []() { return func::nothing<FDirectiveRule>(); });
 }
 
-/**
- * Recursive directive ruleset extraction definition.
- * User Story: As a maintainer, I need this note so the surrounding code intent
- * stays clear during maintenance and debugging.
- */
-namespace detail {
-inline void ExtractDirectiveRuleSetsRecursive(
-    const TArray<TSharedPtr<FJsonValue>> &Source,
-    TArray<FDirectiveRuleSet> &Out, int32 Index) {
-  Index < Source.Num()
-      ? ((Source[Index].IsValid() && Source[Index]->Type == EJson::Object)
-             ? [&]() {
-                 FDirectiveRuleSet Ruleset;
-                 DecodeDirectiveRuleSetObject(Source[Index]->AsObject(), Ruleset)
-                     ? (Out.Add(Ruleset), void())
-                     : void();
-               }()
-             : void(),
-         ExtractDirectiveRuleSetsRecursive(Source, Out, Index + 1), void())
-      : void();
-}
-} // namespace detail
-
-/**
- * Decodes a bridge-rules response into a typed rule collection.
- * User Story: As bridge rule management, I need list-response decoding so API
- * rule inventories can be consumed without handwritten JSON walking.
- */
-inline bool DecodeBridgeRulesResponse(const FString &Json,
-                                      TArray<FBridgeRule> &Rules) {
-  TArray<TSharedPtr<FJsonValue>> Values;
-  return !JsonInterop::ParseJsonArray(Json, Values)
-             ? false
-             : (Rules.Empty(), Rules.Reserve(Values.Num()),
-                detail::ExtractBridgeRulesRecursive(Values, Rules, 0), true);
+/** User Story: As a ruleset consumer, I need canonical ruleset objects traversed into full directive rules so malformed children reject the complete response. @fn inline func::Maybe<FDirectiveRuleSet> DecodeDirectiveRuleSetObject(const TSharedPtr<FJsonObject> &Object) */
+inline func::Maybe<FDirectiveRuleSet>
+DecodeDirectiveRuleSetObject(const TSharedPtr<FJsonObject> &Object) {
+  const RulesConfiguration::FRulesContractData &Data =
+      RulesConfiguration::rulesContractData();
+  const TArray<TSharedPtr<FJsonValue>> *Rules = nullptr;
+  const bool bValid =
+      Object.IsValid() &&
+      Object->HasTypedField<EJson::String>(Data.Ruleset.Id) &&
+      Object->TryGetArrayField(Data.Ruleset.Rules, Rules) && Rules;
+  return !bValid
+             ? func::nothing<FDirectiveRuleSet>()
+             : func::match(
+      func::traverse_maybe_array<TSharedPtr<FJsonValue>, FDirectiveRule>(
+          *Rules, [](const TSharedPtr<FJsonValue> &Value) {
+            return Value.IsValid() && Value->Type == EJson::Object
+                       ? DecodeDirectiveRuleObject(Value->AsObject())
+                       : func::nothing<FDirectiveRule>();
+          }),
+      [&Object, &Data](const TArray<FDirectiveRule> &DecodedRules) {
+        FDirectiveRuleSet Ruleset;
+        Ruleset.RulesetId = Object->GetStringField(Data.Ruleset.Id);
+        Ruleset.RulesetRules = DecodedRules;
+        Ruleset.Template = JsonInterop::OptionalStringFromField(
+            Object, Data.Ruleset.Template);
+        return func::just(Ruleset);
+      },
+      []() { return func::nothing<FDirectiveRuleSet>(); });
 }
 
-/**
- * Decodes a directive-ruleset response into a single ruleset value.
- * User Story: As directive rule management, I need single-ruleset decoding so
- * details views and edits can load one ruleset cleanly.
- */
+/** User Story: As a ruleset endpoint, I need one canonical ruleset response decoded without identity aliases. @fn inline bool DecodeDirectiveRuleSetResponse(const FString &Json, FDirectiveRuleSet &Ruleset) */
 inline bool DecodeDirectiveRuleSetResponse(const FString &Json,
                                            FDirectiveRuleSet &Ruleset) {
   TSharedPtr<FJsonObject> Root;
-  return (!JsonInterop::ParseJsonObject(Json, Root) || !Root.IsValid())
+  return !JsonInterop::ParseJsonObject(Json, Root)
              ? false
-             : DecodeDirectiveRuleSetObject(Root, Ruleset);
+             : func::match(
+                   DecodeDirectiveRuleSetObject(Root),
+                   [&Ruleset](const FDirectiveRuleSet &Decoded) {
+                     Ruleset = Decoded;
+                     return true;
+                   },
+                   []() { return false; });
 }
 
 /**
- * Decodes a directive-ruleset list response into typed rulesets.
- * User Story: As directive rule management, I need list-response decoding so
- * ruleset indexes can hydrate strongly typed runtime collections.
+ * User Story: As a ruleset catalog, I need the complete response traversed so a malformed ruleset cannot produce partial success.
+ * @fn inline bool DecodeDirectiveRuleSetListResponse( const FString &Json, TArray<FDirectiveRuleSet> &Rulesets)
  */
-inline bool
-DecodeDirectiveRuleSetListResponse(const FString &Json,
-                                   TArray<FDirectiveRuleSet> &Rulesets) {
+inline bool DecodeDirectiveRuleSetListResponse(
+    const FString &Json, TArray<FDirectiveRuleSet> &Rulesets) {
   TArray<TSharedPtr<FJsonValue>> Values;
   return !JsonInterop::ParseJsonArray(Json, Values)
              ? false
-             : (Rulesets.Empty(), Rulesets.Reserve(Values.Num()),
-                detail::ExtractDirectiveRuleSetsRecursive(Values, Rulesets, 0),
-                true);
+             : func::match(
+      func::traverse_maybe_array<TSharedPtr<FJsonValue>, FDirectiveRuleSet>(
+          Values, [](const TSharedPtr<FJsonValue> &Value) {
+            return Value.IsValid() && Value->Type == EJson::Object
+                       ? DecodeDirectiveRuleSetObject(Value->AsObject())
+                       : func::nothing<FDirectiveRuleSet>();
+          }),
+      [&Rulesets](const TArray<FDirectiveRuleSet> &Decoded) {
+        Rulesets = Decoded;
+        return true;
+      },
+      []() { return false; });
+}
+
+/** User Story: As a rule registration caller, I need domain condition pairs encoded into the API's canonical tuple representation. @fn inline TSharedPtr<FJsonValue> EncodeDirectiveRuleCondition(const FDirectiveRuleCondition &Condition) */
+inline TSharedPtr<FJsonValue>
+EncodeDirectiveRuleCondition(const FDirectiveRuleCondition &Condition) {
+  return MakeShared<FJsonValueArray>(TArray<TSharedPtr<FJsonValue>>{
+      MakeShared<FJsonValueString>(Condition.Key),
+      MakeShared<FJsonValueString>(Condition.Value)});
+}
+
+/** User Story: As a rule registration caller, I need full directive rules encoded without dropping condition, priority, or prompt fields. @fn inline TSharedPtr<FJsonValue> EncodeDirectiveRule(const FDirectiveRule &Rule) */
+inline TSharedPtr<FJsonValue>
+EncodeDirectiveRule(const FDirectiveRule &Rule) {
+  const RulesConfiguration::FRulesContractData &Data =
+      RulesConfiguration::rulesContractData();
+  const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+  Object->SetStringField(Data.Rule.Id, Rule.RuleId);
+  Object->SetStringField(Data.Rule.Name, Rule.Name);
+  Object->SetArrayField(
+      Data.Rule.Conditions,
+      func::map_array<FDirectiveRuleCondition, TSharedPtr<FJsonValue>>(
+          Rule.Conditions, EncodeDirectiveRuleCondition));
+  Object->SetStringField(Data.Rule.Action, Rule.Action);
+  Object->SetStringField(Data.Rule.Reason, Rule.Reason);
+  JsonInterop::detail::SetIfNonEmpty(Object, Data.Rule.Target, Rule.Target);
+  Object->SetNumberField(Data.Rule.Priority, Rule.Priority);
+  JsonInterop::detail::SetIfNonEmpty(Object, Data.Rule.ObservationPattern,
+                                     Rule.ObservationPattern);
+  JsonInterop::detail::SetIfNonEmpty(Object, Data.Rule.PromptSuffix,
+                                     Rule.PromptSuffix);
+  return MakeShared<FJsonValueObject>(Object);
+}
+
+/** User Story: As a ruleset registration caller, I need the feature-domain ruleset encoded to the exact API wire contract. @fn inline FString EncodeDirectiveRuleSet(const FDirectiveRuleSet &Ruleset) */
+inline FString EncodeDirectiveRuleSet(const FDirectiveRuleSet &Ruleset) {
+  const RulesConfiguration::FRulesContractData &Data =
+      RulesConfiguration::rulesContractData();
+  const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+  Object->SetStringField(Data.Ruleset.Id, Ruleset.RulesetId);
+  Object->SetArrayField(
+      Data.Ruleset.Rules,
+      func::map_array<FDirectiveRule, TSharedPtr<FJsonValue>>(
+          Ruleset.RulesetRules, EncodeDirectiveRule));
+  JsonInterop::detail::SetIfNonEmpty(Object, Data.Ruleset.Template,
+                                     Ruleset.Template);
+  return ToJsonString(Object);
 }
 
 } // namespace APISlice::Detail

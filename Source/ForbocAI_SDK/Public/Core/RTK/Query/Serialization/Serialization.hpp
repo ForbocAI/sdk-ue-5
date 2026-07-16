@@ -14,12 +14,14 @@ struct HasEqualOperator<
                                         std::declval<const T &>()),
                                bool>::value>::type> : std::true_type {};
 
+/** User Story: As a rtk query serialization consumer, I need to invoke copy with structural sharing impl through a stable signature so the rtk query serialization workflow remains explicit and composable. @fn template <typename T> T copyWithStructuralSharingImpl(const T &OldValue, const T &NewValue, std::true_type) */
 template <typename T>
 T copyWithStructuralSharingImpl(const T &OldValue, const T &NewValue,
                                 std::true_type) {
   return OldValue == NewValue ? OldValue : NewValue;
 }
 
+/** User Story: As a rtk query serialization consumer, I need to invoke copy with structural sharing impl through a stable signature so the rtk query serialization workflow remains explicit and composable. @fn template <typename T> T copyWithStructuralSharingImpl(const T &, const T &NewValue, std::false_type) */
 template <typename T>
 T copyWithStructuralSharingImpl(const T &, const T &NewValue,
                                 std::false_type) {
@@ -28,6 +30,7 @@ T copyWithStructuralSharingImpl(const T &, const T &NewValue,
 
 template <typename T, typename Enable = void> struct JsonDeserializer;
 
+/** User Story: As a rtk query serialization consumer, I need to invoke deserialize string array recursive through a stable signature so the rtk query serialization workflow remains explicit and composable. @fn template <typename JsonValueT> bool deserializeStringArrayRecursive( const TArray<TSharedPtr<JsonValueT>> &JsonValues, int32 Index, TArray<FString> &OutValue) */
 template <typename JsonValueT>
 bool deserializeStringArrayRecursive(
     const TArray<TSharedPtr<JsonValueT>> &JsonValues, int32 Index,
@@ -41,6 +44,7 @@ bool deserializeStringArrayRecursive(
                                                       OutValue));
 }
 
+/** User Story: As a rtk query serialization consumer, I need to invoke deserialize struct array recursive through a stable signature so the rtk query serialization workflow remains explicit and composable. @fn template <typename T, typename JsonValueT> bool deserializeStructArrayRecursive( const TArray<TSharedPtr<JsonValueT>> &JsonValues, int32 Index, TArray<T> &OutValue) */
 template <typename T, typename JsonValueT>
 bool deserializeStructArrayRecursive(
     const TArray<TSharedPtr<JsonValueT>> &JsonValues, int32 Index,

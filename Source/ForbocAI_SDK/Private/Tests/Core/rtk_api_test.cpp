@@ -10,6 +10,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FRtkApiTest, "ForbocAI.Core.RTK.Api",
                                      EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
+ * @fn bool FRtkApiTest::RunTest(const FString &Parameters)
  */
 bool FRtkApiTest::RunTest(const FString &Parameters) {
   /**

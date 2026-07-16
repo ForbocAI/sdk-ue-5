@@ -1,0 +1,40 @@
+{
+  "runtimeTypes": {
+    "string": "string",
+    "number": "number",
+    "undefined": "undefined"
+  },
+  "methods": {
+    "get": "GET",
+    "post": "POST",
+    "delete": "DELETE"
+  },
+  "headers": {
+    "authorization": "Authorization",
+    "bearerPrefix": "Bearer "
+  },
+  "errors": {
+    "jsonDeserializationFailed": "JSON deserialization failed"
+  },
+  "timeouts": {
+    "disabled": 0,
+    "signalTimedOut": "signal timed out",
+    "errorName": "TimeoutError",
+    "status": "TIMEOUT_ERROR",
+    "error": "TimeoutError: signal timed out"
+  },
+  "events": {
+    "abort": "abort"
+  },
+  "api": {
+    "baseUrl": "/",
+    "reducerPath": "api"
+  },
+  "tags": {
+    "npc": "NPC",
+    "ghost": "Ghost",
+    "soul": "Soul",
+    "bridge": "Bridge",
+    "rule": "Rule"
+  }
+}

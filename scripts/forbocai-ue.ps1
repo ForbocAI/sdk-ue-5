@@ -39,7 +39,7 @@ if ($CliArgs.Count -eq 0) {
 }
 
 if ($env:FORBOCAI_UE_SKIP_BUILD -ne "1") {
-    & $Build "ForbocAI_CLI_Editor" "Win64" "Development" "-Project=$Project" "-WaitMutex" "-NoHotReloadFromIDE"
+    & $Build "ForbocAI_CLI_Editor" "Win64" "Development" "-Project=$Project" "-WaitMutex" "-NoHotReloadFromIDE" "-NoUBTMakefiles"
     if ($LASTEXITCODE -ne 0) {
         exit $LASTEXITCODE
     }

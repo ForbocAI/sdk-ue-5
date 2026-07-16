@@ -17,6 +17,7 @@ template <typename F, typename G> struct Composed {
   F f;
   G g;
 
+  /** User Story: As a core fp composition consumer, I need to invoke the callable value through a stable signature so the core fp composition workflow remains explicit and composable. @fn template <typename... Args> auto operator()(Args &&...args) const -> decltype(f(g(std::forward<Args>(args)...))) */
   template <typename... Args>
   auto operator()(Args &&...args) const
       -> decltype(f(g(std::forward<Args>(args)...))) {
@@ -25,11 +26,11 @@ template <typename F, typename G> struct Composed {
 };
 
 /**
+ * @fn template <typename F, typename G> Composed<F, G> compose(F f, G g)
  * @brief Composes two functions so the result of `g` feeds into `f`.
  *
  * @details This component is part of the strict C++11 functional core library, providing functional programming primitives without relying on newer language features.
  *
- * @signature template <typename F, typename G> Composed<F, G> compose(F f, G g)
  *
  * User Story: As functional composition code, I need reusable composition so
  * runtime transforms can be assembled declaratively.
