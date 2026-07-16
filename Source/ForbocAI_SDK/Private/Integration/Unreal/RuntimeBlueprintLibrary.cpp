@@ -7,6 +7,7 @@
 #include "Features/CLI/NPC/NPCThunks.h"
 #include "Features/CLI/Soul/CLISoulThunks.h"
 #include "Features/CLI/System/SystemThunks.h"
+#include "Features/API/Serialization/Agent/AgentAdapters.h"
 
 namespace {
 /**
@@ -163,11 +164,18 @@ bool UForbocAIBlueprintLibrary::verifySoul(const FString &TxId) {
  * @fn bool UForbocAIBlueprintLibrary::ValidateBridgeAction(const FString &ActionJson)
  */
 bool UForbocAIBlueprintLibrary::ValidateBridgeAction(const FString &ActionJson) {
-  FAgentAction Action;
-  Action.PayloadJson = ActionJson;
-  FBridgeValidationContext Context;
-  FValidationResult Result = Ops::validateBridgePayload(GetBPStore(), Action, Context);
-  return Result.bValid;
+  TSharedPtr<FJsonObject> ActionObject;
+  return !JsonInterop::ParseJsonObject(ActionJson, ActionObject)
+             ? false
+             : func::match(
+                   JsonInterop::DecodeActionObject(ActionObject),
+                   [](const FAgentAction &Action) {
+                     return Ops::validateBridgePayload(
+                                GetBPStore(), Action,
+                                FBridgeValidationContext())
+                         .bValid;
+                   },
+                   []() { return false; });
 }
 
 /**

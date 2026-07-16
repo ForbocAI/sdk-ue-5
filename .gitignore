@@ -14,7 +14,6 @@ Content/
 !test-game-cli/Content/Data/**/
 !test-game-cli/Content/Data/**/*.json
 Releases/
-Collections/
 Developers/
 User/
 
