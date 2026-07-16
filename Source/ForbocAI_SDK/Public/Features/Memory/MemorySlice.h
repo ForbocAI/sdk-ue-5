@@ -2,7 +2,7 @@
 
 #include "Core/fp.hpp"
 #include "Core/rtk.hpp"
-#include "Features/Memory/Configuration/ConfigurationAdapters.h"
+#include "Features/Memory/Configuration/MemoryConfigurationAdapters.h"
 #include "Features/Memory/MemoryActions.h"
 #include "Features/Memory/MemoryAdapters.h"
 

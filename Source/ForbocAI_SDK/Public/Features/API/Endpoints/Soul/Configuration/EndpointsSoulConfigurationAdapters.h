@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/API/Endpoints/Soul/Configuration/ConfigurationTypes.h"
+#include "Features/API/Endpoints/Soul/Configuration/EndpointsSoulConfigurationTypes.h"
 #include "Features/Data/DataAdapters.h"
 
 namespace APISlice::Endpoints::SoulConfiguration {

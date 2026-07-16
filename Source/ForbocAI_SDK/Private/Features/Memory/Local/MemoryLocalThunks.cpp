@@ -2,7 +2,7 @@
 
 #include "Async/Async.h"
 #include "Core/fp.hpp"
-#include "Features/Memory/Configuration/ConfigurationAdapters.h"
+#include "Features/Memory/Configuration/MemoryConfigurationAdapters.h"
 #include "Features/Memory/Local/LocalAdapters.h"
 #include "Features/Memory/Local/Storage/Sqlite/Connection/ConnectionAdapters.h"
 #include "Features/Memory/Local/Storage/Sqlite/Mutation/MutationAdapters.h"

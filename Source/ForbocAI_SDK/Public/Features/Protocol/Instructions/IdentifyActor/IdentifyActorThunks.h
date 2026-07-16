@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/Protocol/Configuration/ConfigurationAdapters.h"
+#include "Features/Protocol/Configuration/ProtocolConfigurationAdapters.h"
 #include "Features/Protocol/Turn/TurnAdapters.h"
 
 namespace rtk::detail {

@@ -1,7 +1,7 @@
 #include "Features/Soul/Storage/Provider/Response/ResponseAdapters.h"
 
 #include "Core/fp.hpp"
-#include "Features/Soul/Storage/Configuration/ConfigurationAdapters.h"
+#include "Features/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 

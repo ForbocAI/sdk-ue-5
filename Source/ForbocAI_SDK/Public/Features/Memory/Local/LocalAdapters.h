@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/fp.hpp"
-#include "Features/Memory/Configuration/ConfigurationAdapters.h"
+#include "Features/Memory/Configuration/MemoryConfigurationAdapters.h"
 #include "Features/Memory/Identity/IdentityAdapters.h"
 #include "Features/Memory/Local/LocalTypes.h"
 #include "Features/Memory/MemoryTypes.h"

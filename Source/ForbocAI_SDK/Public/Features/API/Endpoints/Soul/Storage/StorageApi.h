@@ -2,8 +2,8 @@
 
 #include "Features/API/APIAdapters.h"
 #include "Features/API/Endpoints/EndpointsTypes.h"
-#include "Features/API/Endpoints/Soul/Storage/StorageAdapters.h"
-#include "Features/Soul/Storage/StorageAdapters.h"
+#include "Features/API/Endpoints/Soul/Storage/EndpointsSoulStorageAdapters.h"
+#include "Features/Soul/Storage/SoulStorageAdapters.h"
 
 namespace APISlice::Endpoints {
 
@@ -12,8 +12,10 @@ inline Thunk<FSoulStoragePreparation>
 postSoulStoragePreparation(const FSoul &Soul) {
   const Transport::FTransportQueryData &Data =
       Transport::transportQueryData();
+  const Configuration::FEndpointConfigurationData &EndpointData =
+      Configuration::endpointData();
   return Detail::MakeEndpoint<FSoul, FSoulStoragePreparation>(
-      TEXT("postSoulStoragePreparation"), Soul,
+      EndpointData.Names.PostSoulStoragePreparation, Soul,
       [](const FSoul &Value) {
         return SoulStorageEndpoint::storageQueryResult(
             ::SoulStorage::prepareSoulStorageAdapter(Value));
@@ -25,9 +27,11 @@ postSoulStoragePreparation(const FSoul &Soul) {
 /** User Story: As a failed Soul export, I need process-local prepared bytes discarded through an RTK Query mutation. @fn inline Thunk<rtk::FEmptyPayload> deleteSoulStoragePreparation(const FString &TxId) */
 inline Thunk<rtk::FEmptyPayload>
 deleteSoulStoragePreparation(const FString &TxId) {
+  const Configuration::FEndpointConfigurationData &Data =
+      Configuration::endpointData();
   return Detail::MakeEndpoint<FSoulStorageTransactionRequest,
                               rtk::FEmptyPayload>(
-      TEXT("deleteSoulStoragePreparation"), {TxId},
+      Data.Names.DeleteSoulStoragePreparation, {TxId},
       [](const FSoulStorageTransactionRequest &Request) {
         return SoulStorageEndpoint::storageQueryResult(
             ::SoulStorage::discardSoulStorageAdapter(Request.TxId));
@@ -40,8 +44,10 @@ inline Thunk<FSoulCatalogEntry>
 postSoulStorageCommit(const FSoulStorageCommit &Commit) {
   const Transport::FTransportQueryData &Data =
       Transport::transportQueryData();
+  const Configuration::FEndpointConfigurationData &EndpointData =
+      Configuration::endpointData();
   return Detail::MakeEndpoint<FSoulStorageCommit, FSoulCatalogEntry>(
-      TEXT("postSoulStorageCommit"), Commit,
+      EndpointData.Names.PostSoulStorageCommit, Commit,
       [](const FSoulStorageCommit &Value) {
         return SoulStorageEndpoint::storageQueryResult(
             ::SoulStorage::commitSoulStorageAdapter(Value));
@@ -54,9 +60,11 @@ postSoulStorageCommit(const FSoulStorageCommit &Commit) {
 inline Thunk<TArray<FSoulListItem>> getSoulStorageCatalog(int32 Limit) {
   const Transport::FTransportQueryData &Data =
       Transport::transportQueryData();
+  const Configuration::FEndpointConfigurationData &EndpointData =
+      Configuration::endpointData();
   return Detail::MakeEndpoint<FSoulStorageListRequest,
                               TArray<FSoulListItem>>(
-      TEXT("getSoulStorageCatalog"), {Limit},
+      EndpointData.Names.GetSoulStorageCatalog, {Limit},
       [](const FSoulStorageListRequest &Request) {
         return SoulStorageEndpoint::storageQueryResult(
             ::SoulStorage::listSoulStorageAdapter(Request.Limit));
@@ -70,9 +78,11 @@ inline Thunk<FSoulCatalogEntry>
 getSoulStorageEntry(const FString &TxId) {
   const Transport::FTransportQueryData &Data =
       Transport::transportQueryData();
+  const Configuration::FEndpointConfigurationData &EndpointData =
+      Configuration::endpointData();
   return Detail::MakeEndpoint<FSoulStorageTransactionRequest,
                               FSoulCatalogEntry>(
-      TEXT("getSoulStorageEntry"), {TxId},
+      EndpointData.Names.GetSoulStorageEntry, {TxId},
       [](const FSoulStorageTransactionRequest &Request) {
         return SoulStorageEndpoint::storageQueryResult(
             ::SoulStorage::getSoulStorageEntryAdapter(Request.TxId));

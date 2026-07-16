@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Features/API/Transport/Codec/TransportCodecAdapters.h"
-#include "Features/API/Transport/Configuration/ConfigurationAdapters.h"
+#include "Features/API/Transport/Configuration/TransportConfigurationAdapters.h"
 
 namespace APISlice::Detail {
 

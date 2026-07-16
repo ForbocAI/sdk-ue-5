@@ -28,7 +28,6 @@
 // @covers:cliOp:getGhostStatus
 // @covers:cliOp:stopGhost
 // @covers:cliOp:importNpcFromSoul
-// @covers:cliOp:importSoul
 // @covers:cliOp:initNodeMemory
 // @covers:cliOp:listSouls
 // @covers:cliOp:clearMemory

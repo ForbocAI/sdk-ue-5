@@ -2,7 +2,7 @@
 
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
-#include "Features/API/Transport/Configuration/ConfigurationAdapters.h"
+#include "Features/API/Transport/Configuration/TransportConfigurationAdapters.h"
 
 struct FRuntimeState;
 

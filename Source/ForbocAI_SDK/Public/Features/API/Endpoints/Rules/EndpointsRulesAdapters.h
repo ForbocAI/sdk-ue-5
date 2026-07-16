@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Features/API/Endpoints/Bridge/BridgeAdapters.h"
-#include "Features/API/Endpoints/Rules/Configuration/ConfigurationAdapters.h"
+#include "Features/API/Endpoints/Bridge/EndpointsBridgeAdapters.h"
+#include "Features/API/Endpoints/Rules/Configuration/RulesConfigurationAdapters.h"
 
 namespace APISlice::Detail {
 

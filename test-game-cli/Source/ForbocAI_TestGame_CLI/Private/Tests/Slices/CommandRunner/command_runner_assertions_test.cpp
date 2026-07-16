@@ -24,7 +24,7 @@ bool FTestGameCommandRunnerOutputAssertionsTest::RunTest(
   Command.Command = Data.commands.soulPrefix;
   FOutputAssertion Assertion;
   Assertion.Kind = EOutputAssertionKind::IncludesAlias;
-  Assertion.Alias = Data.aliases.soulTransaction;
+  Assertion.Value = Data.aliases.soulTransaction;
   Command.OutputAssertions.Add(Assertion);
 
   CommandRunner::FCommandAliasState Aliases;
@@ -38,30 +38,49 @@ bool FTestGameCommandRunnerOutputAssertionsTest::RunTest(
       Data.commands.soulExport, CommandRunner::FCommandAliasUpdate()};
 
   TestEqual(
-      "Captured value in output preserves success",
+      Data.messages.capturedValuePreservesSuccess,
       CommandRunner::ValidateOutputAssertions(Command, Observable, Aliases)
           .Status,
       ETranscriptStatus::Ok);
   TestEqual(
-      "Missing captured value converts success into failure",
+      Data.messages.missingCapturedValueFails,
       CommandRunner::ValidateOutputAssertions(Command, MissingValue, Aliases)
           .Status,
       ETranscriptStatus::Error);
+  FCommandSpec LiteralCommand;
+  LiteralCommand.Group = ECommandGroup::listMemory;
+  LiteralCommand.Command = Data.commands.soulExport;
+  FOutputAssertion LiteralAssertion;
+  LiteralAssertion.Kind = EOutputAssertionKind::IncludesText;
+  LiteralAssertion.Value = Data.commands.soulExport;
+  LiteralCommand.OutputAssertions.Add(LiteralAssertion);
   TestEqual(
-      "Missing alias converts success into failure",
+      Data.messages.requiredLiteralPreservesSuccess,
+      CommandRunner::ValidateOutputAssertions(LiteralCommand, Observable,
+                                              Aliases)
+          .Status,
+      ETranscriptStatus::Ok);
+  TestEqual(
+      Data.messages.missingLiteralFails,
+      CommandRunner::ValidateOutputAssertions(LiteralCommand, MissingValue,
+                                              Aliases)
+          .Status,
+      ETranscriptStatus::Error);
+  TestEqual(
+      Data.messages.missingAliasFails,
       CommandRunner::ValidateOutputAssertions(
           Command, Observable, CommandRunner::FCommandAliasState())
           .Status,
       ETranscriptStatus::Error);
   const TArray<FString> UnresolvedArgs{Data.aliases.soulTransaction};
   TestTrue(
-      "Unresolved generated identifiers are rejected before dispatch",
+      Data.messages.unresolvedIdentifierRejected,
       CommandRunner::FindUnresolvedCommandAlias(
           Data.commands.soulImport, UnresolvedArgs,
           CommandRunner::FCommandAliasState())
           .hasValue);
   TestFalse(
-      "Captured generated identifiers are dispatchable",
+      Data.messages.capturedIdentifierDispatchable,
       CommandRunner::FindUnresolvedCommandAlias(
           Data.commands.soulImport, UnresolvedArgs, Aliases)
           .hasValue);

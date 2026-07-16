@@ -1,19 +1,19 @@
 #pragma once
 
 #include "Features/Data/DataAdapters.h"
-#include "Features/Testing/Action/ActionAdapters.h"
+#include "Features/Testing/Fixture/FixtureAdapters.h"
 #include "Features/Testing/NPC/TestingNPCTypes.h"
 
 namespace Testing::NPC {
 
 /**
  * User Story: As an NPC reducer-test consumer, I need the complete semantic action registry so fixture behavior cannot drift when enum declarations change.
- * @fn inline const TArray<Testing::Action::TTestingActionKind<ENPCTestActionKind>> & NPCTestActionKinds()
+ * @fn inline const TArray<Testing::Fixture::TTestingActionKind<ENPCTestActionKind>> & NPCTestActionKinds()
  */
-inline const TArray<Testing::Action::TTestingActionKind<ENPCTestActionKind>> &
+inline const TArray<Testing::Fixture::TTestingActionKind<ENPCTestActionKind>> &
 NPCTestActionKinds() {
 #define FORBOC_NPC_TEST_ACTION_KIND(Name) {FString(TEXT(#Name)), ENPCTestActionKind::Name}
-  static const TArray<Testing::Action::TTestingActionKind<ENPCTestActionKind>>
+  static const TArray<Testing::Fixture::TTestingActionKind<ENPCTestActionKind>>
       Kinds = {
           FORBOC_NPC_TEST_ACTION_KIND(InfoReceived),
           FORBOC_NPC_TEST_ACTION_KIND(ActiveChanged),
@@ -48,7 +48,7 @@ ReadNPCTestAction(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
   const TSharedRef<FJsonObject> Value = Object.ToSharedRef();
   return {
-      Testing::Action::ReadTestingActionKind<ENPCTestActionKind>(
+      Testing::Fixture::ReadTestingActionKind<ENPCTestActionKind>(
           DataAdapters::ReadStringField(Value, TEXT("kind")),
           NPCTestActionKinds()),
       DataAdapters::ReadOptionalStringField(Value, TEXT("id")),

@@ -142,8 +142,8 @@ FString UForbocAIBlueprintLibrary::exportSoul(const FString &NpcId) {
  * @fn FString UForbocAIBlueprintLibrary::importSoul(const FString &TxId)
  */
 FString UForbocAIBlueprintLibrary::importSoul(const FString &TxId) {
-  FSoul Soul = Ops::importSoul(GetBPStore(), TxId);
-  return Soul.Id;
+  const FImportedNpc Npc = Ops::importNpcFromSoul(GetBPStore(), TxId);
+  return Npc.NpcId;
 }
 
 /**

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/Memory/Configuration/ConfigurationAdapters.h"
+#include "Features/Memory/Configuration/MemoryConfigurationAdapters.h"
 #include "Misc/Guid.h"
 
 namespace MemoryIdentityAdapters {

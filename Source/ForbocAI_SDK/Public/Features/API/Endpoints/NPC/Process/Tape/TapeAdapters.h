@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/API/Endpoints/NPC/Process/Configuration/ConfigurationAdapters.h"
+#include "Features/API/Endpoints/NPC/Process/Configuration/ProcessConfigurationAdapters.h"
 #include "Features/API/Transport/Query/TransportQueryAdapters.h"
 
 namespace APISlice::Detail {

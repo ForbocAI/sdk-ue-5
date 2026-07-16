@@ -7,7 +7,7 @@
 #include "Features/Ghost/GhostSlice.h"
 #include "Features/Memory/MemorySelectors.h"
 #include "Features/NPC/NPCSlice.h"
-#include "Features/Protocol/Logger/Configuration/ConfigurationAdapters.h"
+#include "Features/Protocol/Logger/Configuration/LoggerConfigurationAdapters.h"
 #include "Features/Soul/SoulSlice.h"
 #include "Features/Vector/VectorTypes.h"
 

@@ -31,6 +31,10 @@ struct FCLIMemoryFields {
   FString Memories;
 };
 
+struct FCLIMemorySyntax {
+  FString ListSeparator;
+};
+
 struct FCLIMemoryMessages {
   FString UnknownError;
   FString ListUsage;
@@ -62,6 +66,7 @@ struct FCLIMemoryState {
   FCLIMemoryLimits Limits;
   FCLIMemoryDefaults Defaults;
   FCLIMemoryFields Fields;
+  FCLIMemorySyntax Syntax;
   FCLIMemoryMessages Messages;
 };
 

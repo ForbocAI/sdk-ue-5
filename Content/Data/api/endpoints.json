@@ -41,7 +41,15 @@
     "getRulePresets": "getRulePresets",
     "postSoulExportPreparation": "postSoulExportPreparation",
     "postSoulExportConfirmation": "postSoulExportConfirmation",
-    "postSoulVerification": "postSoulVerification"
+    "postSoulVerification": "postSoulVerification",
+    "postSoulStorageUpload": "postSoulStorageUpload",
+    "getSoulStorageDownload": "getSoulStorageDownload",
+    "getSoulStorageVerification": "getSoulStorageVerification",
+    "postSoulStoragePreparation": "postSoulStoragePreparation",
+    "deleteSoulStoragePreparation": "deleteSoulStoragePreparation",
+    "postSoulStorageCommit": "postSoulStorageCommit",
+    "getSoulStorageCatalog": "getSoulStorageCatalog",
+    "getSoulStorageEntry": "getSoulStorageEntry"
   },
   "fields": {
     "ghostRunSessionId": "sessionId",

@@ -1,8 +1,8 @@
 {
   "soulVerify": {
     "response": {
-      "verifyValid": true,
-      "verifyReason": "signature_ok"
+      "valid": true,
+      "reason": "signature_ok"
     },
     "expected": {
       "valid": true,

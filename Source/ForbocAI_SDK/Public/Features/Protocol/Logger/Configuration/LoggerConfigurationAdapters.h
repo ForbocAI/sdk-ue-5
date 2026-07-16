@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Features/Data/DataAdapters.h"
-#include "Features/Protocol/Logger/Configuration/ConfigurationTypes.h"
+#include "Features/Protocol/Logger/Configuration/LoggerConfigurationTypes.h"
 
 namespace LoggerConfiguration {
 

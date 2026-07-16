@@ -3,7 +3,7 @@
 #include "Core/fp.hpp"
 #include "Features/API/Serialization/APISerializationAdapters.h"
 #include "Features/NPC/NPCTypes.h"
-#include "Features/Protocol/Configuration/ConfigurationAdapters.h"
+#include "Features/Protocol/Configuration/ProtocolConfigurationAdapters.h"
 #include "Features/Protocol/Requests/RequestsTypes.h"
 
 namespace rtk::detail {

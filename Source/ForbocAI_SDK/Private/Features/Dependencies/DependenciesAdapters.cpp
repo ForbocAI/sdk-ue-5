@@ -28,8 +28,8 @@ FDependenciesPaths dependenciesPaths() {
   check(Plugin.IsValid());
   const FString ThirdParty =
       Plugin->GetBaseDir() / Settings.ThirdPartyDirectory;
-  const FString Infrastructure =
-      FPaths::ProjectDir() / Settings.InfrastructureDirectory;
+  const FString Infrastructure = FPaths::ConvertRelativePathToFull(
+      FPaths::ProjectDir() / Settings.InfrastructureDirectory);
   return {ThirdParty,
           ThirdParty / Settings.IncludeDirectory,
           ThirdParty / Settings.SourceDirectory,
@@ -268,7 +268,7 @@ FDependenciesResult setupNativeDependenciesAdapter(const FDependenciesOptions &O
       Result.Memory.bOk
           ? FString::Format(*Settings.Readiness.DatabaseReadyFormat,
                             {DatabasePath})
-          : Settings.Readiness.DatabaseFailed;
+          : Database.left;
   Database.isLeft ? void() : Native::Sqlite::close(Database.right);
   return Result;
 }

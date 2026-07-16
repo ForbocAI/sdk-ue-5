@@ -13,7 +13,7 @@ struct FContractAliasRules {
 
 struct FContractOutputAssertion {
   FString Kind;
-  FString Alias;
+  FString Value;
 };
 
 struct FContractCommandSpec {

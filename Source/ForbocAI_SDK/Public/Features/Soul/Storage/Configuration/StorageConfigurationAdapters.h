@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Features/Data/DataAdapters.h"
-#include "Features/Soul/Storage/Configuration/ConfigurationTypes.h"
+#include "Features/Soul/Storage/Configuration/StorageConfigurationTypes.h"
 
 namespace SoulStorage::Configuration {
 

@@ -1,8 +1,8 @@
 #include "Core/rtk.hpp"
 #include "Features/Soul/SoulSelectors.h"
 #include "Features/Soul/SoulSlice.h"
-#include "Features/Soul/Storage/Configuration/ConfigurationAdapters.h"
-#include "Features/Soul/Storage/Provider/ProviderAdapters.h"
+#include "Features/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
+#include "Features/Soul/Storage/Provider/StorageProviderAdapters.h"
 #include "Features/Testing/Soul/TestingSoulAdapters.h"
 #include "Misc/AutomationTest.h"
 

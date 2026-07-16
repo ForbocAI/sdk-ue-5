@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/rtk.hpp"
-#include "Features/Protocol/Logger/Configuration/ConfigurationAdapters.h"
+#include "Features/Protocol/Logger/Configuration/LoggerConfigurationAdapters.h"
 #include "Features/Protocol/Logger/LoggerTypes.h"
 
 namespace LoggerAdapters {

@@ -2,7 +2,7 @@
 
 #include "Features/API/Serialization/Agent/AgentAdapters.h"
 #include "Features/API/Serialization/Memory/SerializationMemoryAdapters.h"
-#include "Features/API/Serialization/Soul/Configuration/ConfigurationAdapters.h"
+#include "Features/API/Serialization/Soul/Configuration/SerializationSoulConfigurationAdapters.h"
 
 namespace JsonInterop {
 

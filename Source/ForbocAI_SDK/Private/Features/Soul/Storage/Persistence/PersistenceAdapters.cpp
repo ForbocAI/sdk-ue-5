@@ -1,7 +1,7 @@
 #include "Features/Soul/Storage/Persistence/PersistenceAdapters.h"
 
-#include "Features/Soul/Storage/Configuration/ConfigurationAdapters.h"
-#include "Features/Soul/Storage/Serialization/SerializationAdapters.h"
+#include "Features/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
+#include "Features/Soul/Storage/Serialization/StorageSerializationAdapters.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformFileManager.h"
 #include "HAL/PlatformProcess.h"

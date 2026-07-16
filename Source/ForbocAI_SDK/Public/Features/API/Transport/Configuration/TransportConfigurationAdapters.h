@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/API/Transport/Configuration/ConfigurationTypes.h"
+#include "Features/API/Transport/Configuration/TransportConfigurationTypes.h"
 #include "Features/Data/DataAdapters.h"
 
 namespace APISlice::Transport {

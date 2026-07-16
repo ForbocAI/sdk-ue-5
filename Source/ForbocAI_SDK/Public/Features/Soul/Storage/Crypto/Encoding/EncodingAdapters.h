@@ -2,7 +2,7 @@
 
 #include "Core/fp.hpp"
 #include "CoreMinimal.h"
-#include "Features/Soul/Storage/Configuration/ConfigurationTypes.h"
+#include "Features/Soul/Storage/Configuration/StorageConfigurationTypes.h"
 #include "Misc/Base64.h"
 
 namespace SoulStorage::Crypto::Encoding {

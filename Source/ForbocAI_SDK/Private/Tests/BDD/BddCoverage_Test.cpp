@@ -91,7 +91,10 @@ void FBddCoverageSpec::Define() {
       TSet<FString> ExpectedApi;
       TArray<FString> ApiEndpointFiles = FindFiles(FPaths::Combine(SourceDir, TEXT("Public/Features/API/Endpoints")), TEXT(".h"));
       for (const FString& File : ApiEndpointFiles) {
-          ExtractRegexMatches(ReadFile(File), TEXT("inline\\s+Thunk<[^>]+>\\s+(\\w+)\\s*\\("), 1, ExpectedApi);
+          ExtractRegexMatches(
+              ReadFile(File),
+              TEXT("inline\\s+Thunk<[^\\r\\n]+>\\s+(?:\\r?\\n\\s*)?(\\w+)\\s*\\("),
+              1, ExpectedApi);
       }
       CheckCoverage(TEXT("api"), ExpectedApi);
       

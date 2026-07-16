@@ -55,11 +55,11 @@ HandlerResult HandleSoul(rtk::EnhancedStore<FRuntimeState> &Store,
              ? (Args.Num() < State.Limits.SingleArgumentCount
                     ? just(SoulFailure(State.Messages.ImportUsage))
                     : [&]() -> HandlerResult {
-                        const FSoul Imported =
-                            Ops::importSoul(Store, Args[First]);
+                        const FImportedNpc Imported =
+                            Ops::importNpcFromSoul(Store, Args[First]);
                         logCliMessage(formatCliMessage(
-                            State.Messages.Imported, Imported.Id));
-                        return just(SoulSuccess(Imported.Id));
+                            State.Messages.Imported, Imported.NpcId));
+                        return just(SoulSuccess(Imported.NpcId));
                       }())
          : CommandKey == Roles.SoulList
              ? [&]() -> HandlerResult {

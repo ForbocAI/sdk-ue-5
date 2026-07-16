@@ -1,19 +1,19 @@
 #pragma once
 
 #include "Features/Data/DataAdapters.h"
-#include "Features/Testing/Action/ActionAdapters.h"
+#include "Features/Testing/Fixture/FixtureAdapters.h"
 #include "Features/Testing/Bridge/TestingBridgeTypes.h"
 
 namespace Testing::Bridge {
 
 /**
  * User Story: As a bridge reducer-test consumer, I need the complete semantic action registry so fixture behavior cannot drift when enum declarations change.
- * @fn inline const TArray<Testing::Action::TTestingActionKind<EBridgeTestActionKind>> & BridgeTestActionKinds()
+ * @fn inline const TArray<Testing::Fixture::TTestingActionKind<EBridgeTestActionKind>> & BridgeTestActionKinds()
  */
-inline const TArray<Testing::Action::TTestingActionKind<EBridgeTestActionKind>> &
+inline const TArray<Testing::Fixture::TTestingActionKind<EBridgeTestActionKind>> &
 BridgeTestActionKinds() {
 #define FORBOC_BRIDGE_TEST_ACTION_KIND(Name) {FString(TEXT(#Name)), EBridgeTestActionKind::Name}
-  static const TArray<Testing::Action::TTestingActionKind<
+  static const TArray<Testing::Fixture::TTestingActionKind<
       EBridgeTestActionKind>> Kinds = {
       FORBOC_BRIDGE_TEST_ACTION_KIND(ValidationRequested),
       FORBOC_BRIDGE_TEST_ACTION_KIND(ValidationSucceeded),
@@ -47,7 +47,7 @@ ReadBridgeTestAction(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
   const TSharedRef<FJsonObject> Value = Object.ToSharedRef();
   return {
-      Testing::Action::ReadTestingActionKind<EBridgeTestActionKind>(
+      Testing::Fixture::ReadTestingActionKind<EBridgeTestActionKind>(
           DataAdapters::ReadStringField(Value, TEXT("kind")),
           BridgeTestActionKinds()),
       func::map_array<TSharedPtr<FJsonObject>, FDirectiveRuleSet>(

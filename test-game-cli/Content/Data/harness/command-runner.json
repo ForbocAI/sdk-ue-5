@@ -38,8 +38,15 @@
   "messages": {
     "unresolvedAlias": "Command dependency unavailable for {0}: alias {1} was not captured by a successful prerequisite.",
     "outputAssertionAliasMissing": "Output assertion failed for {0}: alias {1} was not captured.",
-    "outputAssertionValueMissing": "Output assertion failed for {0}: output did not include the value captured as {1}.",
+    "outputAssertionValueMissing": "Output assertion failed for {0}: output did not include required value {1}.",
     "outputAssertionKindUnsupported": "Output assertion failed for {0}: the assertion kind is unsupported.",
-    "outputAssertionFailure": "{0}\nCommand output:\n{1}"
+    "outputAssertionFailure": "{0}\nCommand output:\n{1}",
+    "capturedValuePreservesSuccess": "Captured value in output preserves success",
+    "missingCapturedValueFails": "Missing captured value converts success into failure",
+    "requiredLiteralPreservesSuccess": "Required literal evidence preserves success",
+    "missingLiteralFails": "Missing literal evidence converts success into failure",
+    "missingAliasFails": "Missing alias converts success into failure",
+    "unresolvedIdentifierRejected": "Unresolved generated identifiers are rejected before dispatch",
+    "capturedIdentifierDispatchable": "Captured generated identifiers are dispatchable"
   }
 }

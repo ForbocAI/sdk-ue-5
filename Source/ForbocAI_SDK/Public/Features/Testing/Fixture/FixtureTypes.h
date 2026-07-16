@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-namespace Testing::Action {
+namespace Testing::Fixture {
 
 /**
  * User Story: As a fixture decoder, I need each authored action name paired
@@ -14,4 +14,4 @@ template <typename TKind> struct TTestingActionKind {
   TKind Kind;
 };
 
-} // namespace Testing::Action
+} // namespace Testing::Fixture

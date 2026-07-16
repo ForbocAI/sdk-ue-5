@@ -19,10 +19,6 @@ struct FCLISoulSyntax {
   FString ListSeparator;
 };
 
-struct FCLISoulTimeouts {
-  double ProviderOperationSeconds;
-};
-
 struct FCLISoulMessages {
   FString ExportUsage;
   FString Exported;
@@ -40,7 +36,6 @@ struct FCLISoulMessages {
 struct FCLISoulState {
   FCLISoulLimits Limits;
   FCLISoulSyntax Syntax;
-  FCLISoulTimeouts Timeouts;
   FCLISoulMessages Messages;
 };
 

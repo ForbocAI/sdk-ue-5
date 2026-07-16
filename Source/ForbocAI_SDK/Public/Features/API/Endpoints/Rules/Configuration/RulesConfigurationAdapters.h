@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/API/Endpoints/Rules/Configuration/ConfigurationTypes.h"
+#include "Features/API/Endpoints/Rules/Configuration/RulesConfigurationTypes.h"
 #include "Features/Data/DataAdapters.h"
 
 namespace APISlice::RulesConfiguration {

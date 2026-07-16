@@ -18,7 +18,7 @@
   "nodeOnlyCommandKeys": ["setup_check"],
   "unsupportedBrowserCommandKeys": ["setup"],
   "unsupportedBrowserBehavior": "unsupported",
-  "expectedNodeCommandCount": 36,
+  "expectedNodeCommandCount": 34,
   "invocations": [
     {
       "name": "nested NPC process command",

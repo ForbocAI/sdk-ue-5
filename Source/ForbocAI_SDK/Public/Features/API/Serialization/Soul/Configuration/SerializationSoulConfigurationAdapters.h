@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/API/Serialization/Soul/Configuration/ConfigurationTypes.h"
+#include "Features/API/Serialization/Soul/Configuration/SerializationSoulConfigurationTypes.h"
 #include "Features/Data/DataAdapters.h"
 
 namespace JsonInterop::SoulConfiguration {

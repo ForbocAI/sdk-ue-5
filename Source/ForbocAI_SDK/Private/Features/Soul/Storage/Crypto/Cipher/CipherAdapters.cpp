@@ -1,7 +1,7 @@
 #include "Features/Soul/Storage/Crypto/Cipher/CipherAdapters.h"
 
 #include "Core/fp.hpp"
-#include "Features/Soul/Storage/Configuration/ConfigurationAdapters.h"
+#include "Features/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
 #include "Features/Soul/Storage/Crypto/Encoding/EncodingAdapters.h"
 
 #define UI OPENSSL_UI

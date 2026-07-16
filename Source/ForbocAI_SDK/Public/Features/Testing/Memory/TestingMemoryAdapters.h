@@ -1,19 +1,19 @@
 #pragma once
 
 #include "Features/Data/DataAdapters.h"
-#include "Features/Testing/Action/ActionAdapters.h"
+#include "Features/Testing/Fixture/FixtureAdapters.h"
 #include "Features/Testing/Memory/TestingMemoryTypes.h"
 
 namespace Testing::Memory {
 
 /**
  * User Story: As a memory reducer-test consumer, I need the complete semantic action registry so fixture behavior cannot drift when enum declarations change.
- * @fn inline const TArray<Testing::Action::TTestingActionKind<EMemoryTestActionKind>> & MemoryTestActionKinds()
+ * @fn inline const TArray<Testing::Fixture::TTestingActionKind<EMemoryTestActionKind>> & MemoryTestActionKinds()
  */
-inline const TArray<Testing::Action::TTestingActionKind<EMemoryTestActionKind>> &
+inline const TArray<Testing::Fixture::TTestingActionKind<EMemoryTestActionKind>> &
 MemoryTestActionKinds() {
 #define FORBOC_MEMORY_TEST_ACTION_KIND(Name) {FString(TEXT(#Name)), EMemoryTestActionKind::Name}
-  static const TArray<Testing::Action::TTestingActionKind<
+  static const TArray<Testing::Fixture::TTestingActionKind<
       EMemoryTestActionKind>> Kinds = {
       FORBOC_MEMORY_TEST_ACTION_KIND(StoreStarted),
       FORBOC_MEMORY_TEST_ACTION_KIND(StoreSucceeded),
@@ -48,7 +48,7 @@ ReadMemoryTestAction(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
   const TSharedRef<FJsonObject> Value = Object.ToSharedRef();
   return {
-      Testing::Action::ReadTestingActionKind<EMemoryTestActionKind>(
+      Testing::Fixture::ReadTestingActionKind<EMemoryTestActionKind>(
           DataAdapters::ReadStringField(Value, TEXT("kind")),
           MemoryTestActionKinds()),
       func::map_array<TSharedPtr<FJsonObject>, FMemoryItem>(

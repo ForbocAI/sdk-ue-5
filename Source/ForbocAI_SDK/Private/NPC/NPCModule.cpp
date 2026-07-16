@@ -8,7 +8,7 @@
 #include "Misc/Guid.h"
 #include "Features/Config/ConfigAdapters.h"
 #include "Features/Soul/SoulAdapters.h"
-#include "Features/Soul/Storage/Configuration/ConfigurationAdapters.h"
+#include "Features/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
 #include "Features/Soul/SoulAdapters.h"
 #include "Dom/JsonObject.h"
 #include "Policies/CondensedJsonPrintPolicy.h"

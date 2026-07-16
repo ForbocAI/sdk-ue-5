@@ -12,7 +12,7 @@
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Protocol/Logger/LoggerListeners.h"
 #include "Features/NPC/NPCListeners.h"
-#include "Features/Runtime/RuntimeTypes.h"
+#include "Features/State/StateTypes.h"
 #include "Features/Soul/SoulSlice.h"
 #include "Features/Vector/VectorSlice.h"
 

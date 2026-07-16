@@ -1,11 +1,11 @@
-#include "Features/Soul/Storage/StorageAdapters.h"
+#include "Features/Soul/Storage/SoulStorageAdapters.h"
 
-#include "Features/Soul/Storage/Configuration/ConfigurationAdapters.h"
+#include "Features/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
 #include "Features/Soul/Storage/Crypto/Cipher/CipherAdapters.h"
 #include "Features/Soul/Storage/Crypto/DataItem/DataItemAdapters.h"
 #include "Features/Soul/Storage/Crypto/Wallet/WalletAdapters.h"
 #include "Features/Soul/Storage/Persistence/PersistenceAdapters.h"
-#include "Features/Soul/Storage/Serialization/SerializationAdapters.h"
+#include "Features/Soul/Storage/Serialization/StorageSerializationAdapters.h"
 #include "Misc/DateTime.h"
 #include "Misc/ScopeLock.h"
 

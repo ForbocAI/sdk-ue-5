@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Core/fp.hpp"
-#include "Features/API/Endpoints/NPC/Process/Configuration/ConfigurationAdapters.h"
+#include "Features/API/Endpoints/NPC/Process/Configuration/ProcessConfigurationAdapters.h"
 #include "Features/API/Serialization/APISerializationAdapters.h"
-#include "Features/API/Serialization/Memory/Configuration/ConfigurationAdapters.h"
+#include "Features/API/Serialization/Memory/Configuration/SerializationMemoryConfigurationAdapters.h"
 #include "Features/Protocol/Handlers/HandlersAdapters.h"
 
 namespace rtk {

@@ -1,0 +1,9 @@
+{
+  "timing": {
+    "unboundedTimeoutSeconds": 0.0,
+    "pollIntervalSeconds": 0.05
+  },
+  "messages": {
+    "timeout": "Timed out waiting for async result"
+  }
+}

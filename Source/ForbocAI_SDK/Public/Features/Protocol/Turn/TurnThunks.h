@@ -2,7 +2,7 @@
 
 #include "Features/API/Endpoints/NPC/NPCApi.h"
 #include "Features/Memory/Local/LocalAdapters.h"
-#include "Features/Protocol/Configuration/ConfigurationAdapters.h"
+#include "Features/Protocol/Configuration/ProtocolConfigurationAdapters.h"
 #include "Features/Protocol/Instructions/IdentifyActor/IdentifyActorThunks.h"
 #include "Features/Protocol/Instructions/QueryVector/QueryVectorThunks.h"
 #include "Features/Protocol/Instructions/Decision/DecisionThunks.h"

@@ -1,6 +1,6 @@
 #include "Features/Memory/Local/Storage/Sqlite/Connection/ConnectionAdapters.h"
 
-#include "Features/Memory/Configuration/ConfigurationAdapters.h"
+#include "Features/Memory/Configuration/MemoryConfigurationAdapters.h"
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
 
@@ -71,6 +71,13 @@ func::Either<FString, bool> deleteSidecars(const FString &Path, int32 Index) {
                    });
 }
 
+#if WITH_FORBOC_SQLITE_VEC
+/** User Story: As a native SQLite caller, I need the engine's exact diagnostic attached to the SDK error so setup failures remain actionable. @fn FString sqliteError(sqlite3 *Database, const FString &Prefix) */
+FString sqliteError(sqlite3 *Database, const FString &Prefix) {
+  return Prefix + UTF8_TO_TCHAR(sqlite3_errmsg(Database));
+}
+#endif
+
 } // namespace
 
 /** User Story: As local memory setup, I need database creation to return its exact failure so initialization cannot report a false success. @fn func::Either<FString, DB> open(const FString &Path) */
@@ -97,37 +104,73 @@ func::Either<FString, DB> open(const FString &Path) {
                   sqlite3_open(PathUtf8.Get(), &Database) == SQLITE_OK &&
                   Database;
               return !bOpened
-                         ? (Database
-                                ? (sqlite3_close(Database), void())
-                                : void(),
-                            func::make_left<FString, DB>(
-                                Data.Errors.SqliteOpenFailed + ResolvedPath))
+                         ? [&]() {
+                             const FString Error =
+                                 Database
+                                     ? sqliteError(
+                                           Database,
+                                           Data.Errors.SqliteOpenFailed)
+                                     : Data.Errors.SqliteOpenFailed +
+                                           ResolvedPath;
+                             Database ? (sqlite3_close(Database), void())
+                                      : void();
+                             return func::make_left<FString, DB>(Error);
+                           }()
                          : [&]() {
+                             char *ExtensionError = nullptr;
                              const bool bExtension =
-                                 sqlite3_vec_init(Database, nullptr,
+                                 sqlite3_vec_init(Database, &ExtensionError,
                                                   nullptr) == SQLITE_OK;
                              return !bExtension
-                                        ? (sqlite3_close(Database),
-                                           func::make_left<FString, DB>(
-                                               Data.Errors
-                                                   .SqliteExtensionFailed))
+                                        ? [&]() {
+                                            const FString Error =
+                                                Data.Errors
+                                                    .SqliteExtensionFailed +
+                                                (ExtensionError
+                                                     ? UTF8_TO_TCHAR(
+                                                           ExtensionError)
+                                                     : sqliteError(
+                                                           Database,
+                                                           FString()));
+                                            ExtensionError
+                                                ? sqlite3_free(ExtensionError)
+                                                : void();
+                                            sqlite3_close(Database);
+                                            return func::make_left<FString, DB>(
+                                                Error);
+                                          }()
                                         : [&]() {
                                             const FTCHARToUTF8 SchemaUtf8(
                                                 *Data.Storage.Sqlite
                                                      .CreateVectorTable);
+                                            char *SchemaError = nullptr;
                                             const bool bSchema =
                                                 sqlite3_exec(
                                                     Database,
                                                     SchemaUtf8.Get(), nullptr,
-                                                    nullptr, nullptr) ==
+                                                    nullptr, &SchemaError) ==
                                                 SQLITE_OK;
                                             return !bSchema
-                                                       ? (sqlite3_close(
-                                                              Database),
-                                                          func::make_left<
-                                                              FString, DB>(
-                                                              Data.Errors
-                                                                  .SqliteSchemaFailed))
+                                                       ? [&]() {
+                                                           const FString Error =
+                                                               Data.Errors
+                                                                   .SqliteSchemaFailed +
+                                                               (SchemaError
+                                                                    ? UTF8_TO_TCHAR(
+                                                                          SchemaError)
+                                                                    : sqliteError(
+                                                                          Database,
+                                                                          FString()));
+                                                           SchemaError
+                                                               ? sqlite3_free(
+                                                                     SchemaError)
+                                                               : void();
+                                                           sqlite3_close(
+                                                               Database);
+                                                           return func::make_left<
+                                                               FString, DB>(
+                                                               Error);
+                                                         }()
                                                        : func::make_right<
                                                              FString, DB>(
                                                              reinterpret_cast<

@@ -145,5 +145,17 @@ inline const FFeatureState &selectFeatureState(const RootState &State) {
             )
 
 
+class MapMaintenanceTests(unittest.TestCase):
+    def test_removes_historical_changelog_from_forward_contract(self) -> None:
+        source = "# SDK Map\n\n## 11. Maintenance Rule\n\nKeep parity.\n\n## 12. Change Log\n\nPast run.\n"
+
+        result = PARITY.strip_historical_sections(source)
+
+        self.assertEqual(
+            result,
+            "# SDK Map\n\n## 11. Maintenance Rule\n\nKeep parity.\n",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

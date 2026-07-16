@@ -18,6 +18,8 @@ inline FCLIMemoryState readCliMemoryState() {
       DataAdapters::ReadObjectField(Source, TEXT("defaults"));
   const TSharedRef<FJsonObject> Fields =
       DataAdapters::ReadObjectField(Source, TEXT("fields"));
+  const TSharedRef<FJsonObject> Syntax =
+      DataAdapters::ReadObjectField(Source, TEXT("syntax"));
   const TSharedRef<FJsonObject> Messages =
       DataAdapters::ReadObjectField(Source, TEXT("messages"));
   return {
@@ -37,6 +39,7 @@ inline FCLIMemoryState readCliMemoryState() {
        DataAdapters::ReadStringField(Fields, TEXT("type")),
        DataAdapters::ReadStringField(Fields, TEXT("importance")),
        DataAdapters::ReadStringField(Fields, TEXT("memories"))},
+      {DataAdapters::ReadStringField(Syntax, TEXT("listSeparator"))},
       {DataAdapters::ReadStringField(Messages, TEXT("unknownError")),
        DataAdapters::ReadStringField(Messages, TEXT("listUsage")),
        DataAdapters::ReadStringField(Messages, TEXT("listing")),

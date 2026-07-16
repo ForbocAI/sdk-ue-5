@@ -1,7 +1,7 @@
 #include "Features/Soul/Storage/Crypto/DataItem/DataItemAdapters.h"
 
 #include "Core/fp.hpp"
-#include "Features/Soul/Storage/Configuration/ConfigurationAdapters.h"
+#include "Features/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
 #include "Features/Soul/Storage/Crypto/Encoding/EncodingAdapters.h"
 #include "Features/Soul/Storage/Crypto/Wallet/WalletAdapters.h"
 

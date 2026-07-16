@@ -1,11 +1,11 @@
 #pragma once
 
 #include "Features/Data/DataAdapters.h"
-#include "Features/Testing/API/Codec/Bridge/BridgeAdapters.h"
-#include "Features/Testing/API/Codec/Process/ProcessAdapters.h"
+#include "Features/Testing/API/Codec/Bridge/CodecBridgeAdapters.h"
+#include "Features/Testing/API/Codec/Process/CodecProcessAdapters.h"
 #include "Features/Testing/API/Codec/Protocol/ProtocolAdapters.h"
-#include "Features/Testing/API/Codec/Rules/RulesAdapters.h"
-#include "Features/Testing/API/Codec/Soul/SoulAdapters.h"
+#include "Features/Testing/API/Codec/Rules/CodecRulesAdapters.h"
+#include "Features/Testing/API/Codec/Soul/CodecSoulAdapters.h"
 
 namespace Testing::API::Codec {
 

@@ -4,7 +4,7 @@
 #include "Features/CLI/CLITypes.h"
 #include "Features/Dependencies/DependenciesTypes.h"
 #include "Features/Directive/DirectiveTypes.h"
-#include "Features/Ghost/State/StateTypes.h"
+#include "Features/Ghost/State/GhostStateTypes.h"
 #include "Features/Memory/MemoryTypes.h"
 #include "Features/NPC/NPCTypes.h"
 #include "Features/Soul/SoulTypes.h"

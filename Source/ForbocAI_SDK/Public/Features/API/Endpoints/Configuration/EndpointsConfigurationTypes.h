@@ -50,6 +50,14 @@ struct FEndpointNameData {
   FString PostSoulExportPreparation;
   FString PostSoulExportConfirmation;
   FString PostSoulVerification;
+  FString PostSoulStorageUpload;
+  FString GetSoulStorageDownload;
+  FString GetSoulStorageVerification;
+  FString PostSoulStoragePreparation;
+  FString DeleteSoulStoragePreparation;
+  FString PostSoulStorageCommit;
+  FString GetSoulStorageCatalog;
+  FString GetSoulStorageEntry;
 };
 
 struct FEndpointFieldData {

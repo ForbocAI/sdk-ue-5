@@ -6,10 +6,10 @@
 #include "Features/Errors/ErrorsAdapters.h"
 #include "Features/Memory/MemorySelectors.h"
 #include "Features/NPC/NPCSelectors.h"
-#include "Features/Runtime/RuntimeTypes.h"
+#include "Features/State/StateTypes.h"
 #include "Features/Soul/SoulAdapters.h"
 #include "Features/Soul/SoulSelectors.h"
-#include "Features/Soul/Storage/Configuration/ConfigurationAdapters.h"
+#include "Features/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
 
 namespace rtk {
 namespace {

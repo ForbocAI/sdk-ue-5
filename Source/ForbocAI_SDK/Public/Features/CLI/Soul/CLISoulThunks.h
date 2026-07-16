@@ -16,17 +16,7 @@ template <typename RuntimeState = FRuntimeState>
 inline FSoulExportResult exportSoul(rtk::EnhancedStore<RuntimeState> &Store,
                                     const FString &NpcId) {
   return AsyncAdapters::waitForResult(
-      Store.dispatch(rtk::exportSoulThunk()(NpcId)),
-      ForbocAI::CLI::Soul::soulProviderOperationTimeoutSeconds());
-}
-
-/** User Story: As a features cli soul consumer, I need to invoke import soul through a stable signature so the features cli soul workflow remains explicit and composable. @fn template <typename RuntimeState = FRuntimeState> inline FSoul importSoul(rtk::EnhancedStore<RuntimeState> &Store, const FString &TxId) */
-template <typename RuntimeState = FRuntimeState>
-inline FSoul importSoul(rtk::EnhancedStore<RuntimeState> &Store,
-                        const FString &TxId) {
-  return AsyncAdapters::waitForResult(
-      Store.dispatch(rtk::importSoulThunk()(TxId)),
-      ForbocAI::CLI::Soul::soulProviderOperationTimeoutSeconds());
+      Store.dispatch(rtk::exportSoulThunk()(NpcId)));
 }
 
 /** User Story: As a features cli soul consumer, I need to invoke list souls through a stable signature so the features cli soul workflow remains explicit and composable. @fn template <typename RuntimeState = FRuntimeState> inline TArray<FSoulListItem> listSouls(rtk::EnhancedStore<RuntimeState> &Store, int32 Limit = 50) */
@@ -42,8 +32,7 @@ template <typename RuntimeState = FRuntimeState>
 inline FSoulVerifyResult verifySoul(rtk::EnhancedStore<RuntimeState> &Store,
                                     const FString &TxId) {
   return AsyncAdapters::waitForResult(
-      Store.dispatch(rtk::verifySoulThunk()(TxId)),
-      ForbocAI::CLI::Soul::soulProviderOperationTimeoutSeconds());
+      Store.dispatch(rtk::verifySoulThunk()(TxId)));
 }
 
 } // namespace Ops

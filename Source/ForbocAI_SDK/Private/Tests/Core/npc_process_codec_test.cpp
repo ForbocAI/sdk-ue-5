@@ -1,6 +1,6 @@
 #include "CoreMinimal.h"
 #include "Features/API/Endpoints/NPC/Process/NPCProcessAdapters.h"
-#include "Features/Testing/API/Process/ProcessAdapters.h"
+#include "Features/Testing/API/Process/APIProcessAdapters.h"
 #include "Misc/AutomationTest.h"
 
 using namespace Testing::API::Process;

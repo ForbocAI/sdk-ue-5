@@ -44,7 +44,14 @@
   X(FString, outputAssertionAliasMissing)                                  \
   X(FString, outputAssertionValueMissing)                                  \
   X(FString, outputAssertionKindUnsupported)                               \
-  X(FString, outputAssertionFailure)
+  X(FString, outputAssertionFailure)                                       \
+  X(FString, capturedValuePreservesSuccess)                                \
+  X(FString, missingCapturedValueFails)                                    \
+  X(FString, requiredLiteralPreservesSuccess)                              \
+  X(FString, missingLiteralFails)                                          \
+  X(FString, missingAliasFails)                                            \
+  X(FString, unresolvedIdentifierRejected)                                 \
+  X(FString, capturedIdentifierDispatchable)
 
 namespace TestGame {
 namespace CommandRunner {

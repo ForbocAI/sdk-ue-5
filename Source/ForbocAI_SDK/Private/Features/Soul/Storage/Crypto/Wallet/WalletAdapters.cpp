@@ -1,6 +1,6 @@
 #include "Features/Soul/Storage/Crypto/Wallet/WalletAdapters.h"
 
-#include "Features/Soul/Storage/Configuration/ConfigurationAdapters.h"
+#include "Features/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
 #include "Features/Soul/Storage/Crypto/Encoding/EncodingAdapters.h"
 
 #define UI OPENSSL_UI

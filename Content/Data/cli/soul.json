@@ -10,9 +10,6 @@
   "syntax": {
     "listSeparator": "\n"
   },
-  "timeouts": {
-    "providerOperationSeconds": 660
-  },
   "messages": {
     "exportUsage": "Usage: soul_export <npcId>",
     "exported": "Soul exported: {0}",

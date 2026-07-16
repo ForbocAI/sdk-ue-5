@@ -4,7 +4,7 @@
 #include "Features/Soul/SoulActions.h"
 #include "Features/Soul/SoulThunks.h"
 #include "Features/Soul/SoulTypes.h"
-#include "Features/Soul/Storage/Configuration/ConfigurationAdapters.h"
+#include "Features/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
 
 namespace SoulSlice {
 

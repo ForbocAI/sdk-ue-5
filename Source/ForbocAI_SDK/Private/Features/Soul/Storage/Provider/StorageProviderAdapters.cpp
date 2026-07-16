@@ -1,6 +1,6 @@
-#include "Features/Soul/Storage/Provider/ProviderAdapters.h"
+#include "Features/Soul/Storage/Provider/StorageProviderAdapters.h"
 
-#include "Features/Soul/Storage/Configuration/ConfigurationAdapters.h"
+#include "Features/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
 #include "Internationalization/Regex.h"
 
 namespace SoulStorage::Provider {

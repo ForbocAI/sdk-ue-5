@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Features/Data/DataAdapters.h"
-#include "Features/Memory/Configuration/ConfigurationTypes.h"
+#include "Features/Memory/Configuration/MemoryConfigurationTypes.h"
 
 namespace MemoryConfiguration {
 

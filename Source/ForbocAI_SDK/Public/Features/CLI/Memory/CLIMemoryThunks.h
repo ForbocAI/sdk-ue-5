@@ -2,7 +2,7 @@
 
 #include "Core/rtk.hpp"
 #include "Features/Async/AsyncAdapters.h"
-#include "Features/Memory/Configuration/ConfigurationAdapters.h"
+#include "Features/Memory/Configuration/MemoryConfigurationAdapters.h"
 #include "Features/Memory/MemoryThunks.h"
 
 struct FRuntimeState;

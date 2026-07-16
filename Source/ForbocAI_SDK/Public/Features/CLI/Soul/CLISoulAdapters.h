@@ -15,8 +15,6 @@ inline FCLISoulState readCliSoulState() {
       DataAdapters::ReadObjectField(Source, TEXT("limits"));
   const TSharedRef<FJsonObject> Syntax =
       DataAdapters::ReadObjectField(Source, TEXT("syntax"));
-  const TSharedRef<FJsonObject> Timeouts =
-      DataAdapters::ReadObjectField(Source, TEXT("timeouts"));
   const TSharedRef<FJsonObject> Messages =
       DataAdapters::ReadObjectField(Source, TEXT("messages"));
   return {
@@ -27,8 +25,6 @@ inline FCLISoulState readCliSoulState() {
        DataAdapters::ReadNumberField(Limits, TEXT("secondArgumentIndex")),
        DataAdapters::ReadNumberField(Limits, TEXT("defaultListLimit"))},
       {DataAdapters::ReadStringField(Syntax, TEXT("listSeparator"))},
-      {DataAdapters::ReadFloatField(Timeouts,
-                                    TEXT("providerOperationSeconds"))},
       {DataAdapters::ReadStringField(Messages, TEXT("exportUsage")),
        DataAdapters::ReadStringField(Messages, TEXT("exported")),
        DataAdapters::ReadStringField(Messages, TEXT("importUsage")),
@@ -40,13 +36,6 @@ inline FCLISoulState readCliSoulState() {
        DataAdapters::ReadStringField(Messages, TEXT("verifyUsage")),
        DataAdapters::ReadStringField(Messages, TEXT("verificationValid")),
        DataAdapters::ReadStringField(Messages, TEXT("verificationInvalid"))}};
-}
-
-/** User Story: As a CLI Soul operation, I need the authored permanent-storage budget resolved through one immutable adapter so export, import, and verification cannot drift. @fn inline double soulProviderOperationTimeoutSeconds() */
-inline double soulProviderOperationTimeoutSeconds() {
-  static const double TimeoutSeconds =
-      readCliSoulState().Timeouts.ProviderOperationSeconds;
-  return TimeoutSeconds;
 }
 
 /** User Story: As a CLI Soul consumer, I need list limits decoded through a stable signature so optional input has one authored default. @fn inline int32 decodeSoulListLimit(const TArray<FString> &Args, const FCLISoulState &State) */

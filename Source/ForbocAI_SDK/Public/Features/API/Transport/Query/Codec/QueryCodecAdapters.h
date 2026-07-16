@@ -90,23 +90,4 @@ inline ThunkAction<Result, FRuntimeState> MakePostRawWithCodec(
       rtk::DefinitionType::mutation);
 }
 
-/**
- * User Story: As read-oriented verify calls with no typed request body, I need raw payload transport while retaining RTK query cache semantics.
- * @fn template <typename Result> inline ThunkAction<Result, FRuntimeState> MakePostRawQueryWithCodec( const FString &EndpointName, const FString &Url, const FString &PayloadJson, std::function<bool(const FString &, Result &)> Decoder, const TArray<FApiEndpointTag> &Tags = TArray<FApiEndpointTag>())
- */
-template <typename Result>
-inline ThunkAction<Result, FRuntimeState> MakePostRawQueryWithCodec(
-    const FString &EndpointName, const FString &Url,
-    const FString &PayloadJson,
-    std::function<bool(const FString &, Result &)> Decoder,
-    const TArray<FApiEndpointTag> &Tags = TArray<FApiEndpointTag>()) {
-  const Transport::FTransportQueryData &Data =
-      Transport::transportQueryData();
-  return MakeEndpoint<FString, Result>(
-      EndpointName, PayloadJson, [Url, Decoder, Data](const FString &Arg) {
-        return DecodeQueryReturnValue<Result>(
-            ExecuteApiBaseQuery<FString>(Data.Methods.Post, Url, Arg), Decoder);
-      }, Tags, TArray<FApiEndpointTag>(), rtk::DefinitionType::query);
-}
-
 } // namespace APISlice::Detail

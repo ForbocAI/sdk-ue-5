@@ -1,6 +1,6 @@
 #include "Features/Memory/Local/Storage/Sqlite/Query/SqliteQueryAdapters.h"
 
-#include "Features/Memory/Configuration/ConfigurationAdapters.h"
+#include "Features/Memory/Configuration/MemoryConfigurationAdapters.h"
 #include "Features/Memory/Local/Storage/Sqlite/Codec/CodecAdapters.h"
 #include "Features/Memory/Local/Storage/Sqlite/Statement/StatementAdapters.h"
 

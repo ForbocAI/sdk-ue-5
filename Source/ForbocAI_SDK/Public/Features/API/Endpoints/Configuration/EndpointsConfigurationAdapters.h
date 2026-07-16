@@ -2,7 +2,7 @@
 
 #include "Core/fp.hpp"
 #include "Core/rtk.hpp"
-#include "Features/API/Endpoints/Configuration/ConfigurationTypes.h"
+#include "Features/API/Endpoints/Configuration/EndpointsConfigurationTypes.h"
 #include "Features/Config/ConfigAdapters.h"
 #include "Features/Data/DataAdapters.h"
 #include "GenericPlatform/GenericPlatformHttp.h"
@@ -75,7 +75,18 @@ inline FEndpointConfigurationData readEndpointConfigurationData() {
                                      TEXT("postSoulExportPreparation")),
        DataAdapters::ReadStringField(Names,
                                      TEXT("postSoulExportConfirmation")),
-       DataAdapters::ReadStringField(Names, TEXT("postSoulVerification"))},
+       DataAdapters::ReadStringField(Names, TEXT("postSoulVerification")),
+       DataAdapters::ReadStringField(Names, TEXT("postSoulStorageUpload")),
+       DataAdapters::ReadStringField(Names, TEXT("getSoulStorageDownload")),
+       DataAdapters::ReadStringField(Names,
+                                     TEXT("getSoulStorageVerification")),
+       DataAdapters::ReadStringField(Names,
+                                     TEXT("postSoulStoragePreparation")),
+       DataAdapters::ReadStringField(Names,
+                                     TEXT("deleteSoulStoragePreparation")),
+       DataAdapters::ReadStringField(Names, TEXT("postSoulStorageCommit")),
+       DataAdapters::ReadStringField(Names, TEXT("getSoulStorageCatalog")),
+       DataAdapters::ReadStringField(Names, TEXT("getSoulStorageEntry"))},
       {DataAdapters::ReadStringField(Fields, TEXT("ghostRunSessionId")),
        DataAdapters::ReadStringField(Fields, TEXT("ghostRunStatus")),
        DataAdapters::ReadStringField(Fields, TEXT("ghostStatusSessionId")),

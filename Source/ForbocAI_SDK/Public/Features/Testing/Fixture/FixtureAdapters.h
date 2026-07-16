@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Core/fp.hpp"
-#include "Features/Testing/Action/ActionTypes.h"
+#include "Features/Testing/Fixture/FixtureTypes.h"
 
-namespace Testing::Action {
+namespace Testing::Fixture {
 
 /**
  * User Story: As a reducer-test fixture consumer, I need authored action names
@@ -22,4 +22,4 @@ TKind ReadTestingActionKind(
   return Match.value.Kind;
 }
 
-} // namespace Testing::Action
+} // namespace Testing::Fixture

@@ -1,8 +1,8 @@
-#include "Features/Soul/Storage/Serialization/SerializationAdapters.h"
+#include "Features/Soul/Storage/Serialization/StorageSerializationAdapters.h"
 
 #include "Core/JsonInterop.h"
 #include "Features/API/Serialization/Soul/SerializationSoulAdapters.h"
-#include "Features/Soul/Storage/Configuration/ConfigurationAdapters.h"
+#include "Features/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
 #include "Features/Soul/Storage/Crypto/Encoding/EncodingAdapters.h"
 
 namespace SoulStorage::Serialization {

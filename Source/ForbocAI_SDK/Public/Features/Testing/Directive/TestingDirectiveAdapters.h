@@ -1,20 +1,20 @@
 #pragma once
 
 #include "Features/Data/DataAdapters.h"
-#include "Features/Testing/Action/ActionAdapters.h"
+#include "Features/Testing/Fixture/FixtureAdapters.h"
 #include "Features/Testing/Directive/TestingDirectiveTypes.h"
 
 namespace Testing::Directive {
 
 /**
  * User Story: As a directive reducer-test consumer, I need the complete semantic action registry so fixture behavior cannot drift when enum declarations change.
- * @fn inline const TArray<Testing::Action::TTestingActionKind< EDirectiveTestActionKind>> & DirectiveTestActionKinds()
+ * @fn inline const TArray<Testing::Fixture::TTestingActionKind< EDirectiveTestActionKind>> & DirectiveTestActionKinds()
  */
-inline const TArray<Testing::Action::TTestingActionKind<
+inline const TArray<Testing::Fixture::TTestingActionKind<
     EDirectiveTestActionKind>> &
 DirectiveTestActionKinds() {
 #define FORBOC_DIRECTIVE_TEST_ACTION_KIND(Name) {FString(TEXT(#Name)), EDirectiveTestActionKind::Name}
-  static const TArray<Testing::Action::TTestingActionKind<
+  static const TArray<Testing::Fixture::TTestingActionKind<
       EDirectiveTestActionKind>> Kinds = {
       FORBOC_DIRECTIVE_TEST_ACTION_KIND(Start),
       FORBOC_DIRECTIVE_TEST_ACTION_KIND(Receive),
@@ -33,7 +33,7 @@ ReadDirectiveTestAction(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
   const TSharedRef<FJsonObject> Value = Object.ToSharedRef();
   return {
-      Testing::Action::ReadTestingActionKind<EDirectiveTestActionKind>(
+      Testing::Fixture::ReadTestingActionKind<EDirectiveTestActionKind>(
           DataAdapters::ReadStringField(Value, TEXT("kind")),
           DirectiveTestActionKinds()),
       DataAdapters::ReadOptionalStringField(Value, TEXT("id")),

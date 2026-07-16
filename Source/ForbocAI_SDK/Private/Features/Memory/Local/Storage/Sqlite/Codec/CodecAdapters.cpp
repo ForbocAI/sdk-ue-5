@@ -1,6 +1,6 @@
 #include "Features/Memory/Local/Storage/Sqlite/Codec/CodecAdapters.h"
 
-#include "Features/Memory/Configuration/ConfigurationAdapters.h"
+#include "Features/Memory/Configuration/MemoryConfigurationAdapters.h"
 
 #if WITH_FORBOC_SQLITE_VEC
 #include "sqlite3.h"

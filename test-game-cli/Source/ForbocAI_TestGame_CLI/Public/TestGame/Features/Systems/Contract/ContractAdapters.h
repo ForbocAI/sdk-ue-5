@@ -79,7 +79,7 @@ inline FOutputAssertion
 ToOutputAssertion(const FContractOutputAssertion &Assertion) {
   FOutputAssertion Result;
   Result.Kind = detail::ParseOutputAssertionKind(Assertion.Kind);
-  Result.Alias = Assertion.Alias;
+  Result.Value = Assertion.Value;
   return Result;
 }
 

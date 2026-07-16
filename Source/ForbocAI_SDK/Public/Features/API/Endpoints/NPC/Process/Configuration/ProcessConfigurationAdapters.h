@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/API/Endpoints/NPC/Process/Configuration/ConfigurationTypes.h"
+#include "Features/API/Endpoints/NPC/Process/Configuration/ProcessConfigurationTypes.h"
 #include "Features/Data/DataAdapters.h"
 
 namespace APISlice::NPCProcessConfiguration {

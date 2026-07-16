@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/API/Serialization/Agent/Configuration/ConfigurationTypes.h"
+#include "Features/API/Serialization/Agent/Configuration/AgentConfigurationTypes.h"
 #include "Features/Data/DataAdapters.h"
 
 namespace JsonInterop::AgentConfiguration {

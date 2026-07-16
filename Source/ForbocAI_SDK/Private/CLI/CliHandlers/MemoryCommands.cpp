@@ -50,27 +50,11 @@ HandlerResult HandleMemory(rtk::EnhancedStore<FRuntimeState> &Store,
                             ForbocAI::CLI::Memory::selectMemoryItems(
                                 Ops::listMemory(Store, Args[First]),
                                 State.Limits.ListItemLimit);
-                        Items.Num() == State.Limits.FirstItemIndex
-                            ? ForbocAI::CLI::Presentation::logCliMessage(
-                                  State.Messages.None)
-                            : [&]() {
-                                int32 Index = State.Limits.FirstItemIndex;
-                                func::for_each_array<FMemoryItem>(
-                                    Items,
-                                    [&State, &Index](
-                                        const FMemoryItem &Item) {
-                                      ForbocAI::CLI::Presentation::
-                                          logCliMessage(formatCliMessage(
-                                              State.Messages.ListItem,
-                                              Index + State.Limits
-                                                          .DisplayIndexOffset,
-                                              ForbocAI::CLI::Memory::
-                                                  selectMemorySnippet(Item,
-                                                                      State)));
-                                      Index += State.Limits.NextItemOffset;
-                                    });
-                              }();
-                        return just(MemorySuccess(State.Messages.Listed));
+                        const FString Output =
+                            ForbocAI::CLI::Memory::selectMemoryListOutput(
+                                Items, State);
+                        ForbocAI::CLI::Presentation::logCliMessage(Output);
+                        return just(MemorySuccess(Output));
                       }())
          : CommandKey == Roles.MemoryRecall
              ? (Args.Num() < State.Limits.DoubleArgumentCount
@@ -83,25 +67,11 @@ HandlerResult HandleMemory(rtk::EnhancedStore<FRuntimeState> &Store,
                                     State.Limits.RecallItemLimit,
                                     State.Defaults.RecallSimilarity),
                                 State.Limits.RecallItemLimit);
-                        Items.Num() == State.Limits.FirstItemIndex
-                            ? ForbocAI::CLI::Presentation::logCliMessage(
-                                  State.Messages.NoneRelevant)
-                            : [&]() {
-                                int32 Index = State.Limits.FirstItemIndex;
-                                func::for_each_array<FMemoryItem>(
-                                    Items,
-                                    [&State, &Index](
-                                        const FMemoryItem &Item) {
-                                      ForbocAI::CLI::Presentation::
-                                          logCliMessage(formatCliMessage(
-                                              State.Messages.RecallItem,
-                                              Index + State.Limits
-                                                          .DisplayIndexOffset,
-                                              Item.Text));
-                                      Index += State.Limits.NextItemOffset;
-                                    });
-                              }();
-                        return just(MemorySuccess(State.Messages.RecallDone));
+                        const FString Output =
+                            ForbocAI::CLI::Memory::selectMemoryRecallOutput(
+                                Items, State);
+                        ForbocAI::CLI::Presentation::logCliMessage(Output);
+                        return just(MemorySuccess(Output));
                       }())
          : CommandKey == Roles.MemoryStore
              ? (Args.Num() < State.Limits.DoubleArgumentCount
@@ -129,10 +99,12 @@ HandlerResult HandleMemory(rtk::EnhancedStore<FRuntimeState> &Store,
                                              Args[First]));
                         const TArray<FMemoryItem> Items =
                             Ops::listMemory(Store, Args[First]);
-                        ForbocAI::CLI::Presentation::logCliMessage(
+                        const FString Output =
                             ForbocAI::CLI::Memory::serializeMemories(Items,
-                                                                    State));
-                        return just(MemorySuccess(State.Messages.ExportDone));
+                                                                    State);
+                        ForbocAI::CLI::Presentation::logCliMessage(
+                            Output);
+                        return just(MemorySuccess(Output));
                       }())
              : nothing<Result>();
 }

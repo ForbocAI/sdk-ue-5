@@ -1,0 +1,14 @@
+{
+  "automationName": "ForbocAI.Features.Async.WaitForResult",
+  "values": {
+    "immediate": 19,
+    "late": 23,
+    "timeoutSeconds": 0.001
+  },
+  "assertions": {
+    "immediate": "Unbounded waits return resolved values",
+    "timeout": "Explicit deadlines surface timeout failure",
+    "callback": "Pending transport retains its completion callback",
+    "late": "Late completion is ignored without caller memory access"
+  }
+}

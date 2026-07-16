@@ -1,11 +1,11 @@
-#include "Features/API/Endpoints/Soul/Provider/ProviderAdapters.h"
+#include "Features/API/Endpoints/Soul/Provider/SoulProviderAdapters.h"
 
 #include "Async/Async.h"
 #include "Core/rtk.hpp"
-#include "Features/API/Transport/Configuration/ConfigurationAdapters.h"
-#include "Features/Soul/Storage/Configuration/ConfigurationAdapters.h"
+#include "Features/API/Transport/Configuration/TransportConfigurationAdapters.h"
+#include "Features/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
 #include "Features/Soul/Storage/Crypto/DataItem/DataItemAdapters.h"
-#include "Features/Soul/Storage/Provider/ProviderAdapters.h"
+#include "Features/Soul/Storage/Provider/StorageProviderAdapters.h"
 #include "Features/Soul/Storage/Provider/Response/ResponseAdapters.h"
 #include "HAL/PlatformProcess.h"
 

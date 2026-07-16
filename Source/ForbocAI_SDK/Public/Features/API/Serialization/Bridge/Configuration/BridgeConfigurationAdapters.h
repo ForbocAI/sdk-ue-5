@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/API/Serialization/Bridge/Configuration/ConfigurationTypes.h"
+#include "Features/API/Serialization/Bridge/Configuration/BridgeConfigurationTypes.h"
 #include "Features/Data/DataAdapters.h"
 
 namespace JsonInterop::BridgeConfiguration {

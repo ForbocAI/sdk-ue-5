@@ -43,6 +43,8 @@ inline EEventType ParseEventType(const FString &EventType) {
 inline EOutputAssertionKind ParseOutputAssertionKind(const FString &Kind) {
   return Kind == TEXT("includesAlias")
              ? EOutputAssertionKind::IncludesAlias
+         : Kind == TEXT("includesText")
+             ? EOutputAssertionKind::IncludesText
              : EOutputAssertionKind::Unknown;
 }
 
@@ -54,7 +56,7 @@ inline bool HasKnownOutputAssertions(
     const TArray<FContractOutputAssertion> &Assertions, int32 Index) {
   return Index >= Assertions.Num()
              ? true
-             : !Assertions[Index].Alias.IsEmpty() &&
+             : !Assertions[Index].Value.IsEmpty() &&
                    ParseOutputAssertionKind(Assertions[Index].Kind) !=
                        EOutputAssertionKind::Unknown &&
                    HasKnownOutputAssertions(Assertions, Index + 1);
@@ -123,7 +125,7 @@ inline TArray<FContractOutputAssertion> ParseOutputAssertions(
                      Assertions[Index]->AsObject();
                  FContractOutputAssertion Assertion;
                  Assertion.Kind = Object->GetStringField(TEXT("kind"));
-                 Assertion.Alias = Object->GetStringField(TEXT("alias"));
+                 Assertion.Value = Object->GetStringField(TEXT("value"));
                  Acc.Add(MoveTemp(Assertion));
                  return ParseOutputAssertions(Assertions, Index + 1,
                                               MoveTemp(Acc));

@@ -24,11 +24,15 @@ enum class ECommandGroup : uint8 {
   GhostLifecycle
 };
 
-enum class EOutputAssertionKind : uint8 { Unknown, IncludesAlias };
+enum class EOutputAssertionKind : uint8 {
+  Unknown,
+  IncludesAlias,
+  IncludesText
+};
 
 struct FOutputAssertion {
   EOutputAssertionKind Kind;
-  FString Alias;
+  FString Value;
 
   /** User Story: As a systems harness command consumer, I need output assertions initialized to an invalid kind so malformed API contracts cannot pass silently. @fn FOutputAssertion() */
   FOutputAssertion() : Kind(EOutputAssertionKind::Unknown) {}

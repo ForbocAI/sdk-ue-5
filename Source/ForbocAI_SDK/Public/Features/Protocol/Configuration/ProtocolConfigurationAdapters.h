@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Features/Data/DataAdapters.h"
-#include "Features/Protocol/Configuration/ConfigurationTypes.h"
+#include "Features/Protocol/Configuration/ProtocolConfigurationTypes.h"
 
 namespace ProtocolConfiguration {
 

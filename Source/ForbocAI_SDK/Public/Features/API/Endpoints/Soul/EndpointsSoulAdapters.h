@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/JsonInterop.h"
-#include "Features/API/Endpoints/Soul/Configuration/ConfigurationAdapters.h"
+#include "Features/API/Endpoints/Soul/Configuration/EndpointsSoulConfigurationAdapters.h"
 #include "Features/Soul/SoulTypes.h"
 
 namespace APISlice::Detail {

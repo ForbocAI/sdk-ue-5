@@ -209,24 +209,30 @@ inline func::Maybe<FString> OutputAssertionFailureReason(
     const FCommandSpec &Command, const FOutputAssertion &Assertion,
     const FCommandOutput &Result, const FCommandAliasState &Aliases) {
   const FCommandRunnerMessages &Messages = CommandRunnerData().messages;
-  return Assertion.Kind != EOutputAssertionKind::IncludesAlias
+  return Assertion.Kind == EOutputAssertionKind::Unknown
              ? func::just(FString::Format(
                    *Messages.outputAssertionKindUnsupported,
                    {Command.Command}))
+         : Assertion.Kind == EOutputAssertionKind::IncludesText
+             ? (Result.Output.Contains(Assertion.Value)
+                    ? func::nothing<FString>()
+                    : func::just(FString::Format(
+                          *Messages.outputAssertionValueMissing,
+                          {Command.Command, Assertion.Value})))
              : func::match(
-                   ResolveOutputAssertionAlias(Assertion.Alias, Aliases),
+                   ResolveOutputAssertionAlias(Assertion.Value, Aliases),
                    [&Command, &Assertion, &Messages,
                     &Result](const FString &Expected) {
                      return Result.Output.Contains(Expected)
                                 ? func::nothing<FString>()
                                 : func::just(FString::Format(
                                       *Messages.outputAssertionValueMissing,
-                                      {Command.Command, Assertion.Alias}));
+                                      {Command.Command, Assertion.Value}));
                    },
                    [&Command, &Assertion, &Messages]() {
                      return func::just(FString::Format(
                          *Messages.outputAssertionAliasMissing,
-                         {Command.Command, Assertion.Alias}));
+                         {Command.Command, Assertion.Value}));
                    });
 }
 

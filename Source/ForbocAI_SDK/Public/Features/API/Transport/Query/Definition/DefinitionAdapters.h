@@ -48,26 +48,6 @@ MakeGet(const FString &EndpointName, const FString &Url,
 }
 
 /**
- * User Story: As read-oriented API calls whose transport method is POST, I need RTK query cache semantics without misclassifying the operation as a mutation.
- * @fn template <typename Request, typename Result> inline ThunkAction<Result, FRuntimeState> MakePostQuery( const FString &EndpointName, const FString &Url, const Request &RequestValue, const TArray<FApiEndpointTag> &Tags = TArray<FApiEndpointTag>())
- */
-template <typename Request, typename Result>
-inline ThunkAction<Result, FRuntimeState> MakePostQuery(
-    const FString &EndpointName, const FString &Url,
-    const Request &RequestValue,
-    const TArray<FApiEndpointTag> &Tags = TArray<FApiEndpointTag>()) {
-  const Transport::FTransportQueryData &Data =
-      Transport::transportQueryData();
-  return MakeEndpoint<Request, Result>(
-      EndpointName, RequestValue,
-      [Url, Data](const Request &Arg) {
-        return ExecuteApiBaseQuery<Result>(Data.Methods.Post, Url,
-                                           ToJson(Arg));
-      },
-      Tags, TArray<FApiEndpointTag>(), rtk::DefinitionType::query);
-}
-
-/**
  * User Story: As write-oriented API calls, I need a POST factory so typed request payloads can be serialized and dispatched uniformly.
  * @fn template <typename Request, typename Result> inline ThunkAction<Result, FRuntimeState> MakePost( const FString &EndpointName, const FString &Url, const Request &RequestValue, const TArray<FApiEndpointTag> &Invalidates = TArray<FApiEndpointTag>())
  */

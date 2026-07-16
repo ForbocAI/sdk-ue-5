@@ -4,7 +4,7 @@
 #include "Features/NPC/NPCActions.h"
 #include "Features/NPC/NPCSelectors.h"
 #include "Features/NPC/NPCSlice.h"
-#include "Features/Protocol/Configuration/ConfigurationAdapters.h"
+#include "Features/Protocol/Configuration/ProtocolConfigurationAdapters.h"
 #include "Features/Protocol/Requests/RequestsAdapters.h"
 #include "Features/Protocol/Handlers/HandlersThunks.h"
 #include "Features/Protocol/Turn/TurnThunks.h"

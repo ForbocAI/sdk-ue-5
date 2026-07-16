@@ -21,6 +21,9 @@
     "importance": "importance",
     "memories": "memories"
   },
+  "syntax": {
+    "listSeparator": "\n"
+  },
   "messages": {
     "unknownError": "Unknown error",
     "listUsage": "Usage: memory list <npcId>",

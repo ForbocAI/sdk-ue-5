@@ -1,19 +1,19 @@
 #pragma once
 
 #include "Features/Data/DataAdapters.h"
-#include "Features/Testing/Action/ActionAdapters.h"
+#include "Features/Testing/Fixture/FixtureAdapters.h"
 #include "Features/Testing/Ghost/TestingGhostTypes.h"
 
 namespace Testing::Ghost {
 
 /**
  * User Story: As a ghost reducer-test consumer, I need the complete semantic action registry so fixture behavior cannot drift when enum declarations change.
- * @fn inline const TArray<Testing::Action::TTestingActionKind<EGhostTestActionKind>> & GhostTestActionKinds()
+ * @fn inline const TArray<Testing::Fixture::TTestingActionKind<EGhostTestActionKind>> & GhostTestActionKinds()
  */
-inline const TArray<Testing::Action::TTestingActionKind<EGhostTestActionKind>> &
+inline const TArray<Testing::Fixture::TTestingActionKind<EGhostTestActionKind>> &
 GhostTestActionKinds() {
 #define FORBOC_GHOST_TEST_ACTION_KIND(Name) {FString(TEXT(#Name)), EGhostTestActionKind::Name}
-  static const TArray<Testing::Action::TTestingActionKind<
+  static const TArray<Testing::Fixture::TTestingActionKind<
       EGhostTestActionKind>> Kinds = {
       FORBOC_GHOST_TEST_ACTION_KIND(Start),
       FORBOC_GHOST_TEST_ACTION_KIND(Progress),
@@ -34,7 +34,7 @@ ReadGhostTestAction(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
   const TSharedRef<FJsonObject> Value = Object.ToSharedRef();
   return {
-      Testing::Action::ReadTestingActionKind<EGhostTestActionKind>(
+      Testing::Fixture::ReadTestingActionKind<EGhostTestActionKind>(
           DataAdapters::ReadStringField(Value, TEXT("kind")),
           GhostTestActionKinds()),
       DataAdapters::ReadOptionalStringField(Value, TEXT("sessionId")),

@@ -9,7 +9,7 @@
 #include "CoreMinimal.h"
 #include "Features/Contracts/ContractsTypes.h"
 #include "Features/Ghost/GhostActions.h"
-#include "Features/Ghost/State/StateTypes.h"
+#include "Features/Ghost/State/GhostStateTypes.h"
 
 namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
 typedef func::Maybe<FString> FForbocAISDKPublicGhostGhostSliceHOptionalDomainId;
@@ -229,7 +229,7 @@ inline Slice<FGhostSliceState> createGhostSlice() {
                             Next.ActiveSessionId = Action.PayloadValue.SessionId;
                             Next.Status = Action.PayloadValue.Status;
                             Next.Progress = 0.0f;
-                            Next.bLoading = false;
+                            Next.bLoading = true;
                             Next.Error.Empty();
                             Next.bHasResults = false;
                             return Next;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Features/API/Serialization/Agent/AgentAdapters.h"
-#include "Features/API/Serialization/Bridge/Configuration/ConfigurationAdapters.h"
+#include "Features/API/Serialization/Bridge/Configuration/BridgeConfigurationAdapters.h"
 
 namespace JsonInterop {
 

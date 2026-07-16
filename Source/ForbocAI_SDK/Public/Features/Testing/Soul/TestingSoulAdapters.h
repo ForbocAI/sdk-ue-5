@@ -1,19 +1,19 @@
 #pragma once
 
 #include "Features/Data/DataAdapters.h"
-#include "Features/Testing/Action/ActionAdapters.h"
+#include "Features/Testing/Fixture/FixtureAdapters.h"
 #include "Features/Testing/Soul/TestingSoulTypes.h"
 
 namespace Testing::Soul {
 
 /**
  * User Story: As a Soul reducer-test consumer, I need the complete semantic action registry so fixture behavior cannot drift when enum declarations change.
- * @fn inline const TArray<Testing::Action::TTestingActionKind<ESoulTestActionKind>> & SoulTestActionKinds()
+ * @fn inline const TArray<Testing::Fixture::TTestingActionKind<ESoulTestActionKind>> & SoulTestActionKinds()
  */
-inline const TArray<Testing::Action::TTestingActionKind<ESoulTestActionKind>> &
+inline const TArray<Testing::Fixture::TTestingActionKind<ESoulTestActionKind>> &
 SoulTestActionKinds() {
 #define FORBOC_SOUL_TEST_ACTION_KIND(Name) {FString(TEXT(#Name)), ESoulTestActionKind::Name}
-  static const TArray<Testing::Action::TTestingActionKind<ESoulTestActionKind>>
+  static const TArray<Testing::Fixture::TTestingActionKind<ESoulTestActionKind>>
       Kinds = {
           FORBOC_SOUL_TEST_ACTION_KIND(ExportPending),
           FORBOC_SOUL_TEST_ACTION_KIND(ExportSuccess),
@@ -36,7 +36,7 @@ ReadSoulTestAction(const TSharedPtr<FJsonObject> &Object) {
   check(Object.IsValid());
   const TSharedRef<FJsonObject> Value = Object.ToSharedRef();
   return {
-      Testing::Action::ReadTestingActionKind<ESoulTestActionKind>(
+      Testing::Fixture::ReadTestingActionKind<ESoulTestActionKind>(
           DataAdapters::ReadStringField(Value, TEXT("kind")),
           SoulTestActionKinds()),
       DataAdapters::ReadOptionalStringField(Value, TEXT("txId")),

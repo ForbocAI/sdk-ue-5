@@ -31,6 +31,10 @@ function Import-ForbocTestEnvironment {
         }
     }
 
+    if (-not $env:FORBOCAI_API_URL) {
+        $env:FORBOCAI_API_URL = "https://api.forboc.ai"
+    }
+
     if ($KeyRequirement -eq "Required" -and -not $env:FORBOCAI_API_KEY) {
         throw "FORBOCAI_API_KEY is required for live verification. Set it in $EnvFile or FORBOCAI_TEST_ENV_FILE."
     }

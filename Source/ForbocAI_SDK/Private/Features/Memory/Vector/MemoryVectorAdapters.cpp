@@ -1,7 +1,7 @@
 #include "Features/Memory/Vector/MemoryVectorAdapters.h"
 
 #include "Core/fp.hpp"
-#include "Features/Memory/Configuration/ConfigurationAdapters.h"
+#include "Features/Memory/Configuration/MemoryConfigurationAdapters.h"
 #include "Internationalization/Regex.h"
 
 namespace {

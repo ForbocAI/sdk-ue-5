@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/API/Serialization/Memory/Configuration/ConfigurationTypes.h"
+#include "Features/API/Serialization/Memory/Configuration/SerializationMemoryConfigurationTypes.h"
 #include "Features/Data/DataAdapters.h"
 
 namespace JsonInterop::MemoryConfiguration {
