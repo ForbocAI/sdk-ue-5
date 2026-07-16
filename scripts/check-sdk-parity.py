@@ -929,6 +929,14 @@ def format_roots(roots: Sequence[Path]) -> str:
     return ", ".join(md_code(root.as_posix()) for root in roots) if roots else "-"
 
 
+def repository_identity(root: Path) -> str:
+    """User Story: Identify a discovered repository without exposing its host path.
+
+    Signature: (Path) -> str.
+    """
+    return root.name
+
+
 def flatten(sequence: Sequence[Sequence[T]]) -> list[T]:
     return [item for items in sequence for item in items]
 
@@ -1152,8 +1160,8 @@ def build_generated_section(
             ],
         ),
         "",
-        f"- TS root: `{ts_root}`",
-        f"- UE root: `{ue_root}`",
+        f"- TS repository: `{repository_identity(ts_root)}`",
+        f"- UE repository: `{repository_identity(ue_root)}`",
         f"- Discovered TS source roots: {format_roots(ts_source_roots)}",
         f"- Discovered UE source roots: {format_roots(ue_source_roots)}",
         f"- Unmapped TS source roots: {format_roots(unmapped_ts_source_roots)}",

@@ -146,6 +146,11 @@ inline const FFeatureState &selectFeatureState(const RootState &State) {
 
 
 class MapMaintenanceTests(unittest.TestCase):
+    def test_repository_identity_omits_host_path(self) -> None:
+        root = Path("/workspace/Forboc.AI/sdk")
+
+        self.assertEqual(PARITY.repository_identity(root), "sdk")
+
     def test_removes_historical_changelog_from_forward_contract(self) -> None:
         source = "# SDK Map\n\n## 11. Maintenance Rule\n\nKeep parity.\n\n## 12. Change Log\n\nPast run.\n"
 

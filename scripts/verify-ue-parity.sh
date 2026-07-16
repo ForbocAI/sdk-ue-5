@@ -10,19 +10,21 @@
 #   2. FP source conformance (fp/source_conformance.py)
 #   3. Thin-wrapper guardrails (check-thin-wrapper-guardrails.sh)
 #   4. SDK parity inventory and CLI command parity (check-sdk-parity.py)
-#   5. Redux/RTK boundary discipline (check_redux.py)
-#   6. Source/data literal discipline (check_source_for_data.py)
-#   7. ECS domain/data discipline (ecs/domain_boundaries.py, ecs/data_naming.py)
-#   8. Function documentation (docs/check_function_docs.py)
-#   9. Line-count discipline (check_line_count.py)
-#   10. Dead-code/data guard (check_dead_code.py)
-#   11. Test-game executor-boundary guard (check-test-game-executor-boundary.sh)
-#   12. Product boundary audit (check-product-boundary.sh)
-#   13. API contract parity (check-api-contract-parity.py)
-#   14. Handler classification parity (check-handler-classification.py)
-#   15. Test quality (check-test-quality.sh)
-#   16. Protocol codec parity (check-codec-parity.sh)
-#   17. Runtime readiness (check-runtime-readiness.sh)
+#   5. Parity generator regression tests (parity/check_generators.py)
+#   6. Redux Toolkit public-surface parity (check-rtk-parity.py)
+#   7. Redux/RTK boundary discipline (check_redux.py)
+#   8. Source/data literal discipline (check_source_for_data.py)
+#   9. ECS domain/data discipline (ecs/domain_boundaries.py, ecs/data_naming.py)
+#   10. Function documentation (docs/check_function_docs.py)
+#   11. Line-count discipline (check_line_count.py)
+#   12. Dead-code/data guard (check_dead_code.py)
+#   13. Test-game executor-boundary guard (check-test-game-executor-boundary.sh)
+#   14. Product boundary audit (check-product-boundary.sh)
+#   15. API contract parity (check-api-contract-parity.py)
+#   16. Handler classification parity (check-handler-classification.py)
+#   17. Test quality (check-test-quality.sh)
+#   18. Protocol codec parity (check-codec-parity.sh)
+#   19. Runtime readiness (check-runtime-readiness.sh)
 #
 # Exit codes:
 #   0 = all checks passed
@@ -45,6 +47,8 @@ FP_CONFORMANCE_STATUS="skipped"
 THIN_WRAPPER_STATUS="skipped"
 TEST_GAME_BOUNDARY_STATUS="skipped"
 SDK_PARITY_STATUS="skipped"
+PARITY_GENERATOR_TEST_STATUS="skipped"
+RTK_SURFACE_STATUS="skipped"
 REDUX_RTK_STATUS="skipped"
 SOURCE_DATA_STATUS="skipped"
 ECS_DOMAIN_STATUS="skipped"
@@ -188,33 +192,41 @@ run_check "Thin-Wrapper Guardrails (command surface rules)" \
 run_check "SDK Parity (core/node/test-game inventory and CLI keys)" \
   "$SCRIPT_DIR/check-sdk-parity.py" SDK_PARITY_STATUS
 
-# ── Phase 3c: Redux/RTK explicit guidance guard ──
+# ── Phase 3c: Source-derived parity generator regressions ──
+run_check "Parity generator regressions (portable generated contracts)" \
+  "$SCRIPT_DIR/parity/check_generators.py" PARITY_GENERATOR_TEST_STATUS
+
+# ── Phase 3d: Redux Toolkit public-surface parity ──
+run_check "Redux Toolkit surface parity (rtk.hpp + RTK Query)" \
+  "$SCRIPT_DIR/check-rtk-parity.py" RTK_SURFACE_STATUS
+
+# ── Phase 3e: Redux/RTK explicit guidance guard ──
 run_check "Redux/RTK Boundary Discipline (UE SDK Features + Views)" \
   "$SCRIPT_DIR/check_redux.py" REDUX_RTK_STATUS
 
-# ── Phase 3d: Source/data literal discipline ──
+# ── Phase 3f: Source/data literal discipline ──
 run_check "Source/Data Literal Discipline (UE targets)" \
   "$SCRIPT_DIR/check_source_for_data.py" SOURCE_DATA_STATUS
 
-# ── Phase 3e: ECS domain/data discipline ──
+# ── Phase 3g: ECS domain/data discipline ──
 run_check "ECS Domain Boundary Discipline (UE targets)" \
   "$SCRIPT_DIR/ecs/domain_boundaries.py" ECS_DOMAIN_STATUS
 
 run_check "ECS Authored Data Naming (UE targets)" \
   "$SCRIPT_DIR/ecs/data_naming.py" ECS_DATA_STATUS
 
-# ── Phase 3f: Function documentation contract ──
+# ── Phase 3h: Function documentation contract ──
 run_check "Function documentation (Doxygen stories and exact signatures)" \
   "$SCRIPT_DIR/docs/check_function_docs.py" FUNCTION_DOCS_STATUS
 
-# ── Phase 3g: File size and dead-code discipline ──
+# ── Phase 3i: File size and dead-code discipline ──
 run_check "Line-count discipline (Source/Content authored files)" \
   "$SCRIPT_DIR/check_line_count.py" LINE_COUNT_STATUS
 
 run_check "Dead-code/data guard (orphan authored files)" \
   "$SCRIPT_DIR/check_dead_code.py" DEAD_CODE_STATUS
 
-# ── Phase 3g: Test-game executor boundary ──
+# ── Phase 3j: Test-game executor boundary ──
 run_check "Test-game executor boundary (no TestGameLib.h, no shadow executor)" \
   "$SCRIPT_DIR/check-test-game-executor-boundary.sh" TEST_GAME_BOUNDARY_STATUS
 
@@ -304,6 +316,8 @@ echo "  [$(mark_for_status "$UE_CONFORMANCE_STATUS")] UE conformance (structural
 echo "  [$(mark_for_status "$FP_CONFORMANCE_STATUS")] FP conformance (immutability)"
 echo "  [$(mark_for_status "$THIN_WRAPPER_STATUS")] Thin-wrapper guardrails"
 echo "  [$(mark_for_status "$SDK_PARITY_STATUS")] SDK parity inventory and CLI keys"
+echo "  [$(mark_for_status "$PARITY_GENERATOR_TEST_STATUS")] Parity generator regressions"
+echo "  [$(mark_for_status "$RTK_SURFACE_STATUS")] Redux Toolkit public-surface parity"
 echo "  [$(mark_for_status "$REDUX_RTK_STATUS")] Redux/RTK guidance"
 echo "  [$(mark_for_status "$SOURCE_DATA_STATUS")] Source/data literal discipline"
 echo "  [$(mark_for_status "$ECS_DOMAIN_STATUS")] ECS domain boundaries"
