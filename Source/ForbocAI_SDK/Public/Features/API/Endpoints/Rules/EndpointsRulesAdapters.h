@@ -2,6 +2,23 @@
 
 #include "Features/API/Endpoints/Bridge/EndpointsBridgeAdapters.h"
 #include "Features/API/Endpoints/Rules/Configuration/RulesConfigurationAdapters.h"
+#include "Features/API/Transport/Configuration/TransportConfigurationAdapters.h"
+
+namespace APISlice::Endpoints {
+
+/** User Story: As the Rule cache owner, I need rulesets identified consistently across preset mutations and catalog queries. @fn inline FApiEndpointTag ruleTagAdapter(const FString &RulesetId) */
+inline FApiEndpointTag ruleTagAdapter(const FString &RulesetId) {
+  return Configuration::endpointTag(
+      Transport::transportQueryData().Tags.Rule, RulesetId);
+}
+
+/** User Story: As the Rule cache owner, I need one authored list identity for ruleset and preset catalogs. @fn inline FApiEndpointTag ruleListTagAdapter() */
+inline FApiEndpointTag ruleListTagAdapter() {
+  return Configuration::endpointListTag(
+      Transport::transportQueryData().Tags.Rule);
+}
+
+} // namespace APISlice::Endpoints
 
 namespace APISlice::Detail {
 
@@ -42,7 +59,7 @@ DecodeDirectiveRuleObject(const TSharedPtr<FJsonObject> &Object) {
   const RulesConfiguration::FRulesContractData &Data =
       RulesConfiguration::rulesContractData();
   const TArray<TSharedPtr<FJsonValue>> *Conditions = nullptr;
-  double Priority = 0.0;
+  double Priority{};
   const bool bValid =
       Object.IsValid() &&
       Object->HasTypedField<EJson::String>(Data.Rule.Id) &&

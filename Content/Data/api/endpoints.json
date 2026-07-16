@@ -84,6 +84,13 @@
     "ghostHistoryStatus": "histStatus",
     "ghostHistoryPassRate": "histPassRate"
   },
+  "structures": {
+    "ghostMetric": {
+      "pairSize": 2,
+      "keyIndex": 0,
+      "valueIndex": 1
+    }
+  },
   "values": {
     "stopped": "stopped"
   },

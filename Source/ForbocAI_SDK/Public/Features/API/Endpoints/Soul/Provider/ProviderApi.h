@@ -13,8 +13,6 @@ namespace APISlice::Endpoints {
 /** User Story: As a Soul exporter, I need upload and external digest verification represented by the package root RTK Query API. @fn inline Thunk<FSoulStorageReceipt> postSoulStorageUpload(const FString &TxId) */
 inline Thunk<FSoulStorageReceipt>
 postSoulStorageUpload(const FString &TxId) {
-  const Transport::FTransportQueryData &TransportData =
-      Transport::transportQueryData();
   const SoulStorage::Configuration::FSoulStorageConfigurationData &Data =
       SoulStorage::Configuration::soulStorageData();
   const Configuration::FEndpointConfigurationData &EndpointData =
@@ -67,14 +65,12 @@ postSoulStorageUpload(const FString &TxId) {
                 });
         return SoulStorageEndpoint::storageQueryResult(Operation);
       },
-      {}, {Configuration::endpointTag(TransportData.Tags.Soul, TxId)},
+      {}, {soulTagAdapter(TxId)},
       rtk::DefinitionType::mutation);
 }
 
 /** User Story: As a Soul importer, I need provider retrieval and local authenticated decryption represented by the package root RTK Query API. @fn inline Thunk<FSoul> getSoulStorageDownload(const FString &TxId) */
 inline Thunk<FSoul> getSoulStorageDownload(const FString &TxId) {
-  const Transport::FTransportQueryData &TransportData =
-      Transport::transportQueryData();
   const int32 InitialAttempt =
       SoulStorage::Configuration::soulStorageData()
           .Retrieval.InitialAttempt;
@@ -100,14 +96,12 @@ inline Thunk<FSoul> getSoulStorageDownload(const FString &TxId) {
             });
         return SoulStorageEndpoint::storageQueryResult(Operation);
       },
-      {Configuration::endpointTag(TransportData.Tags.Soul, TxId)});
+      {soulTagAdapter(TxId)});
 }
 
 /** User Story: As a Soul owner, I need provider retrieval and authenticated decryption reported as RTK Query verification data rather than a rejected validity query. @fn inline Thunk<FSoulVerifyResult> getSoulStorageVerification(const FString &TxId) */
 inline Thunk<FSoulVerifyResult>
 getSoulStorageVerification(const FString &TxId) {
-  const Transport::FTransportQueryData &TransportData =
-      Transport::transportQueryData();
   const int32 InitialAttempt =
       SoulStorage::Configuration::soulStorageData()
           .Retrieval.InitialAttempt;
@@ -149,7 +143,7 @@ getSoulStorageVerification(const FString &TxId) {
                 });
         return SoulStorageEndpoint::storageQueryResult(Operation);
       },
-      {Configuration::endpointTag(TransportData.Tags.Soul, TxId)});
+      {soulTagAdapter(TxId)});
 }
 
 } // namespace APISlice::Endpoints

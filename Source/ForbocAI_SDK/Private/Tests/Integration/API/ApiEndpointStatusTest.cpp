@@ -120,6 +120,11 @@ bool FApiEndpointConstructionTest::RunTest(const FString &Parameters) {
             APISlice::api.Endpoints.Num(), AuthoredNames.Num());
   for (const FString &EndpointName : AuthoredNames) {
     TestTrue(EndpointName, APISlice::api.Endpoints.Contains(EndpointName));
+    const rtk::FApiEndpointMetadata &Metadata =
+        APISlice::api.Endpoints.FindChecked(EndpointName);
+    TestTrue(EndpointName,
+             Metadata.providesTags.Num() + Metadata.invalidatesTags.Num() >
+                 0);
   }
 
   return true;

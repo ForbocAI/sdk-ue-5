@@ -2,7 +2,24 @@
 
 #include "Core/JsonInterop.h"
 #include "Features/API/Endpoints/Configuration/EndpointsConfigurationAdapters.h"
+#include "Features/API/Transport/Configuration/TransportConfigurationAdapters.h"
 #include "Features/Ghost/GhostTypes.h"
+
+namespace APISlice::Endpoints {
+
+/** User Story: As the Ghost cache owner, I need each run identified by session so polling and stop operations share one entity cache. @fn inline FApiEndpointTag ghostTagAdapter(const FString &SessionId) */
+inline FApiEndpointTag ghostTagAdapter(const FString &SessionId) {
+  return Configuration::endpointTag(
+      Transport::transportQueryData().Tags.Ghost, SessionId);
+}
+
+/** User Story: As the Ghost cache owner, I need one authored list identity for run history. @fn inline FApiEndpointTag ghostListTagAdapter() */
+inline FApiEndpointTag ghostListTagAdapter() {
+  return Configuration::endpointListTag(
+      Transport::transportQueryData().Tags.Ghost);
+}
+
+} // namespace APISlice::Endpoints
 
 namespace APISlice::Detail {
 
@@ -68,21 +85,29 @@ DecodeGhostTestRecords(const TArray<TSharedPtr<FJsonValue>> &Values) {
  */
 inline func::Maybe<TPair<FString, float>>
 DecodeGhostMetricPair(const TSharedPtr<FJsonValue> &Value) {
+  const Endpoints::Configuration::FEndpointTupleStructureData &Structure =
+      Endpoints::Configuration::endpointData().Structures.GhostMetric;
   return !Value.IsValid() || Value->Type != EJson::Array
              ? func::nothing<TPair<FString, float>>()
              : [&]() {
                  const TArray<TSharedPtr<FJsonValue>> &Pair = Value->AsArray();
                  const bool bValid =
-                     Pair.Num() == 2 && Pair[0].IsValid() &&
-                     Pair[0]->Type == EJson::String && Pair[1].IsValid() &&
-                     Pair[1]->Type == EJson::Number &&
-                     FMath::IsFinite(Pair[1]->AsNumber());
+                     Pair.Num() == Structure.PairSize &&
+                     Pair.IsValidIndex(Structure.KeyIndex) &&
+                     Pair.IsValidIndex(Structure.ValueIndex) &&
+                     Pair[Structure.KeyIndex].IsValid() &&
+                     Pair[Structure.KeyIndex]->Type == EJson::String &&
+                     Pair[Structure.ValueIndex].IsValid() &&
+                     Pair[Structure.ValueIndex]->Type == EJson::Number &&
+                     FMath::IsFinite(Pair[Structure.ValueIndex]->AsNumber());
                  return !bValid
                             ? func::nothing<TPair<FString, float>>()
                             : func::just<TPair<FString, float>>(
                                   TPair<FString, float>(
-                                      Pair[0]->AsString(),
-                                      static_cast<float>(Pair[1]->AsNumber())));
+                                      Pair[Structure.KeyIndex]->AsString(),
+                                      static_cast<float>(
+                                          Pair[Structure.ValueIndex]
+                                              ->AsNumber())));
                }();
 }
 

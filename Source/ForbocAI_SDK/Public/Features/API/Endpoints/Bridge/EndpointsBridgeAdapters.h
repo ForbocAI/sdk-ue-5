@@ -1,6 +1,24 @@
 #pragma once
 
+#include "Features/API/Endpoints/Configuration/EndpointsConfigurationAdapters.h"
 #include "Features/API/Endpoints/NPC/Directive/NPCDirectiveAdapters.h"
+#include "Features/API/Transport/Configuration/TransportConfigurationAdapters.h"
+
+namespace APISlice::Endpoints {
+
+/** User Story: As the Bridge cache owner, I need validation and rule entities identified consistently across queries and mutations. @fn inline FApiEndpointTag bridgeTagAdapter(const FString &Id = FString()) */
+inline FApiEndpointTag bridgeTagAdapter(const FString &Id = FString()) {
+  return Configuration::endpointTag(
+      Transport::transportQueryData().Tags.Bridge, Id);
+}
+
+/** User Story: As the Bridge cache owner, I need one authored list identity for the rule catalog. @fn inline FApiEndpointTag bridgeListTagAdapter() */
+inline FApiEndpointTag bridgeListTagAdapter() {
+  return Configuration::endpointListTag(
+      Transport::transportQueryData().Tags.Bridge);
+}
+
+} // namespace APISlice::Endpoints
 
 namespace APISlice::Detail {
 

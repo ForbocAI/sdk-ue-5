@@ -11,10 +11,7 @@ inline Thunk<FNPCProcessResponse>
 postNpcProcess(const FString &NpcId, const FNPCProcessRequest &Request) {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const Transport::FTransportQueryData &TransportData =
-      Transport::transportQueryData();
-  const TArray<FApiEndpointTag> Invalidates{
-      Configuration::endpointTag(TransportData.Tags.Npc, NpcId)};
+  const TArray<FApiEndpointTag> Invalidates{npcTagAdapter(NpcId)};
   return Detail::MakePostWithCodec<FNPCProcessRequest, FNPCProcessResponse>(
       Data.Names.PostNpcProcess,
       Configuration::apiEndpoint(Configuration::endpointPath(

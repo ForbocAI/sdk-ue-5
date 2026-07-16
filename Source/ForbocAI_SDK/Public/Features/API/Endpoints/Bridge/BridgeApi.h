@@ -12,16 +12,13 @@ getBridgeValidation(const FString &NpcId,
                     const FBridgeValidateRequest &Request) {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const Transport::FTransportQueryData &TransportData =
-      Transport::transportQueryData();
   const FString Path = NpcId.IsEmpty()
                            ? Configuration::endpointPath(
                                  {Data.Segments.Bridge, Data.Segments.Validate})
                            : Configuration::endpointPath(
                                  {Data.Segments.Bridge, Data.Segments.Validate,
                                   NpcId});
-  const TArray<FApiEndpointTag> Tags{
-      Configuration::endpointTag(TransportData.Tags.Bridge)};
+  const TArray<FApiEndpointTag> Tags{bridgeTagAdapter(NpcId)};
   return Detail::MakePostQueryWithCodec<FBridgeValidateRequest,
                                         FValidationResult>(
       Data.Names.GetBridgeValidation, Configuration::apiEndpoint(Path),
@@ -33,10 +30,7 @@ getBridgeValidation(const FString &NpcId,
 inline Thunk<TArray<FBridgeRule>> getBridgeRules() {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const Transport::FTransportQueryData &TransportData =
-      Transport::transportQueryData();
-  const TArray<FApiEndpointTag> Tags{
-      Configuration::endpointTag(TransportData.Tags.Bridge)};
+  const TArray<FApiEndpointTag> Tags{bridgeListTagAdapter()};
   return Detail::MakeGetWithCodec<TArray<FBridgeRule>>(
       Data.Names.GetBridgeRules,
       Configuration::apiEndpoint(Configuration::endpointPath(

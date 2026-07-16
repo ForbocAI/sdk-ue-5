@@ -38,7 +38,8 @@ inline FTransportQueryData readTransportQueryData() {
            DataAdapters::ReadStringField(Tags, TEXT("ghost")),
            DataAdapters::ReadStringField(Tags, TEXT("soul")),
            DataAdapters::ReadStringField(Tags, TEXT("bridge")),
-           DataAdapters::ReadStringField(Tags, TEXT("rule"))}};
+           DataAdapters::ReadStringField(Tags, TEXT("rule")),
+           DataAdapters::ReadStringField(Tags, TEXT("system"))}};
 }
 
 /**

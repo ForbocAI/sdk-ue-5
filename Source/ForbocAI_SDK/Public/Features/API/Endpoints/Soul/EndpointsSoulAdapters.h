@@ -1,8 +1,26 @@
 #pragma once
 
 #include "Core/JsonInterop.h"
+#include "Features/API/Endpoints/Configuration/EndpointsConfigurationAdapters.h"
 #include "Features/API/Endpoints/Soul/Configuration/EndpointsSoulConfigurationAdapters.h"
+#include "Features/API/Transport/Configuration/TransportConfigurationAdapters.h"
 #include "Features/Soul/SoulTypes.h"
+
+namespace APISlice::Endpoints {
+
+/** User Story: As the Soul cache owner, I need one typed tag constructor so API, provider, and local storage endpoints invalidate the same entities. @fn inline FApiEndpointTag soulTagAdapter(const FString &Id) */
+inline FApiEndpointTag soulTagAdapter(const FString &Id) {
+  return Configuration::endpointTag(
+      Transport::transportQueryData().Tags.Soul, Id);
+}
+
+/** User Story: As the Soul catalog cache owner, I need the authored list identity shared by every endpoint that reads or mutates the catalog. @fn inline FApiEndpointTag soulListTagAdapter() */
+inline FApiEndpointTag soulListTagAdapter() {
+  return Configuration::endpointListTag(
+      Transport::transportQueryData().Tags.Soul);
+}
+
+} // namespace APISlice::Endpoints
 
 namespace APISlice::Detail {
 

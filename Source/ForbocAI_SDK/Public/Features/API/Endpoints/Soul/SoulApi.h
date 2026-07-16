@@ -14,8 +14,6 @@ inline Thunk<FSoulExportPreparation> postSoulExportPreparation(
     const FString &NpcId, const FSoulExportPreparationRequest &Request) {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const Transport::FTransportQueryData &TransportData =
-      Transport::transportQueryData();
   return Detail::MakePostWithCodec<FSoulExportPreparationRequest,
                                    FSoulExportPreparation>(
       Data.Names.PostSoulExportPreparation,
@@ -24,9 +22,7 @@ inline Thunk<FSoulExportPreparation> postSoulExportPreparation(
            Data.Segments.Export})),
       Request, Detail::EncodeSoulExportPreparationRequest,
       Detail::DecodeSoulExportPreparationResponse,
-      {Configuration::endpointTag(TransportData.Tags.Soul, NpcId),
-       Configuration::endpointTag(TransportData.Tags.Soul,
-                                  Request.TransactionId)});
+      {soulTagAdapter(NpcId), soulTagAdapter(Request.TransactionId)});
 }
 
 /**
@@ -38,8 +34,6 @@ inline Thunk<FSoulExportResponse> postSoulExportConfirmation(
     const FString &NpcId, const FSoulExportConfirmationRequest &Request) {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const Transport::FTransportQueryData &TransportData =
-      Transport::transportQueryData();
   return Detail::MakePostWithCodec<FSoulExportConfirmationRequest,
                                    FSoulExportResponse>(
       Data.Names.PostSoulExportConfirmation,
@@ -48,10 +42,7 @@ inline Thunk<FSoulExportResponse> postSoulExportConfirmation(
            Data.Segments.Confirm})),
       Request, Detail::EncodeSoulExportConfirmationRequest,
       Detail::DecodeSoulExportConfirmationResponse,
-      {Configuration::endpointTag(TransportData.Tags.Soul,
-                                  Request.TransactionId),
-       Configuration::endpointTag(TransportData.Tags.Soul,
-                                  Data.TagIds.List)});
+      {soulTagAdapter(Request.TransactionId), soulListTagAdapter()});
 }
 
 /**
@@ -64,8 +55,6 @@ postSoulVerification(const FString &TxId,
                      const FSoulVerificationRequest &Request) {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const Transport::FTransportQueryData &TransportData =
-      Transport::transportQueryData();
   return Detail::MakePostQueryWithCodec<FSoulVerificationRequest,
                                         FSoulVerifyResult>(
       Data.Names.PostSoulVerification,
@@ -73,7 +62,7 @@ postSoulVerification(const FString &TxId,
           {Data.Segments.Souls, TxId, Data.Segments.Verify})),
       Request, Detail::EncodeSoulVerificationRequest,
       Detail::DecodeSoulVerifyResponse,
-      {Configuration::endpointTag(TransportData.Tags.Soul, TxId)});
+      {soulTagAdapter(TxId)});
 }
 
 } // namespace APISlice::Endpoints

@@ -26,6 +26,10 @@ inline FEndpointConfigurationData readEndpointConfigurationData() {
       DataAdapters::ReadObjectField(Source, TEXT("names"));
   const TSharedRef<FJsonObject> Fields =
       DataAdapters::ReadObjectField(Source, TEXT("fields"));
+  const TSharedRef<FJsonObject> Structures =
+      DataAdapters::ReadObjectField(Source, TEXT("structures"));
+  const TSharedRef<FJsonObject> GhostMetric =
+      DataAdapters::ReadObjectField(Structures, TEXT("ghostMetric"));
   const TSharedRef<FJsonObject> Values =
       DataAdapters::ReadObjectField(Source, TEXT("values"));
   const TSharedRef<FJsonObject> Payloads =
@@ -118,6 +122,9 @@ inline FEndpointConfigurationData readEndpointConfigurationData() {
        DataAdapters::ReadStringField(Fields, TEXT("ghostHistoryCompletedAt")),
        DataAdapters::ReadStringField(Fields, TEXT("ghostHistoryStatus")),
        DataAdapters::ReadStringField(Fields, TEXT("ghostHistoryPassRate"))},
+      {{DataAdapters::ReadNumberField(GhostMetric, TEXT("pairSize")),
+        DataAdapters::ReadNumberField(GhostMetric, TEXT("keyIndex")),
+        DataAdapters::ReadNumberField(GhostMetric, TEXT("valueIndex"))}},
       {DataAdapters::ReadStringField(Values, TEXT("stopped"))},
       {DataAdapters::ReadStringField(Payloads, TEXT("emptyObject"))},
       {DataAdapters::ReadStringField(TagIds, TEXT("list"))},
@@ -211,6 +218,14 @@ inline FString apiEndpoint(const FString &Path) {
 inline FApiEndpointTag endpointTag(const FString &Type,
                                    const FString &Id = FString()) {
   return FApiEndpointTag{Type, Id};
+}
+
+/**
+ * @fn inline FApiEndpointTag endpointListTag(const FString &Type)
+ * User Story: As an RTK Query catalog owner, I need one authored list identity so collection reads and writes invalidate the same cache entry.
+ */
+inline FApiEndpointTag endpointListTag(const FString &Type) {
+  return endpointTag(Type, endpointData().TagIds.List);
 }
 
 } // namespace APISlice::Endpoints::Configuration

@@ -94,6 +94,16 @@ struct FEndpointFieldData {
   FString GhostHistoryPassRate;
 };
 
+struct FEndpointTupleStructureData {
+  int32 PairSize;
+  int32 KeyIndex;
+  int32 ValueIndex;
+};
+
+struct FEndpointStructureData {
+  FEndpointTupleStructureData GhostMetric;
+};
+
 struct FEndpointValueData {
   FString Stopped;
 };
@@ -121,6 +131,7 @@ struct FEndpointConfigurationData {
   FEndpointQueryKeyData QueryKeys;
   FEndpointNameData Names;
   FEndpointFieldData Fields;
+  FEndpointStructureData Structures;
   FEndpointValueData Values;
   FEndpointPayloadData Payloads;
   FEndpointTagIdData TagIds;

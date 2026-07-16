@@ -1,0 +1,37 @@
+{
+  "labels": {
+    "suite": "ForbocAI.Integration.API.CacheTags",
+    "entities": "constructs domain entity tags from authored identities",
+    "lists": "constructs one shared authored list identity per catalog",
+    "system": "isolates health cache ownership from NPC feature domains",
+    "npc": "NPC entity cache tag matches the authored contract",
+    "bridge": "Bridge entity cache tag matches the authored contract",
+    "bridgeList": "Bridge list cache tag matches the authored contract",
+    "ghost": "Ghost entity cache tag matches the authored contract",
+    "ghostList": "Ghost list cache tag matches the authored contract",
+    "rule": "Rule entity cache tag matches the authored contract",
+    "ruleList": "Rule list cache tag matches the authored contract",
+    "soul": "Soul entity cache tag matches the authored contract",
+    "soulList": "Soul list cache tag matches the authored contract",
+    "systemTag": "System cache tag matches the authored contract"
+  },
+  "ids": {
+    "npc": "npc-cache-entity",
+    "bridge": "bridge-cache-entity",
+    "ghost": "ghost-cache-session",
+    "rule": "rule-cache-ruleset",
+    "soul": "soul-cache-transaction"
+  },
+  "tags": {
+    "npc": { "type": "NPC", "id": "npc-cache-entity" },
+    "bridge": { "type": "Bridge", "id": "bridge-cache-entity" },
+    "bridgeList": { "type": "Bridge", "id": "LIST" },
+    "ghost": { "type": "Ghost", "id": "ghost-cache-session" },
+    "ghostList": { "type": "Ghost", "id": "LIST" },
+    "rule": { "type": "Rule", "id": "rule-cache-ruleset" },
+    "ruleList": { "type": "Rule", "id": "LIST" },
+    "soul": { "type": "Soul", "id": "soul-cache-transaction" },
+    "soulList": { "type": "Soul", "id": "LIST" },
+    "system": { "type": "System" }
+  }
+}

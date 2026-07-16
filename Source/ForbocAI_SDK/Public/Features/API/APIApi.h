@@ -21,7 +21,7 @@ inline const rtk::Api<FRuntimeState> baseApi = []() {
   rtk::Api<FRuntimeState> apiDefinition = rtk::createApi<FRuntimeState>(
       Data.Api.ReducerPath,
       TArray<FString>{Data.Tags.Npc, Data.Tags.Ghost, Data.Tags.Soul,
-                      Data.Tags.Bridge, Data.Tags.Rule});
+                      Data.Tags.Bridge, Data.Tags.Rule, Data.Tags.System});
   check(providesTags(apiDefinition));
   return apiDefinition;
 }();

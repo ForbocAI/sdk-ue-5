@@ -34,6 +34,7 @@ struct FTransportTagData {
   FString Soul;
   FString Bridge;
   FString Rule;
+  FString System;
 };
 
 struct FTransportQueryData {

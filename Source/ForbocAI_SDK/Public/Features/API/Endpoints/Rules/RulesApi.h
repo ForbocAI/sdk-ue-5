@@ -10,10 +10,8 @@ namespace Endpoints {
 inline Thunk<FDirectiveRuleSet> postBridgePreset(const FString &PresetName) {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const Transport::FTransportQueryData &TransportData =
-      Transport::transportQueryData();
   const TArray<FApiEndpointTag> Invalidates{
-      Configuration::endpointTag(TransportData.Tags.Bridge)};
+      bridgeListTagAdapter(), ruleListTagAdapter()};
   return Detail::MakePostRawWithCodec<FDirectiveRuleSet>(
       Data.Names.PostBridgePreset,
       Configuration::apiEndpoint(Configuration::endpointPath(
@@ -26,10 +24,7 @@ inline Thunk<FDirectiveRuleSet> postBridgePreset(const FString &PresetName) {
 inline Thunk<TArray<FDirectiveRuleSet>> getRulesets() {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const Transport::FTransportQueryData &TransportData =
-      Transport::transportQueryData();
-  const TArray<FApiEndpointTag> Tags{
-      Configuration::endpointTag(TransportData.Tags.Rule)};
+  const TArray<FApiEndpointTag> Tags{ruleListTagAdapter()};
   return Detail::MakeGetWithCodec<TArray<FDirectiveRuleSet>>(
       Data.Names.GetRulesets,
       Configuration::apiEndpoint(
@@ -41,10 +36,7 @@ inline Thunk<TArray<FDirectiveRuleSet>> getRulesets() {
 inline Thunk<TArray<FString>> getRulePresets() {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const Transport::FTransportQueryData &TransportData =
-      Transport::transportQueryData();
-  const TArray<FApiEndpointTag> Tags{
-      Configuration::endpointTag(TransportData.Tags.Rule)};
+  const TArray<FApiEndpointTag> Tags{ruleListTagAdapter()};
   return Detail::MakeGet<TArray<FString>>(
       Data.Names.GetRulePresets,
       Configuration::apiEndpoint(Configuration::endpointPath(
