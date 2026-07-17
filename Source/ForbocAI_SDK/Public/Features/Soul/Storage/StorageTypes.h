@@ -28,7 +28,7 @@ struct FSoulStorageReceipt {
   FString TxId;
   FString Url;
   FString Digest;
-  int32 Status = 0;
+  int32 Status{};
   FString Provider;
 };
 
@@ -72,5 +72,5 @@ struct FSoulStorageTransactionRequest {
 };
 
 struct FSoulStorageListRequest {
-  int32 Limit = 0;
+  int32 Limit{};
 };

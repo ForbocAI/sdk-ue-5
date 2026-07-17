@@ -66,6 +66,10 @@ inline FSoulStorageConfigurationData readSoulStorageConfigurationData() {
       DataAdapters::ReadObjectField(Source, TEXT("encoding"));
   const TSharedRef<FJsonObject> Catalog =
       DataAdapters::ReadObjectField(Source, TEXT("catalog"));
+  const TSharedRef<FJsonObject> CatalogFields =
+      DataAdapters::ReadObjectField(Catalog, TEXT("fields"));
+  const TSharedRef<FJsonObject> CatalogEntryFields =
+      DataAdapters::ReadObjectField(Catalog, TEXT("entryFields"));
   const TSharedRef<FJsonObject> Soul =
       DataAdapters::ReadObjectField(Source, TEXT("soul"));
   const TSharedRef<FJsonObject> Fields =
@@ -78,8 +82,12 @@ inline FSoulStorageConfigurationData readSoulStorageConfigurationData() {
       DataAdapters::ReadObjectField(Provider, TEXT("responseFields"));
   const TSharedRef<FJsonObject> Wallet =
       DataAdapters::ReadObjectField(Source, TEXT("wallet"));
+  const TSharedRef<FJsonObject> WalletFields =
+      DataAdapters::ReadObjectField(Wallet, TEXT("fields"));
   const TSharedRef<FJsonObject> Encryption =
       DataAdapters::ReadObjectField(Source, TEXT("encryption"));
+  const TSharedRef<FJsonObject> EncryptionFields =
+      DataAdapters::ReadObjectField(Encryption, TEXT("fields"));
   const TSharedRef<FJsonObject> DataItem =
       DataAdapters::ReadObjectField(Source, TEXT("dataItem"));
   const TSharedRef<FJsonObject> Digest =
@@ -115,8 +123,20 @@ inline FSoulStorageConfigurationData readSoulStorageConfigurationData() {
        DataAdapters::ReadStringField(Encoding, TEXT("paddingPatternSuffix")),
        DataAdapters::ReadStringField(Encoding,
                                      TEXT("caseInsensitiveRegexFlag"))},
-      {DataAdapters::ReadStringArrayField(Catalog,
-                                          TEXT("requiredStringFields"))},
+      {{DataAdapters::ReadStringField(CatalogFields, TEXT("version")),
+        DataAdapters::ReadStringField(CatalogFields, TEXT("souls"))},
+       {DataAdapters::ReadStringField(CatalogEntryFields,
+                                      TEXT("transactionId")),
+        DataAdapters::ReadStringField(CatalogEntryFields, TEXT("name")),
+        DataAdapters::ReadStringField(CatalogEntryFields, TEXT("npcId")),
+        DataAdapters::ReadStringField(CatalogEntryFields,
+                                      TEXT("exportedAt")),
+        DataAdapters::ReadStringField(CatalogEntryFields,
+                                      TEXT("storageUrl")),
+        DataAdapters::ReadStringField(CatalogEntryFields, TEXT("provider")),
+        DataAdapters::ReadStringField(CatalogEntryFields, TEXT("digest")),
+        DataAdapters::ReadStringField(CatalogEntryFields,
+                                      TEXT("signature"))}},
       {DataAdapters::ReadStringField(Soul, TEXT("version")),
        DataAdapters::ReadStringField(Soul, TEXT("defaultName")),
        {DataAdapters::ReadStringField(Fields, TEXT("id")),
@@ -162,8 +182,18 @@ inline FSoulStorageConfigurationData readSoulStorageConfigurationData() {
        DataAdapters::ReadNumberField(Wallet, TEXT("saltLength")),
        DataAdapters::ReadStringField(Wallet, TEXT("keyType")),
        DataAdapters::ReadStringField(Wallet, TEXT("keyFormat")),
-       DataAdapters::ReadStringArrayField(Wallet,
-                                          TEXT("requiredPrivateFields")),
+       {DataAdapters::ReadStringField(WalletFields, TEXT("keyType")),
+        DataAdapters::ReadStringField(WalletFields, TEXT("publicExponent")),
+        DataAdapters::ReadStringField(WalletFields, TEXT("modulus")),
+        DataAdapters::ReadStringField(WalletFields, TEXT("privateExponent")),
+        DataAdapters::ReadStringField(WalletFields, TEXT("firstPrimeFactor")),
+        DataAdapters::ReadStringField(WalletFields, TEXT("secondPrimeFactor")),
+        DataAdapters::ReadStringField(WalletFields,
+                                      TEXT("firstFactorCrtExponent")),
+        DataAdapters::ReadStringField(WalletFields,
+                                      TEXT("secondFactorCrtExponent")),
+        DataAdapters::ReadStringField(WalletFields,
+                                      TEXT("firstCrtCoefficient"))},
        DataAdapters::ReadStringArrayField(Wallet, TEXT("generateUsages")),
        DataAdapters::ReadStringArrayField(Wallet, TEXT("signUsages"))},
       {DataAdapters::ReadStringField(Encryption, TEXT("version")),
@@ -181,8 +211,15 @@ inline FSoulStorageConfigurationData readSoulStorageConfigurationData() {
        DataAdapters::ReadStringField(Encryption, TEXT("keyFormat")),
        DataAdapters::ReadStringArrayField(Encryption, TEXT("deriveUsages")),
        DataAdapters::ReadStringArrayField(Encryption, TEXT("cipherUsages")),
-       DataAdapters::ReadStringArrayField(Encryption,
-                                          TEXT("envelopeFields"))},
+       {DataAdapters::ReadStringField(EncryptionFields, TEXT("version")),
+        DataAdapters::ReadStringField(EncryptionFields, TEXT("algorithm")),
+        DataAdapters::ReadStringField(EncryptionFields,
+                                      TEXT("keyDerivation")),
+        DataAdapters::ReadStringField(EncryptionFields, TEXT("salt")),
+        DataAdapters::ReadStringField(EncryptionFields,
+                                      TEXT("initializationVector")),
+        DataAdapters::ReadStringField(EncryptionFields,
+                                      TEXT("ciphertext"))}},
       {DataAdapters::ReadNumberField(DataItem, TEXT("signatureType")),
        DataAdapters::ReadNumberField(DataItem, TEXT("signatureLength")),
        DataAdapters::ReadNumberField(DataItem, TEXT("ownerLength")),

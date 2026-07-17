@@ -194,6 +194,17 @@ bool FSoulTest::RunTest(const FString &Parameters) {
   TestTrue(Fixtures.Labels.ProviderRetryWithoutGateways,
            SoulStorage::Provider::soulProviderRetryExhaustedAdapter(
                Data.Retrieval.InitialAttempt, Data.Numbers.Zero));
+  const Testing::Soul::Storage::Serialization::FStorageSerializationResult
+      StorageResult =
+          Testing::Soul::Storage::Serialization::
+              evaluateStorageSerializationAdapter(
+                  Fixtures.StorageSerialization);
+  TestTrue(Fixtures.Labels.StorageWalletRoundTrip,
+           StorageResult.bWalletRoundTrip);
+  TestTrue(Fixtures.Labels.StorageEnvelopeRoundTrip,
+           StorageResult.bEnvelopeRoundTrip);
+  TestTrue(Fixtures.Labels.StorageCatalogRoundTrip,
+           StorageResult.bCatalogRoundTrip);
   const func::Maybe<FSoulTestScenario> Scenario =
       FindSoulTestScenario(Parameters);
   TestTrue(Fixtures.Labels.ScenarioPresent, Scenario.hasValue);

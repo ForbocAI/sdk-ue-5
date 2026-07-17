@@ -2,6 +2,7 @@
 
 #include "Features/Data/DataAdapters.h"
 #include "Features/Testing/Fixture/FixtureAdapters.h"
+#include "Features/Testing/Soul/Storage/Serialization/TestingSoulStorageSerializationAdapters.h"
 #include "Features/Testing/Soul/TestingSoulTypes.h"
 
 namespace Testing::Soul {
@@ -127,6 +128,9 @@ ReadSoulTestLabels(const DataAdapters::FSettingsSource &Source) {
                                     TEXT("providerRetryAtMaximumCycle")),
       DataAdapters::ReadStringField(Labels,
                                     TEXT("providerRetryWithoutGateways")),
+      DataAdapters::ReadStringField(Labels, TEXT("storageWalletRoundTrip")),
+      DataAdapters::ReadStringField(Labels, TEXT("storageEnvelopeRoundTrip")),
+      DataAdapters::ReadStringField(Labels, TEXT("storageCatalogRoundTrip")),
   };
 }
 
@@ -165,6 +169,8 @@ inline const FSoulTestFixtures &TestingSoulFixtures() {
   static const FSoulTestFixtures Fixtures = {
       ReadSoulTestLabels(SettingsSource),
       ReadSoulProviderRetryTestData(SettingsSource),
+      Storage::Serialization::readStorageSerializationFixtureAdapter(
+          SettingsSource),
       func::concat_arrays<FSoulTestScenario>(
           TArray<TArray<FSoulTestScenario>>{
               ReadSoulTestScenarios(LifecycleSource),

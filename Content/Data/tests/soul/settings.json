@@ -18,11 +18,50 @@
     "providerRetryCycleBoundary": "Provider retry delays after a gateway cycle",
     "providerRetryBeforeMaximumCycle": "Provider retry continues before the maximum gateway cycle",
     "providerRetryAtMaximumCycle": "Provider retry stops at the maximum gateway cycle",
-    "providerRetryWithoutGateways": "Provider retry stops when no gateways are available"
+    "providerRetryWithoutGateways": "Provider retry stops when no gateways are available",
+    "storageWalletRoundTrip": "Soul wallet preserves every authored field through serialization",
+    "storageEnvelopeRoundTrip": "Soul envelope preserves every authored field through serialization",
+    "storageCatalogRoundTrip": "Soul catalog preserves every authored field through serialization"
   },
   "providerRetry": {
     "withinCycleAttempt": 1,
     "cycleBoundaryAttempt": 2,
     "urlCount": 2
+  },
+  "storage": {
+    "wallet": {
+      "kty": "RSA",
+      "e": "AQAB",
+      "n": "wallet-modulus",
+      "d": "private-exponent",
+      "p": "first-prime",
+      "q": "second-prime",
+      "dp": "first-crt-exponent",
+      "dq": "second-crt-exponent",
+      "qi": "crt-coefficient"
+    },
+    "envelope": {
+      "version": "1",
+      "algorithm": "A256GCM",
+      "keyDerivation": "HKDF-SHA-256",
+      "salt": "envelope-salt",
+      "initializationVector": "envelope-vector",
+      "ciphertext": "encrypted-soul"
+    },
+    "catalog": {
+      "version": "1",
+      "souls": [
+        {
+          "txId": "storage-transaction",
+          "name": "Stored Soul",
+          "npcId": "npc-storage",
+          "exportedAt": "2026-07-16T00:00:00.000Z",
+          "storageUrl": "https://arweave.net/storage-transaction",
+          "provider": "turbo",
+          "digest": "storage-digest",
+          "signature": "storage-signature"
+        }
+      ]
+    }
   }
 }

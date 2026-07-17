@@ -2,6 +2,7 @@
 
 #include "Core/fp.hpp"
 #include "CoreMinimal.h"
+#include "Features/Testing/Soul/Storage/Serialization/SerializationTypes.h"
 
 namespace Testing::Soul {
 
@@ -70,6 +71,9 @@ struct FSoulTestLabels {
   FString ProviderRetryBeforeMaximumCycle;
   FString ProviderRetryAtMaximumCycle;
   FString ProviderRetryWithoutGateways;
+  FString StorageWalletRoundTrip;
+  FString StorageEnvelopeRoundTrip;
+  FString StorageCatalogRoundTrip;
 };
 
 struct FSoulProviderRetryTestData {
@@ -81,6 +85,7 @@ struct FSoulProviderRetryTestData {
 struct FSoulTestFixtures {
   FSoulTestLabels Labels;
   FSoulProviderRetryTestData ProviderRetry;
+  Storage::Serialization::FStorageSerializationFixture StorageSerialization;
   TArray<FSoulTestScenario> Scenarios;
 };
 

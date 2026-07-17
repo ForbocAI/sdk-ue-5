@@ -5,7 +5,7 @@
 #include "Features/Soul/Storage/Crypto/DataItem/DataItemAdapters.h"
 #include "Features/Soul/Storage/Crypto/Wallet/WalletAdapters.h"
 #include "Features/Soul/Storage/Persistence/PersistenceAdapters.h"
-#include "Features/Soul/Storage/Serialization/StorageSerializationAdapters.h"
+#include "Features/Soul/Storage/Serialization/SoulStorageSerializationAdapters.h"
 #include "Misc/DateTime.h"
 #include "Misc/ScopeLock.h"
 

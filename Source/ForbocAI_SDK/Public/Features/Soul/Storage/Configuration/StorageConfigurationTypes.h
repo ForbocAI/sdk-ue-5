@@ -40,8 +40,25 @@ struct FEncodingData {
   FString CaseInsensitiveRegexFlag;
 };
 
+struct FCatalogFieldData {
+  FString Version;
+  FString Souls;
+};
+
+struct FCatalogEntryFieldData {
+  FString TransactionId;
+  FString Name;
+  FString NpcId;
+  FString ExportedAt;
+  FString StorageUrl;
+  FString Provider;
+  FString Digest;
+  FString Signature;
+};
+
 struct FCatalogData {
-  TArray<FString> RequiredStringFields;
+  FCatalogFieldData Fields;
+  FCatalogEntryFieldData EntryFields;
 };
 
 struct FSoulFieldData {
@@ -107,6 +124,18 @@ struct FUploadRetryData {
   int32 DelayMs{};
 };
 
+struct FWalletFieldData {
+  FString KeyType;
+  FString PublicExponent;
+  FString Modulus;
+  FString PrivateExponent;
+  FString FirstPrimeFactor;
+  FString SecondPrimeFactor;
+  FString FirstFactorCrtExponent;
+  FString SecondFactorCrtExponent;
+  FString FirstCrtCoefficient;
+};
+
 struct FWalletData {
   FString Algorithm;
   FString Hash;
@@ -115,9 +144,18 @@ struct FWalletData {
   int32 SaltLength{};
   FString KeyType;
   FString KeyFormat;
-  TArray<FString> RequiredPrivateFields;
+  FWalletFieldData Fields;
   TArray<FString> GenerateUsages;
   TArray<FString> SignUsages;
+};
+
+struct FEncryptionFieldData {
+  FString Version;
+  FString Algorithm;
+  FString KeyDerivation;
+  FString Salt;
+  FString InitializationVector;
+  FString Ciphertext;
 };
 
 struct FEncryptionData {
@@ -134,7 +172,7 @@ struct FEncryptionData {
   FString KeyFormat;
   TArray<FString> DeriveUsages;
   TArray<FString> CipherUsages;
-  TArray<FString> EnvelopeFields;
+  FEncryptionFieldData Fields;
 };
 
 struct FDataItemTagData {

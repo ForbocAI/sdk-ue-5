@@ -32,16 +32,20 @@
     "caseInsensitiveRegexFlag": "i"
   },
   "catalog": {
-    "requiredStringFields": [
-      "txId",
-      "name",
-      "npcId",
-      "exportedAt",
-      "storageUrl",
-      "provider",
-      "digest",
-      "signature"
-    ]
+    "fields": {
+      "version": "version",
+      "souls": "souls"
+    },
+    "entryFields": {
+      "transactionId": "txId",
+      "name": "name",
+      "npcId": "npcId",
+      "exportedAt": "exportedAt",
+      "storageUrl": "storageUrl",
+      "provider": "provider",
+      "digest": "digest",
+      "signature": "signature"
+    }
   },
   "soul": {
     "version": "2.0.0",
@@ -105,7 +109,17 @@
     "saltLength": 32,
     "keyType": "RSA",
     "keyFormat": "jwk",
-    "requiredPrivateFields": ["kty", "e", "n", "d", "p", "q", "dp", "dq", "qi"],
+    "fields": {
+      "keyType": "kty",
+      "publicExponent": "e",
+      "modulus": "n",
+      "privateExponent": "d",
+      "firstPrimeFactor": "p",
+      "secondPrimeFactor": "q",
+      "firstFactorCrtExponent": "dp",
+      "secondFactorCrtExponent": "dq",
+      "firstCrtCoefficient": "qi"
+    },
     "generateUsages": ["sign", "verify"],
     "signUsages": ["sign"]
   },
@@ -123,7 +137,14 @@
     "keyFormat": "raw",
     "deriveUsages": ["deriveKey"],
     "cipherUsages": ["encrypt", "decrypt"],
-    "envelopeFields": ["salt", "initializationVector", "ciphertext"]
+    "fields": {
+      "version": "version",
+      "algorithm": "algorithm",
+      "keyDerivation": "keyDerivation",
+      "salt": "salt",
+      "initializationVector": "initializationVector",
+      "ciphertext": "ciphertext"
+    }
   },
   "dataItem": {
     "signatureType": 1,
