@@ -1,11 +1,12 @@
 #include "Misc/AutomationTest.h"
+#include "TestGame/Features/Systems/Harness/Verification/VerificationAdapters.h"
 #include "TestGame/TestGameStore.h"
 
 using namespace TestGame;
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FTestGamePlayerPatchAndSelectorsTest,
-    "ForbocAI.Slices.TestGame.PlayerPatchAndSelectors",
+    VerificationAdapters::ArchitectureTestData().rtk.automationNames.player,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
@@ -13,31 +14,38 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FTestGamePlayerPatchAndSelectorsTest::RunTest(
     const FString &Parameters) {
   (void)Parameters;
+  const Verification::FRtkVerificationData &Data =
+      VerificationAdapters::ArchitectureTestData().rtk;
 
   FPatchPlayerPayload Patch;
-  Patch.Hp = 42;
+  Patch.Hp = Data.player.patch.hp;
   Patch.bHasHp = true;
-  Patch.bHidden = false;
+  Patch.bHidden = Data.player.patch.hidden;
   Patch.bHasHidden = true;
-  Patch.Position = FPosition(3, 4);
+  Patch.Position = Data.player.patch.position;
   Patch.bHasPosition = true;
-  Patch.Inventory = TArray<FString>();
+  Patch.Inventory = Data.player.patch.inventory;
   Patch.bHasInventory = true;
 
-  const FPlayerState State = CreatePlayerSlice().Reducer(
-      CreatePlayerInitialState(), PlayerActions::patchPlayer(Patch));
+  FTestGameStore Store = createTestGameStore();
+  Store.dispatch(PlayerActions::patchPlayer(Patch));
+  const FPlayerState &State = Store.getState().Player;
 
-  TestEqual("Player name remains owned by reducer",
-            PlayerSelectors::SelectPlayerName(State), FString(TEXT("Scout")));
-  TestEqual("Player hp updates", PlayerSelectors::SelectPlayerHp(State), 42);
-  TestFalse("Player hidden flag updates",
+  TestEqual(Data.stories.player, PlayerSelectors::SelectPlayerName(State),
+            Data.player.expectedName);
+  TestEqual(Data.stories.player, PlayerSelectors::SelectPlayerHp(State),
+            Data.player.patch.hp);
+  TestFalse(Data.stories.player,
             PlayerSelectors::SelectPlayerHidden(State));
-  TestEqual("Player position x updates",
-            PlayerSelectors::SelectPlayerPosition(State).X, 3);
-  TestEqual("Player position y updates",
-            PlayerSelectors::SelectPlayerPosition(State).Y, 4);
-  TestEqual("Player inventory can be emptied",
-            PlayerSelectors::SelectPlayerInventory(State).Num(), 0);
+  TestEqual(Data.stories.player,
+            PlayerSelectors::SelectPlayerPosition(State).X,
+            Data.player.patch.position.X);
+  TestEqual(Data.stories.player,
+            PlayerSelectors::SelectPlayerPosition(State).Y,
+            Data.player.patch.position.Y);
+  TestEqual(Data.stories.player,
+            PlayerSelectors::SelectPlayerInventory(State),
+            Data.player.patch.inventory);
 
   return true;
 }

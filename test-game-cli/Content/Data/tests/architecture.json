@@ -1,0 +1,198 @@
+{
+  "validation": {
+    "mechanicsContract": "Mechanics verification data must satisfy the canonical scenario contract.",
+    "mechanicsScenario": "Mechanics verification data must contain one canonical scenario.",
+    "mechanicsCoveredGroup": "Mechanics verification coverage must identify a canonical command group."
+  },
+  "bridgeGrid": {
+    "suite": "Bridge / Grid / Harness BDD",
+    "automationName": "ForbocAI.Slices.TestGame.BridgeGridHarness",
+    "stories": {
+      "jump": "User Story: As an SDK CLI verifier, Given jump force above limit, When validation runs, Then the jump is rejected",
+      "move": "User Story: As an SDK CLI verifier, Given an oversized move request, When validation runs, Then distance is capped",
+      "grid": "User Story: As an SDK CLI verifier, Given blocked and open tiles, When selectors run, Then only valid open tiles are passable",
+      "coverage": "User Story: As an SDK CLI verifier, Given partial coverage, When selectors run, Then uncovered command groups are returned"
+    },
+    "rules": {
+      "maxJumpForce": 500,
+      "maxMoveDistance": 2,
+      "activePreset": "default"
+    },
+    "jump": {
+      "requestedForce": 800,
+      "reasonFragment": "exceeds"
+    },
+    "move": {
+      "requestedDistance": 6,
+      "expectedDistance": 2
+    },
+    "grid": {
+      "width": 10,
+      "height": 12,
+      "blocked": [{ "x": 4, "y": 4 }],
+      "blockedPosition": { "x": 4, "y": 4 },
+      "openPosition": { "x": 1, "y": 1 },
+      "outsidePosition": { "x": -1, "y": 0 }
+    },
+    "coverage": {
+      "covered": {
+        "status": true,
+        "npc_lifecycle": true
+      },
+      "minimumMissing": 0,
+      "expectedMissing": "bridge_validate"
+    }
+  },
+  "coverage": {
+    "suite": "scenario command coverage",
+    "story": "User Story: As an SDK CLI verifier, Given the scenario command matrix, When coverage is evaluated, Then every required command group is present"
+  },
+  "rtk": {
+    "suite": "RTK slice guidance parity",
+    "automationNames": {
+      "player": "ForbocAI.Slices.TestGame.PlayerPatchAndSelectors",
+      "bridge": "ForbocAI.Slices.TestGame.BridgeRulePatchAndSelectors"
+    },
+    "stories": {
+      "player": "User Story: As an SDK CLI verifier, Given a player patch, When the root store reduces it, Then selectors expose only reducer-owned changes",
+      "bridge": "User Story: As an SDK CLI verifier, Given bridge rules and presets, When the root store reduces them, Then selectors expose canonical state"
+    },
+    "player": {
+      "patch": {
+        "hp": 42,
+        "hidden": false,
+        "position": { "x": 3, "y": 4 },
+        "inventory": []
+      },
+      "expectedName": "Scout"
+    },
+    "bridge": {
+      "patch": {
+        "maxJumpForce": 800,
+        "activePreset": "heavy"
+      },
+      "expectedInitialDistance": 2,
+      "presets": {
+        "social": {
+          "name": "social",
+          "expectedDistance": 1
+        },
+        "custom": {
+          "name": "custom",
+          "expectedDistance": 1
+        }
+      }
+    }
+  },
+  "stateDomains": {
+    "suite": "Normalized state domain parity",
+    "automationNames": {
+      "npc": "ForbocAI.Slices.TestGame.NpcPatchAndSelectors",
+      "store": "ForbocAI.Slices.TestGame.StoreDomainSelectors"
+    },
+    "stories": {
+      "npc": "User Story: As an SDK CLI verifier, Given authored NPC transitions, When the root store reduces them, Then normalized selectors expose the patched entity",
+      "store": "User Story: As an SDK CLI verifier, Given authored memory, inventory, and Soul transitions, When the root store reduces them, Then domain selectors preserve identity"
+    },
+    "npc": {
+      "initial": {
+        "id": "miller",
+        "name": "Miller",
+        "faction": "Neutral",
+        "hp": 100,
+        "suspicion": 50,
+        "inventory": [],
+        "knownSecrets": [],
+        "position": { "x": 5, "y": 12 }
+      },
+      "patch": {
+        "name": "Miller Prime",
+        "hp": 84,
+        "suspicion": 75,
+        "inventory": ["medkit"],
+        "position": { "x": 6, "y": 13 }
+      },
+      "verdict": {
+        "actionType": "MOVE",
+        "targetPosition": { "x": 7, "y": 14 },
+        "suspicion": 55
+      },
+      "expectedEntityCount": 1
+    },
+    "store": {
+      "memory": {
+        "records": [
+          {
+            "id": "mem-1",
+            "npcId": "miller",
+            "text": "Keeps a medkit hidden.",
+            "importance": 0.8
+          },
+          {
+            "id": "mem-2",
+            "npcId": "scout",
+            "text": "Saw the exit route.",
+            "importance": 0.7
+          }
+        ],
+        "lookupId": "mem-1",
+        "npcId": "miller",
+        "expectedTotal": 2,
+        "expectedNpcCount": 1
+      },
+      "inventory": {
+        "ownerId": "scout",
+        "items": ["coin-pouch", "signal-key"]
+      },
+      "soul": {
+        "npcId": "miller",
+        "transactionId": "tx-001",
+        "expectedImportedCount": 1
+      }
+    }
+  },
+  "mechanics": {
+    "suite": "Mechanics and terminal selector parity",
+    "automationName": "ForbocAI.Slices.TestGame.MechanicsTerminalSelectors",
+    "story": "User Story: As an SDK CLI verifier, Given authored mechanics and terminal transitions, When the root store reduces them, Then selectors derive the complete observable state",
+    "stealth": {
+      "doorOpen": true,
+      "alertDelta": 30
+    },
+    "social": {
+      "dialogue": "Trade?",
+      "tradeOffer": {
+        "npcId": "miller",
+        "item": "medkit",
+        "price": 100
+      }
+    },
+    "ui": {
+      "message": "ready",
+      "expectedMessageCount": 2
+    },
+    "transcript": {
+      "scenarioId": "s1",
+      "statusCommand": "forbocai status",
+      "npcCommand": "forbocai npc create doomguard",
+      "expectedRoutes": [],
+      "okOutput": "ok",
+      "errorOutput": "failed",
+      "expectedEntryCount": 2,
+      "expectedErrorCount": 1
+    },
+    "coverage": {
+      "requiredGroups": ["status", "npc_lifecycle"],
+      "coveredGroup": "status",
+      "expectedCoveredCount": 1,
+      "expectedMissingCount": 1
+    },
+    "scenario": {
+      "title": "Verification",
+      "description": "Verify root-store scenario ownership.",
+      "eventType": "stealth",
+      "commands": [],
+      "expectedStepCount": 1
+    }
+  }
+}

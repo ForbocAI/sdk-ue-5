@@ -88,6 +88,10 @@ struct FCommandRunnerMessages {
       FORBOCAI_DECLARE_COMMAND_RUNNER_FIELD)
 };
 
+struct FCommandRunnerTestNames {
+  FString outputAssertions;
+};
+
 #undef FORBOCAI_DECLARE_COMMAND_RUNNER_FIELD
 
 struct FCommandRunnerData {
@@ -97,6 +101,7 @@ struct FCommandRunnerData {
   FCommandRunnerLimits limits;
   FCommandRunnerQuotes quotes;
   FCommandRunnerMessages messages;
+  FCommandRunnerTestNames testNames;
 };
 
 struct FCommandAliasState {

@@ -11,6 +11,8 @@ inline const FContractData &ContractData() {
   static const FContractData Data = []() {
     const DataAdapters::FSettingsSource Source =
         DataAdapters::SettingsSource(TEXT("systems/contract.json"));
+    const TSharedRef<FJsonObject> Api =
+        DataAdapters::ReadObjectField(Source, TEXT("api"));
     const TSharedRef<FJsonObject> Authorization =
         DataAdapters::ReadObjectField(Source, TEXT("authorization"));
     const TSharedRef<FJsonObject> Request =
@@ -22,6 +24,12 @@ inline const FContractData &ContractData() {
     FContractData Value;
     Value.DefaultApiUrl =
         DataAdapters::ReadStringField(Source.Root, TEXT("defaultApiUrl"));
+    Value.Api.ReducerPath =
+        DataAdapters::ReadStringField(Api, TEXT("reducerPath"));
+    Value.Api.TagType = DataAdapters::ReadStringField(Api, TEXT("tagType"));
+    Value.Api.EndpointName =
+        DataAdapters::ReadStringField(Api, TEXT("endpointName"));
+    Value.Api.TagId = DataAdapters::ReadStringField(Api, TEXT("tagId"));
     Value.Authorization.Header =
         DataAdapters::ReadStringField(Authorization, TEXT("header"));
     Value.Authorization.Template =

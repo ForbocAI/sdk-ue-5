@@ -10,6 +10,7 @@
     "outputAssertions": []
   },
   "environment": {
+    "runtimeUrlKey": "FORBOCAI_API_URL",
     "commandDelayKey": "FORBOCAI_TEST_GAME_COMMAND_DELAY_MS",
     "defaultCommandDelayMs": 1000
   },

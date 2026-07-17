@@ -44,6 +44,8 @@ inline FTerminalData ReadTerminalData() {
       DataAdapters::ReadObjectField(Source, TEXT("levels"));
   const TSharedRef<FJsonObject> Tokens =
       DataAdapters::ReadObjectField(Source, TEXT("tokens"));
+  const TSharedRef<FJsonObject> Transcript =
+      DataAdapters::ReadObjectField(Source, TEXT("transcript"));
   FTerminalData Data;
   Data.initialState.Mode =
       DataAdapters::ReadStringField(InitialState, TEXT("mode"));
@@ -79,6 +81,8 @@ inline FTerminalData ReadTerminalData() {
       DataAdapters::ReadBooleanField(Levels, TEXT("display"));
   Data.levels.error =
       DataAdapters::ReadBooleanField(Levels, TEXT("error"));
+  Data.transcript.idFormat =
+      DataAdapters::ReadStringField(Transcript, TEXT("idFormat"));
   Data.tokens.name = DataAdapters::ReadStringField(Tokens, TEXT("name"));
   Data.tokens.x = DataAdapters::ReadStringField(Tokens, TEXT("x"));
   Data.tokens.y = DataAdapters::ReadStringField(Tokens, TEXT("y"));

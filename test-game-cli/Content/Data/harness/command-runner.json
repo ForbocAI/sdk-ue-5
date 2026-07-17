@@ -48,5 +48,8 @@
     "missingAliasFails": "Missing alias converts success into failure",
     "unresolvedIdentifierRejected": "Unresolved generated identifiers are rejected before dispatch",
     "capturedIdentifierDispatchable": "Captured generated identifiers are dispatchable"
+  },
+  "testNames": {
+    "outputAssertions": "ForbocAI.Slices.TestGame.CommandRunner.OutputAssertions"
   }
 }

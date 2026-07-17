@@ -35,26 +35,14 @@ inline int32 SelectMemoryTotal(const FGameMemorySliceState &State) {
   return GetGameMemoryAdapter().getSelectors().selectTotal(State.Entities);
 }
 
-/** User Story: As a features systems memory consumer, I need to invoke collect memories by npc id through a stable signature so the features systems memory workflow remains explicit and composable. @fn inline void CollectMemoriesByNpcId( const TArray<FMemoryRecord> &Records, const FString &NpcId, int32 Index, TArray<FMemoryRecord> &Matches) */
-inline void CollectMemoriesByNpcId(
-    const TArray<FMemoryRecord> &Records, const FString &NpcId, int32 Index,
-    TArray<FMemoryRecord> &Matches) {
-  Index >= Records.Num()
-      ? void()
-      : (Records[Index].NpcId == NpcId
-             ? (Matches.Add(Records[Index]), void())
-             : void(),
-         CollectMemoriesByNpcId(Records, NpcId, Index + 1, Matches));
-}
-
 /** User Story: As a features systems memory consumer, I need to invoke select memories by npc id through a stable signature so the features systems memory workflow remains explicit and composable. @fn inline TArray<FMemoryRecord> SelectMemoriesByNpcId(const FGameMemorySliceState &State, const FString &NpcId) */
 inline TArray<FMemoryRecord>
 SelectMemoriesByNpcId(const FGameMemorySliceState &State,
                       const FString &NpcId) {
-  const TArray<FMemoryRecord> Records = SelectAllMemories(State);
-  TArray<FMemoryRecord> Matches;
-  CollectMemoriesByNpcId(Records, NpcId, 0, Matches);
-  return Matches;
+  return func::filter_array<FMemoryRecord>(
+      SelectAllMemories(State), [&NpcId](const FMemoryRecord &Record) {
+        return Record.NpcId == NpcId;
+      });
 }
 
 } // namespace GameMemorySelectors

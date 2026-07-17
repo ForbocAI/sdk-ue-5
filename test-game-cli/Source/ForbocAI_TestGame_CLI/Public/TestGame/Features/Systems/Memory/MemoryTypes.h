@@ -9,10 +9,7 @@ struct FMemoryRecord {
   FString Id;
   FString NpcId;
   FString Text;
-  float Importance;
-
-  /** User Story: As a features systems memory consumer, I need to invoke fmemory record through a stable signature so the features systems memory workflow remains explicit and composable. @fn FMemoryRecord() */
-  FMemoryRecord() : Importance(0.5f) {}
+  float Importance{};
 };
 
 struct FGameMemorySliceState {

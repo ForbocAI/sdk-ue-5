@@ -1,11 +1,12 @@
 #include "Misc/AutomationTest.h"
+#include "TestGame/Features/Systems/Harness/Verification/VerificationAdapters.h"
 #include "TestGame/TestGameStore.h"
 
 using namespace TestGame;
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FTestGameBridgeRulePatchAndSelectorsTest,
-    "ForbocAI.Slices.TestGame.BridgeRulePatchAndSelectors",
+    VerificationAdapters::ArchitectureTestData().rtk.automationNames.bridge,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
@@ -13,40 +14,48 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FTestGameBridgeRulePatchAndSelectorsTest::RunTest(
     const FString &Parameters) {
   (void)Parameters;
+  const Verification::FRtkVerificationData &Data =
+      VerificationAdapters::ArchitectureTestData().rtk;
 
   GameBridgeActions::FSetBridgeRulesPayload Patch;
-  Patch.MaxJumpForce = 800;
+  Patch.MaxJumpForce = Data.bridge.patch.maxJumpForce;
   Patch.bHasMaxJumpForce = true;
-  Patch.ActivePreset = TEXT("heavy");
+  Patch.ActivePreset = Data.bridge.patch.activePreset;
   Patch.bHasActivePreset = true;
 
-  const rtk::Slice<FBridgeRulesState> Slice = CreateGameBridgeSlice();
-  FBridgeRulesState State = Slice.Reducer(
-      CreateBridgeInitialState(), GameBridgeActions::setBridgeRules(Patch));
+  FTestGameStore Store = createTestGameStore();
+  Store.dispatch(GameBridgeActions::setBridgeRules(Patch));
+  FBridgeRulesState State = Store.getState().Bridge;
 
-  TestEqual("Bridge jump force updates",
-            GameBridgeSelectors::SelectBridgeMaxJumpForce(State), 800);
-  TestEqual("Bridge move distance remains unchanged",
-            GameBridgeSelectors::SelectBridgeMaxMoveDistance(State), 2);
-  TestEqual("Bridge preset updates",
+  TestEqual(Data.stories.bridge,
+            GameBridgeSelectors::SelectBridgeMaxJumpForce(State),
+            Data.bridge.patch.maxJumpForce);
+  TestEqual(Data.stories.bridge,
+            GameBridgeSelectors::SelectBridgeMaxMoveDistance(State),
+            Data.bridge.expectedInitialDistance);
+  TestEqual(Data.stories.bridge,
             GameBridgeSelectors::SelectBridgeActivePreset(State),
-            FString(TEXT("heavy")));
+            Data.bridge.patch.activePreset);
 
-  State =
-      Slice.Reducer(State, GameBridgeActions::loadBridgePreset(TEXT("social")));
-  TestEqual("Social preset narrows move distance",
-            GameBridgeSelectors::SelectBridgeMaxMoveDistance(State), 1);
-  TestEqual("Social preset is selected",
+  Store.dispatch(GameBridgeActions::loadBridgePreset(
+      Data.bridge.presets.social.name));
+  State = Store.getState().Bridge;
+  TestEqual(Data.stories.bridge,
+            GameBridgeSelectors::SelectBridgeMaxMoveDistance(State),
+            Data.bridge.presets.social.expectedDistance);
+  TestEqual(Data.stories.bridge,
             GameBridgeSelectors::SelectBridgeActivePreset(State),
-            FString(TEXT("social")));
+            Data.bridge.presets.social.name);
 
-  State =
-      Slice.Reducer(State, GameBridgeActions::loadBridgePreset(TEXT("custom")));
-  TestEqual("Custom preset preserves move distance",
-            GameBridgeSelectors::SelectBridgeMaxMoveDistance(State), 1);
-  TestEqual("Custom preset is selected",
+  Store.dispatch(GameBridgeActions::loadBridgePreset(
+      Data.bridge.presets.custom.name));
+  State = Store.getState().Bridge;
+  TestEqual(Data.stories.bridge,
+            GameBridgeSelectors::SelectBridgeMaxMoveDistance(State),
+            Data.bridge.presets.custom.expectedDistance);
+  TestEqual(Data.stories.bridge,
             GameBridgeSelectors::SelectBridgeActivePreset(State),
-            FString(TEXT("custom")));
+            Data.bridge.presets.custom.name);
 
   return true;
 }

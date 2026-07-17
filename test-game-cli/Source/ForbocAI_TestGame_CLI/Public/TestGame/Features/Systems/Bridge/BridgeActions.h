@@ -8,17 +8,12 @@ namespace TestGame {
 namespace GameBridgeActions {
 
 struct FSetBridgeRulesPayload {
-  int32 MaxJumpForce;
-  bool bHasMaxJumpForce;
-  int32 MaxMoveDistance;
-  bool bHasMaxMoveDistance;
+  int32 MaxJumpForce{};
+  bool bHasMaxJumpForce{};
+  int32 MaxMoveDistance{};
+  bool bHasMaxMoveDistance{};
   FString ActivePreset;
-  bool bHasActivePreset;
-
-  /** User Story: As a features systems bridge consumer, I need to invoke fset bridge rules payload through a stable signature so the features systems bridge workflow remains explicit and composable. @fn FSetBridgeRulesPayload() */
-  FSetBridgeRulesPayload()
-      : MaxJumpForce(0), bHasMaxJumpForce(false), MaxMoveDistance(0),
-        bHasMaxMoveDistance(false), bHasActivePreset(false) {}
+  bool bHasActivePreset{};
 };
 
 /** User Story: As a features systems bridge consumer, I need to invoke set bridge rules action creator through a stable signature so the features systems bridge workflow remains explicit and composable. @fn inline rtk::ActionCreator<FSetBridgeRulesPayload> setBridgeRulesActionCreator() */

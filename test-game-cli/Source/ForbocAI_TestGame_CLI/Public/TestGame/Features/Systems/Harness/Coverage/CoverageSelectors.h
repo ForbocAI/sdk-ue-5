@@ -10,26 +10,12 @@ inline TMap<FString, bool> SelectHarnessCovered(const FHarnessState &S) {
   return S.Covered;
 }
 
-/** User Story: As a systems harness coverage consumer, I need to invoke collect missing groups through a stable signature so the systems harness coverage workflow remains explicit and composable. @fn inline void CollectMissingGroups(const TMap<FString, bool> &Covered, const TArray<FString> &Groups, int32 Index, TArray<FString> &Missing) */
-inline void CollectMissingGroups(const TMap<FString, bool> &Covered,
-                                 const TArray<FString> &Groups,
-                                 int32 Index,
-                                 TArray<FString> &Missing) {
-  Index >= Groups.Num()
-      ? void()
-      : ((!Covered.Contains(Groups[Index]) ||
-          !(*Covered.Find(Groups[Index])))
-             ? (Missing.Add(Groups[Index]), void())
-             : void(),
-         CollectMissingGroups(Covered, Groups, Index + 1, Missing));
-}
-
 /** User Story: As a systems harness coverage consumer, I need missing groups derived from the active API contract so coverage cannot pass against a stale local list. @fn inline TArray<FString> SelectHarnessMissingGroups( const FHarnessState &State, const TArray<FString> &Groups) */
 inline TArray<FString> SelectHarnessMissingGroups(
     const FHarnessState &State, const TArray<FString> &Groups) {
-  TArray<FString> Missing;
-  CollectMissingGroups(State.Covered, Groups, 0, Missing);
-  return Missing;
+  return func::filter_array<FString>(Groups, [&State](const FString &Group) {
+    return !func::map_value_or<FString, bool>(State.Covered, Group, false);
+  });
 }
 
 } // namespace CoverageSelectors

@@ -5,21 +5,6 @@
 #include "TestGame/Features/Data/DataAdapters.h"
 
 namespace TestGame::InventoryAdapters {
-namespace detail {
-
-/** User Story: As an inventory maintainer, I need each authored owner inventory decoded recursively so map construction stays deterministic and side effects remain local to the adapter. @fn inline FInventoryState ReadOwners(const TSharedRef<FJsonObject> &ByOwner, const TArray<FString> &OwnerIds, int32 Index, FInventoryState State) */
-inline FInventoryState ReadOwners(const TSharedRef<FJsonObject> &ByOwner,
-                                  const TArray<FString> &OwnerIds,
-                                  int32 Index, FInventoryState State) {
-  return Index >= OwnerIds.Num()
-             ? State
-             : (State.ByOwner.Add(
-                    OwnerIds[Index], DataAdapters::ReadStringArrayField(
-                                         ByOwner, OwnerIds[Index])),
-                ReadOwners(ByOwner, OwnerIds, Index + 1, MoveTemp(State)));
-}
-
-} // namespace detail
 
 /** User Story: As an inventory consumer, I need initial owner inventories loaded from authored data so feature types and reducers contain no scenario content. @fn inline FInventoryState ReadInitialInventoryState() */
 inline FInventoryState ReadInitialInventoryState() {
@@ -37,7 +22,14 @@ inline FInventoryState ReadInitialInventoryState() {
           [](const UE::FSharedString &OwnerId) {
             return FString(*OwnerId);
           });
-  return detail::ReadOwners(ByOwner, OwnerIds, 0, {});
+  return FInventoryState{func::fold_array<FString, TMap<FString, TArray<FString>>>(
+      OwnerIds, {}, [&ByOwner](const TMap<FString, TArray<FString>> &Owners,
+                              const FString &OwnerId) {
+        return func::upsert_map_value<FString, TArray<FString>>(
+            Owners, OwnerId, {}, [&ByOwner, &OwnerId](const TArray<FString> &) {
+              return DataAdapters::ReadStringArrayField(ByOwner, OwnerId);
+            });
+      })};
 }
 
 /** User Story: As an inventory consumer, I need one immutable initial-state value so every new root store starts from the same authored inventory. @fn inline const FInventoryState &InitialInventoryState() */

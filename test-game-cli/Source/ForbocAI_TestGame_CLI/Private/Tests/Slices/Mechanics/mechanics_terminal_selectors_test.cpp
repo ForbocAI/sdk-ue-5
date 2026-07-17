@@ -4,6 +4,7 @@
 #include "TestGame/Features/Systems/Harness/Coverage/CoverageSelectors.h"
 #include "TestGame/Features/Systems/Harness/Game/GameAdapters.h"
 #include "TestGame/Features/Systems/Harness/Scenario/ScenarioSelectors.h"
+#include "TestGame/Features/Systems/Harness/Verification/VerificationAdapters.h"
 #include "TestGame/Features/Systems/Terminal/TerminalAdapters.h"
 #include "TestGame/Features/Systems/Terminal/Transcript/TranscriptSelectors.h"
 #include "TestGame/Features/Systems/Terminal/UI/UISelectors.h"
@@ -13,7 +14,7 @@ using namespace TestGame;
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FTestGameMechanicsTerminalSelectorsTest,
-    "ForbocAI.Slices.TestGame.MechanicsTerminalSelectors",
+    VerificationAdapters::ArchitectureTestData().mechanics.automationName,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
@@ -21,107 +22,111 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FTestGameMechanicsTerminalSelectorsTest::RunTest(
     const FString &Parameters) {
   (void)Parameters;
+  const Verification::FArchitectureVerificationData &Architecture =
+      VerificationAdapters::ArchitectureTestData();
+  const Verification::FBridgeGridVerificationData &BridgeGrid =
+      Architecture.bridgeGrid;
+  const Verification::FMechanicsVerificationData &Data =
+      Architecture.mechanics;
   const FGameRuntimeData &Runtime = GameAdapters::GameRuntimeData();
+  FTestGameStore Store = createTestGameStore();
 
   FSetGridSizePayload GridPayload;
-  GridPayload.Width = 10;
-  GridPayload.Height = 12;
-  const FGridState GridState = CreateGridSlice().Reducer(
-      CreateGridInitialState(), GridActions::setGridSize(GridPayload));
-  TestEqual("Grid width selector reads state",
-            GridSelectors::SelectGridWidth(GridState), 10);
-  TestEqual("Grid height selector reads state",
-            GridSelectors::SelectGridHeight(GridState), 12);
-  TestFalse("Blocked grid positions are not passable",
-            IsPassable(CreateGridInitialState(), FPosition(4, 4)));
-  TestTrue("Open grid positions are passable",
-           IsPassable(CreateGridInitialState(), FPosition(1, 1)));
+  GridPayload.Width = BridgeGrid.grid.state.Width;
+  GridPayload.Height = BridgeGrid.grid.state.Height;
+  Store.dispatch(GridActions::setGridSize(GridPayload));
+  const FGridState GridState = Store.getState().Grid;
+  TestEqual(BridgeGrid.stories.grid,
+            GridSelectors::SelectGridWidth(GridState),
+            BridgeGrid.grid.state.Width);
+  TestEqual(BridgeGrid.stories.grid,
+            GridSelectors::SelectGridHeight(GridState),
+            BridgeGrid.grid.state.Height);
+  TestFalse(BridgeGrid.stories.grid,
+            IsPassable(BridgeGrid.grid.state,
+                       BridgeGrid.grid.blockedPosition));
+  TestTrue(BridgeGrid.stories.grid,
+           IsPassable(BridgeGrid.grid.state, BridgeGrid.grid.openPosition));
+  TestFalse(BridgeGrid.stories.grid,
+            IsPassable(BridgeGrid.grid.state,
+                       BridgeGrid.grid.outsidePosition));
 
-  const FJumpValidation Jump = ValidateJump(CreateBridgeInitialState(), 800);
-  TestFalse("Jump validation enforces authored limits", Jump.bValid);
+  const FJumpValidation Jump =
+      ValidateJump(BridgeGrid.rules, BridgeGrid.jump.requestedForce);
+  TestFalse(BridgeGrid.stories.jump, Jump.bValid);
+  TestTrue(BridgeGrid.stories.jump,
+           Jump.Reason.Contains(BridgeGrid.jump.reasonFragment));
   const FMoveDistanceResult Move =
-      CapMoveDistance(CreateBridgeInitialState(), 6);
-  TestEqual("Movement validation caps authored distance", Move.AllowedDistance,
-            2);
-  TestTrue("Movement validation reports capping", Move.bCapped);
+      CapMoveDistance(BridgeGrid.rules, BridgeGrid.move.requestedDistance);
+  TestEqual(BridgeGrid.stories.move, Move.AllowedDistance,
+            BridgeGrid.move.expectedDistance);
+  TestTrue(BridgeGrid.stories.move, Move.bCapped);
 
-  FStealthState StealthState = CreateStealthSlice().Reducer(
-      CreateStealthInitialState(), StealthActions::setDoorOpen(true));
-  StealthState =
-      CreateStealthSlice().Reducer(StealthState, StealthActions::bumpAlert(30));
-  TestTrue("Stealth door selector reads state",
+  Store.dispatch(StealthActions::setDoorOpen(Data.stealth.doorOpen));
+  Store.dispatch(StealthActions::bumpAlert(Data.stealth.alertDelta));
+  const FStealthState StealthState = Store.getState().Stealth;
+  TestTrue(Data.story,
            StealthSelectors::SelectStealthDoorOpen(StealthState));
-  TestEqual("Stealth alert selector reads state",
-            StealthSelectors::SelectStealthAlertLevel(StealthState), 30);
+  TestEqual(Data.story,
+            StealthSelectors::SelectStealthAlertLevel(StealthState),
+            Data.stealth.alertDelta);
 
-  FTradeOffer Offer;
-  Offer.NpcId = TEXT("miller");
-  Offer.Item = TEXT("medkit");
-  Offer.Price = 100;
-  FSocialState SocialState = CreateSocialSlice().Reducer(
-      FSocialState(), SocialActions::setDialogue(TEXT("Trade?")));
-  SocialState = CreateSocialSlice().Reducer(
-      SocialState, SocialActions::setTradeOffer(Offer));
-  TestEqual("Social dialogue selector reads state",
+  Store.dispatch(SocialActions::setDialogue(Data.social.dialogue));
+  Store.dispatch(SocialActions::setTradeOffer(Data.social.tradeOffer));
+  const FSocialState SocialState = Store.getState().Social;
+  TestEqual(Data.story,
             SocialSelectors::SelectSocialActiveDialogue(SocialState),
-            FString(TEXT("Trade?")));
-  TestTrue("Social trade selector reads optional trade",
+            Data.social.dialogue);
+  TestTrue(Data.story,
            SocialSelectors::SelectSocialActiveTrade(SocialState).hasValue);
 
-  FUIState UIState =
-      CreateUISlice().Reducer(TerminalAdapters::TerminalData().initialState,
-                              UIActions::setMode(Runtime.modes.manual));
-  UIState =
-      CreateUISlice().Reducer(UIState, UIActions::addMessage(TEXT("ready")));
-  TestTrue("UI mode selector reads state",
+  Store.dispatch(UIActions::setMode(Runtime.modes.manual));
+  Store.dispatch(UIActions::addMessage(Data.ui.message));
+  const FUIState UIState = Store.getState().UI;
+  TestTrue(Data.story,
            UISelectors::SelectUiMode(UIState) == Runtime.modes.manual);
-  TestEqual("UI messages selector reads state",
-            UISelectors::SelectUiMessages(UIState).Num(), 2);
+  TestEqual(Data.story, UISelectors::SelectUiMessages(UIState).Num(),
+            Data.ui.expectedMessageCount);
 
   TranscriptActions::FRecordTranscriptPayload TranscriptPayload;
-  TranscriptPayload.ScenarioId = TEXT("s1");
+  TranscriptPayload.ScenarioId = Data.transcript.scenarioId;
   TranscriptPayload.CommandGroup = Runtime.commandGroups.status;
-  TranscriptPayload.Command = TEXT("forbocai status");
+  TranscriptPayload.Command = Data.transcript.statusCommand;
   TranscriptPayload.Status = Runtime.statuses.ok;
-  FTranscriptState TranscriptState = CreateTranscriptSlice().Reducer(
-      FTranscriptState(),
-      TranscriptActions::recordTranscript(TranscriptPayload));
+  Store.dispatch(TranscriptActions::recordTranscript(TranscriptPayload));
   TranscriptPayload.CommandGroup = Runtime.commandGroups.npc_lifecycle;
-  TranscriptPayload.Command = TEXT("forbocai npc create doomguard");
+  TranscriptPayload.Command = Data.transcript.npcCommand;
   TranscriptPayload.Status = Runtime.statuses.error;
-  TranscriptState = CreateTranscriptSlice().Reducer(
-      TranscriptState, TranscriptActions::recordTranscript(TranscriptPayload));
-  TestEqual("Transcript selector reads entries",
+  Store.dispatch(TranscriptActions::recordTranscript(TranscriptPayload));
+  const FTranscriptState TranscriptState = Store.getState().Transcript;
+  TestEqual(Data.story,
             TranscriptSelectors::SelectTranscriptEntries(TranscriptState).Num(),
-            2);
-  TestEqual("Transcript error selector derives failed command count",
+            Data.transcript.expectedEntryCount);
+  TestEqual(Data.story,
             TranscriptSelectors::SelectTranscriptErrorCount(TranscriptState),
-            1);
+            Data.transcript.expectedErrorCount);
 
-  const FHarnessState HarnessState = CreateHarnessSlice().Reducer(
-      FHarnessState(),
-      CoverageActions::markCovered(Runtime.commandGroups.status));
-  const TArray<FString> RequiredCommandGroups{
-      Runtime.commandGroups.status, Runtime.commandGroups.npc_lifecycle};
-  TestEqual("Harness covered selector reads state",
-            CoverageSelectors::SelectHarnessCovered(HarnessState).Num(), 1);
-  TestEqual("Harness missing selector derives coverage",
+  Store.dispatch(CoverageActions::markCovered(Data.coverage.coveredGroup));
+  const FHarnessState HarnessState = Store.getState().Harness;
+  TestEqual(Data.story,
+            CoverageSelectors::SelectHarnessCovered(HarnessState).Num(),
+            Data.coverage.expectedCoveredCount);
+  TestEqual(Data.story,
             CoverageSelectors::SelectHarnessMissingGroups(
-                HarnessState, RequiredCommandGroups)
+                HarnessState, Data.coverage.requiredGroups)
                 .Num(),
-            RequiredCommandGroups.Num() - 1);
+            Data.coverage.expectedMissingCount);
 
-  FScenarioSliceState ScenarioState;
   FScenarioStep Step;
-  Step.Id = TEXT("s1");
+  Step.Id = Data.transcript.scenarioId;
   FScenarioContractPayload ContractPayload;
-  ContractPayload.RequiredCommandGroups = RequiredCommandGroups;
+  ContractPayload.RequiredCommandGroups = Data.coverage.requiredGroups;
   ContractPayload.Steps.Add(Step);
-  ScenarioState = CreateScenarioSlice().Reducer(
-      FScenarioSliceState(),
-      ScenarioActions::setContract(MoveTemp(ContractPayload)));
-  TestEqual("Scenario steps selector reads state",
-            ScenarioSelectors::SelectScenarioSteps(ScenarioState).Num(), 1);
+  Store.dispatch(ScenarioActions::setContract(MoveTemp(ContractPayload)));
+  TestEqual(Data.story,
+            ScenarioSelectors::SelectScenarioSteps(Store.getState().Scenario)
+                .Num(),
+            Data.scenario.expectedStepCount);
 
   return true;
 }

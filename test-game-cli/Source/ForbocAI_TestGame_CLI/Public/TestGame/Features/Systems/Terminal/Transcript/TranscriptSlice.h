@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
+#include "TestGame/Features/Systems/Terminal/TerminalAdapters.h"
 #include "TestGame/Features/Systems/Terminal/Transcript/TranscriptActions.h"
 
 namespace TestGame {
@@ -18,9 +19,9 @@ inline rtk::Slice<FTranscriptState> CreateTranscriptSlice() {
                    &A) -> FTranscriptState {
               FTranscriptState Next = S;
               FTranscriptEntry Entry;
-              Entry.Id = FString::Printf(TEXT("%lld-%d"),
-                                         FDateTime::Now().GetTicks(),
-                                         FMath::Rand());
+              Entry.Id = FString::Format(
+                  *TerminalAdapters::TerminalData().transcript.idFormat,
+                  {FDateTime::Now().GetTicks(), FMath::Rand()});
               Entry.ScenarioId = A.PayloadValue.ScenarioId;
               Entry.CommandGroup = A.PayloadValue.CommandGroup;
               Entry.Command = A.PayloadValue.Command;

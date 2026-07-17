@@ -28,7 +28,7 @@ inline void ApplyCommandResult(
                   Payload.Action.bHasTargetHex = true;
                   Payload.StateDelta.Suspicion = Verdict.SuspicionDelta;
                   Payload.StateDelta.bHasSuspicion =
-                      Verdict.SuspicionDelta != 0;
+                      Verdict.SuspicionDelta != int32{};
                   Store.dispatch(NPCsActions::ApplyNpcVerdict(Payload));
                 }()
               : void();

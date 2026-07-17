@@ -62,6 +62,10 @@ struct FTerminalLevels {
   bool error{};
 };
 
+struct FTerminalTranscriptData {
+  FString idFormat;
+};
+
 struct FTerminalData {
   FUIState initialState;
   FTerminalMessages messages;
@@ -70,6 +74,7 @@ struct FTerminalData {
   TArray<FTerminalNpcGlyph> npcGlyphs;
   FString unknownNpcGlyph;
   FTerminalLevels levels;
+  FTerminalTranscriptData transcript;
   FTerminalTokens tokens;
 };
 

@@ -1,5 +1,11 @@
 {
   "defaultApiUrl": "https://api.forboc.ai",
+  "api": {
+    "reducerPath": "testGameApi",
+    "tagType": "TestGameContract",
+    "endpointName": "getTestGameContract",
+    "tagId": "CURRENT"
+  },
   "authorization": {
     "header": "Authorization",
     "template": "Bearer {0}"

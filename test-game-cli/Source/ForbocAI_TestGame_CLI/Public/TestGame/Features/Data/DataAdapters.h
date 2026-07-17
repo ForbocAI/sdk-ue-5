@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/fp.hpp"
+#include "Containers/SharedString.h"
 #include "Dom/JsonObject.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -79,6 +80,26 @@ inline TArray<FString> ReadStringArrayField(
   return func::map_array<TSharedPtr<FJsonValue>, FString>(
       Object->GetArrayField(Field),
       [](const TSharedPtr<FJsonValue> &Value) { return Value->AsString(); });
+}
+
+/**
+ * User Story: As an authored-data consumer, I need keyed boolean state decoded
+ * through a pure fold so coverage settings remain typed and order-independent.
+ * @fn inline TMap<FString, bool> ReadBooleanMap(const TSharedRef<FJsonObject> &Values)
+ */
+inline TMap<FString, bool>
+ReadBooleanMap(const TSharedRef<FJsonObject> &Values) {
+  TArray<UE::FSharedString> AuthoredKeys;
+  Values->Values.GetKeys(AuthoredKeys);
+  const TArray<FString> Keys = func::map_array<UE::FSharedString, FString>(
+      AuthoredKeys, [](const UE::FSharedString &Key) { return FString(*Key); });
+  return func::fold_array<FString, TMap<FString, bool>>(
+      Keys, {}, [&Values](const TMap<FString, bool> &Result,
+                          const FString &Key) {
+        return func::upsert_map_value<FString, bool>(
+            Result, Key, false,
+            [&Values, &Key](bool) { return Values->GetBoolField(Key); });
+      });
 }
 
 } // namespace TestGame::DataAdapters

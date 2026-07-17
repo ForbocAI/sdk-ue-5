@@ -3,7 +3,7 @@
 #include "HAL/PlatformProcess.h"
 #include "Features/Config/ConfigAdapters.h"
 #include "TestGame/Features/Entities/NPCs/NPCsActions.h"
-#include "TestGame/Features/Systems/Contract/Parsing/ParsingAdapters.h"
+#include "TestGame/Features/Systems/Contract/Parsing/ContractParsingAdapters.h"
 #include "TestGame/Features/Systems/Harness/CommandRunner/CommandRunnerActions.h"
 #include "TestGame/Features/Systems/Harness/CommandRunner/CommandRunnerAdapters.h"
 #include "TestGame/Features/Systems/Harness/CommandRunner/CommandRunnerSelectors.h"

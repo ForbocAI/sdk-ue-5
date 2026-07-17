@@ -237,6 +237,7 @@ struct FGameAutoplayData {
 };
 
 struct FGameEnvironmentData {
+  FString runtimeUrlKey;
   FString commandDelayKey;
   int32 defaultCommandDelayMs{};
 };

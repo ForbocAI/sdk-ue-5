@@ -5,8 +5,8 @@
 namespace TestGame {
 
 struct FPosition {
-  int32 X;
-  int32 Y;
+  int32 X{};
+  int32 Y{};
 
   /** User Story: As a features components spatial consumer, I need to invoke fposition through a stable signature so the features components spatial workflow remains explicit and composable. @fn FPosition() = default */
   FPosition() = default;

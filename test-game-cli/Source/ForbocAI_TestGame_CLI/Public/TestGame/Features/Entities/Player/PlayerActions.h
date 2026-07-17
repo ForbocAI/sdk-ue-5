@@ -21,20 +21,15 @@ inline rtk::ActionCreator<bool> setHiddenActionCreator() {
 
 struct FPatchPlayerPayload {
   FString Name;
-  bool bHasName;
-  int32 Hp;
-  bool bHasHp;
-  bool bHidden;
-  bool bHasHidden;
+  bool bHasName{};
+  int32 Hp{};
+  bool bHasHp{};
+  bool bHidden{};
+  bool bHasHidden{};
   FPosition Position;
-  bool bHasPosition;
+  bool bHasPosition{};
   TArray<FString> Inventory;
-  bool bHasInventory;
-
-  /** User Story: As a features entities player consumer, I need to invoke fpatch player payload through a stable signature so the features entities player workflow remains explicit and composable. @fn FPatchPlayerPayload() */
-  FPatchPlayerPayload()
-      : bHasName(false), Hp(0), bHasHp(false), bHidden(false),
-        bHasHidden(false), bHasPosition(false), bHasInventory(false) {}
+  bool bHasInventory{};
 };
 
 /** User Story: As a features entities player consumer, I need to invoke patch player action creator through a stable signature so the features entities player workflow remains explicit and composable. @fn inline rtk::ActionCreator<FPatchPlayerPayload> patchPlayerActionCreator() */

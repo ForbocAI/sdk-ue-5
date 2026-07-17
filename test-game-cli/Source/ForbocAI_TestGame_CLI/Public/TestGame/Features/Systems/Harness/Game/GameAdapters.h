@@ -83,6 +83,8 @@ inline FGameData ReadGameData() {
       GameRuntimeData().numbers.nextIndex, {});
   Data.environment.commandDelayKey =
       DataAdapters::ReadStringField(Environment, TEXT("commandDelayKey"));
+  Data.environment.runtimeUrlKey =
+      DataAdapters::ReadStringField(Environment, TEXT("runtimeUrlKey"));
   Data.environment.defaultCommandDelayMs = DataAdapters::ReadNumberField(
       Environment, TEXT("defaultCommandDelayMs"));
 

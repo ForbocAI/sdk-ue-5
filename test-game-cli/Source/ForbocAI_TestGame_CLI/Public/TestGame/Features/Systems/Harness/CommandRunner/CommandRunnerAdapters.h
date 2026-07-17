@@ -248,7 +248,8 @@ inline func::Maybe<FString> OutputAssertionFailureReason(
 inline FCommandOutput ValidateOutputAssertionsRecursive(
     const FCommandSpec &Command, const FCommandOutput &Result,
     const FCommandAliasState &Aliases, int32 Index) {
-  return Result.Status == GameAdapters::GameRuntimeData().statuses.error ||
+  const FGameRuntimeData &Data = GameAdapters::GameRuntimeData();
+  return Result.Status == Data.statuses.error ||
                  Index >= Command.OutputAssertions.Num()
              ? Result
              : func::match(
@@ -267,9 +268,10 @@ inline FCommandOutput ValidateOutputAssertionsRecursive(
                              Data.messages.outputAssertionFailure, Values),
                          Result.RoutedThrough, Result.AliasUpdate};
                    },
-                   [&Command, &Result, &Aliases, Index]() {
+                   [&Command, &Result, &Aliases, &Data, Index]() {
                      return ValidateOutputAssertionsRecursive(
-                         Command, Result, Aliases, Index + 1);
+                         Command, Result, Aliases,
+                         Index + Data.numbers.nextIndex);
                    });
 }
 

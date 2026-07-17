@@ -33,6 +33,9 @@
     "display": false,
     "error": true
   },
+  "transcript": {
+    "idFormat": "{0}-{1}"
+  },
   "tokens": {
     "name": "name",
     "x": "x",

@@ -22,6 +22,8 @@ inline FCommandRunnerData ReadCommandRunnerData() {
       DataAdapters::ReadObjectField(Source, TEXT("quotes"));
   const TSharedRef<FJsonObject> Messages =
       DataAdapters::ReadObjectField(Source, TEXT("messages"));
+  const TSharedRef<FJsonObject> TestNames =
+      DataAdapters::ReadObjectField(Source, TEXT("testNames"));
   FCommandRunnerData Data;
 
 #define FORBOCAI_READ_COMMAND_RUNNER_STRING(FieldType, FieldName)          \
@@ -62,6 +64,9 @@ inline FCommandRunnerData ReadCommandRunnerData() {
   FORBOCAI_COMMAND_RUNNER_MESSAGE_FIELDS(
       FORBOCAI_READ_COMMAND_RUNNER_MESSAGE)
 #undef FORBOCAI_READ_COMMAND_RUNNER_MESSAGE
+
+  Data.testNames.outputAssertions =
+      DataAdapters::ReadStringField(TestNames, TEXT("outputAssertions"));
 
   return Data;
 }

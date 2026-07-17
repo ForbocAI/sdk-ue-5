@@ -6,7 +6,7 @@ using namespace TestGame;
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FTestGameCommandRunnerOutputAssertionsTest,
-    "ForbocAI.Slices.TestGame.CommandRunner.OutputAssertions",
+    CommandRunner::CommandRunnerData().testNames.outputAssertions,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 

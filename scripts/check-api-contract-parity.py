@@ -11,6 +11,18 @@ import urllib.request
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR / "parity"))
+
+from api_contract import (
+    parse_contract_schema_fields,
+    parse_schema_references,
+    sorted_difference,
+    validate_parser_shapes,
+    validate_runtime_command_groups,
+    validate_schema_contract,
+    validate_schema_loader,
+)
+
 PLUGIN_ROOT = SCRIPT_DIR.parent
 REPO_ROOT = PLUGIN_ROOT
 WORKSPACE_ROOT = REPO_ROOT.parent
@@ -72,15 +84,6 @@ def get_contract_data() -> dict:
     sys.exit(2)
 
 
-def sorted_difference(expected: set[str], actual: set[str], label: str) -> list[str]:
-    missing = sorted(expected - actual)
-    extra = sorted(actual - expected)
-    return [
-        *[f"{label}: missing {item}" for item in missing],
-        *[f"{label}: unexpected {item}" for item in extra],
-    ]
-
-
 def validate_contract_shape(contract: dict) -> list[str]:
     failures: list[str] = []
     if not contract.get("version"):
@@ -129,15 +132,6 @@ def validate_contract_matrix(contract: dict) -> list[str]:
     return failures
 
 
-def parse_cpp_command_group_mappings(header: str) -> set[str]:
-    return set(
-        re.findall(
-            r'\b[A-Za-z][A-Za-z0-9_]*\s*==\s*TEXT\("([^"]+)"\)\s*\?\s*ECommandGroup::',
-            header,
-        )
-    )
-
-
 def parse_transcript_fields(header: str) -> set[str]:
     match = re.search(r"struct\s+FTranscriptEntry\s*\{(?P<body>.*?)\};", header, re.S)
     if not match:
@@ -157,6 +151,27 @@ def validate_ue_sources(contract: dict) -> list[str]:
     )
     all_sources = source_text(test_game_root)
     contract_sources = source_text(test_game_root / "Features", domain="Contract")
+    parser_sources = source_text(
+        test_game_root / "Features" / "Systems" / "Contract" / "Parsing"
+    )
+    contract_types_path = (
+        test_game_root / "Features" / "Systems" / "Contract" / "ContractTypes.h"
+    )
+    contract_adapters_path = (
+        test_game_root / "Features" / "Systems" / "Contract" / "ContractAdapters.h"
+    )
+    contract_data_path = (
+        PLUGIN_ROOT / "test-game-cli" / "Content" / "Data" /
+        "systems" / "contract.json"
+    )
+    runtime_data_path = (
+        PLUGIN_ROOT / "test-game-cli" / "Content" / "Data" /
+        "harness" / "runtime.json"
+    )
+    game_data_path = (
+        PLUGIN_ROOT / "test-game-cli" / "Content" / "Data" /
+        "harness" / "game.json"
+    )
     runner_data_path = (
         PLUGIN_ROOT / "test-game-cli" / "Content" / "Data" /
         "harness" / "command-runner.json"
@@ -165,29 +180,23 @@ def validate_ue_sources(contract: dict) -> list[str]:
         runner_data_path.read_text(encoding="utf-8")
     ).get("aliases", {})
     contract_aliases = contract.get("aliasRules") or {}
+    contract_data = json.loads(contract_data_path.read_text(encoding="utf-8"))
+    runtime_data = json.loads(runtime_data_path.read_text(encoding="utf-8"))
+    game_data = json.loads(game_data_path.read_text(encoding="utf-8"))
+    schema = contract_data.get("schema") or {}
+    contract_types = contract_types_path.read_text(encoding="utf-8")
+    contract_adapters = contract_adapters_path.read_text(encoding="utf-8")
 
-    required_groups = set(contract.get("requiredCommandGroups") or [])
-    mapped_groups = parse_cpp_command_group_mappings(contract_sources)
-    failures.extend(sorted_difference(required_groups, mapped_groups, "UE ParseCommandGroup mappings"))
-    for group in sorted(mapped_groups):
-        if "-" in group:
-            failures.append(f"UE ParseCommandGroup uses hyphenated group {group}; API uses underscores")
+    failures.extend(validate_schema_contract(
+        contract,
+        schema,
+        parse_contract_schema_fields(contract_types),
+        parse_schema_references(parser_sources),
+    ))
+    failures.extend(validate_schema_loader(contract_adapters))
+    failures.extend(validate_runtime_command_groups(contract, runtime_data, game_data))
+    failures.extend(validate_parser_shapes(parser_sources))
 
-    for field in (
-        "version",
-        "slotContractVersion",
-        "requiredCommandGroups",
-        "aliasRules",
-        "scenarios",
-        "id",
-        "group",
-        "expectedRoutes",
-    ):
-        if f'TEXT("{field}")' not in contract_sources:
-            failures.append(f"UE contract parser missing field: {field}")
-    for field in sorted(contract_aliases):
-        if f'TEXT("{field}")' not in contract_sources:
-            failures.append(f"UE contract parser missing alias field: {field}")
     for runtime_alias, runtime_value in sorted(runner_aliases.items()):
         contract_field = f"{runtime_alias}Alias"
         if contract_aliases.get(contract_field) != runtime_value:
@@ -195,10 +204,6 @@ def validate_ue_sources(contract: dict) -> list[str]:
                 f"UE runtime alias {runtime_alias}={runtime_value} does not match "
                 f"API aliasRules.{contract_field}={contract_aliases.get(contract_field)}"
             )
-    for conversion in ("ToCommandSpec", "ToScenarioStep", "ExpectedRoutes"):
-        if conversion not in contract_sources:
-            failures.append(f"UE contract conversion missing: {conversion}")
-
     expected_transcript_fields = {
         "Id",
         "ScenarioId",

@@ -27,21 +27,16 @@ inline rtk::Slice<FGameMemorySliceState> CreateGameMemorySlice() {
             [](const FGameMemorySliceState &S,
                const rtk::Action<FString> &A) -> FGameMemorySliceState {
               FGameMemorySliceState Next = S;
-              struct CollectIds {
-                static void apply(const rtk::EntityState<FMemoryRecord> &E,
-                                  const FString &NpcId, TArray<FString> &Out,
-                                  int32 Idx) {
-                  Idx >= E.ids.Num()
-                      ? void()
-                      : ((E.entities.Find(E.ids[Idx]) != nullptr &&
-                          E.entities.Find(E.ids[Idx])->NpcId == NpcId)
-                             ? (Out.Add(E.ids[Idx]), void())
-                             : void(),
-                         apply(E, NpcId, Out, Idx + 1), void());
-                }
-              };
-              TArray<FString> ToRemove;
-              CollectIds::apply(Next.Entities, A.PayloadValue, ToRemove, 0);
+              const TArray<FString> ToRemove = func::filter_array<FString>(
+                  Next.Entities.ids, [&Next, &A](const FString &Id) {
+                    return func::match(
+                        func::find_map_value<FString, FMemoryRecord>(
+                            Next.Entities.entities, Id),
+                        [&A](const FMemoryRecord &Record) {
+                          return Record.NpcId == A.PayloadValue;
+                        },
+                        []() { return false; });
+                  });
               Next.Entities =
                   GetGameMemoryAdapter().removeMany(Next.Entities, ToRemove);
               return Next;
