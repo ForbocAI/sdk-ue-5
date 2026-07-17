@@ -19,11 +19,12 @@ bool FTestGameCommandRunnerOutputAssertionsTest::RunTest(
   (void)Parameters;
   const CommandRunner::FCommandRunnerData &Data =
       CommandRunner::CommandRunnerData();
+  const FGameRuntimeData &Runtime = GameAdapters::GameRuntimeData();
   FCommandSpec Command;
-  Command.Group = ECommandGroup::SoulList;
+  Command.Group = Runtime.commandGroups.soul_list;
   Command.Command = Data.commands.soulPrefix;
   FOutputAssertion Assertion;
-  Assertion.Kind = EOutputAssertionKind::IncludesAlias;
+  Assertion.Kind = Runtime.outputAssertionKinds.includesAlias;
   Assertion.Value = Data.aliases.soulTransaction;
   Command.OutputAssertions.Add(Assertion);
 
@@ -31,27 +32,27 @@ bool FTestGameCommandRunnerOutputAssertionsTest::RunTest(
   Aliases.SoulTransactionAliases.Add(
       Data.aliases.soulTransaction, Data.commands.soulExport);
   const CommandRunner::FCommandOutput Observable{
-      ETranscriptStatus::Ok, Data.commands.soulExport,
+      Runtime.statuses.ok, Data.commands.soulExport,
       Data.commands.soulExport, CommandRunner::FCommandAliasUpdate()};
   const CommandRunner::FCommandOutput MissingValue{
-      ETranscriptStatus::Ok, Data.syntax.invalidCommandMessage,
+      Runtime.statuses.ok, Data.syntax.invalidCommandMessage,
       Data.commands.soulExport, CommandRunner::FCommandAliasUpdate()};
 
   TestEqual(
       Data.messages.capturedValuePreservesSuccess,
       CommandRunner::ValidateOutputAssertions(Command, Observable, Aliases)
           .Status,
-      ETranscriptStatus::Ok);
+      Runtime.statuses.ok);
   TestEqual(
       Data.messages.missingCapturedValueFails,
       CommandRunner::ValidateOutputAssertions(Command, MissingValue, Aliases)
           .Status,
-      ETranscriptStatus::Error);
+      Runtime.statuses.error);
   FCommandSpec LiteralCommand;
-  LiteralCommand.Group = ECommandGroup::listMemory;
+  LiteralCommand.Group = Runtime.commandGroups.memory_list;
   LiteralCommand.Command = Data.commands.soulExport;
   FOutputAssertion LiteralAssertion;
-  LiteralAssertion.Kind = EOutputAssertionKind::IncludesText;
+  LiteralAssertion.Kind = Runtime.outputAssertionKinds.includesText;
   LiteralAssertion.Value = Data.commands.soulExport;
   LiteralCommand.OutputAssertions.Add(LiteralAssertion);
   TestEqual(
@@ -59,19 +60,19 @@ bool FTestGameCommandRunnerOutputAssertionsTest::RunTest(
       CommandRunner::ValidateOutputAssertions(LiteralCommand, Observable,
                                               Aliases)
           .Status,
-      ETranscriptStatus::Ok);
+      Runtime.statuses.ok);
   TestEqual(
       Data.messages.missingLiteralFails,
       CommandRunner::ValidateOutputAssertions(LiteralCommand, MissingValue,
                                               Aliases)
           .Status,
-      ETranscriptStatus::Error);
+      Runtime.statuses.error);
   TestEqual(
       Data.messages.missingAliasFails,
       CommandRunner::ValidateOutputAssertions(
           Command, Observable, CommandRunner::FCommandAliasState())
           .Status,
-      ETranscriptStatus::Error);
+      Runtime.statuses.error);
   const TArray<FString> UnresolvedArgs{Data.aliases.soulTransaction};
   TestTrue(
       Data.messages.unresolvedIdentifierRejected,

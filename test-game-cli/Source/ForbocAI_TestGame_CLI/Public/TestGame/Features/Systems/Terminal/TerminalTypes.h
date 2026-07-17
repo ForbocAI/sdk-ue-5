@@ -5,29 +5,72 @@
 
 namespace TestGame {
 
-enum class ETranscriptStatus : uint8 { Ok, Error };
-
 struct FTranscriptEntry {
   FString Id;
   FString ScenarioId;
-  ECommandGroup CommandGroup;
+  FString CommandGroup;
   FString Command;
   TArray<FString> ExpectedRoutes;
-  ETranscriptStatus Status;
+  FString Status;
   FString Output;
   FString Timestamp;
 };
 
-enum class EPlayMode : uint8 { Manual, Autoplay };
-
 struct FUIState {
-  EPlayMode Mode;
+  FString Mode;
   TArray<FString> Messages;
+};
 
-  /** User Story: As a features systems terminal consumer, I need to invoke fuistate through a stable signature so the features systems terminal workflow remains explicit and composable. @fn FUIState() */
-  FUIState() : Mode(EPlayMode::Autoplay) {
-    Messages.Add(TEXT("SYSTEM_OVERRIDE :: terminal HUD online"));
-  }
+struct FTerminalMessages {
+  FString npcMoved;
+  FString legend;
+  FString transcriptEntry;
+  FString sessionStarted;
+  FString stepStarted;
+  FString commandResult;
+  FString transcriptHeading;
+  FString invalidMode;
+};
+
+struct FTerminalTokens {
+  FString name;
+  FString x;
+  FString y;
+  FString timestamp;
+  FString status;
+  FString command;
+  FString mode;
+  FString title;
+  FString id;
+};
+
+struct FTerminalGridData {
+  FString blocked;
+  FString player;
+  FString open;
+  FString cellSeparator;
+  FString rowSeparator;
+};
+
+struct FTerminalNpcGlyph {
+  FString Id;
+  FString Glyph;
+};
+
+struct FTerminalLevels {
+  bool display{};
+  bool error{};
+};
+
+struct FTerminalData {
+  FUIState initialState;
+  FTerminalMessages messages;
+  TArray<FString> usage;
+  FTerminalGridData grid;
+  TArray<FTerminalNpcGlyph> npcGlyphs;
+  FString unknownNpcGlyph;
+  FTerminalLevels levels;
+  FTerminalTokens tokens;
 };
 
 typedef FUIState FUiState;

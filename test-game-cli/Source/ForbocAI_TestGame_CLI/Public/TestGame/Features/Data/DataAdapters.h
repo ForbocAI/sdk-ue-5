@@ -61,6 +61,12 @@ inline int32 ReadNumberField(const TSharedRef<FJsonObject> &Object,
   return static_cast<int32>(Object->GetNumberField(Field));
 }
 
+/** User Story: As an authored-data consumer, I need fractional values decoded without truncation so typed runtime configuration preserves its source value. @fn inline float ReadFloatField(const TSharedRef<FJsonObject> &Object, const FString &Field) */
+inline float ReadFloatField(const TSharedRef<FJsonObject> &Object,
+                            const FString &Field) {
+  return static_cast<float>(Object->GetNumberField(Field));
+}
+
 /** User Story: As a features data consumer, I need to invoke read boolean field through a stable signature so the features data workflow remains explicit and composable. @fn inline bool ReadBooleanField(const TSharedRef<FJsonObject> &Object, const FString &Field) */
 inline bool ReadBooleanField(const TSharedRef<FJsonObject> &Object,
                              const FString &Field) {

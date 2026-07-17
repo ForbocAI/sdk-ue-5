@@ -1,35 +1,66 @@
 #pragma once
 
 #include "TestGame/Features/Systems/Harness/Coverage/CoverageSelectors.h"
+#include "TestGame/Features/Systems/Harness/Game/GameAdapters.h"
 #include "TestGame/Features/Systems/Harness/Game/GameTypes.h"
+#include "TestGame/Features/Systems/Harness/Scenario/ScenarioSelectors.h"
 #include "TestGame/Features/Systems/Terminal/Transcript/TranscriptSelectors.h"
 
-namespace TestGame {
-namespace GameSelectors {
+namespace TestGame::GameSelectors {
 
-/** User Story: As a systems harness game consumer, I need to invoke select game run result through a stable signature so the systems harness game workflow remains explicit and composable. @fn inline FGameRunResult SelectGameRunResult( const FTestGameState &State, const TArray<ECommandGroup> &RequiredGroups) */
-inline FGameRunResult SelectGameRunResult(
-    const FTestGameState &State,
-    const TArray<ECommandGroup> &RequiredGroups) {
+/** User Story: As a harness maintainer, I need run completeness derived from root-store coverage, transcript, and active API contract state so no duplicated completion flag can drift. @fn inline FGameRunResult SelectGameRunResult(const FTestGameState &State) */
+inline FGameRunResult SelectGameRunResult(const FTestGameState &State) {
   FGameRunResult Result;
-  Result.MissingGroups = HarnessSelectors::SelectHarnessMissingGroups(
-      State.Harness, RequiredGroups);
+  Result.MissingGroups = CoverageSelectors::SelectHarnessMissingGroups(
+      State.Harness, ScenarioSelectors::SelectRequiredCommandGroups(
+                         State.Scenario));
   Result.Transcript =
       TranscriptSelectors::SelectTranscriptEntries(State.Transcript);
-  const int32 ErrorCount =
+  Result.TranscriptErrorCount =
       TranscriptSelectors::SelectTranscriptErrorCount(State.Transcript);
-  Result.bComplete = Result.MissingGroups.Num() == 0 && ErrorCount == 0;
-  Result.Summary = Result.bComplete
-                       ? FString(TEXT("CLI coverage complete."))
-                       : FString::Printf(
-                             TEXT("CLI coverage incomplete: %d transcript "
-                                  "error%s; %d missing command group%s."),
-                             ErrorCount, ErrorCount == 1 ? TEXT("") : TEXT("s"),
-                             Result.MissingGroups.Num(),
-                             Result.MissingGroups.Num() == 1 ? TEXT("")
-                                                             : TEXT("s"));
+  Result.bComplete =
+      Result.MissingGroups.Num() ==
+          GameAdapters::GameRuntimeData().numbers.emptyCount &&
+      Result.TranscriptErrorCount ==
+          GameAdapters::GameRuntimeData().numbers.emptyCount;
   return Result;
 }
 
-} // namespace GameSelectors
-} // namespace TestGame
+/** User Story: As a harness presenter, I need summary text projected from derived run state and authored templates so no presentation strings live in behavior code. @fn inline FString SelectGameSummaryText(const FGameRunResult &Result) */
+inline FString SelectGameSummaryText(const FGameRunResult &Result) {
+  const FGameRuntimeData &Data = GameAdapters::GameRuntimeData();
+  return Result.bComplete
+             ? Data.messages.coverageComplete
+             : [&]() {
+                 TMap<FString, FString> ErrorValues;
+                 ErrorValues.Add(
+                     Data.tokens.count,
+                     FString::FromInt(Result.TranscriptErrorCount));
+                 ErrorValues.Add(
+                     Data.tokens.suffix,
+                     Result.TranscriptErrorCount == Data.numbers.singularCount
+                         ? Data.messages.singularSuffix
+                         : Data.messages.pluralSuffix);
+                 const FString Errors = GameAdapters::FormatGameTemplate(
+                     Data.messages.coverageErrors, ErrorValues);
+
+                 TMap<FString, FString> MissingValues;
+                 MissingValues.Add(
+                     Data.tokens.groups,
+                     FString::Join(Result.MissingGroups,
+                                   *Data.separators.list));
+                 const FString Missing =
+                     Result.MissingGroups.Num() > Data.numbers.emptyCount
+                         ? GameAdapters::FormatGameTemplate(
+                               Data.messages.missingGroups, MissingValues)
+                         : Data.messages.noMissingGroups;
+
+                 TMap<FString, FString> SummaryValues;
+                 SummaryValues.Add(Data.tokens.errors, Errors);
+                 SummaryValues.Add(Data.tokens.missing, Missing);
+                 return GameAdapters::FormatGameTemplate(
+                     Data.messages.coverageIncomplete, SummaryValues);
+               }();
+}
+
+} // namespace TestGame::GameSelectors

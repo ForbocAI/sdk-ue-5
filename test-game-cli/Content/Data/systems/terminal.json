@@ -1,0 +1,47 @@
+{
+  "initialState": {
+    "mode": "autoplay",
+    "messages": ["SYSTEM_OVERRIDE :: terminal HUD online"]
+  },
+  "messages": {
+    "npcMoved": "{name} moved to {x},{y}",
+    "legend": "Legend :: P=Scout  D=Doomguard  M=Miller  #=Blocked  .=Open",
+    "transcriptEntry": "{timestamp} | {status} | {command}",
+    "sessionStarted": "ForbocAI test-game session started: mode={mode}",
+    "stepStarted": ":: {title} [{id}]",
+    "commandResult": "[{status}] {command}",
+    "transcriptHeading": "=== Transcript Summary ===",
+    "invalidMode": "Invalid mode: {mode}"
+  },
+  "usage": [
+    "Usage: forbocai-ue-test-game [contract|--mode autoplay|manual]",
+    "       forbocai-ue-test-game --api-url https://api.forboc.ai --mode autoplay"
+  ],
+  "grid": {
+    "blocked": "#",
+    "player": "P",
+    "open": ".",
+    "cellSeparator": " ",
+    "rowSeparator": "\n"
+  },
+  "npcGlyphs": [
+    { "id": "miller", "glyph": "M" },
+    { "id": "doomguard", "glyph": "D" }
+  ],
+  "unknownNpcGlyph": "N",
+  "levels": {
+    "display": false,
+    "error": true
+  },
+  "tokens": {
+    "name": "name",
+    "x": "x",
+    "y": "y",
+    "timestamp": "timestamp",
+    "status": "status",
+    "command": "command",
+    "mode": "mode",
+    "title": "title",
+    "id": "id"
+  }
+}

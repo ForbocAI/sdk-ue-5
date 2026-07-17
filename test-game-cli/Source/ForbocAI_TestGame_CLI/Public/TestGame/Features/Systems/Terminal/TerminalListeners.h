@@ -6,11 +6,12 @@
  */
 
 #include "CoreMinimal.h"
-#include "Core/frmt.hpp"
 #include "Core/rtk.hpp"
 #include "TestGame/Features/Entities/NPCs/NPCsActions.h"
 #include "TestGame/Features/Entities/NPCs/NPCsSelectors.h"
 #include "TestGame/Features/Systems/Harness/Game/GameTypes.h"
+#include "TestGame/Features/Systems/Harness/Game/GameAdapters.h"
+#include "TestGame/Features/Systems/Terminal/TerminalAdapters.h"
 #include "TestGame/Features/Systems/Terminal/UI/UIActions.h"
 
 namespace TestGame {
@@ -48,51 +49,28 @@ inline rtk::Middleware<FTestGameState> createGameListenerMiddleware() {
                             NPCsSelectors::SelectNpcById(State.NPCs,
                                                          Payload.value.Id);
                         MaybeNpc.hasValue
-                            ? (Api.dispatch(UIActions::addMessage(
-                                   frmt::RuntimeString(
-                                       TEXT("%s moved to %d,%d"),
-                                       frmt::Args({
-                                           frmt::Arg(MaybeNpc.value.Name),
-                                           frmt::Arg(Payload.value.Position.X),
-                                           frmt::Arg(Payload.value.Position.Y),
-                                       })))),
+                            ? ([&]() {
+                                const FTerminalData &Data =
+                                    TerminalAdapters::TerminalData();
+                                TMap<FString, FString> Values;
+                                Values.Add(Data.tokens.name,
+                                           MaybeNpc.value.Name);
+                                Values.Add(Data.tokens.x, FString::FromInt(
+                                                              Payload.value
+                                                                  .Position.X));
+                                Values.Add(Data.tokens.y, FString::FromInt(
+                                                              Payload.value
+                                                                  .Position.Y));
+                                Api.dispatch(UIActions::addMessage(
+                                    GameAdapters::FormatGameTemplate(
+                                        Data.messages.npcMoved, Values)));
+                              }(),
                                void())
                             : void();
                       }()
-                    : (void)0;
+                    : void();
               }()
-            : (void)0;
-
-        /**
-         * React to NPC verdict application
-         * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
-         */
-        NPCsActions::ApplyNpcVerdictActionCreator().match(Action)
-            ? [&]() {
-                auto Payload =
-                    NPCsActions::ApplyNpcVerdictActionCreator().extract(
-                        Action);
-                Payload.hasValue
-                    ? [&]() {
-                        const auto &State = Api.getState();
-                        auto MaybeNpc =
-                            NPCsSelectors::SelectNpcById(State.NPCs,
-                                                         Payload.value.Id);
-                        MaybeNpc.hasValue
-                            ? (Api.dispatch(UIActions::addMessage(
-                                   frmt::RuntimeString(
-                                       TEXT("Verdict applied to %s "
-                                            "(action: %s)"),
-                                       frmt::Args({
-                                           frmt::Arg(MaybeNpc.value.Name),
-                                           frmt::Arg(Payload.value.Action.Type),
-                                       })))),
-                               void())
-                            : void();
-                      }()
-                    : (void)0;
-              }()
-            : (void)0;
+            : void();
 
         return Result;
       };

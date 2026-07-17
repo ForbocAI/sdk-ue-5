@@ -1,4 +1,5 @@
 #include "Misc/AutomationTest.h"
+#include "TestGame/Features/Components/Inventory/InventorySelectors.h"
 #include "TestGame/Features/Systems/Memory/MemorySelectors.h"
 #include "TestGame/TestGameStore.h"
 
@@ -43,8 +44,10 @@ bool FTestGameStoreDomainSelectorsTest::RunTest(const FString &Parameters) {
   InventoryPayload.OwnerId = TEXT("scout");
   InventoryPayload.Items.Add(TEXT("coin-pouch"));
   InventoryPayload.Items.Add(TEXT("signal-key"));
-  const FInventoryState InventoryState = CreateInventorySlice().Reducer(
-      FInventoryState(), InventoryActions::setOwnerInventory(InventoryPayload));
+  const rtk::Slice<FInventoryState> InventorySlice = CreateInventorySlice();
+  const FInventoryState InventoryState = InventorySlice.Reducer(
+      InventorySlice.InitialState,
+      InventoryActions::setOwnerInventory(InventoryPayload));
   TestEqual("Owner inventory selector reads keyed state",
             InventorySelectors::SelectOwnerInventory(InventoryState,
                                                      TEXT("scout"))

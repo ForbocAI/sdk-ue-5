@@ -2,6 +2,7 @@
 
 #include "TestGame/Features/Entities/NPCs/NPCsActions.h"
 #include "TestGame/Features/Entities/Player/PlayerActions.h"
+#include "TestGame/Features/Systems/Harness/Game/GameAdapters.h"
 #include "TestGame/Features/Systems/Harness/Game/GameTypes.h"
 #include "TestGame/Features/Systems/Memory/MemoryActions.h"
 #include "TestGame/Features/Systems/Social/SocialActions.h"
@@ -16,72 +17,53 @@ namespace TestGame::GameThunksDetail {
  */
 inline void ApplyScenarioInitialState(const FScenarioStep &Step,
                                       FTestGameStore &Store) {
-  (Step.EventType == EEventType::Stealth)
+  const FGameRuntimeData &Data = GameAdapters::GameRuntimeData();
+  (Step.EventType == Data.scenarioEventTypes.stealth)
       ? [&]() {
-          Store.dispatch(StealthActions::setDoorOpen(true));
-          Store.dispatch(StealthActions::bumpAlert(25));
-
-          FGameNPC Npc;
-          Npc.Id = TEXT("doomguard");
-          Npc.Name = TEXT("Doomguard Patrol");
-          Npc.Faction = TEXT("Doomguards");
-          Npc.Hp = 100;
-          Npc.Suspicion = 40;
-          Npc.Position = FPosition(5, 10);
-          Store.dispatch(NPCsActions::UpsertNPC(Npc));
-
-          FMemoryRecord Memory;
-          Memory.Id = TEXT("mem-door-001");
-          Memory.NpcId = TEXT("doomguard");
-          Memory.Text = TEXT("Armory door found open at x:5, y:12");
-          Memory.Importance = 0.9f;
-          Store.dispatch(GameMemoryActions::storeMemory(Memory));
+          Store.dispatch(StealthActions::setDoorOpen(
+              Data.initialState.stealth.doorOpen));
+          Store.dispatch(StealthActions::bumpAlert(
+              Data.initialState.stealth.alertDelta));
+          Store.dispatch(
+              NPCsActions::UpsertNPC(Data.initialState.stealth.npc));
+          Store.dispatch(GameMemoryActions::storeMemory(
+              Data.initialState.stealth.memory));
         }()
       : void();
 
-  (Step.EventType == EEventType::Social)
+  (Step.EventType == Data.scenarioEventTypes.social)
       ? [&]() {
-          FGameNPC Npc;
-          Npc.Id = TEXT("miller");
-          Npc.Name = TEXT("Miller");
-          Npc.Faction = TEXT("Neutral");
-          Npc.Hp = 100;
-          Npc.Suspicion = 50;
-          Npc.Inventory.Add(TEXT("medkit"));
-          Npc.KnownSecrets.Add(TEXT("player_stole_rations"));
-          Npc.Position = FPosition(5, 12);
-          Store.dispatch(NPCsActions::UpsertNPC(Npc));
+          Store.dispatch(
+              NPCsActions::UpsertNPC(Data.initialState.social.npc));
           Store.dispatch(SocialActions::setDialogue(
-              TEXT("I know you took those rations...")));
-
-          FTradeOffer Offer;
-          Offer.NpcId = TEXT("miller");
-          Offer.Item = TEXT("medkit");
-          Offer.Price = 100;
-          Store.dispatch(SocialActions::setTradeOffer(Offer));
+              Data.initialState.social.dialogue));
+          Store.dispatch(SocialActions::setTradeOffer(
+              Data.initialState.social.tradeOffer));
 
           NPCsActions::FPatchNPCPayload Patch;
-          Patch.Id = TEXT("miller");
-          Patch.Patch.Suspicion = 75;
+          Patch.Id = Data.initialState.social.npc.Id;
+          Patch.Patch.Suspicion = Data.initialState.social.suspicion;
           Patch.Patch.bHasSuspicion = true;
           Store.dispatch(NPCsActions::PatchNPC(Patch));
         }()
       : void();
 
-  Step.EventType == EEventType::Escape
-      ? (Store.dispatch(PlayerActions::setHidden(false)), void())
+  Step.EventType == Data.scenarioEventTypes.escape
+      ? (Store.dispatch(PlayerActions::setHidden(
+             Data.initialState.escape.hidden)),
+         void())
       : void();
 
-  (Step.EventType == EEventType::Persistence)
+  (Step.EventType == Data.scenarioEventTypes.persistence)
       ? [&]() {
           FMarkSoulExportedPayload Export;
-          Export.NpcId = TEXT("doomguard");
-          Export.TxId = TEXT("tx-runtime-001");
+          Export.NpcId = Data.initialState.persistence.npcId;
+          Export.TxId = Data.initialState.persistence.txId;
           Store.dispatch(GameSoulActions::markSoulExported(Export));
-          Store.dispatch(
-              GameSoulActions::markSoulImported(TEXT("tx-runtime-001")));
-          Store.dispatch(
-              GameMemoryActions::clearMemoryForNpc(TEXT("doomguard")));
+          Store.dispatch(GameSoulActions::markSoulImported(
+              Data.initialState.persistence.txId));
+          Store.dispatch(GameMemoryActions::clearMemoryForNpc(
+              Data.initialState.persistence.npcId));
         }()
       : void();
 }

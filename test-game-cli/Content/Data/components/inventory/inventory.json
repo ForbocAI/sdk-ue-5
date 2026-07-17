@@ -1,0 +1,8 @@
+{
+  "initialState": {
+    "byOwner": {
+      "player": ["coin-pouch"],
+      "miller": ["medkit"]
+    }
+  }
+}

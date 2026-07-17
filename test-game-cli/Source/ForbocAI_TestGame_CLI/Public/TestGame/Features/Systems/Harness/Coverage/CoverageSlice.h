@@ -13,15 +13,15 @@ inline rtk::Slice<FHarnessState> CreateHarnessSlice() {
       TEXT("testgame/harness"), FHarnessState(),
       [](rtk::ActionReducerMapBuilder<FHarnessState> &Builder) {
         Builder.addCase(
-            HarnessActions::markCoveredActionCreator(),
+            CoverageActions::markCoveredActionCreator(),
             [](const FHarnessState &S,
-               const rtk::Action<ECommandGroup> &A) -> FHarnessState {
+               const rtk::Action<FString> &A) -> FHarnessState {
               FHarnessState Next = S;
               Next.Covered.Add(A.PayloadValue, true);
               return Next;
             });
         Builder.addCase(
-            HarnessActions::resetCoverageActionCreator(),
+            CoverageActions::resetCoverageActionCreator(),
             [](const FHarnessState &,
                const rtk::Action<rtk::FEmptyPayload> &) -> FHarnessState {
               return FHarnessState();

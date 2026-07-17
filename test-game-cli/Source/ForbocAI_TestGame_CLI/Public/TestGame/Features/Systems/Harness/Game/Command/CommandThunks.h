@@ -13,7 +13,8 @@ inline void ApplyCommandResult(
     const FCommandSpec &Command,
     const CommandRunner::FCommandOutput &CommandResult,
     FTestGameStore &Store) {
-  Command.Group == ECommandGroup::NpcProcessChat
+  const FGameRuntimeData &Data = GameAdapters::GameRuntimeData();
+  Command.Group == Data.commandGroups.npc_process_chat
       ? [&]() {
           const FParsedVerdict Verdict =
               GameAdapters::ParseVerdict(CommandResult.Output);
@@ -34,12 +35,15 @@ inline void ApplyCommandResult(
         }()
       : void();
 
-  (Command.Group == ECommandGroup::BridgeValidate &&
-   CommandResult.Status == ETranscriptStatus::Error)
-      ? (Store.dispatch(UIActions::addMessage(
-             FString(TEXT("Bridge validation failed: ")) +
-             CommandResult.Output)),
-         void())
+  (Command.Group == Data.commandGroups.bridge_validate &&
+   CommandResult.Status == Data.statuses.error)
+      ? [&]() {
+          TMap<FString, FString> Values;
+          Values.Add(Data.tokens.output, CommandResult.Output);
+          Store.dispatch(UIActions::addMessage(
+              GameAdapters::FormatGameTemplate(
+                  Data.messages.bridgeValidationFailed, Values)));
+        }()
       : void();
 }
 

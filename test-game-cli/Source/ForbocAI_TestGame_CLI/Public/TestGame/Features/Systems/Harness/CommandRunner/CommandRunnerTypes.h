@@ -7,7 +7,8 @@
   X(FString, unknownCommandKey)                                            \
   X(FString, commandSeparator)                                             \
   X(FString, textOption)                                                   \
-  X(FString, rootCommand)                                                  \
+  X(FString, sdkRootCommand)                                               \
+  X(FString, testGameRootCommand)                                          \
   X(FString, invalidCommandMessage)
 
 #define FORBOCAI_COMMAND_RUNNER_COMMAND_FIELDS(X)                          \
@@ -18,7 +19,8 @@
   X(FString, npcCreate)                                                    \
   X(FString, ghostRun)                                                     \
   X(FString, soulExport)                                                   \
-  X(FString, soulImport)
+  X(FString, soulImport)                                                   \
+  X(FString, contract)
 
 #define FORBOCAI_COMMAND_RUNNER_ALIAS_FIELDS(X)                            \
   X(FString, ghostSession)                                                 \
@@ -28,9 +30,11 @@
   X(int32, rootTokenCount)                                                 \
   X(int32, domainTokenCount)                                               \
   X(int32, commandTokenCount)                                              \
+  X(int32, testGameCommandTokenCount)                                      \
   X(int32, firstTokenIndex)                                                \
   X(int32, domainTokenIndex)                                               \
   X(int32, actionTokenIndex)                                               \
+  X(int32, testGameCommandTokenIndex)                                      \
   X(int32, argumentStartIndex)                                             \
   X(int32, firstArgumentIndex)                                             \
   X(int32, nextIndex)
@@ -41,10 +45,6 @@
 
 #define FORBOCAI_COMMAND_RUNNER_MESSAGE_FIELDS(X)                          \
   X(FString, unresolvedAlias)                                              \
-  X(FString, outputAssertionAliasMissing)                                  \
-  X(FString, outputAssertionValueMissing)                                  \
-  X(FString, outputAssertionKindUnsupported)                               \
-  X(FString, outputAssertionFailure)                                       \
   X(FString, capturedValuePreservesSuccess)                                \
   X(FString, missingCapturedValueFails)                                    \
   X(FString, requiredLiteralPreservesSuccess)                              \
@@ -112,15 +112,15 @@ struct FCommandAliasUpdate {
 };
 
 struct FCommandOutput {
-  ETranscriptStatus Status;
+  FString Status;
   FString Output;
   FString RoutedThrough;
   FCommandAliasUpdate AliasUpdate;
 
-  /** User Story: As a systems harness command runner consumer, I need to invoke fcommand output through a stable signature so the systems harness command runner workflow remains explicit and composable. @fn FCommandOutput() */
-  FCommandOutput() : Status(ETranscriptStatus::Error) {}
-  /** User Story: As a systems harness command runner consumer, I need to invoke fcommand output through a stable signature so the systems harness command runner workflow remains explicit and composable. @fn FCommandOutput(ETranscriptStatus InStatus, FString InOutput, FString InRoutedThrough, FCommandAliasUpdate InAliasUpdate) */
-  FCommandOutput(ETranscriptStatus InStatus, FString InOutput,
+  /** User Story: As a command runner consumer, I need an empty transport value so progress records can be assembled before execution. @fn FCommandOutput() = default */
+  FCommandOutput() = default;
+  /** User Story: As a systems harness command runner consumer, I need to invoke fcommand output through a stable signature so the systems harness command runner workflow remains explicit and composable. @fn FCommandOutput(FString InStatus, FString InOutput, FString InRoutedThrough, FCommandAliasUpdate InAliasUpdate) */
+  FCommandOutput(FString InStatus, FString InOutput,
                  FString InRoutedThrough, FCommandAliasUpdate InAliasUpdate)
       : Status(InStatus), Output(MoveTemp(InOutput)),
         RoutedThrough(MoveTemp(InRoutedThrough)),

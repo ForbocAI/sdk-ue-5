@@ -2,6 +2,7 @@
 
 #include "Core/fp.hpp"
 #include "TestGame/Features/Systems/Harness/CommandRunner/Configuration/ConfigurationAdapters.h"
+#include "TestGame/Features/Systems/Harness/Game/GameAdapters.h"
 
 namespace TestGame {
 namespace CommandRunner {
@@ -208,31 +209,35 @@ ResolveOutputAssertionAlias(const FString &Alias,
 inline func::Maybe<FString> OutputAssertionFailureReason(
     const FCommandSpec &Command, const FOutputAssertion &Assertion,
     const FCommandOutput &Result, const FCommandAliasState &Aliases) {
-  const FCommandRunnerMessages &Messages = CommandRunnerData().messages;
-  return Assertion.Kind == EOutputAssertionKind::Unknown
-             ? func::just(FString::Format(
-                   *Messages.outputAssertionKindUnsupported,
-                   {Command.Command}))
-         : Assertion.Kind == EOutputAssertionKind::IncludesText
+  const FGameRuntimeData &Data = GameAdapters::GameRuntimeData();
+  TMap<FString, FString> Values;
+  Values.Add(Data.tokens.command, Command.Command);
+  Values.Add(Data.tokens.value, Assertion.Value);
+  Values.Add(Data.tokens.kind, Assertion.Kind);
+  Values.Add(Data.tokens.alias, Assertion.Value);
+  return !Data.outputAssertionKinds.all.Contains(Assertion.Kind)
+             ? func::just(GameAdapters::FormatGameTemplate(
+                   Data.messages.outputAssertionKindUnsupported, Values))
+         : Assertion.Kind == Data.outputAssertionKinds.includesText
              ? (Result.Output.Contains(Assertion.Value)
                     ? func::nothing<FString>()
-                    : func::just(FString::Format(
-                          *Messages.outputAssertionValueMissing,
-                          {Command.Command, Assertion.Value})))
+                    : func::just(GameAdapters::FormatGameTemplate(
+                          Data.messages.outputAssertionValueMissing,
+                          Values)))
              : func::match(
                    ResolveOutputAssertionAlias(Assertion.Value, Aliases),
-                   [&Command, &Assertion, &Messages,
-                    &Result](const FString &Expected) {
+                   [&Data, &Result, &Values](const FString &Expected) {
                      return Result.Output.Contains(Expected)
                                 ? func::nothing<FString>()
-                                : func::just(FString::Format(
-                                      *Messages.outputAssertionValueMissing,
-                                      {Command.Command, Assertion.Value}));
+                                : func::just(
+                                      GameAdapters::FormatGameTemplate(
+                                          Data.messages
+                                              .outputAssertionValueMissing,
+                                          Values));
                    },
-                   [&Command, &Assertion, &Messages]() {
-                     return func::just(FString::Format(
-                         *Messages.outputAssertionAliasMissing,
-                         {Command.Command, Assertion.Value}));
+                   [&Data, &Values]() {
+                     return func::just(GameAdapters::FormatGameTemplate(
+                         Data.messages.outputAssertionAliasMissing, Values));
                    });
 }
 
@@ -243,7 +248,7 @@ inline func::Maybe<FString> OutputAssertionFailureReason(
 inline FCommandOutput ValidateOutputAssertionsRecursive(
     const FCommandSpec &Command, const FCommandOutput &Result,
     const FCommandAliasState &Aliases, int32 Index) {
-  return Result.Status == ETranscriptStatus::Error ||
+  return Result.Status == GameAdapters::GameRuntimeData().statuses.error ||
                  Index >= Command.OutputAssertions.Num()
              ? Result
              : func::match(
@@ -251,12 +256,15 @@ inline FCommandOutput ValidateOutputAssertionsRecursive(
                        Command, Command.OutputAssertions[Index], Result,
                        Aliases),
                    [&Result](const FString &Reason) {
+                     const FGameRuntimeData &Data =
+                         GameAdapters::GameRuntimeData();
+                     TMap<FString, FString> Values;
+                     Values.Add(Data.tokens.reason, Reason);
+                     Values.Add(Data.tokens.output, Result.Output);
                      return FCommandOutput{
-                         ETranscriptStatus::Error,
-                         FString::Format(
-                             *CommandRunnerData()
-                                  .messages.outputAssertionFailure,
-                             {Reason, Result.Output}),
+                         Data.statuses.error,
+                         GameAdapters::FormatGameTemplate(
+                             Data.messages.outputAssertionFailure, Values),
                          Result.RoutedThrough, Result.AliasUpdate};
                    },
                    [&Command, &Result, &Aliases, Index]() {

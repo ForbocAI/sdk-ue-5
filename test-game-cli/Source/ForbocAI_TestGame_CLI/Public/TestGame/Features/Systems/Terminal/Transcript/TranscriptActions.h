@@ -9,10 +9,10 @@ namespace TranscriptActions {
 
 struct FRecordTranscriptPayload {
   FString ScenarioId;
-  ECommandGroup CommandGroup;
+  FString CommandGroup;
   FString Command;
   TArray<FString> ExpectedRoutes;
-  ETranscriptStatus Status;
+  FString Status;
   FString Output;
 };
 

@@ -1,9 +1,65 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Core/rtk.hpp"
+#include "TestGame/Features/Systems/Harness/Scenario/ScenarioTypes.h"
 
 namespace TestGame {
 namespace Contract {
+
+#define FORBOCAI_CONTRACT_SCHEMA_FIELDS(X)                               \
+  X(kind)                                                                \
+  X(value)                                                               \
+  X(group)                                                               \
+  X(command)                                                             \
+  X(expectedRoutes)                                                      \
+  X(outputAssertions)                                                    \
+  X(id)                                                                  \
+  X(title)                                                               \
+  X(description)                                                         \
+  X(eventType)                                                           \
+  X(commands)                                                            \
+  X(version)                                                             \
+  X(slotContractVersion)                                                 \
+  X(requiredCommandGroups)                                               \
+  X(aliasRules)                                                          \
+  X(scenarios)                                                           \
+  X(npcCreateAlias)                                                      \
+  X(ghostSessionAlias)                                                   \
+  X(soulTransactionAlias)
+
+struct FContractAuthorizationData {
+  FString Header;
+  FString Template;
+};
+
+struct FContractRequestData {
+  FString Path;
+  FString Method;
+};
+
+struct FContractSeparatorData {
+  FString TrailingUrl;
+};
+
+struct FContractSchemaData {
+#define FORBOCAI_DECLARE_CONTRACT_SCHEMA_FIELD(Name) FString Name;
+  FORBOCAI_CONTRACT_SCHEMA_FIELDS(FORBOCAI_DECLARE_CONTRACT_SCHEMA_FIELD)
+#undef FORBOCAI_DECLARE_CONTRACT_SCHEMA_FIELD
+};
+
+struct FContractData {
+  FString DefaultApiUrl;
+  FContractAuthorizationData Authorization;
+  FContractRequestData Request;
+  FContractSeparatorData Separators;
+  FContractSchemaData Schema;
+};
+
+struct FTestGameContractRequest {
+  rtk::FetchArgs Args;
+  TMap<FString, FString> Headers;
+};
 
 struct FContractAliasRules {
   FString NpcCreateAlias;
@@ -11,49 +67,19 @@ struct FContractAliasRules {
   FString SoulTransactionAlias;
 };
 
-struct FContractOutputAssertion {
-  FString Kind;
-  FString Value;
-};
-
-struct FContractCommandSpec {
-  FString Group;
-  FString Command;
-  TArray<FString> ExpectedRoutes;
-  TArray<FContractOutputAssertion> OutputAssertions;
-  bool bHasOutputAssertions;
-
-  /** User Story: As a systems contract consumer, I need command fields initialized so required output assertions are distinguishable from a missing field. @fn FContractCommandSpec() */
-  FContractCommandSpec() : bHasOutputAssertions(false) {}
-};
-
-struct FContractScenario {
-  FString Id;
-  FString Title;
-  FString Description;
-  FString EventType;
-  TArray<FContractCommandSpec> Commands;
-};
-
 struct FContractResponse {
   FString Version;
   FString SlotContractVersion;
   TArray<FString> RequiredCommandGroups;
   FContractAliasRules AliasRules;
-  TArray<FContractScenario> Scenarios;
-  bool bValid;
-
-  /** User Story: As a features systems contract consumer, I need to invoke fcontract response through a stable signature so the features systems contract workflow remains explicit and composable. @fn FContractResponse() */
-  FContractResponse() : bValid(false) {}
+  TArray<FScenarioStep> Scenarios;
+  bool bValid{};
 };
 
-struct FRawContractResponse {
-  bool bSuccess;
+struct FContractQueryResult {
+  bool bSuccess{};
   FString Body;
   FString Error;
-
-  /** User Story: As a features systems contract consumer, I need to invoke fraw contract response through a stable signature so the features systems contract workflow remains explicit and composable. @fn FRawContractResponse() */
-  FRawContractResponse() : bSuccess(false) {}
 };
 
 } // namespace Contract

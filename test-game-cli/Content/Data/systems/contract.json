@@ -10,5 +10,26 @@
   },
   "separators": {
     "trailingUrl": "/"
+  },
+  "schema": {
+    "kind": "kind",
+    "value": "value",
+    "group": "group",
+    "command": "command",
+    "expectedRoutes": "expectedRoutes",
+    "outputAssertions": "outputAssertions",
+    "id": "id",
+    "title": "title",
+    "description": "description",
+    "eventType": "eventType",
+    "commands": "commands",
+    "version": "version",
+    "slotContractVersion": "slotContractVersion",
+    "requiredCommandGroups": "requiredCommandGroups",
+    "aliasRules": "aliasRules",
+    "scenarios": "scenarios",
+    "npcCreateAlias": "npcCreateAlias",
+    "ghostSessionAlias": "ghostSessionAlias",
+    "soulTransactionAlias": "soulTransactionAlias"
   }
 }

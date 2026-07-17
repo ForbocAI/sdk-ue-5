@@ -2,7 +2,9 @@
 #include "TestGame/Features/Components/Spatial/Grid/GridSelectors.h"
 #include "TestGame/Features/Systems/Bridge/BridgeSelectors.h"
 #include "TestGame/Features/Systems/Harness/Coverage/CoverageSelectors.h"
+#include "TestGame/Features/Systems/Harness/Game/GameAdapters.h"
 #include "TestGame/Features/Systems/Harness/Scenario/ScenarioSelectors.h"
+#include "TestGame/Features/Systems/Terminal/TerminalAdapters.h"
 #include "TestGame/Features/Systems/Terminal/Transcript/TranscriptSelectors.h"
 #include "TestGame/Features/Systems/Terminal/UI/UISelectors.h"
 #include "TestGame/TestGameStore.h"
@@ -19,6 +21,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FTestGameMechanicsTerminalSelectorsTest::RunTest(
     const FString &Parameters) {
   (void)Parameters;
+  const FGameRuntimeData &Runtime = GameAdapters::GameRuntimeData();
 
   FSetGridSizePayload GridPayload;
   GridPayload.Width = 10;
@@ -66,25 +69,26 @@ bool FTestGameMechanicsTerminalSelectorsTest::RunTest(
            SocialSelectors::SelectSocialActiveTrade(SocialState).hasValue);
 
   FUIState UIState =
-      CreateUISlice().Reducer(FUIState(), UIActions::setMode(EPlayMode::Manual));
+      CreateUISlice().Reducer(TerminalAdapters::TerminalData().initialState,
+                              UIActions::setMode(Runtime.modes.manual));
   UIState =
       CreateUISlice().Reducer(UIState, UIActions::addMessage(TEXT("ready")));
   TestTrue("UI mode selector reads state",
-           UISelectors::SelectUiMode(UIState) == EPlayMode::Manual);
+           UISelectors::SelectUiMode(UIState) == Runtime.modes.manual);
   TestEqual("UI messages selector reads state",
             UISelectors::SelectUiMessages(UIState).Num(), 2);
 
   TranscriptActions::FRecordTranscriptPayload TranscriptPayload;
   TranscriptPayload.ScenarioId = TEXT("s1");
-  TranscriptPayload.CommandGroup = ECommandGroup::Status;
+  TranscriptPayload.CommandGroup = Runtime.commandGroups.status;
   TranscriptPayload.Command = TEXT("forbocai status");
-  TranscriptPayload.Status = ETranscriptStatus::Ok;
+  TranscriptPayload.Status = Runtime.statuses.ok;
   FTranscriptState TranscriptState = CreateTranscriptSlice().Reducer(
       FTranscriptState(),
       TranscriptActions::recordTranscript(TranscriptPayload));
-  TranscriptPayload.CommandGroup = ECommandGroup::NpcLifecycle;
+  TranscriptPayload.CommandGroup = Runtime.commandGroups.npc_lifecycle;
   TranscriptPayload.Command = TEXT("forbocai npc create doomguard");
-  TranscriptPayload.Status = ETranscriptStatus::Error;
+  TranscriptPayload.Status = Runtime.statuses.error;
   TranscriptState = CreateTranscriptSlice().Reducer(
       TranscriptState, TranscriptActions::recordTranscript(TranscriptPayload));
   TestEqual("Transcript selector reads entries",
@@ -95,23 +99,27 @@ bool FTestGameMechanicsTerminalSelectorsTest::RunTest(
             1);
 
   const FHarnessState HarnessState = CreateHarnessSlice().Reducer(
-      FHarnessState(), HarnessActions::markCovered(ECommandGroup::Status));
+      FHarnessState(),
+      CoverageActions::markCovered(Runtime.commandGroups.status));
+  const TArray<FString> RequiredCommandGroups{
+      Runtime.commandGroups.status, Runtime.commandGroups.npc_lifecycle};
   TestEqual("Harness covered selector reads state",
-            HarnessSelectors::SelectHarnessCovered(HarnessState).Num(), 1);
+            CoverageSelectors::SelectHarnessCovered(HarnessState).Num(), 1);
   TestEqual("Harness missing selector derives coverage",
-            HarnessSelectors::SelectHarnessMissingGroups(HarnessState,
-                                                         RequiredGroups())
+            CoverageSelectors::SelectHarnessMissingGroups(
+                HarnessState, RequiredCommandGroups)
                 .Num(),
-            RequiredGroups().Num() - 1);
+            RequiredCommandGroups.Num() - 1);
 
   FScenarioSliceState ScenarioState;
   FScenarioStep Step;
   Step.Id = TEXT("s1");
-  TArray<FScenarioStep> ContractSteps;
-  ContractSteps.Add(Step);
+  FScenarioContractPayload ContractPayload;
+  ContractPayload.RequiredCommandGroups = RequiredCommandGroups;
+  ContractPayload.Steps.Add(Step);
   ScenarioState = CreateScenarioSlice().Reducer(
       FScenarioSliceState(),
-      ScenarioActions::contractReceived(MoveTemp(ContractSteps)));
+      ScenarioActions::setContract(MoveTemp(ContractPayload)));
   TestEqual("Scenario steps selector reads state",
             ScenarioSelectors::SelectScenarioSteps(ScenarioState).Num(), 1);
 

@@ -3,7 +3,8 @@
     "unknownCommandKey": "unknown",
     "commandSeparator": "_",
     "textOption": "--text",
-    "rootCommand": "forbocai",
+    "sdkRootCommand": "forbocai",
+    "testGameRootCommand": "forbocai-test-game-cli",
     "invalidCommandMessage": "Not a forbocai command"
   },
   "commands": {
@@ -14,7 +15,8 @@
     "npcCreate": "npc_create",
     "ghostRun": "ghost_run",
     "soulExport": "soul_export",
-    "soulImport": "soul_import"
+    "soulImport": "soul_import",
+    "contract": "contract"
   },
   "aliases": {
     "ghostSession": "ghost-session",
@@ -24,9 +26,11 @@
     "rootTokenCount": 1,
     "domainTokenCount": 2,
     "commandTokenCount": 3,
+    "testGameCommandTokenCount": 2,
     "firstTokenIndex": 0,
     "domainTokenIndex": 1,
     "actionTokenIndex": 2,
+    "testGameCommandTokenIndex": 1,
     "argumentStartIndex": 3,
     "firstArgumentIndex": 0,
     "nextIndex": 1
@@ -37,10 +41,6 @@
   },
   "messages": {
     "unresolvedAlias": "Command dependency unavailable for {0}: alias {1} was not captured by a successful prerequisite.",
-    "outputAssertionAliasMissing": "Output assertion failed for {0}: alias {1} was not captured.",
-    "outputAssertionValueMissing": "Output assertion failed for {0}: output did not include required value {1}.",
-    "outputAssertionKindUnsupported": "Output assertion failed for {0}: the assertion kind is unsupported.",
-    "outputAssertionFailure": "{0}\nCommand output:\n{1}",
     "capturedValuePreservesSuccess": "Captured value in output preserves success",
     "missingCapturedValueFails": "Missing captured value converts success into failure",
     "requiredLiteralPreservesSuccess": "Required literal evidence preserves success",

@@ -1,31 +1,28 @@
 #pragma once
-/**
- * Test-game view-model selectors.
- */
 
 #include "CoreMinimal.h"
 #include "TestGame/Features/Entities/NPCs/NPCsSelectors.h"
-#include "TestGame/Features/Systems/Contract/ContractTypes.h"
+#include "TestGame/Features/Systems/Harness/Game/GameAdapters.h"
 #include "TestGame/Features/Systems/Harness/Game/GameTypes.h"
+#include "TestGame/Features/Systems/Terminal/TerminalAdapters.h"
 
 namespace TestGame {
 
 struct FTerminalRenderState {
   FString GridText;
+  FString LegendText;
 };
 
-enum class ETerminalLineLevel : uint8 { Display, Error };
-
 struct FTerminalLineViewModel {
-  ETerminalLineLevel Level;
+  bool bError{};
   FString Text;
 
-  /** User Story: As a features systems terminal consumer, I need to invoke fterminal line view model through a stable signature so the features systems terminal workflow remains explicit and composable. @fn FTerminalLineViewModel() */
-  FTerminalLineViewModel()
-      : Level(ETerminalLineLevel::Display) {}
-  /** User Story: As a features systems terminal consumer, I need to invoke fterminal line view model through a stable signature so the features systems terminal workflow remains explicit and composable. @fn FTerminalLineViewModel(ETerminalLineLevel InLevel, FString InText) */
-  FTerminalLineViewModel(ETerminalLineLevel InLevel, FString InText)
-      : Level(InLevel), Text(MoveTemp(InText)) {}
+  /** User Story: As a terminal presenter, I need an empty line model so selectors can compose output without sentinel text. @fn FTerminalLineViewModel() = default */
+  FTerminalLineViewModel() = default;
+
+  /** User Story: As a terminal presenter, I need line severity and authored text carried together so views only perform output. @fn FTerminalLineViewModel(bool bInError, FString InText) */
+  FTerminalLineViewModel(bool bInError, FString InText)
+      : bError(bInError), Text(MoveTemp(InText)) {}
 };
 
 struct FTerminalProgressViewModel {
@@ -33,189 +30,238 @@ struct FTerminalProgressViewModel {
 };
 
 namespace TerminalSelectorsDetail {
-/** User Story: As a features systems terminal consumer, I need to invoke is blocked through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline bool IsBlocked(const TArray<FPosition> &Blocked, const FPosition &Pos, int32 Index) */
-inline bool IsBlocked(const TArray<FPosition> &Blocked, const FPosition &Pos,
-                      int32 Index) {
+
+/** User Story: As a grid presenter, I need blocked positions searched recursively so selectors remain deterministic and side-effect free. @fn inline bool IsBlocked(const TArray<FPosition> &Blocked, const FPosition &Position, int32 Index) */
+inline bool IsBlocked(const TArray<FPosition> &Blocked,
+                      const FPosition &Position, int32 Index) {
   return Index >= Blocked.Num()
              ? false
-             : (Blocked[Index] == Pos ? true
-                                      : IsBlocked(Blocked, Pos, Index + 1));
+             : Blocked[Index] == Position
+                   ? true
+                   : IsBlocked(Blocked, Position,
+                               Index + GameAdapters::GameRuntimeData()
+                                           .numbers.nextIndex);
 }
 
-/** User Story: As a features systems terminal consumer, I need to invoke npc cell at through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline TCHAR NpcCellAt(const TArray<FGameNPC> &Npcs, const FPosition &Pos, int32 Index) */
-inline TCHAR NpcCellAt(const TArray<FGameNPC> &Npcs, const FPosition &Pos,
-                       int32 Index) {
+/** User Story: As a grid presenter, I need authored NPC glyphs selected recursively so adding a marker never changes rendering logic. @fn inline FString SelectNpcGlyph(const FString &NpcId, const TArray<FTerminalNpcGlyph> &Glyphs, int32 Index) */
+inline FString SelectNpcGlyph(const FString &NpcId,
+                              const TArray<FTerminalNpcGlyph> &Glyphs,
+                              int32 Index) {
+  return Index >= Glyphs.Num()
+             ? TerminalAdapters::TerminalData().unknownNpcGlyph
+             : Glyphs[Index].Id == NpcId
+                   ? Glyphs[Index].Glyph
+                   : SelectNpcGlyph(
+                         NpcId, Glyphs,
+                         Index + GameAdapters::GameRuntimeData()
+                                     .numbers.nextIndex);
+}
+
+/** User Story: As a grid presenter, I need entity cells derived from root state and authored glyph data so view code performs no state interpretation. @fn inline FString NpcCellAt(const TArray<FGameNPC> &Npcs, const FPosition &Position, int32 Index) */
+inline FString NpcCellAt(const TArray<FGameNPC> &Npcs,
+                         const FPosition &Position, int32 Index) {
   return Index >= Npcs.Num()
-             ? TEXT('.')
-             : (Npcs[Index].Position == Pos
-                    ? (Npcs[Index].Id == TEXT("miller")
-                           ? TEXT('M')
-                           : (Npcs[Index].Id == TEXT("doomguard") ? TEXT('D')
-                                                                  : TEXT('N')))
-                    : NpcCellAt(Npcs, Pos, Index + 1));
+             ? TerminalAdapters::TerminalData().grid.open
+             : Npcs[Index].Position == Position
+                   ? SelectNpcGlyph(
+                         Npcs[Index].Id,
+                         TerminalAdapters::TerminalData().npcGlyphs,
+                         GameAdapters::GameRuntimeData().numbers.emptyCount)
+                   : NpcCellAt(
+                         Npcs, Position,
+                         Index + GameAdapters::GameRuntimeData()
+                                     .numbers.nextIndex);
 }
 
-/** User Story: As a features systems terminal consumer, I need to invoke cell at through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline TCHAR CellAt(const FPosition &Pos, const FTestGameState &State) */
-inline TCHAR CellAt(const FPosition &Pos, const FTestGameState &State) {
-  return IsBlocked(State.Grid.Blocked, Pos, 0)
-             ? TEXT('#')
-             : (State.Player.Position == Pos
-                    ? TEXT('P')
-                    : NpcCellAt(NPCsSelectors::SelectAllNpcs(State.NPCs), Pos,
-                                0));
+/** User Story: As a grid presenter, I need cell priority derived in one selector so blocked, player, and NPC state cannot disagree across views. @fn inline FString CellAt(const FPosition &Position, const FTestGameState &State) */
+inline FString CellAt(const FPosition &Position,
+                      const FTestGameState &State) {
+  const FTerminalData &Data = TerminalAdapters::TerminalData();
+  return IsBlocked(State.Grid.Blocked, Position,
+                   GameAdapters::GameRuntimeData().numbers.emptyCount)
+             ? Data.grid.blocked
+             : State.Player.Position == Position
+                   ? Data.grid.player
+                   : NpcCellAt(
+                         NPCsSelectors::SelectAllNpcs(State.NPCs), Position,
+                         GameAdapters::GameRuntimeData().numbers.emptyCount);
 }
 
-/** User Story: As a features systems terminal consumer, I need to invoke render row at through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline FString RenderRowAt(const FTestGameState &State, int32 Y, int32 X, int32 Width, const FString &Acc) */
+/** User Story: As a grid presenter, I need rows rendered recursively from selected cells so the fixed grid shape remains pure and testable. @fn inline FString RenderRowAt(const FTestGameState &State, int32 Y, int32 X, const FString &Acc) */
 inline FString RenderRowAt(const FTestGameState &State, int32 Y, int32 X,
-                            int32 Width, const FString &Acc) {
-  return X >= Width
-             ? Acc
-             : RenderRowAt(State, Y, X + 1, Width,
-                           Acc + (X > 0 ? FString(TEXT(" ")) : FString()) +
-                               CellAt(FPosition(X, Y), State));
-}
-
-/** User Story: As a features systems terminal consumer, I need to invoke render rows through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline FString RenderRows(const FTestGameState &State, int32 Y, int32 Height, const FString &Acc) */
-inline FString RenderRows(const FTestGameState &State, int32 Y, int32 Height,
                            const FString &Acc) {
-  return Y >= Height
+  const FGameRuntimeNumbers &Numbers =
+      GameAdapters::GameRuntimeData().numbers;
+  return X >= State.Grid.Width
              ? Acc
-             : RenderRows(State, Y + 1, Height,
-                          Acc + (Y > 0 ? FString(TEXT("\n")) : FString()) +
-                              RenderRowAt(State, Y, 0, State.Grid.Width,
-                                          FString()));
-}
-} // namespace TerminalSelectorsDetail
-
-/** User Story: As a features systems terminal consumer, I need to invoke select terminal render state through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline FTerminalRenderState SelectTerminalRenderState( const FTestGameState &State) */
-inline FTerminalRenderState SelectTerminalRenderState(
-    const FTestGameState &State) {
-  FTerminalRenderState ViewModel;
-  ViewModel.GridText =
-      TerminalSelectorsDetail::RenderRows(State, 0, State.Grid.Height,
-                                          FString());
-  return ViewModel;
+             : RenderRowAt(
+                   State, Y, X + Numbers.nextIndex,
+                   Acc + (X > Numbers.emptyCount
+                              ? TerminalAdapters::TerminalData()
+                                    .grid.cellSeparator
+                              : FString()) +
+                       CellAt(FPosition(X, Y), State));
 }
 
-namespace TerminalProgressSelectorsDetail {
+/** User Story: As a grid presenter, I need all rows rendered recursively so line separation is authored and independent of terminal output. @fn inline FString RenderRows(const FTestGameState &State, int32 Y, const FString &Acc) */
+inline FString RenderRows(const FTestGameState &State, int32 Y,
+                          const FString &Acc) {
+  const FGameRuntimeNumbers &Numbers =
+      GameAdapters::GameRuntimeData().numbers;
+  return Y >= State.Grid.Height
+             ? Acc
+             : RenderRows(
+                   State, Y + Numbers.nextIndex,
+                   Acc + (Y > Numbers.emptyCount
+                              ? TerminalAdapters::TerminalData()
+                                    .grid.rowSeparator
+                              : FString()) +
+                       RenderRowAt(State, Y, Numbers.emptyCount, FString()));
+}
 
-/** User Story: As a features systems terminal consumer, I need to invoke append transcript lines through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline void AppendTranscriptLines( const TArray<FTranscriptEntry> &Entries, int32 Index, TArray<FTerminalLineViewModel> &Lines) */
+/** User Story: As a transcript presenter, I need entries mapped recursively through the authored line template so summary views contain no formatting policy. @fn inline void AppendTranscriptLines( const TArray<FTranscriptEntry> &Entries, int32 Index, TArray<FTerminalLineViewModel> &Lines) */
 inline void AppendTranscriptLines(
     const TArray<FTranscriptEntry> &Entries, int32 Index,
     TArray<FTerminalLineViewModel> &Lines) {
   Index >= Entries.Num()
       ? void()
       : [&]() {
+          const FTerminalData &Data = TerminalAdapters::TerminalData();
           const FTranscriptEntry &Entry = Entries[Index];
+          TMap<FString, FString> Values;
+          Values.Add(Data.tokens.timestamp, Entry.Timestamp);
+          Values.Add(Data.tokens.status, Entry.Status);
+          Values.Add(Data.tokens.command, Entry.Command);
           Lines.Add(FTerminalLineViewModel{
-              Entry.Status == ETranscriptStatus::Ok
-                  ? ETerminalLineLevel::Display
-                  : ETerminalLineLevel::Error,
-              FString::Printf(
-                  TEXT("%s | %s | %s"), *Entry.Timestamp,
-                  Entry.Status == ETranscriptStatus::Ok ? TEXT("ok")
-                                                        : TEXT("error"),
-                  *Entry.Command)});
-          AppendTranscriptLines(Entries, Index + 1, Lines);
+              Entry.Status != GameAdapters::GameRuntimeData().statuses.ok,
+              GameAdapters::FormatGameTemplate(
+                  Data.messages.transcriptEntry, Values)});
+          AppendTranscriptLines(
+              Entries,
+              Index + GameAdapters::GameRuntimeData().numbers.nextIndex,
+              Lines);
         }();
 }
 
-} // namespace TerminalProgressSelectorsDetail
+/** User Story: As a CLI presenter, I need usage lines mapped recursively from authored data so command help stays portable without view logic. @fn inline void AppendUsageLines(const TArray<FString> &Usage, int32 Index, TArray<FTerminalLineViewModel> &Lines) */
+inline void AppendUsageLines(const TArray<FString> &Usage, int32 Index,
+                             TArray<FTerminalLineViewModel> &Lines) {
+  Index >= Usage.Num()
+      ? void()
+      : (Lines.Add(FTerminalLineViewModel{
+             TerminalAdapters::TerminalData().levels.display, Usage[Index]}),
+         AppendUsageLines(
+             Usage,
+             Index + GameAdapters::GameRuntimeData().numbers.nextIndex,
+             Lines));
+}
 
-/** User Story: As a features systems terminal consumer, I need to invoke select terminal progress view model through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline FTerminalProgressViewModel SelectTerminalProgressViewModel(const FGameProgress &Progress) */
+} // namespace TerminalSelectorsDetail
+
+/** User Story: As a terminal view, I need grid and legend presentation selected from root state and authored data so rendering performs no calculations. @fn inline FTerminalRenderState SelectTerminalRenderState(const FTestGameState &State) */
+inline FTerminalRenderState
+SelectTerminalRenderState(const FTestGameState &State) {
+  return FTerminalRenderState{
+      TerminalSelectorsDetail::RenderRows(
+          State, GameAdapters::GameRuntimeData().numbers.emptyCount,
+          FString()),
+      TerminalAdapters::TerminalData().messages.legend};
+}
+
+/** User Story: As a terminal view, I need lifecycle events mapped to authored line models so the view only emits selected presentation. @fn inline FTerminalProgressViewModel SelectTerminalProgressViewModel(const FGameProgress &Progress) */
 inline FTerminalProgressViewModel
 SelectTerminalProgressViewModel(const FGameProgress &Progress) {
+  const FGameRuntimeData &Runtime = GameAdapters::GameRuntimeData();
+  const FTerminalData &Data = TerminalAdapters::TerminalData();
   FTerminalProgressViewModel ViewModel;
-  Progress.Type == EGameProgressType::SessionStarted
-      ? (ViewModel.Lines.Add(FTerminalLineViewModel{
-             ETerminalLineLevel::Display,
-             FString::Printf(
-                 TEXT("ForbocAI test-game session started: mode=%s"),
-                 Progress.Mode == EPlayMode::Autoplay ? TEXT("autoplay")
-                                                     : TEXT("manual"))}),
-         void())
-      : void();
-  Progress.Type == EGameProgressType::ContractFailed
-      ? (ViewModel.Lines.Add(FTerminalLineViewModel{
-             ETerminalLineLevel::Error, Progress.Message}),
-         void())
-      : void();
-  Progress.Type == EGameProgressType::StepStarted
-      ? (ViewModel.Lines.Add(FTerminalLineViewModel{
-             ETerminalLineLevel::Display,
-             FString::Printf(TEXT(":: %s [%s]"), *Progress.Step.Title,
-                             *Progress.Step.Id)}),
-         ViewModel.Lines.Add(FTerminalLineViewModel{
-             ETerminalLineLevel::Display, Progress.Step.Description}),
-         void())
-      : void();
-  Progress.Type == EGameProgressType::CommandCompleted
+  Progress.Type == Runtime.lifecycleEvents.sessionStarted
       ? [&]() {
+          TMap<FString, FString> Values;
+          Values.Add(Data.tokens.mode, Progress.Mode);
           ViewModel.Lines.Add(FTerminalLineViewModel{
-              Progress.CommandResult.Status == ETranscriptStatus::Ok
-                  ? ETerminalLineLevel::Display
-                  : ETerminalLineLevel::Error,
-              FString::Printf(
-                  TEXT("%s %s"),
-                  Progress.CommandResult.Status == ETranscriptStatus::Ok
-                      ? TEXT("[ok]")
-                      : TEXT("[error]"),
-                  *Progress.Command.Command)});
-          (Progress.CommandResult.Status == ETranscriptStatus::Error &&
-           !Progress.CommandResult.Output.IsEmpty())
+              Data.levels.display,
+              GameAdapters::FormatGameTemplate(
+                  Data.messages.sessionStarted, Values)});
+        }()
+      : void();
+  Progress.Type == Runtime.lifecycleEvents.contractFailed
+      ? (ViewModel.Lines.Add(
+             FTerminalLineViewModel{Data.levels.error, Progress.Message}),
+         void())
+      : void();
+  Progress.Type == Runtime.lifecycleEvents.stepStarted
+      ? [&]() {
+          TMap<FString, FString> Values;
+          Values.Add(Data.tokens.title, Progress.Step.Title);
+          Values.Add(Data.tokens.id, Progress.Step.Id);
+          ViewModel.Lines.Add(FTerminalLineViewModel{
+              Data.levels.display,
+              GameAdapters::FormatGameTemplate(Data.messages.stepStarted,
+                                                Values)});
+          ViewModel.Lines.Add(FTerminalLineViewModel{
+              Data.levels.display, Progress.Step.Description});
+        }()
+      : void();
+  Progress.Type == Runtime.lifecycleEvents.commandCompleted
+      ? [&]() {
+          TMap<FString, FString> Values;
+          Values.Add(Data.tokens.status, Progress.CommandResult.Status);
+          Values.Add(Data.tokens.command, Progress.Command.Command);
+          const bool bError =
+              Progress.CommandResult.Status == Runtime.statuses.error;
+          ViewModel.Lines.Add(FTerminalLineViewModel{
+              bError,
+              GameAdapters::FormatGameTemplate(Data.messages.commandResult,
+                                                Values)});
+          bError && !Progress.CommandResult.Output.IsEmpty()
               ? (ViewModel.Lines.Add(FTerminalLineViewModel{
-                     ETerminalLineLevel::Error,
-                     Progress.CommandResult.Output}),
+                     Data.levels.error, Progress.CommandResult.Output}),
                  void())
               : void();
         }()
       : void();
-  Progress.Type == EGameProgressType::SessionCompleted
+  Progress.Type == Runtime.lifecycleEvents.sessionCompleted
       ? (ViewModel.Lines.Add(FTerminalLineViewModel{
-             ETerminalLineLevel::Display,
-             TEXT("=== Transcript Summary ===")}),
-         TerminalProgressSelectorsDetail::AppendTranscriptLines(
-             Progress.RunResult.Transcript, 0, ViewModel.Lines),
+             Data.levels.display, Data.messages.transcriptHeading}),
+         TerminalSelectorsDetail::AppendTranscriptLines(
+             Progress.RunResult.Transcript, Runtime.numbers.emptyCount,
+             ViewModel.Lines),
          ViewModel.Lines.Add(FTerminalLineViewModel{
-             Progress.RunResult.bComplete ? ETerminalLineLevel::Display
-                                          : ETerminalLineLevel::Error,
-             Progress.RunResult.Summary}),
+             !Progress.RunResult.bComplete, Progress.RunResult.Summary}),
          void())
       : void();
   return ViewModel;
 }
 
-/** User Story: As a features systems terminal consumer, I need to invoke select usage view model through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline FTerminalProgressViewModel SelectUsageViewModel() */
+/** User Story: As a CLI view, I need usage text selected from authored data so host presentation remains platform-neutral. @fn inline FTerminalProgressViewModel SelectUsageViewModel() */
 inline FTerminalProgressViewModel SelectUsageViewModel() {
   FTerminalProgressViewModel ViewModel;
-  ViewModel.Lines.Add(FTerminalLineViewModel{
-      ETerminalLineLevel::Display,
-      TEXT("Usage: forbocai-ue-test-game [contract|--mode autoplay|manual]")});
-  ViewModel.Lines.Add(FTerminalLineViewModel{
-      ETerminalLineLevel::Display,
-      TEXT("       forbocai-ue-test-game --api-url https://api.forboc.ai "
-           "--mode autoplay")});
+  TerminalSelectorsDetail::AppendUsageLines(
+      TerminalAdapters::TerminalData().usage,
+      GameAdapters::GameRuntimeData().numbers.emptyCount, ViewModel.Lines);
   return ViewModel;
 }
 
-/** User Story: As a features systems terminal consumer, I need to invoke select contract view model through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline FTerminalProgressViewModel SelectContractViewModel( const Contract::FRawContractResponse &Response) */
+/** User Story: As a contract CLI view, I need command output mapped to line severity so rendering does not know transport details. @fn inline FTerminalProgressViewModel SelectContractViewModel( const CommandRunner::FCommandOutput &Result) */
 inline FTerminalProgressViewModel SelectContractViewModel(
-    const Contract::FRawContractResponse &Response) {
+    const CommandRunner::FCommandOutput &Result) {
   FTerminalProgressViewModel ViewModel;
   ViewModel.Lines.Add(FTerminalLineViewModel{
-      Response.bSuccess ? ETerminalLineLevel::Display
-                        : ETerminalLineLevel::Error,
-      Response.bSuccess ? Response.Body : Response.Error});
+      Result.Status != GameAdapters::GameRuntimeData().statuses.ok,
+      Result.Output});
   return ViewModel;
 }
 
-/** User Story: As a features systems terminal consumer, I need to invoke select invalid mode view model through a stable signature so the features systems terminal workflow remains explicit and composable. @fn inline FTerminalProgressViewModel SelectInvalidModeViewModel(const FString &Mode) */
+/** User Story: As a CLI view, I need invalid modes formatted through authored tokens so parsing remains separate from presentation. @fn inline FTerminalProgressViewModel SelectInvalidModeViewModel(const FString &Mode) */
 inline FTerminalProgressViewModel
 SelectInvalidModeViewModel(const FString &Mode) {
+  const FTerminalData &Data = TerminalAdapters::TerminalData();
+  TMap<FString, FString> Values;
+  Values.Add(Data.tokens.mode, Mode);
   FTerminalProgressViewModel ViewModel;
   ViewModel.Lines.Add(FTerminalLineViewModel{
-      ETerminalLineLevel::Error,
-      FString::Printf(TEXT("Invalid mode: %s"), *Mode)});
+      Data.levels.error,
+      GameAdapters::FormatGameTemplate(Data.messages.invalidMode, Values)});
   return ViewModel;
 }
 

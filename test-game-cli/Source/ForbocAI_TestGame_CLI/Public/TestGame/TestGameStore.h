@@ -214,7 +214,20 @@ inline FTestGameState TestGameReducer(const FTestGameState &State,
 /** User Story: As a test game store consumer, I need to invoke create initial test game state through a stable signature so the test game store workflow remains explicit and composable. @fn inline FTestGameState CreateInitialTestGameState() */
 inline FTestGameState CreateInitialTestGameState() {
   FTestGameState Initial;
-  Initial.Scenario.Steps = {};
+  Initial.NPCs = GameSlices::NPCs().InitialState;
+  Initial.Player = GameSlices::Player().InitialState;
+  Initial.Grid = GameSlices::Grid().InitialState;
+  Initial.Stealth = GameSlices::Stealth().InitialState;
+  Initial.Social = GameSlices::Social().InitialState;
+  Initial.Bridge = GameSlices::Bridge().InitialState;
+  Initial.Memory = GameSlices::Memory().InitialState;
+  Initial.Inventory = GameSlices::Inventory().InitialState;
+  Initial.Soul = GameSlices::Soul().InitialState;
+  Initial.UI = GameSlices::UI().InitialState;
+  Initial.Transcript = GameSlices::Transcript().InitialState;
+  Initial.Scenario = GameSlices::Scenario().InitialState;
+  Initial.Harness = GameSlices::Harness().InitialState;
+  Initial.CommandRunner = GameSlices::CommandRunner().InitialState;
   return Initial;
 }
 

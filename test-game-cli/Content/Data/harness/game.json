@@ -1,0 +1,36 @@
+{
+  "autoplay": {
+    "dots": [".", "..", "..."],
+    "dotDelayMs": 250
+  },
+  "contractCommand": {
+    "group": "contract",
+    "command": "forbocai-test-game-cli contract",
+    "expectedRoutes": ["GET /test-game/contract"],
+    "outputAssertions": []
+  },
+  "environment": {
+    "commandDelayKey": "FORBOCAI_TEST_GAME_COMMAND_DELAY_MS",
+    "defaultCommandDelayMs": 1000
+  },
+  "messages": {
+    "contractGroupInvalid": "The test-game CLI contract command must use the canonical contract command group",
+    "gamePresenterRequired": "The test-game CLI requires a game presenter for an executable session",
+    "runtimeUrlMissing": "Runtime URL not configured",
+    "apiContractUnavailable": "API contract unavailable",
+    "contractEndpointUnavailable": "Cannot reach API contract endpoint"
+  },
+  "numbers": {
+    "initialIndex": 0,
+    "minimumDelayMs": 0,
+    "nextIndex": 1,
+    "radix": 10,
+    "millisecondsPerSecond": 1000,
+    "contractTimeoutSeconds": 5
+  },
+  "output": {
+    "emptyLines": [],
+    "emptyText": "",
+    "lineBreak": "\n"
+  }
+}
