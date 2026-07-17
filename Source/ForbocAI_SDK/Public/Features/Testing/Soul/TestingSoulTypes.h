@@ -66,6 +66,7 @@ struct FSoulTestLabels {
   FString AvailableSoulCount;
   FString AvailableSoulFirstTxId;
   FString Error;
+  FString ProviderUrls;
   FString ProviderRetryWithinCycle;
   FString ProviderRetryCycleBoundary;
   FString ProviderRetryBeforeMaximumCycle;
@@ -82,8 +83,14 @@ struct FSoulProviderRetryTestData {
   int32 UrlCount;
 };
 
+struct FSoulProviderUrlsTestData {
+  FSoulProviderUploadResponse Response;
+  TArray<FString> Expected;
+};
+
 struct FSoulTestFixtures {
   FSoulTestLabels Labels;
+  FSoulProviderUrlsTestData ProviderUrls;
   FSoulProviderRetryTestData ProviderRetry;
   Storage::Serialization::FStorageSerializationFixture StorageSerialization;
   TArray<FSoulTestScenario> Scenarios;

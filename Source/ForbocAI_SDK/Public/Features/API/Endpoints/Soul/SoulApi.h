@@ -17,9 +17,9 @@ inline Thunk<FSoulExportPreparation> postSoulExportPreparation(
   return Detail::MakePostWithCodec<FSoulExportPreparationRequest,
                                    FSoulExportPreparation>(
       Data.Names.PostSoulExportPreparation,
-      Configuration::apiEndpoint(Configuration::endpointPath(
+      Configuration::endpointPath(
           {Data.Segments.Npcs, NpcId, Data.Segments.Soul,
-           Data.Segments.Export})),
+           Data.Segments.Export}),
       Request, Detail::EncodeSoulExportPreparationRequest,
       Detail::DecodeSoulExportPreparationResponse,
       {soulTagAdapter(NpcId), soulTagAdapter(Request.TransactionId)});
@@ -37,9 +37,9 @@ inline Thunk<FSoulExportResponse> postSoulExportConfirmation(
   return Detail::MakePostWithCodec<FSoulExportConfirmationRequest,
                                    FSoulExportResponse>(
       Data.Names.PostSoulExportConfirmation,
-      Configuration::apiEndpoint(Configuration::endpointPath(
+      Configuration::endpointPath(
           {Data.Segments.Npcs, NpcId, Data.Segments.Soul,
-           Data.Segments.Confirm})),
+           Data.Segments.Confirm}),
       Request, Detail::EncodeSoulExportConfirmationRequest,
       Detail::DecodeSoulExportConfirmationResponse,
       {soulTagAdapter(Request.TransactionId), soulListTagAdapter()});
@@ -58,8 +58,8 @@ postSoulVerification(const FString &TxId,
   return Detail::MakePostQueryWithCodec<FSoulVerificationRequest,
                                         FSoulVerifyResult>(
       Data.Names.PostSoulVerification,
-      Configuration::apiEndpoint(Configuration::endpointPath(
-          {Data.Segments.Souls, TxId, Data.Segments.Verify})),
+      Configuration::endpointPath(
+          {Data.Segments.Souls, TxId, Data.Segments.Verify}),
       Request, Detail::EncodeSoulVerificationRequest,
       Detail::DecodeSoulVerifyResponse,
       {soulTagAdapter(TxId)});

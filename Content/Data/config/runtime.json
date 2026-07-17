@@ -1,0 +1,52 @@
+{
+  "defaults": {
+    "sdkVersion": "0.6.5",
+    "apiUrl": "https://api.forboc.ai",
+    "apiKey": "",
+    "databasePath": "",
+    "vectorDimension": 384,
+    "maxRecallResults": 10
+  },
+  "fields": {
+    "sdkVersion": "version",
+    "apiUrl": "apiUrl",
+    "apiKey": "apiKey",
+    "databasePath": "databasePath",
+    "vectorDimension": "vectorDimension",
+    "maxRecallResults": "maxRecallResults"
+  },
+  "slice": {
+    "name": "config",
+    "actionSeparator": "/",
+    "actions": {
+      "hydrated": "configurationHydrated",
+      "entryCommitted": "configurationEntryCommitted",
+      "apiCommitted": "apiConfigurationCommitted"
+    }
+  },
+  "environment": {
+    "homeKey": "HOME",
+    "profileKey": "USERPROFILE",
+    "apiUrlKey": "FORBOCAI_API_URL",
+    "apiKeyKey": "FORBOCAI_API_KEY",
+    "databasePathKey": "FORBOCAI_DATABASE_PATH",
+    "vectorDimensionKey": "FORBOCAI_VECTOR_DIMENSION",
+    "maxRecallResultsKey": "FORBOCAI_MAX_RECALL"
+  },
+  "path": {
+    "homeFallback": ".",
+    "fileName": ".forbocai.json"
+  },
+  "serialization": {
+    "encoding": "utf-8",
+    "indentation": 2,
+    "fileMode": 384
+  },
+  "runtimeTypes": {
+    "object": "object",
+    "string": "string"
+  },
+  "errors": {
+    "invalidRoot": "ForbocAI configuration must be a JSON object"
+  }
+}

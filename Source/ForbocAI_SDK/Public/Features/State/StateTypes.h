@@ -2,6 +2,8 @@
 
 #include "Features/Bridge/BridgeTypes.h"
 #include "Features/CLI/CLITypes.h"
+#include "Features/CLI/Presentation/PresentationTypes.h"
+#include "Features/Config/ConfigTypes.h"
 #include "Features/Dependencies/DependenciesTypes.h"
 #include "Features/Directive/DirectiveTypes.h"
 #include "Features/Ghost/State/GhostStateTypes.h"
@@ -24,5 +26,7 @@ struct FRuntimeState {
   FVectorState Vector;
   FDependenciesState Dependencies;
   ForbocAI::CLI::FCLIState CLI;
+  ForbocAI::CLI::Presentation::FCLIPresentationState CLIPresentation;
+  ConfigSlice::FConfigState Config;
   TMap<FString, FString> Extra;
 };

@@ -14,6 +14,7 @@
     "availableSoulCount": "Available Soul count",
     "availableSoulFirstTxId": "First available Soul transaction id",
     "error": "Soul error",
+    "providerUrls": "Provider URLs include canonical and advertised gateways",
     "providerRetryWithinCycle": "Provider retry continues within a gateway cycle",
     "providerRetryCycleBoundary": "Provider retry delays after a gateway cycle",
     "providerRetryBeforeMaximumCycle": "Provider retry continues before the maximum gateway cycle",
@@ -27,6 +28,16 @@
     "withinCycleAttempt": 1,
     "cycleBoundaryAttempt": 2,
     "urlCount": 2
+  },
+  "providerResponse": {
+    "id": "provider-transaction",
+    "owner": "provider-owner",
+    "dataCaches": [
+      "https://cache-one.example/",
+      "cache-two.example",
+      "https://cache-one.example"
+    ],
+    "fastFinalityIndexes": []
   },
   "storage": {
     "wallet": {

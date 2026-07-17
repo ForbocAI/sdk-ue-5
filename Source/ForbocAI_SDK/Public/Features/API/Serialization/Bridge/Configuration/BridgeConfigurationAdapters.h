@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Features/API/Serialization/Bridge/Configuration/BridgeConfigurationTypes.h"
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 
 namespace JsonInterop::BridgeConfiguration {
 

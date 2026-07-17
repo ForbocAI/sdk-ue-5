@@ -3,10 +3,11 @@
 #include "Features/CLI/CLITypes.h"
 #include "Core/fp.hpp"
 #include "Features/CLI/Bridge/CLIBridgeAdapters.h"
+#include "Features/CLI/Ghost/CLIGhostAdapters.h"
 #include "Features/CLI/Memory/CLIMemoryAdapters.h"
 #include "Features/CLI/NPC/CLINPCAdapters.h"
 #include "Features/CLI/Soul/CLISoulAdapters.h"
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 
 namespace ForbocAI {
 namespace CLI {
@@ -143,6 +144,7 @@ inline FCLIState readCliState() {
   State.CommandRoles = ReadCommandRoles(
       DataAdapters::ReadObjectField(Source, TEXT("commandRoles")));
   State.Bridge = Bridge::readCliBridgeState();
+  State.Ghost = Ghost::readCliGhostState();
   State.Memory = Memory::readCliMemoryState();
   State.NPC = NPC::readCliNpcState();
   State.Soul = Soul::readCliSoulState();

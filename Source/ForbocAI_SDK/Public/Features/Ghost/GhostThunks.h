@@ -7,7 +7,7 @@
 #include "Features/API/APIApi.h"
 #include "Features/Ghost/GhostSlice.h"
 #include "Features/Ghost/Local/GhostLocalThunks.h"
-#include "Features/Config/ConfigAdapters.h"
+#include "Features/Config/ConfigSelectors.h"
 
 namespace rtk {
 
@@ -23,7 +23,8 @@ startGhostThunk(const FGhostConfig &Config) {
                   std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FGhostRunResponse> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
-        SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
+        ConfigSelectors::selectApiUrl(GetState()),
+        ConfigSelectors::selectApiKey(GetState()));
     return ApiKeyError.hasValue
         ? detail::RejectAsync<FGhostRunResponse>(ApiKeyError.value)
         : func::AsyncChain::then<FGhostRunResponse, FGhostRunResponse>(
@@ -43,7 +44,8 @@ getGhostStatusThunk(const FString &SessionId) {
                      std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FGhostStatus> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
-        SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
+        ConfigSelectors::selectApiUrl(GetState()),
+        ConfigSelectors::selectApiKey(GetState()));
     return ApiKeyError.hasValue
         ? detail::RejectAsync<FGhostStatus>(ApiKeyError.value)
         : func::AsyncChain::then<FGhostStatus, FGhostStatus>(
@@ -63,7 +65,8 @@ getGhostResultsThunk(const FString &SessionId) {
                      std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FGhostResults> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
-        SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
+        ConfigSelectors::selectApiUrl(GetState()),
+        ConfigSelectors::selectApiKey(GetState()));
     return ApiKeyError.hasValue
         ? detail::RejectAsync<FGhostResults>(ApiKeyError.value)
         : func::AsyncChain::then<FGhostResults, FGhostResults>(
@@ -123,7 +126,8 @@ stopGhostThunk(const FString &SessionId) {
                      std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FGhostStopResponse> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
-        SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
+        ConfigSelectors::selectApiUrl(GetState()),
+        ConfigSelectors::selectApiKey(GetState()));
     return ApiKeyError.hasValue
         ? detail::RejectAsync<FGhostStopResponse>(ApiKeyError.value)
         : func::AsyncChain::then<FGhostStopResponse, FGhostStopResponse>(
@@ -154,7 +158,8 @@ getGhostHistoryThunk(int32 Limit = 10) {
                  std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<TArray<FGhostHistoryEntry>> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
-        SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
+        ConfigSelectors::selectApiUrl(GetState()),
+        ConfigSelectors::selectApiKey(GetState()));
     return ApiKeyError.hasValue
         ? detail::RejectAsync<TArray<FGhostHistoryEntry>>(ApiKeyError.value)
         : func::AsyncChain::then<FGhostHistoryResponse,

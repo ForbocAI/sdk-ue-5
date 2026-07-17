@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Features/CLI/Soul/CLISoulTypes.h"
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 
 namespace ForbocAI {
 namespace CLI {

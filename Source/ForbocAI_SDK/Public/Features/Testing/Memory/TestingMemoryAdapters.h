@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 #include "Features/Testing/Fixture/FixtureAdapters.h"
 #include "Features/Testing/Memory/TestingMemoryTypes.h"
 
@@ -39,7 +39,7 @@ ReadMemoryTestItem(const TSharedPtr<FJsonObject> &Object) {
       DataAdapters::ReadStringField(Value, TEXT("text")),
       DataAdapters::ReadStringField(Value, TEXT("type")),
       DataAdapters::ReadFloatField(Value, TEXT("importance")),
-      DataAdapters::ReadNumberField(Value, TEXT("timestamp")));
+      DataAdapters::ReadInt64Field(Value, TEXT("timestamp")));
 }
 
 /** User Story: As a features testing memory consumer, I need to invoke read memory test action through a stable signature so the features testing memory workflow remains explicit and composable. @fn inline FMemoryTestAction ReadMemoryTestAction(const TSharedPtr<FJsonObject> &Object) */
@@ -148,6 +148,77 @@ inline const FMemoryTestFixtures &TestingMemoryFixtures() {
                           TArray<FMemoryTestScenario>>(
               Catalogs, ReadMemoryTestScenarios)),
   };
+  return Fixtures;
+}
+
+/** User Story: As a semantic-memory verifier, I need the vector contract loaded from authored data so TS and UE exercise the same positive and negative retrieval boundaries. @fn inline const FMemoryVectorTestFixtures &TestingMemoryVectorFixtures() */
+inline const FMemoryVectorTestFixtures &TestingMemoryVectorFixtures() {
+  static const DataAdapters::FSettingsSource Source =
+      DataAdapters::SettingsSource(
+          TEXT("ForbocAI_SDK"), TEXT("Data/tests/memory/vector.json"));
+  static const FMemoryVectorTestFixtures Fixtures = []() {
+    const TSharedRef<FJsonObject> Stories =
+        DataAdapters::ReadObjectField(Source, TEXT("stories"));
+    return FMemoryVectorTestFixtures{
+        DataAdapters::ReadStringField(Source, TEXT("suite")),
+        {DataAdapters::ReadStringField(Stories, TEXT("deterministic")),
+         DataAdapters::ReadStringField(Stories, TEXT("normalized")),
+         DataAdapters::ReadStringField(Stories, TEXT("naturalQuestion")),
+         DataAdapters::ReadStringField(Stories, TEXT("unrelatedQuestion"))},
+        DataAdapters::ReadStringField(Source, TEXT("fact")),
+        DataAdapters::ReadStringField(Source, TEXT("naturalQuestion")),
+        DataAdapters::ReadStringField(Source, TEXT("unrelatedQuestion")),
+        DataAdapters::ReadFloatField(Source,
+                                     TEXT("minimumRelevantSimilarity")),
+        DataAdapters::ReadFloatField(Source,
+                                     TEXT("maximumUnrelatedSimilarity")),
+        DataAdapters::ReadFloatField(Source, TEXT("unitNorm")),
+        DataAdapters::ReadFloatField(Source, TEXT("precision"))};
+  }();
+  return Fixtures;
+}
+
+/** User Story: As a persistent-memory release verifier, I need migration records, versions, scenarios, and assertions loaded from authored data so the native contract test contains no hidden fixture behavior. @fn inline const FMemoryContractTestFixtures &TestingMemoryContractFixtures() */
+inline const FMemoryContractTestFixtures &TestingMemoryContractFixtures() {
+  static const DataAdapters::FSettingsSource Source =
+      DataAdapters::SettingsSource(
+          TEXT("ForbocAI_SDK"), TEXT("Data/tests/memory/contract.json"));
+  static const FMemoryContractTestFixtures Fixtures = []() {
+    const TSharedRef<FJsonObject> Record =
+        DataAdapters::ReadObjectField(Source, TEXT("record"));
+    const TSharedRef<FJsonObject> Numbers =
+        DataAdapters::ReadObjectField(Source, TEXT("numbers"));
+    const TSharedRef<FJsonObject> Scenarios =
+        DataAdapters::ReadObjectField(Source, TEXT("scenarios"));
+    const TSharedRef<FJsonObject> Assertions =
+        DataAdapters::ReadObjectField(Source, TEXT("assertions"));
+    return FMemoryContractTestFixtures{
+        DataAdapters::ReadStringField(Source, TEXT("suite")),
+        DataAdapters::ReadStringField(Source, TEXT("databasePrefix")),
+        {DataAdapters::ReadStringField(Record, TEXT("id")),
+         DataAdapters::ReadStringField(Record, TEXT("text")),
+         DataAdapters::ReadStringField(Record, TEXT("type")),
+         DataAdapters::ReadFloatField(Record, TEXT("importance")),
+         DataAdapters::ReadInt64Field(Record, TEXT("timestamp"))},
+        {DataAdapters::ReadFloatField(Numbers, TEXT("legacyVectorValue")),
+         DataAdapters::ReadFloatField(Numbers,
+                                      TEXT("legacyFirstVectorValue")),
+         DataAdapters::ReadNumberField(Numbers, TEXT("expectedCount")),
+         DataAdapters::ReadNumberField(Numbers, TEXT("firstIndex")),
+         DataAdapters::ReadNumberField(Numbers,
+                                       TEXT("similarityPrecision"))},
+        {DataAdapters::ReadStringField(Scenarios, TEXT("legacyMigration")),
+         DataAdapters::ReadStringField(Scenarios, TEXT("newerRejection"))},
+        {DataAdapters::ReadStringField(Assertions, TEXT("legacyCreated")),
+         DataAdapters::ReadStringField(Assertions, TEXT("legacyOpened")),
+         DataAdapters::ReadStringField(Assertions, TEXT("migratedCount")),
+         DataAdapters::ReadStringField(Assertions, TEXT("migratedText")),
+         DataAdapters::ReadStringField(Assertions,
+                                       TEXT("migratedSimilarity")),
+         DataAdapters::ReadStringField(Assertions, TEXT("migratedVersion")),
+         DataAdapters::ReadStringField(Assertions, TEXT("newerCreated")),
+         DataAdapters::ReadStringField(Assertions, TEXT("newerRejected"))}};
+  }();
   return Fixtures;
 }
 

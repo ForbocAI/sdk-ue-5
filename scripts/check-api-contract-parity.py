@@ -133,7 +133,11 @@ def validate_contract_matrix(contract: dict) -> list[str]:
 
 
 def parse_transcript_fields(header: str) -> set[str]:
-    match = re.search(r"struct\s+FTranscriptEntry\s*\{(?P<body>.*?)\};", header, re.S)
+    match = re.search(
+        r"struct\s+FTranscriptEntry\s*\{(?P<body>.*?)^\};",
+        header,
+        re.S | re.M,
+    )
     if not match:
         return set()
     return set(re.findall(r"\b(?:FString|ECommandGroup|TArray<FString>|ETranscriptStatus)\s+(\w+);", match.group("body")))

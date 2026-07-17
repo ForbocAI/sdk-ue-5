@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 #include "Features/Memory/Configuration/MemoryConfigurationTypes.h"
 
 namespace MemoryConfiguration {
@@ -21,6 +21,10 @@ inline const FMemoryData &memoryData() {
         DataAdapters::ReadObjectField(Source, TEXT("text"));
     const TSharedRef<FJsonObject> Identity =
         DataAdapters::ReadObjectField(Source, TEXT("identity"));
+    const TSharedRef<FJsonObject> Contract =
+        DataAdapters::ReadObjectField(Source, TEXT("contract"));
+    const TSharedRef<FJsonObject> ContractFields =
+        DataAdapters::ReadObjectField(Contract, TEXT("fields"));
     const TSharedRef<FJsonObject> Vector =
         DataAdapters::ReadObjectField(Source, TEXT("vector"));
     const TSharedRef<FJsonObject> Registry =
@@ -69,12 +73,36 @@ inline const FMemoryData &memoryData() {
         {DataAdapters::ReadStringField(Text, TEXT("empty")),
          DataAdapters::ReadStringField(Text, TEXT("space"))},
         {DataAdapters::ReadStringField(Identity, TEXT("memoryPrefix"))},
+        {DataAdapters::ReadNumberField(Contract, TEXT("schemaVersion")),
+         DataAdapters::ReadNumberField(Contract, TEXT("vectorVersion")),
+         DataAdapters::ReadNumberField(Contract,
+                                       TEXT("legacyVectorVersion")),
+         DataAdapters::ReadStringField(Contract, TEXT("metadataFile")),
+         DataAdapters::ReadStringField(Contract, TEXT("temporarySuffix")),
+         DataAdapters::ReadStringField(Contract, TEXT("textEncoding")),
+         DataAdapters::ReadStringField(Contract, TEXT("lineTerminator")),
+         DataAdapters::ReadNumberField(Contract, TEXT("jsonIndent")),
+         DataAdapters::ReadNumberField(Contract, TEXT("migrationBatchSize")),
+         {DataAdapters::ReadStringField(ContractFields,
+                                        TEXT("schemaVersion")),
+          DataAdapters::ReadStringField(ContractFields,
+                                        TEXT("vectorVersion"))}},
         {DataAdapters::ReadNumberField(Vector, TEXT("dimension")),
          DataAdapters::ReadUInt32Field(Vector, TEXT("hashSeed")),
          DataAdapters::ReadUInt32Field(Vector, TEXT("hashPrime")),
          DataAdapters::ReadStringField(Vector, TEXT("tokenPattern")),
          DataAdapters::ReadStringField(Vector, TEXT("tokenFlags")),
          DataAdapters::ReadStringField(Vector, TEXT("featureSeparator")),
+         DataAdapters::ReadStringField(Vector, TEXT("unigramPrefix")),
+         DataAdapters::ReadStringField(Vector, TEXT("bigramPrefix")),
+         DataAdapters::ReadStringField(Vector, TEXT("characterPrefix")),
+         DataAdapters::ReadNumberField(Vector, TEXT("characterNgramSize")),
+         DataAdapters::ReadNumberField(
+             Vector, TEXT("minimumCharacterTokenLength")),
+         DataAdapters::ReadFloatField(Vector, TEXT("unigramWeight")),
+         DataAdapters::ReadFloatField(Vector, TEXT("bigramWeight")),
+         DataAdapters::ReadFloatField(Vector, TEXT("characterNgramWeight")),
+         DataAdapters::ReadStringArrayField(Vector, TEXT("stopWords")),
          DataAdapters::ReadUInt32Field(Vector, TEXT("signMask")),
          DataAdapters::ReadUInt32Field(Vector, TEXT("evenRemainder")),
          DataAdapters::ReadFloatField(Vector, TEXT("positiveWeight")),
@@ -103,7 +131,9 @@ inline const FMemoryData &memoryData() {
          {DataAdapters::ReadStringField(Lance, TEXT("defaultDatabase")),
           DataAdapters::ReadStringField(Lance, TEXT("table")),
           DataAdapters::ReadStringField(Lance, TEXT("databaseExtension")),
-          DataAdapters::ReadStringField(Lance, TEXT("tableExtension"))},
+          DataAdapters::ReadStringField(Lance, TEXT("tableExtension")),
+          DataAdapters::ReadStringField(Lance, TEXT("distanceType")),
+          DataAdapters::ReadStringField(Lance, TEXT("overwriteMode"))},
          {DataAdapters::ReadStringField(Orama, TEXT("defaultDatabase")),
           DataAdapters::ReadStringField(Orama, TEXT("searchMode")),
           {DataAdapters::ReadStringField(OramaSchema, TEXT("id")),
@@ -122,6 +152,14 @@ inline const FMemoryData &memoryData() {
           DataAdapters::ReadStringField(Sqlite, TEXT("jsonClose")),
           DataAdapters::ReadStringField(Sqlite, TEXT("jsonSeparator")),
           DataAdapters::ReadStringField(Sqlite, TEXT("createVectorTable")),
+          DataAdapters::ReadStringField(Sqlite, TEXT("tableExists")),
+          DataAdapters::ReadStringField(Sqlite, TEXT("readUserVersion")),
+          DataAdapters::ReadStringField(Sqlite, TEXT("writeUserVersion")),
+          DataAdapters::ReadStringField(Sqlite, TEXT("listAll")),
+          DataAdapters::ReadStringField(Sqlite, TEXT("dropVectorTable")),
+          DataAdapters::ReadStringField(Sqlite, TEXT("beginTransaction")),
+          DataAdapters::ReadStringField(Sqlite, TEXT("commitTransaction")),
+          DataAdapters::ReadStringField(Sqlite, TEXT("rollbackTransaction")),
           DataAdapters::ReadStringField(Sqlite, TEXT("clear")),
           DataAdapters::ReadStringField(Sqlite, TEXT("upsert")),
           DataAdapters::ReadStringField(Sqlite, TEXT("search")),
@@ -179,7 +217,11 @@ inline const FMemoryData &memoryData() {
          DataAdapters::ReadStringField(Errors, TEXT("sqliteBindFailed")),
          DataAdapters::ReadStringField(Errors, TEXT("sqliteStepFailed")),
          DataAdapters::ReadStringField(Errors, TEXT("sqliteInvalidLimit")),
-         DataAdapters::ReadStringField(Errors, TEXT("sqliteInvalidOffset"))}};
+         DataAdapters::ReadStringField(Errors, TEXT("sqliteInvalidOffset")),
+         DataAdapters::ReadStringField(Errors, TEXT("memoryContractInvalid")),
+         DataAdapters::ReadStringField(Errors, TEXT("memoryContractNewer")),
+         DataAdapters::ReadStringField(
+             Errors, TEXT("memoryContractMigrationFailed"))}};
   }();
   return Data;
 }

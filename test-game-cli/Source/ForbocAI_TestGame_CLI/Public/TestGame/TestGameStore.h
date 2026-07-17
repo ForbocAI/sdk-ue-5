@@ -8,6 +8,7 @@
 #include "CoreMinimal.h"
 #include "Core/ecs.hpp"
 #include "Core/rtk.hpp"
+#include "Features/Config/ConfigSlice.h"
 #include "TestGame/Features/Entities/NPCs/NPCsSlice.h"
 #include "TestGame/Features/Entities/Player/PlayerSlice.h"
 #include "TestGame/Features/Systems/Bridge/BridgeSlice.h"
@@ -17,6 +18,7 @@
 #include "TestGame/Features/Systems/Harness/Game/GameTypes.h"
 #include "TestGame/Features/Components/Inventory/InventorySlice.h"
 #include "TestGame/Features/Systems/Memory/MemorySlice.h"
+#include "TestGame/Features/Systems/Quality/QualitySlice.h"
 #include "TestGame/Features/Systems/Harness/Scenario/ScenarioSlice.h"
 #include "TestGame/Features/Systems/Social/SocialSlice.h"
 #include "TestGame/Features/Systems/Soul/SoulSlice.h"
@@ -181,6 +183,18 @@ inline const rtk::Slice<CommandRunner::FCommandAliasState> &CommandRunner() {
   return S;
 }
 
+/** User Story: As test-game configuration, I need one Config slice mounted in this package root store so direct contract verification has no process-global state. @fn inline const rtk::Slice<ConfigSlice::FConfigState> &Config() */
+inline const rtk::Slice<ConfigSlice::FConfigState> &Config() {
+  static const auto S = ConfigSlice::createConfigSlice();
+  return S;
+}
+
+/** User Story: As a test-game quality evaluator, I need one Quality slice mounted in the package root store so lifecycle, evidence, and baselines have one authority. @fn inline const rtk::Slice<FQualityState> &Quality() */
+inline const rtk::Slice<FQualityState> &Quality() {
+  static const auto S = CreateQualitySlice();
+  return S;
+}
+
 } // namespace GameSlices
 
 /**
@@ -208,6 +222,8 @@ inline FTestGameState TestGameReducer(const FTestGameState &State,
   Next.Harness = GameSlices::Harness().Reducer(State.Harness, Action);
   Next.CommandRunner =
       GameSlices::CommandRunner().Reducer(State.CommandRunner, Action);
+  Next.Config = GameSlices::Config().Reducer(State.Config, Action);
+  Next.Quality = GameSlices::Quality().Reducer(State.Quality, Action);
   return Next;
 }
 
@@ -228,6 +244,8 @@ inline FTestGameState CreateInitialTestGameState() {
   Initial.Scenario = GameSlices::Scenario().InitialState;
   Initial.Harness = GameSlices::Harness().InitialState;
   Initial.CommandRunner = GameSlices::CommandRunner().InitialState;
+  Initial.Config = GameSlices::Config().InitialState;
+  Initial.Quality = GameSlices::Quality().InitialState;
   return Initial;
 }
 

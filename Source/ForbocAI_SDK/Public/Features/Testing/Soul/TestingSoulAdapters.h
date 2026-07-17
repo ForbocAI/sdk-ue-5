@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 #include "Features/Testing/Fixture/FixtureAdapters.h"
 #include "Features/Testing/Soul/Storage/Serialization/TestingSoulStorageSerializationAdapters.h"
 #include "Features/Testing/Soul/TestingSoulTypes.h"
@@ -120,6 +120,7 @@ ReadSoulTestLabels(const DataAdapters::FSettingsSource &Source) {
       DataAdapters::ReadStringField(Labels, TEXT("availableSoulCount")),
       DataAdapters::ReadStringField(Labels, TEXT("availableSoulFirstTxId")),
       DataAdapters::ReadStringField(Labels, TEXT("error")),
+      DataAdapters::ReadStringField(Labels, TEXT("providerUrls")),
       DataAdapters::ReadStringField(Labels, TEXT("providerRetryWithinCycle")),
       DataAdapters::ReadStringField(Labels, TEXT("providerRetryCycleBoundary")),
       DataAdapters::ReadStringField(
@@ -131,6 +132,27 @@ ReadSoulTestLabels(const DataAdapters::FSettingsSource &Source) {
       DataAdapters::ReadStringField(Labels, TEXT("storageWalletRoundTrip")),
       DataAdapters::ReadStringField(Labels, TEXT("storageEnvelopeRoundTrip")),
       DataAdapters::ReadStringField(Labels, TEXT("storageCatalogRoundTrip")),
+  };
+}
+
+/**
+ * User Story: As a Soul provider test, I need canonical and advertised gateway
+ * inputs decoded from authored fixtures so URL normalization stays aligned
+ * across the TS and UE SDKs.
+ * @fn inline FSoulProviderUrlsTestData ReadSoulProviderUrlsTestData( const DataAdapters::FSettingsSource &Source, const DataAdapters::FArraySource &ExpectedSource)
+ */
+inline FSoulProviderUrlsTestData ReadSoulProviderUrlsTestData(
+    const DataAdapters::FSettingsSource &Source,
+    const DataAdapters::FArraySource &ExpectedSource) {
+  const TSharedRef<FJsonObject> Response =
+      DataAdapters::ReadObjectField(Source, TEXT("providerResponse"));
+  return {
+      {DataAdapters::ReadStringField(Response, TEXT("id")),
+       DataAdapters::ReadStringField(Response, TEXT("owner")),
+       DataAdapters::ReadStringArrayField(Response, TEXT("dataCaches")),
+       DataAdapters::ReadStringArrayField(Response,
+                                          TEXT("fastFinalityIndexes"))},
+      DataAdapters::ReadStringArray(ExpectedSource),
   };
 }
 
@@ -166,8 +188,12 @@ inline const FSoulTestFixtures &TestingSoulFixtures() {
       DataAdapters::ArraySource(
           TEXT("ForbocAI_SDK"),
           TEXT("Data/tests/soul/scenarios/concurrency.json"));
+  static const DataAdapters::FArraySource ProviderUrlsSource =
+      DataAdapters::ArraySource(TEXT("ForbocAI_SDK"),
+                                TEXT("Data/tests/soul/provider-urls.json"));
   static const FSoulTestFixtures Fixtures = {
       ReadSoulTestLabels(SettingsSource),
+      ReadSoulProviderUrlsTestData(SettingsSource, ProviderUrlsSource),
       ReadSoulProviderRetryTestData(SettingsSource),
       Storage::Serialization::readStorageSerializationFixtureAdapter(
           SettingsSource),

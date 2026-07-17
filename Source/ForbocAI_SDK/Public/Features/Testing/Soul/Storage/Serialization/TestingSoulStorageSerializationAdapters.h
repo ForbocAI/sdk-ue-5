@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/fp.hpp"
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 #include "Features/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
 #include "Features/Soul/Storage/Serialization/SoulStorageSerializationAdapters.h"
 #include "Features/Testing/Soul/Storage/Serialization/SerializationTypes.h"

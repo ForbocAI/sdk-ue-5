@@ -63,4 +63,64 @@ struct FMemoryTestFixtures {
   TArray<FMemoryTestScenario> Scenarios;
 };
 
+struct FMemoryVectorTestStories {
+  FString Deterministic;
+  FString Normalized;
+  FString NaturalQuestion;
+  FString UnrelatedQuestion;
+};
+
+struct FMemoryVectorTestFixtures {
+  FString Suite;
+  FMemoryVectorTestStories Stories;
+  FString Fact;
+  FString NaturalQuestion;
+  FString UnrelatedQuestion;
+  float MinimumRelevantSimilarity;
+  float MaximumUnrelatedSimilarity;
+  float UnitNorm;
+  float Precision;
+};
+
+struct FMemoryContractTestRecord {
+  FString Id;
+  FString Text;
+  FString Type;
+  float Importance;
+  int64 Timestamp;
+};
+
+struct FMemoryContractTestNumbers {
+  float LegacyVectorValue;
+  float LegacyFirstVectorValue;
+  int32 ExpectedCount;
+  int32 FirstIndex;
+  int32 SimilarityPrecision;
+};
+
+struct FMemoryContractTestScenarios {
+  FString LegacyMigration;
+  FString NewerRejection;
+};
+
+struct FMemoryContractTestAssertions {
+  FString LegacyCreated;
+  FString LegacyOpened;
+  FString MigratedCount;
+  FString MigratedText;
+  FString MigratedSimilarity;
+  FString MigratedVersion;
+  FString NewerCreated;
+  FString NewerRejected;
+};
+
+struct FMemoryContractTestFixtures {
+  FString Suite;
+  FString DatabasePrefix;
+  FMemoryContractTestRecord Record;
+  FMemoryContractTestNumbers Numbers;
+  FMemoryContractTestScenarios Scenarios;
+  FMemoryContractTestAssertions Assertions;
+};
+
 } // namespace Testing::Memory

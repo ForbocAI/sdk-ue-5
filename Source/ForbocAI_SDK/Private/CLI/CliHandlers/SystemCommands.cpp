@@ -1,7 +1,8 @@
 // User Story: As a developer, I need this module to function.
 #include "CLI/CliHandlers.h"
+#include "Features/CLI/Presentation/PresentationSelectors.h"
 #include "Features/CLI/System/SystemThunks.h"
-#include "Features/Config/ConfigAdapters.h"
+#include "Features/Config/ConfigSelectors.h"
 #include "Store.h"
 
 namespace CLIOps {
@@ -14,33 +15,50 @@ HandlerResult HandleSystem(rtk::EnhancedStore<FRuntimeState> &Store,
   (void)Args;
   using func::just;
   using func::nothing;
+  const FRuntimeState &State = Store.getState();
+  const ForbocAI::CLI::FCLICommandRoles &Roles = State.CLI.CommandRoles;
+  const ForbocAI::CLI::Presentation::FCLIPresentationState
+      &PresentationState =
+          ForbocAI::CLI::Presentation::selectCliPresentation(State);
 
-  return CommandKey == TEXT("version")
+  return CommandKey == Roles.Version
              ? [&]() -> HandlerResult {
-                 UE_LOG(LogTemp, Display, TEXT("ForbocAI SDK v%s (UE5)"),
-                        *SDKConfig::GetSdkVersion());
-                 return just(Result::Success("Version printed"));
+                 ForbocAI::CLI::Presentation::logCliMessage(
+                     ForbocAI::CLI::Presentation::selectCliVersionLine(
+                         PresentationState,
+                         ConfigSelectors::selectSdkVersion(State)));
+                 return just(Result::Success(TCHAR_TO_UTF8(
+                     *PresentationState.Results.VersionPrinted)));
                }()
-         : CommandKey == TEXT("status")
+         : CommandKey == Roles.Status
              ? [&]() -> HandlerResult {
                  FApiStatusResponse Status = Ops::checkApiStatus(Store);
-                 UE_LOG(LogTemp, Display, TEXT("API: %s"), *Status.Status);
-                 return just(Result::Success("Status checked"));
+                 ForbocAI::CLI::Presentation::logCliMessage(
+                     ForbocAI::CLI::Presentation::selectCliStatusLine(
+                         PresentationState, Status.Status));
+                 return just(Result::Success(TCHAR_TO_UTF8(
+                     *APISlice::Detail::ToJson(Status))));
                }()
-         : CommandKey == TEXT("doctor")
+         : CommandKey == Roles.Doctor
              ? [&]() -> HandlerResult {
-                 UE_LOG(LogTemp, Display, TEXT("ForbocAI SDK v%s (UE5)"),
-                        *SDKConfig::GetSdkVersion());
-                 UE_LOG(LogTemp, Display, TEXT("API URL: %s"),
-                        *SDKConfig::GetApiUrl());
-                 UE_LOG(LogTemp, Display, TEXT("API Key: %s"),
-                        SDKConfig::GetApiKey().IsEmpty()
-                            ? TEXT("(not set)")
-                            : TEXT("********"));
+                 ForbocAI::CLI::Presentation::logCliMessage(
+                     ForbocAI::CLI::Presentation::selectCliVersionLine(
+                         PresentationState,
+                         ConfigSelectors::selectSdkVersion(State)));
+                 ForbocAI::CLI::Presentation::logCliMessage(
+                     ForbocAI::CLI::Presentation::selectCliApiUrlLine(
+                         PresentationState,
+                         ConfigSelectors::selectApiUrl(State)));
+                 ForbocAI::CLI::Presentation::logCliMessage(
+                     ForbocAI::CLI::Presentation::selectCliApiKeyLine(
+                         PresentationState,
+                         !ConfigSelectors::selectApiKey(State).IsEmpty()));
                  FApiStatusResponse Status = Ops::checkApiStatus(Store);
-                 UE_LOG(LogTemp, Display, TEXT("API Status: %s (v%s)"),
-                        *Status.Status, *Status.Version);
-                 return just(Result::Success("Doctor check completed"));
+                 ForbocAI::CLI::Presentation::logCliMessage(
+                     ForbocAI::CLI::Presentation::selectCliApiStatusLine(
+                         PresentationState, Status.Status, Status.Version));
+                 return just(Result::Success(TCHAR_TO_UTF8(
+                     *PresentationState.Results.DoctorCompleted)));
                }()
              : nothing<Result>();
 }

@@ -2,7 +2,7 @@
 
 #include "Features/API/APIApi.h"
 #include "Features/API/Endpoints/Configuration/EndpointsConfigurationAdapters.h"
-#include "Features/Config/ConfigAdapters.h"
+#include "Features/Config/ConfigSelectors.h"
 #include "Features/Errors/ErrorsAdapters.h"
 #include "Features/State/StateTypes.h"
 #include "Features/Soul/SoulAdapters.h"
@@ -42,8 +42,9 @@ verifySoulThunk() {
           TEXT("soul/verify"),
           [](const FString &TxId, const ThunkApi<FRuntimeState> &Api) {
             const func::Maybe<FString> ApiKeyError =
-                Errors::requireApiKeyGuidance(SDKConfig::GetApiUrl(),
-                                              SDKConfig::GetApiKey());
+                Errors::requireApiKeyGuidance(
+                    ConfigSelectors::selectApiUrl(Api.getState()),
+                    ConfigSelectors::selectApiKey(Api.getState()));
             return func::match(
                 ApiKeyError,
                 [](const FString &Error) {

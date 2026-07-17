@@ -85,4 +85,13 @@ createTestGameContractRequest(const FString &ApiUrl, const FString &ApiKey) {
   return Result;
 }
 
+/** User Story: As contract transport, I need a fully assembled request executed through the generic RTK Query base query without reading package state at the adapter boundary. @fn inline func::AsyncResult<rtk::QueryReturnValue<FString>> executeTestGameContractAdapter(const FTestGameContractRequest &Request) */
+inline func::AsyncResult<rtk::QueryReturnValue<FString>>
+executeTestGameContractAdapter(const FTestGameContractRequest &Request) {
+  rtk::FetchBaseQueryArgs Options;
+  Options.headers = Request.Headers;
+  return rtk::fetchBaseQuery<FString>(Options)(
+      Request.Args, rtk::BaseQueryApi(), rtk::FEmptyPayload{});
+}
+
 } // namespace TestGame::Contract

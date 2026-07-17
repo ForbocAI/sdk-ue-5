@@ -5,6 +5,8 @@
 #include "Core/fp.hpp"
 #include "Features/Bridge/BridgeSlice.h"
 #include "Features/CLI/CLISlice.h"
+#include "Features/CLI/Presentation/PresentationSlice.h"
+#include "Features/Config/ConfigSlice.h"
 #include "Features/Dependencies/DependenciesSlice.h"
 #include "Features/Directive/DirectiveSlice.h"
 #include "Features/Ghost/GhostSlice.h"
@@ -112,6 +114,24 @@ inline const rtk::Slice<ForbocAI::CLI::FCLIState> &GetCLISlice() {
   return func::eval(Slice);
 }
 
+/** User Story: As store assembly, I need one shared CLI presentation slice so every command edge selects the same authored contract. @fn inline const rtk::Slice<ForbocAI::CLI::Presentation::FCLIPresentationState> & GetCLIPresentationSlice() */
+inline const rtk::Slice<ForbocAI::CLI::Presentation::FCLIPresentationState> &
+GetCLIPresentationSlice() {
+  static const func::Lazy<
+      rtk::Slice<ForbocAI::CLI::Presentation::FCLIPresentationState>> Slice =
+      func::lazy([]() {
+        return ForbocAI::CLI::Presentation::createCliPresentationSlice();
+      });
+  return func::eval(Slice);
+}
+
+/** User Story: As store assembly, I need one shared Config slice instance so every runtime consumer observes one package-owned configuration snapshot. @fn inline const rtk::Slice<ConfigSlice::FConfigState> &GetConfigSlice() */
+inline const rtk::Slice<ConfigSlice::FConfigState> &GetConfigSlice() {
+  static const func::Lazy<rtk::Slice<ConfigSlice::FConfigState>> Slice =
+      func::lazy([]() { return ConfigSlice::createConfigSlice(); });
+  return func::eval(Slice);
+}
+
 /**
  * User Story: As root store initialization, I need every feature slice's
  * canonical initial state composed once so direct struct defaults cannot drift
@@ -129,6 +149,8 @@ inline FRuntimeState createRuntimeInitialState() {
   InitialState.Vector = GetVectorSlice().InitialState;
   InitialState.Dependencies = GetDependenciesSlice().InitialState;
   InitialState.CLI = GetCLISlice().InitialState;
+  InitialState.CLIPresentation = GetCLIPresentationSlice().InitialState;
+  InitialState.Config = GetConfigSlice().InitialState;
   return InitialState;
 }
 
@@ -179,6 +201,9 @@ inline FRuntimeState StoreReducer(const FRuntimeState &State,
   Next.Vector = StoreInternal::GetVectorSlice().Reducer(State.Vector, Action);
   Next.Dependencies = StoreInternal::GetDependenciesSlice().Reducer(State.Dependencies, Action);
   Next.CLI = StoreInternal::GetCLISlice().Reducer(State.CLI, Action);
+  Next.CLIPresentation = StoreInternal::GetCLIPresentationSlice().Reducer(
+      State.CLIPresentation, Action);
+  Next.Config = StoreInternal::GetConfigSlice().Reducer(State.Config, Action);
 
   /**
    * G8: Run extra reducers (game slices) — recursive application.

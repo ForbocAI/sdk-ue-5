@@ -14,8 +14,8 @@ postNpcProcess(const FString &NpcId, const FNPCProcessRequest &Request) {
   const TArray<FApiEndpointTag> Invalidates{npcTagAdapter(NpcId)};
   return Detail::MakePostWithCodec<FNPCProcessRequest, FNPCProcessResponse>(
       Data.Names.PostNpcProcess,
-      Configuration::apiEndpoint(Configuration::endpointPath(
-          {Data.Segments.Npcs, NpcId, Data.Segments.Process})),
+      Configuration::endpointPath(
+          {Data.Segments.Npcs, NpcId, Data.Segments.Process}),
       Request, Detail::EncodeNpcProcessRequest,
       Detail::DecodeNpcProcessResponse, Invalidates);
 }

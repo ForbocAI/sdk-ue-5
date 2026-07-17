@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Features/Memory/Local/MemoryLocalThunks.h"
+#include "Features/CLI/Config/ConfigThunks.h"
 #include "Features/Protocol/ProtocolThunks.h"
 #include "ProcessNPCTestTypes.h"
 
@@ -38,6 +39,7 @@ inline void Start(const TSharedPtr<FProcessNPCTestState> &State,
                   const FProcessNPCTestParams &Params) {
   State->Store =
       MakeShared<rtk::EnhancedStore<FRuntimeState>>(createRuntimeStore());
+  Ops::hydrateRuntimeConfig(*State->Store);
   State->DatabaseName = Params.NpcId;
 
   State->Store->dispatch(rtk::initNodeMemoryThunk(State->DatabaseName))

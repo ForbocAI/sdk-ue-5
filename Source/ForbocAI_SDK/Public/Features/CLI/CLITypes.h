@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Features/CLI/Bridge/CLIBridgeTypes.h"
+#include "Features/CLI/Ghost/CLIGhostTypes.h"
 #include "Features/CLI/Memory/CLIMemoryTypes.h"
 #include "Features/CLI/NPC/CLINPCTypes.h"
 #include "Features/CLI/Soul/CLISoulTypes.h"
@@ -78,6 +79,7 @@ struct FCLIState {
   FCLIInvocationSettings Invocation;
   FCLICommandRoles CommandRoles;
   Bridge::FCLIBridgeState Bridge;
+  Ghost::FCLIGhostState Ghost;
   Memory::FCLIMemoryState Memory;
   NPC::FCLINPCState NPC;
   Soul::FCLISoulState Soul;

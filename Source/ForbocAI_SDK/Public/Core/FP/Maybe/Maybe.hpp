@@ -42,7 +42,12 @@ template <typename T> Maybe<T> just(T v) {
  * User Story: As optional flows, I need a canonical empty Maybe so code can
  * represent missing values without custom sentinels.
  */
-template <typename T> Maybe<T> nothing() { return Maybe<T>{false, T{}}; }
+template <typename T> Maybe<T> nothing() {
+  static_assert(
+      std::is_default_constructible<T>::value,
+      "func::nothing<T>() requires a default-constructible payload type");
+  return Maybe<T>{false, T{}};
+}
 
 /**
  * @fn template <typename T> bool is_just(const Maybe<T> &m)

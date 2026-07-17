@@ -11,7 +11,13 @@ struct FApiEndpointTag {
 
 typedef FApiEndpointTag TagDescription;
 
-template <typename Arg, typename Result> struct ApiEndpoint {
+template <typename State> struct ApiContext {
+  std::function<const State &()> getState;
+  Dispatcher dispatch;
+};
+
+template <typename Arg, typename Result, typename State = FEmptyPayload>
+struct ApiEndpoint {
   FString EndpointName;
   DefinitionType Type;
   TArray<FApiEndpointTag> providesTags;
@@ -21,8 +27,8 @@ template <typename Arg, typename Result> struct ApiEndpoint {
    * Abstract request builder/executor
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  std::function<func::AsyncResult<QueryReturnValue<Result>>(const Arg &)>
-      RequestBuilder;
+  std::function<func::AsyncResult<QueryReturnValue<Result>>(
+      const Arg &, const ApiContext<State> &)> RequestBuilder;
 
   /** User Story: As a rtk query endpoint consumer, I need to invoke api endpoint through a stable signature so the rtk query endpoint workflow remains explicit and composable. @fn ApiEndpoint() */
   ApiEndpoint() : Type(DefinitionType::query) {}
@@ -40,32 +46,32 @@ struct FApiEndpointMetadata {
   TArray<FApiEndpointTag> invalidatesTags;
 };
 
-template <typename Arg, typename Result>
-using BaseEndpointDefinition = ApiEndpoint<Arg, Result>;
+template <typename Arg, typename Result, typename State = FEmptyPayload>
+using BaseEndpointDefinition = ApiEndpoint<Arg, Result, State>;
 
-template <typename Arg, typename Result>
-using EndpointDefinition = ApiEndpoint<Arg, Result>;
+template <typename Arg, typename Result, typename State = FEmptyPayload>
+using EndpointDefinition = ApiEndpoint<Arg, Result, State>;
 
-template <typename Arg, typename Result>
-using QueryDefinition = ApiEndpoint<Arg, Result>;
+template <typename Arg, typename Result, typename State = FEmptyPayload>
+using QueryDefinition = ApiEndpoint<Arg, Result, State>;
 
-template <typename Arg, typename Result>
-using MutationDefinition = ApiEndpoint<Arg, Result>;
+template <typename Arg, typename Result, typename State = FEmptyPayload>
+using MutationDefinition = ApiEndpoint<Arg, Result, State>;
 
-template <typename Arg, typename Result>
-using InfiniteQueryDefinition = ApiEndpoint<Arg, Result>;
+template <typename Arg, typename Result, typename State = FEmptyPayload>
+using InfiniteQueryDefinition = ApiEndpoint<Arg, Result, State>;
 
-template <typename Arg, typename Result>
-using EndpointDefinitions = TArray<ApiEndpoint<Arg, Result>>;
+template <typename Arg, typename Result, typename State = FEmptyPayload>
+using EndpointDefinitions = TArray<ApiEndpoint<Arg, Result, State>>;
 
-template <typename Arg, typename Result>
-using ApiEndpointQuery = ApiEndpoint<Arg, Result>;
+template <typename Arg, typename Result, typename State = FEmptyPayload>
+using ApiEndpointQuery = ApiEndpoint<Arg, Result, State>;
 
-template <typename Arg, typename Result>
-using ApiEndpointMutation = ApiEndpoint<Arg, Result>;
+template <typename Arg, typename Result, typename State = FEmptyPayload>
+using ApiEndpointMutation = ApiEndpoint<Arg, Result, State>;
 
-template <typename Arg, typename Result>
-using ApiEndpointInfiniteQuery = ApiEndpoint<Arg, Result>;
+template <typename Arg, typename Result, typename State = FEmptyPayload>
+using ApiEndpointInfiniteQuery = ApiEndpoint<Arg, Result, State>;
 
 template <typename Arg> using QueryArgFrom = Arg;
 template <typename Result> using ResultTypeFrom = Result;
@@ -101,13 +107,14 @@ template <typename Result, typename PageParam> struct InfiniteData {
   TArray<PageParam> pageParams;
 };
 
-template <typename Arg, typename Result> using QueryExtraOptions = ApiEndpoint<Arg, Result>;
-template <typename Arg, typename Result>
-using MutationExtraOptions = ApiEndpoint<Arg, Result>;
-template <typename Arg, typename Result>
-using InfiniteQueryExtraOptions = ApiEndpoint<Arg, Result>;
-template <typename Arg, typename Result>
-using InfiniteQueryConfigOptions = ApiEndpoint<Arg, Result>;
+template <typename Arg, typename Result, typename State = FEmptyPayload>
+using QueryExtraOptions = ApiEndpoint<Arg, Result, State>;
+template <typename Arg, typename Result, typename State = FEmptyPayload>
+using MutationExtraOptions = ApiEndpoint<Arg, Result, State>;
+template <typename Arg, typename Result, typename State = FEmptyPayload>
+using InfiniteQueryExtraOptions = ApiEndpoint<Arg, Result, State>;
+template <typename Arg, typename Result, typename State = FEmptyPayload>
+using InfiniteQueryConfigOptions = ApiEndpoint<Arg, Result, State>;
 
 template <typename State> using RootState = State;
 template <typename State, typename QueryState, typename MutationState>
@@ -141,35 +148,31 @@ using TypedMutationOnQueryStarted =
     std::function<void(const Arg &,
                        const MutationActionCreatorResult<Result, Arg> &)>;
 
-template <typename State> struct ApiContext {
-  std::function<const State &()> getState;
-  Dispatcher dispatch;
-};
-
 template <typename State> struct EndpointBuilder {
-  /** User Story: As a rtk query endpoint consumer, I need to invoke query through a stable signature so the rtk query endpoint workflow remains explicit and composable. @fn template <typename Arg, typename Result> QueryDefinition<Arg, Result> query(const QueryDefinition<Arg, Result> &Definition) const */
+  /** User Story: As a rtk query endpoint consumer, I need to invoke query through a stable signature so the rtk query endpoint workflow remains explicit and composable. @fn template <typename Arg, typename Result> QueryDefinition<Arg, Result, State> query(const QueryDefinition<Arg, Result, State> &Definition) const */
   template <typename Arg, typename Result>
-  QueryDefinition<Arg, Result>
-  query(const QueryDefinition<Arg, Result> &Definition) const {
-    QueryDefinition<Arg, Result> Copy = Definition;
+  QueryDefinition<Arg, Result, State>
+  query(const QueryDefinition<Arg, Result, State> &Definition) const {
+    QueryDefinition<Arg, Result, State> Copy = Definition;
     Copy.Type = DefinitionType::query;
     return Copy;
   }
 
-  /** User Story: As a rtk query endpoint consumer, I need to invoke mutation through a stable signature so the rtk query endpoint workflow remains explicit and composable. @fn template <typename Arg, typename Result> MutationDefinition<Arg, Result> mutation(const MutationDefinition<Arg, Result> &Definition) const */
+  /** User Story: As a rtk query endpoint consumer, I need to invoke mutation through a stable signature so the rtk query endpoint workflow remains explicit and composable. @fn template <typename Arg, typename Result> MutationDefinition<Arg, Result, State> mutation(const MutationDefinition<Arg, Result, State> &Definition) const */
   template <typename Arg, typename Result>
-  MutationDefinition<Arg, Result>
-  mutation(const MutationDefinition<Arg, Result> &Definition) const {
-    MutationDefinition<Arg, Result> Copy = Definition;
+  MutationDefinition<Arg, Result, State>
+  mutation(const MutationDefinition<Arg, Result, State> &Definition) const {
+    MutationDefinition<Arg, Result, State> Copy = Definition;
     Copy.Type = DefinitionType::mutation;
     return Copy;
   }
 
-  /** User Story: As a rtk query endpoint consumer, I need to invoke infinite query through a stable signature so the rtk query endpoint workflow remains explicit and composable. @fn template <typename Arg, typename Result> InfiniteQueryDefinition<Arg, Result> infiniteQuery(const InfiniteQueryDefinition<Arg, Result> &Definition) const */
+  /** User Story: As a rtk query endpoint consumer, I need to invoke infinite query through a stable signature so the rtk query endpoint workflow remains explicit and composable. @fn template <typename Arg, typename Result> InfiniteQueryDefinition<Arg, Result, State> infiniteQuery( const InfiniteQueryDefinition<Arg, Result, State> &Definition) const */
   template <typename Arg, typename Result>
-  InfiniteQueryDefinition<Arg, Result>
-  infiniteQuery(const InfiniteQueryDefinition<Arg, Result> &Definition) const {
-    InfiniteQueryDefinition<Arg, Result> Copy = Definition;
+  InfiniteQueryDefinition<Arg, Result, State>
+  infiniteQuery(
+      const InfiniteQueryDefinition<Arg, Result, State> &Definition) const {
+    InfiniteQueryDefinition<Arg, Result, State> Copy = Definition;
     Copy.Type = DefinitionType::infinitequery;
     return Copy;
   }

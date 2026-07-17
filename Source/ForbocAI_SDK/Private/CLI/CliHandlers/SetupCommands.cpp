@@ -1,6 +1,6 @@
 #include "CLI/CliHandlers.h"
 #include "Features/CLI/Native/NativeThunks.h"
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 #include "Store.h"
 
 namespace {

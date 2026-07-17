@@ -1,75 +1,119 @@
-// User Story: As a developer, I need this module to function.
 #include "CLI/CliHandlers.h"
+#include "Features/CLI/CLISelectors.h"
+#include "Features/CLI/Ghost/CLIGhostSelectors.h"
 #include "Features/CLI/Ghost/CLIGhostThunks.h"
+#include "Features/CLI/Presentation/PresentationAdapters.h"
 #include "Store.h"
+
+namespace {
+
+/** User Story: As a Ghost CLI consumer, I need semantic success output converted for the command runner. @fn CLIOps::Handlers::Result GhostSuccess(const FString &Message) */
+CLIOps::Handlers::Result GhostSuccess(const FString &Message) {
+  return CLIOps::Handlers::Result::Success(TCHAR_TO_UTF8(*Message));
+}
+
+/** User Story: As a Ghost CLI consumer, I need semantic failure output converted for the command runner. @fn CLIOps::Handlers::Result GhostFailure(const FString &Message) */
+CLIOps::Handlers::Result GhostFailure(const FString &Message) {
+  return CLIOps::Handlers::Result::Failure(TCHAR_TO_UTF8(*Message));
+}
+
+/** User Story: As a Ghost CLI presenter, I need selected lines emitted through one effect boundary. @fn void LogGhostLines(const TArray<FString> &Lines) */
+void LogGhostLines(const TArray<FString> &Lines) {
+  func::for_each_array<FString>(
+      Lines, [](const FString &Line) {
+        ForbocAI::CLI::Presentation::logCliMessage(Line);
+      });
+}
+
+} // namespace
 
 namespace CLIOps {
 namespace Handlers {
 
-/** User Story: As a cli cli handlers consumer, I need to invoke handle ghost through a stable signature so the cli cli handlers workflow remains explicit and composable. @fn HandlerResult HandleGhost(rtk::EnhancedStore<FRuntimeState> &Store, const FString &CommandKey, const TArray<FString> &Args) */
+/** User Story: As a CLI user, I need Ghost commands routed through root-store state, thunks, and selectors so the command edge remains thin. @fn HandlerResult HandleGhost(rtk::EnhancedStore<FRuntimeState> &Store, const FString &CommandKey, const TArray<FString> &Args) */
 HandlerResult HandleGhost(rtk::EnhancedStore<FRuntimeState> &Store,
-                         const FString &CommandKey,
-                         const TArray<FString> &Args) {
+                          const FString &CommandKey,
+                          const TArray<FString> &Args) {
   using func::just;
   using func::nothing;
+  using ForbocAI::CLI::Presentation::formatCliMessage;
+  using ForbocAI::CLI::Presentation::logCliMessage;
+  const ForbocAI::CLI::FCLIState &CLIState = Store.getState().CLI;
+  const ForbocAI::CLI::FCLICommandRoles &Roles =
+      ForbocAI::CLI::selectCliCommandRoles(CLIState);
+  const ForbocAI::CLI::Ghost::FCLIGhostState &State =
+      ForbocAI::CLI::Ghost::selectCliGhost(CLIState);
+  const int32 First = CLIState.Parsing.FirstTokenIndex;
+  const int32 Second = CLIState.Parsing.SecondTokenIndex;
 
-  return CommandKey == TEXT("ghost_run")
+  return CommandKey == Roles.GhostRun
              ? [&]() -> HandlerResult {
-                 FString Suite =
-                     Args.Num() > 0 ? Args[0] : TEXT("default");
-                 int32 Duration =
-                     Args.Num() > 1 ? FCString::Atoi(*Args[1]) : 300;
-                 FGhostRunResponse Resp =
+                 const FString Suite =
+                     Args.Num() > State.EmptyCount
+                         ? Args[First]
+                         : State.DefaultSuite;
+                 const int32 Duration =
+                     Args.Num() > Second ? FCString::Atoi(*Args[Second])
+                                         : State.DefaultDuration;
+                 logCliMessage(
+                     formatCliMessage(State.Starting, Suite));
+                 const FGhostRunResponse Response =
                      Ops::startGhost(Store, Suite, Duration);
-                 UE_LOG(LogTemp, Display,
-                        TEXT("Ghost session started: %s"), *Resp.SessionId);
-                 return just(Result::Success(
-                     TCHAR_TO_UTF8(*Resp.SessionId)));
+                 logCliMessage(formatCliMessage(State.Started,
+                                                Response.SessionId));
+                 return just(GhostSuccess(Response.SessionId));
                }()
-         : CommandKey == TEXT("ghost_status")
-             ? (Args.Num() < 1
-                    ? just(Result::Failure(
-                          "Usage: ghost_status <sessionId>"))
+         : CommandKey == Roles.GhostStatus
+             ? (Args.Num() <= First
+                    ? just(GhostFailure(State.RequiredSession))
                     : [&]() -> HandlerResult {
-                        FGhostStatus Resp =
-                            Ops::getGhostStatus(Store, Args[0]);
-                        UE_LOG(LogTemp, Display, TEXT("Ghost status: %s"),
-                               *Resp.Status);
-                        return just(
-                            Result::Success("Ghost status retrieved"));
+                        const FGhostStatus Status =
+                            Ops::getGhostStatus(Store, Args[First]);
+                        LogGhostLines(
+                            ForbocAI::CLI::Ghost::selectCliGhostStatusLines(
+                                State, Status));
+                        return just(GhostSuccess(Status.Status));
                       }())
-         : CommandKey == TEXT("ghost_results")
-             ? (Args.Num() < 1
-                    ? just(Result::Failure(
-                          "Usage: ghost_results <sessionId>"))
+         : CommandKey == Roles.GhostResults
+             ? (Args.Num() <= First
+                    ? just(GhostFailure(State.RequiredSession))
                     : [&]() -> HandlerResult {
-                        Ops::getGhostResults(Store, Args[0]);
-                        UE_LOG(LogTemp, Display,
-                               TEXT("Ghost results retrieved"));
-                        return just(Result::Success(
-                            "Ghost results retrieved"));
+                        const FGhostResults Results =
+                            Ops::getGhostResults(Store, Args[First]);
+                        LogGhostLines(
+                            ForbocAI::CLI::Ghost::selectCliGhostResultsLines(
+                                State, Results));
+                        return just(GhostSuccess(Results.SessionId));
                       }())
-         : CommandKey == TEXT("ghost_stop")
-             ? (Args.Num() < 1
-                    ? just(Result::Failure(
-                          "Usage: ghost_stop <sessionId>"))
+         : CommandKey == Roles.GhostStop
+             ? (Args.Num() <= First
+                    ? just(GhostFailure(State.RequiredSession))
                     : [&]() -> HandlerResult {
-                        FGhostStopResponse Resp =
-                            Ops::stopGhost(Store, Args[0]);
-                        UE_LOG(LogTemp, Display,
-                               TEXT("Ghost stopped: %s"), *Resp.StopStatus);
-                        return just(Result::Success("Ghost stopped"));
+                        logCliMessage(formatCliMessage(
+                            State.Stopping, Args[First]));
+                        const FGhostStopResponse Response =
+                            Ops::stopGhost(Store, Args[First]);
+                        const FString Message =
+                            Response.bStopped ? State.Stopped
+                                              : State.StopFailed;
+                        logCliMessage(Message);
+                        return just(Response.bStopped
+                                        ? GhostSuccess(Message)
+                                        : GhostFailure(Message));
                       }())
-         : CommandKey == TEXT("ghost_history")
+         : CommandKey == Roles.GhostHistory
              ? [&]() -> HandlerResult {
-                 int32 Limit =
-                     Args.Num() > 0 ? FCString::Atoi(*Args[0]) : 10;
-                 TArray<FGhostHistoryEntry> History =
+                 const int32 Limit =
+                     Args.Num() > State.EmptyCount
+                         ? FCString::Atoi(*Args[First])
+                         : State.HistoryLimit;
+                 logCliMessage(State.HistoryTitle);
+                 const TArray<FGhostHistoryEntry> History =
                      Ops::getGhostHistory(Store, Limit);
-                 UE_LOG(LogTemp, Display,
-                        TEXT("Ghost history: %d entries"), History.Num());
-                 return just(
-                     Result::Success("Ghost history retrieved"));
+                 LogGhostLines(
+                     ForbocAI::CLI::Ghost::selectCliGhostHistoryLines(
+                         State, History));
+                 return just(GhostSuccess(State.HistoryTitle));
                }()
              : nothing<Result>();
 }

@@ -1,0 +1,36 @@
+{
+  "host": "unreal-cli",
+  "paths": {
+    "current": [
+      "reports",
+      "quality",
+      "current.json"
+    ],
+    "baseline": [
+      "reports",
+      "quality",
+      "baseline.json"
+    ]
+  },
+  "serialization": {
+    "indentation": 2,
+    "lineEnding": "\n"
+  },
+  "messages": {
+    "currentMissing": "No current Unreal quality report exists. Run the complete CLI test game first.",
+    "absoluteGateFailed": "The current Unreal quality report did not pass its absolute gate.",
+    "promoted": "Promoted Unreal quality baseline: {path}",
+    "readFailed": "Unable to read the Unreal quality report: {path}",
+    "parseFailed": "Unable to parse the Unreal quality report: {path}",
+    "writeFailed": "Unable to write the Unreal quality report: {path}"
+  },
+  "tokens": {
+    "path": "{path}"
+  },
+  "automationNames": {
+    "missingReport": "ForbocAI.TestGame.Quality.Report.Missing"
+  },
+  "stories": {
+    "missingReport": "A missing quality report remains an explicit optional value."
+  }
+}

@@ -18,6 +18,7 @@
 // @covers:cliOp:clearNodeMemory
 // @covers:cliOp:getConfigValue
 // @covers:cliOp:setConfigValue
+// @covers:cliOp:hydrateRuntimeConfig
 // @covers:cliOp:createNpc
 // @covers:cliOp:exportSoul
 // @covers:cliOp:getActiveNpc
@@ -152,31 +153,32 @@ bool FOpsConfigTest::RunTest(const FString &Parameters) {
                       *FGuid::NewGuid().ToString(EGuidFormats::Digits)));
 
   IFileManager::Get().Delete(*TempConfigPath, false, true);
-  SDKConfig::SetConfigFilePathOverride(TempConfigPath);
-  SDKConfig::ReloadConfig();
+  EnhancedStore<FRuntimeState> Store = createRuntimeStore();
+  Ops::hydrateRuntimeConfig(Store, {}, TempConfigPath);
 
   const FString EnvApiUrl =
       FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_API_URL"));
   const FString ExpectedApiUrl =
-      !EnvApiUrl.IsEmpty() ? EnvApiUrl : FString(SDKConfig::DEFAULT_API_URL);
+      !EnvApiUrl.IsEmpty() ? EnvApiUrl
+                           : ConfigSlice::configRuntimeData().Defaults.ApiUrl;
   TestEqual("Resolved runtime API URL honors env or production default",
-            SDKConfig::GetApiUrl(), ExpectedApiUrl);
+            ConfigSelectors::selectApiUrl(Store.getState()), ExpectedApiUrl);
   TestTrue("Unset persisted apiUrl is empty",
-           Ops::getConfigValue(TEXT("apiUrl")).IsEmpty());
+           Ops::getConfigValue(Store.getState(), TEXT("apiUrl")).IsEmpty());
 
-  FString Version = Ops::getConfigValue(TEXT("version"));
+  FString Version = Ops::getConfigValue(Store.getState(), TEXT("version"));
   TestFalse("Version not empty", Version.IsEmpty());
 
-  Ops::setConfigValue(TEXT("apiUrl"), TEXT("https://test.forboc.ai"));
-  FString Url = Ops::getConfigValue(TEXT("apiUrl"));
+  Ops::setConfigValue(Store, TEXT("apiUrl"), TEXT("https://test.forboc.ai"));
+  FString Url = Ops::getConfigValue(Store.getState(), TEXT("apiUrl"));
   TestEqual("ApiUrl roundtrip", Url,
             FString(TEXT("https://test.forboc.ai")));
 
-  Ops::setConfigValue(TEXT("apiKey"), TEXT("sk_test_roundtrip"));
-  FString Key = Ops::getConfigValue(TEXT("apiKey"));
+  Ops::setConfigValue(Store, TEXT("apiKey"), TEXT("sk_test_roundtrip"));
+  FString Key = Ops::getConfigValue(Store.getState(), TEXT("apiKey"));
   TestEqual("ApiKey roundtrip", Key, FString(TEXT("sk_test_roundtrip")));
 
-  FString Unknown = Ops::getConfigValue(TEXT("nonexistent"));
+  FString Unknown = Ops::getConfigValue(Store.getState(), TEXT("nonexistent"));
   TestTrue("Unknown key returns empty", Unknown.IsEmpty());
 
   FString PersistedConfig;
@@ -192,8 +194,6 @@ bool FOpsConfigTest::RunTest(const FString &Parameters) {
                    TEXT("\"apiKey\": \"sk_test_roundtrip\"")));
 
   IFileManager::Get().Delete(*TempConfigPath, false, true);
-  SDKConfig::SetConfigFilePathOverride(TEXT(""));
-  SDKConfig::ReloadConfig();
 
   return true;
 }

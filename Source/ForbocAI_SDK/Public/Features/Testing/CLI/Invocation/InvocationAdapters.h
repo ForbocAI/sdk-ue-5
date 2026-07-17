@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 #include "Features/Testing/CLI/Invocation/InvocationTypes.h"
 
 namespace Testing::CLI::Invocation {

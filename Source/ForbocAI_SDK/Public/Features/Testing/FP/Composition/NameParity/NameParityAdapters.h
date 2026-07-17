@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 #include "Features/Testing/FP/Composition/NameParity/NameParityTypes.h"
 
 namespace Testing::FP::Composition {

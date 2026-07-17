@@ -1,7 +1,8 @@
 #include "ApiEndpointTestAdapters.h"
 
-#include "Features/Config/ConfigAdapters.h"
+#include "Features/Config/ConfigSelectors.h"
 #include "HAL/PlatformProcess.h"
+#include "Store.h"
 
 namespace ApiEndpointTests {
 
@@ -45,7 +46,9 @@ FString ErrorMessage(const rtk::QueryReturnValue<FString> &Result) {
 }
 
 /** User Story: As a tests integration api consumer, I need to invoke base url through a stable signature so the tests integration api workflow remains explicit and composable. @fn FString BaseUrl() */
-FString BaseUrl() { return SDKConfig::GetApiUrl(); }
+FString BaseUrl() {
+  return ConfigSelectors::selectApiUrl(store().getState());
+}
 
 /** User Story: As a tests integration api consumer, I need to invoke required api key through a stable signature so the tests integration api workflow remains explicit and composable. @fn FString RequiredApiKey(FAutomationTestBase &Test) */
 FString RequiredApiKey(FAutomationTestBase &Test) {

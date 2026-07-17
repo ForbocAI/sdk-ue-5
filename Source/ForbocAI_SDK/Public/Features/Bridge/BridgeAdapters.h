@@ -2,7 +2,7 @@
 
 #include "Core/rtk.hpp"
 #include "Features/Contracts/ContractsTypes.h"
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 
 namespace BridgeSlice {
 

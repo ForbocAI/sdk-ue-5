@@ -12,7 +12,7 @@
   },
   "defaults": {
     "importance": 0.8,
-    "recallSimilarity": 0.7,
+    "recallSimilarity": 0.5,
     "confirmation": "y"
   },
   "fields": {

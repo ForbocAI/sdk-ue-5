@@ -1,0 +1,70 @@
+{
+  "slice": {
+    "name": "cliPresentation"
+  },
+  "defaults": {
+    "successExitCode": 0,
+    "failureExitCode": 1
+  },
+  "common": {
+    "blank": "",
+    "version": "ForbocAI SDK v{0} (UE5)",
+    "status": "API: {0}",
+    "apiUrl": "API URL: {0}",
+    "apiKey": "API Key: {0}",
+    "apiKeyMissing": "(not set)",
+    "maskedValue": "********",
+    "apiStatus": "API Status: {0} (v{1})",
+    "configSetUsage": "Usage: config_set <key> <value>",
+    "configGetUsage": "Usage: config_get <key>",
+    "configEntry": "{0} = {1}",
+    "configListEntry": "  {0} = {1}"
+  },
+  "runtime": {
+    "commandStarted": "ForbocAI CLI (UE5) - Command: {0}",
+    "commandSucceeded": "[RESULT] Command completed successfully",
+    "commandFailed": "[RESULT] Command failed: {0}",
+    "dispatchFailed": "Command failed: {0}",
+    "emptyCommand": "Command cannot be empty",
+    "invalidCommand": "Invalid command: {0}",
+    "unknownCommand": "Unknown command: {0}"
+  },
+  "ghost": {
+    "defaultSuite": "exploration",
+    "defaultDuration": 300,
+    "historyLimit": 10,
+    "emptyCount": 0,
+    "requiredSession": "Error: Session ID required",
+    "starting": "> Starting Ghost: {0}...",
+    "started": "> Started! Session ID: \u001b[36m{0}\u001b[0m",
+    "failed": "> Failed:",
+    "error": "> Error:",
+    "results": "\nResults: {0}/{1} passed",
+    "result": "  {0} {1}",
+    "passed": "\u2713",
+    "failedTest": "\u2717",
+    "session": "\n  Session: \u001b[36m{0}\u001b[0m",
+    "status": "  Status:  {0}{1}\u001b[0m",
+    "completedStatus": "completed",
+    "completedColor": "\u001b[32m",
+    "activeColor": "\u001b[33m",
+    "progress": "  Progress: {0}%",
+    "errors": "  Errors:   {0}",
+    "duration": "  Duration: {0}s",
+    "stopping": "> Stopping Ghost session {0}...",
+    "stopped": "> Stopped successfully.",
+    "stopFailed": "> Stop request failed.",
+    "historyTitle": "> Last Ghost sessions:",
+    "historyEmpty": "  (no history found)",
+    "history": "  - \u001b[36m{0}\u001b[0m [{1}] {2} ({3}%)"
+  },
+  "results": {
+    "configUpdated": "Config updated",
+    "configPersistenceFailed": "Config persistence failed",
+    "configRetrieved": "Config retrieved",
+    "configListed": "Config listed",
+    "versionPrinted": "Version printed",
+    "statusChecked": "Status checked",
+    "doctorCompleted": "Doctor check completed"
+  }
+}

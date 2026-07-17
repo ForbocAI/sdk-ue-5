@@ -4,6 +4,7 @@
 #include "TestGame/Features/Systems/Harness/Game/GameAdapters.h"
 #include "TestGame/Features/Systems/Harness/Game/GameTypes.h"
 #include "TestGame/Features/Systems/Harness/Scenario/ScenarioSelectors.h"
+#include "TestGame/Features/Systems/Quality/SystemsQualitySelectors.h"
 #include "TestGame/Features/Systems/Terminal/Transcript/TranscriptSelectors.h"
 
 namespace TestGame::GameSelectors {
@@ -18,11 +19,15 @@ inline FGameRunResult SelectGameRunResult(const FTestGameState &State) {
       TranscriptSelectors::SelectTranscriptEntries(State.Transcript);
   Result.TranscriptErrorCount =
       TranscriptSelectors::SelectTranscriptErrorCount(State.Transcript);
+  Result.bQualityRequired = State.Quality.bRequired;
+  Result.bQualityGatePassed = selectQualityGatePassed(State.Quality);
+  Result.QualityReport = selectQualityReport(State.Quality);
   Result.bComplete =
       Result.MissingGroups.Num() ==
           GameAdapters::GameRuntimeData().numbers.emptyCount &&
       Result.TranscriptErrorCount ==
-          GameAdapters::GameRuntimeData().numbers.emptyCount;
+          GameAdapters::GameRuntimeData().numbers.emptyCount &&
+      Result.bQualityGatePassed;
   return Result;
 }
 
@@ -30,7 +35,11 @@ inline FGameRunResult SelectGameRunResult(const FTestGameState &State) {
 inline FString SelectGameSummaryText(const FGameRunResult &Result) {
   const FGameRuntimeData &Data = GameAdapters::GameRuntimeData();
   return Result.bComplete
-             ? Data.messages.coverageComplete
+             ? (Result.bQualityRequired
+                    ? Data.messages.coverageComplete +
+                          qualityData().Output.Space +
+                          qualityData().Messages.QualityPassed
+                    : Data.messages.coverageComplete)
              : [&]() {
                  TMap<FString, FString> ErrorValues;
                  ErrorValues.Add(
@@ -44,6 +53,29 @@ inline FString SelectGameSummaryText(const FGameRunResult &Result) {
                  const FString Errors = GameAdapters::FormatGameTemplate(
                      Data.messages.coverageErrors, ErrorValues);
 
+                 const FString QualityError =
+                     !Result.bQualityRequired || Result.bQualityGatePassed
+                         ? qualityData().Output.Empty
+                     : Result.QualityReport.hasValue &&
+                               !Result.QualityReport.value.Summary
+                                    .bAbsoluteGatePassed
+                         ? qualityData().Messages.AbsoluteGateFailed
+                     : Result.QualityReport.hasValue &&
+                               Result.QualityReport.value.Summary
+                                       .BaselineStatus ==
+                                   qualityData().BaselineStatuses.Missing
+                         ? qualityData().Messages.BaselineMissing
+                     : Result.QualityReport.hasValue &&
+                               Result.QualityReport.value.Summary
+                                       .BaselineStatus ==
+                                   qualityData().BaselineStatuses.Incompatible
+                         ? qualityData().Messages.BaselineIncompatible
+                         : qualityData().Messages.RegressionGateFailed;
+                 const FString CombinedErrors =
+                     QualityError.IsEmpty()
+                         ? Errors
+                         : Errors + Data.separators.list + QualityError;
+
                  TMap<FString, FString> MissingValues;
                  MissingValues.Add(
                      Data.tokens.groups,
@@ -56,7 +88,7 @@ inline FString SelectGameSummaryText(const FGameRunResult &Result) {
                          : Data.messages.noMissingGroups;
 
                  TMap<FString, FString> SummaryValues;
-                 SummaryValues.Add(Data.tokens.errors, Errors);
+                 SummaryValues.Add(Data.tokens.errors, CombinedErrors);
                  SummaryValues.Add(Data.tokens.missing, Missing);
                  return GameAdapters::FormatGameTemplate(
                      Data.messages.coverageIncomplete, SummaryValues);

@@ -1,8 +1,11 @@
 #pragma once
 
+#include "Async/TaskGraphInterfaces.h"
 #include "CoreMinimal.h"
 #include "Core/fp.hpp"
 #include "Features/Async/AsyncTypes.h"
+#include "HAL/PlatformProcess.h"
+#include "HAL/PlatformTime.h"
 #include "HttpManager.h"
 #include "HttpModule.h"
 #include <memory>

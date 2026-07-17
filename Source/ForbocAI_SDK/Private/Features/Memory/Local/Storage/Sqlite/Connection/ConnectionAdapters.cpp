@@ -1,6 +1,7 @@
 #include "Features/Memory/Local/Storage/Sqlite/Connection/ConnectionAdapters.h"
 
 #include "Features/Memory/Configuration/MemoryConfigurationAdapters.h"
+#include "Features/Memory/Local/Storage/Sqlite/Migration/MigrationAdapters.h"
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
 
@@ -139,44 +140,24 @@ func::Either<FString, DB> open(const FString &Path) {
                                             return func::make_left<FString, DB>(
                                                 Error);
                                           }()
-                                        : [&]() {
-                                            const FTCHARToUTF8 SchemaUtf8(
-                                                *Data.Storage.Sqlite
-                                                     .CreateVectorTable);
-                                            char *SchemaError = nullptr;
-                                            const bool bSchema =
-                                                sqlite3_exec(
-                                                    Database,
-                                                    SchemaUtf8.Get(), nullptr,
-                                                    nullptr, &SchemaError) ==
-                                                SQLITE_OK;
-                                            return !bSchema
-                                                       ? [&]() {
-                                                           const FString Error =
-                                                               Data.Errors
-                                                                   .SqliteSchemaFailed +
-                                                               (SchemaError
-                                                                    ? UTF8_TO_TCHAR(
-                                                                          SchemaError)
-                                                                    : sqliteError(
-                                                                          Database,
-                                                                          FString()));
-                                                           SchemaError
-                                                               ? sqlite3_free(
-                                                                     SchemaError)
-                                                               : void();
-                                                           sqlite3_close(
-                                                               Database);
-                                                           return func::make_left<
-                                                               FString, DB>(
-                                                               Error);
-                                                         }()
-                                                       : func::make_right<
-                                                             FString, DB>(
-                                                             reinterpret_cast<
-                                                                 DB>(
-                                                                 Database));
-                                          }();
+                                        : func::ematch(
+                                              MigrationAdapters::
+                                                  ensureMemoryContractAdapter(
+                                                      reinterpret_cast<DB>(
+                                                          Database)),
+                                              [Database](
+                                                  const FString &Error) {
+                                                sqlite3_close(Database);
+                                                return func::make_left<FString,
+                                                                       DB>(
+                                                    Error);
+                                              },
+                                              [Database](bool) {
+                                                return func::make_right<FString,
+                                                                        DB>(
+                                                    reinterpret_cast<DB>(
+                                                        Database));
+                                              });
                            }();
 #else
               return func::make_left<FString, DB>(

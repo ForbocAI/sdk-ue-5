@@ -8,9 +8,9 @@
 #include "CoreMinimal.h"
 #include "Features/API/APIApi.h"
 #include "Features/API/Serialization/APISerializationAdapters.h"
+#include "Features/CLI/Config/ConfigThunks.h"
 #include "HAL/PlatformProcess.h"
 #include "Misc/AutomationTest.h"
-#include "Features/Config/ConfigAdapters.h"
 #include "Store.h"
 #include "Tests/Integration/Protocol/HandlersLive/HandlersLiveTestAdapters.h"
 
@@ -37,6 +37,7 @@ bool FProcessLiveStepWait::Update() {
   if (State->Step == 0) {
       State->Step = 1;
       State->Store = MakeShared<rtk::EnhancedStore<FRuntimeState>>(createRuntimeStore());
+      Ops::hydrateRuntimeConfig(*State->Store);
       
       FNPCProcessRequest Req;
       Req.Tape = FNPCProcessTape();
@@ -255,8 +256,6 @@ bool FProtocolHandlersLiveTest::RunTest(const FString &Parameters) {
     AddError(TEXT("FORBOCAI_API_KEY is required for protocol integration"));
     return true;
   }
-
-  SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(), ApiKey);
 
   auto State = MakeShared<FProcessLiveTestState>();
   ADD_LATENT_AUTOMATION_COMMAND(FProcessLiveStepWait(State, 0));

@@ -20,7 +20,8 @@ postSoulStorageUpload(const FString &TxId) {
   return Detail::MakeEndpoint<FSoulStorageTransactionRequest,
                               FSoulStorageReceipt>(
       EndpointData.Names.PostSoulStorageUpload, {TxId},
-      [Data](const FSoulStorageTransactionRequest &Request) {
+      [Data](const FSoulStorageTransactionRequest &Request,
+             const rtk::ApiContext<FRuntimeState> &) {
         const func::AsyncResult<FSoulStorageReceipt> Operation =
             func::AsyncChain::then<FSoulPreparedUpload,
                                    FSoulStorageReceipt>(
@@ -78,7 +79,8 @@ inline Thunk<FSoul> getSoulStorageDownload(const FString &TxId) {
       Configuration::endpointData();
   return Detail::MakeEndpoint<FSoulStorageTransactionRequest, FSoul>(
       EndpointData.Names.GetSoulStorageDownload, {TxId},
-      [InitialAttempt](const FSoulStorageTransactionRequest &Request) {
+      [InitialAttempt](const FSoulStorageTransactionRequest &Request,
+                       const rtk::ApiContext<FRuntimeState> &) {
         const func::AsyncResult<FSoul> Operation = func::AsyncChain::then<
             FSoulCatalogEntry, FSoul>(
             ::SoulStorage::getSoulStorageEntryAdapter(Request.TxId),
@@ -110,7 +112,8 @@ getSoulStorageVerification(const FString &TxId) {
   return Detail::MakeEndpoint<FSoulStorageTransactionRequest,
                               FSoulVerifyResult>(
       EndpointData.Names.GetSoulStorageVerification, {TxId},
-      [InitialAttempt](const FSoulStorageTransactionRequest &Request) {
+      [InitialAttempt](const FSoulStorageTransactionRequest &Request,
+                       const rtk::ApiContext<FRuntimeState> &) {
         const func::AsyncResult<FSoul> Download = func::AsyncChain::then<
             FSoulCatalogEntry, FSoul>(
             ::SoulStorage::getSoulStorageEntryAdapter(Request.TxId),

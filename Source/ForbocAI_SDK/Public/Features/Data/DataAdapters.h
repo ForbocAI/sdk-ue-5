@@ -2,7 +2,6 @@
 
 #include "Core/fp.hpp"
 #include "Dom/JsonObject.h"
-#include "Interfaces/IPluginManager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
@@ -20,15 +19,10 @@ struct FArraySource {
 };
 
 /**
- * @fn inline FString ModuleContentDir(const FString &ModuleName)
+ * @fn FORBOCAI_SDK_API FString ModuleContentDir(const FString &ModuleName)
  * User Story: As an SDK consumer, I need authored data resolved from the module's active Unreal host so the same SDK works as a packaged plugin and as its CLI project module.
  */
-inline FString ModuleContentDir(const FString &ModuleName) {
-  const TSharedPtr<IPlugin> Plugin =
-      IPluginManager::Get().FindPlugin(ModuleName);
-  return Plugin.IsValid() ? Plugin->GetContentDir()
-                          : FPaths::ProjectContentDir();
-}
+FORBOCAI_SDK_API FString ModuleContentDir(const FString &ModuleName);
 
 /** User Story: As a features data consumer, I need to invoke settings source through a stable signature so the features data workflow remains explicit and composable. @fn inline FSettingsSource SettingsSource(const FString &PluginName, const FString &RelativePath) */
 inline FSettingsSource SettingsSource(const FString &PluginName,
@@ -77,6 +71,12 @@ inline FString ReadStringField(const TSharedRef<FJsonObject> &Object,
   return Object->GetStringField(Field);
 }
 
+/** User Story: As an authored settings consumer, I need root string fields read through the same typed adapter as nested objects so fixture and runtime loaders share one contract. @fn inline FString ReadStringField(const FSettingsSource &Source, const FString &Field) */
+inline FString ReadStringField(const FSettingsSource &Source,
+                               const FString &Field) {
+  return ReadStringField(Source.Root, Field);
+}
+
 /** User Story: As a features data consumer, I need to invoke read optional string field through a stable signature so the features data workflow remains explicit and composable. @fn inline func::Maybe<FString> ReadOptionalStringField(const TSharedRef<FJsonObject> &Object, const FString &Field) */
 inline func::Maybe<FString>
 ReadOptionalStringField(const TSharedRef<FJsonObject> &Object,
@@ -91,6 +91,24 @@ ReadOptionalStringField(const TSharedRef<FJsonObject> &Object,
 inline int32 ReadNumberField(const TSharedRef<FJsonObject> &Object,
                              const FString &Field) {
   return static_cast<int32>(Object->GetNumberField(Field));
+}
+
+/** User Story: As an authored settings consumer, I need root integer fields read through the same typed adapter as nested objects so numeric contracts stay composable. @fn inline int32 ReadNumberField(const FSettingsSource &Source, const FString &Field) */
+inline int32 ReadNumberField(const FSettingsSource &Source,
+                             const FString &Field) {
+  return ReadNumberField(Source.Root, Field);
+}
+
+/** User Story: As authored persistence data, I need 64-bit integer fields preserved so timestamps and durable identifiers cannot overflow during fixture or runtime decoding. @fn inline int64 ReadInt64Field(const TSharedRef<FJsonObject> &Object, const FString &Field) */
+inline int64 ReadInt64Field(const TSharedRef<FJsonObject> &Object,
+                            const FString &Field) {
+  return static_cast<int64>(Object->GetNumberField(Field));
+}
+
+/** User Story: As an authored settings consumer, I need root 64-bit integer fields preserved through the same typed adapter as nested objects. @fn inline int64 ReadInt64Field(const FSettingsSource &Source, const FString &Field) */
+inline int64 ReadInt64Field(const FSettingsSource &Source,
+                            const FString &Field) {
+  return ReadInt64Field(Source.Root, Field);
 }
 
 /** User Story: As authored data parsing, I need unsigned integer fields preserved without signed overflow so portable hash and bitmask configuration remains exact. @fn inline uint32 ReadUInt32Field(const TSharedRef<FJsonObject> &Object, const FString &Field) */
@@ -113,6 +131,12 @@ ReadOptionalNumberField(const TSharedRef<FJsonObject> &Object,
 inline float ReadFloatField(const TSharedRef<FJsonObject> &Object,
                             const FString &Field) {
   return static_cast<float>(Object->GetNumberField(Field));
+}
+
+/** User Story: As an authored settings consumer, I need root floating-point fields read through the same typed adapter as nested objects so thresholds remain data-owned. @fn inline float ReadFloatField(const FSettingsSource &Source, const FString &Field) */
+inline float ReadFloatField(const FSettingsSource &Source,
+                            const FString &Field) {
+  return ReadFloatField(Source.Root, Field);
 }
 
 /** User Story: As a features data consumer, I need to invoke read optional float field through a stable signature so the features data workflow remains explicit and composable. @fn inline func::Maybe<float> ReadOptionalFloatField(const TSharedRef<FJsonObject> &Object, const FString &Field) */
@@ -189,6 +213,13 @@ ReadObjectArray(const FArraySource &Source) {
   return func::map_array<TSharedPtr<FJsonValue>, TSharedPtr<FJsonObject>>(
       Source.Root,
       [](const TSharedPtr<FJsonValue> &Value) { return Value->AsObject(); });
+}
+
+/** User Story: As an authored-data consumer, I need direct JSON string arrays decoded without introducing a wrapper object. @fn inline TArray<FString> ReadStringArray(const FArraySource &Source) */
+inline TArray<FString> ReadStringArray(const FArraySource &Source) {
+  return func::map_array<TSharedPtr<FJsonValue>, FString>(
+      Source.Root,
+      [](const TSharedPtr<FJsonValue> &Value) { return Value->AsString(); });
 }
 
 /** User Story: As a features data consumer, I need to invoke read number vector field through a stable signature so the features data workflow remains explicit and composable. @fn inline std::vector<int> ReadNumberVectorField(const TSharedRef<FJsonObject> &Object, const FString &Field) */

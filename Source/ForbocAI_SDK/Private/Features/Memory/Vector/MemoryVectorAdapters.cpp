@@ -37,15 +37,65 @@ TArray<FString> collectTokens(FRegexMatcher &Matcher,
                    func::append_value<FString>(
                        Tokens, Matcher.GetCaptureGroup(
                                    MemoryConfiguration::memoryData()
-                                       .Iteration.InitialIndex)));
+                                   .Iteration.InitialIndex)));
+}
+
+/** User Story: As semantic memory recall, I need common discourse tokens removed recursively so formatting requests cannot dominate subject similarity. @fn TArray<FString> filterContentTokens(const TArray<FString> &Tokens, int32 Index, const TArray<FString> &ContentTokens) */
+TArray<FString> filterContentTokens(const TArray<FString> &Tokens, int32 Index,
+                                    const TArray<FString> &ContentTokens) {
+  const MemoryConfiguration::FMemoryData &Data =
+      MemoryConfiguration::memoryData();
+  return Index >= Tokens.Num()
+             ? ContentTokens
+             : filterContentTokens(
+                   Tokens, Index + Data.Iteration.Step,
+                   Data.Vector.StopWords.Contains(Tokens[Index])
+                       ? ContentTokens
+                       : func::append_value<FString>(ContentTokens,
+                                                     Tokens[Index]));
 }
 
 /** User Story: As SDK-owned vector memory, I need an authored token grammar so TS and UE segment recall text identically. @fn TArray<FString> tokenize(const FString &Text) */
 TArray<FString> tokenize(const FString &Text) {
+  const MemoryConfiguration::FMemoryData &Data =
+      MemoryConfiguration::memoryData();
   const FRegexPattern Pattern(
-      MemoryConfiguration::memoryData().Vector.TokenPattern);
+      Data.Vector.TokenPattern);
   FRegexMatcher Matcher(Pattern, Text.ToLower());
-  return collectTokens(Matcher, TArray<FString>());
+  return filterContentTokens(
+      collectTokens(Matcher, TArray<FString>()), Data.Iteration.InitialIndex,
+      TArray<FString>());
+}
+
+/** User Story: As SDK-owned vector memory, I need every lexical feature namespaced through one authored separator so TS and UE hash identical keys. @fn FString featureKey(const FString &Prefix, const TArray<FString> &Values) */
+FString featureKey(const FString &Prefix, const TArray<FString> &Values) {
+  const FString &Separator =
+      MemoryConfiguration::memoryData().Vector.FeatureSeparator;
+  return Prefix + Separator + FString::Join(Values, *Separator);
+}
+
+/** User Story: As semantic memory recall, I need morphology-tolerant character features collected recursively so natural word variants remain comparable. @fn TArray<FString> collectCharacterNgrams(const FString &Token, int32 Index, const TArray<FString> &Ngrams) */
+TArray<FString> collectCharacterNgrams(const FString &Token, int32 Index,
+                                       const TArray<FString> &Ngrams) {
+  const MemoryConfiguration::FMemoryData &Data =
+      MemoryConfiguration::memoryData();
+  return Index + Data.Vector.CharacterNgramSize > Token.Len()
+             ? Ngrams
+             : collectCharacterNgrams(
+                   Token, Index + Data.Iteration.Step,
+                   func::append_value<FString>(
+                       Ngrams,
+                       Token.Mid(Index, Data.Vector.CharacterNgramSize)));
+}
+
+/** User Story: As semantic memory recall, I need character features omitted for undersized tokens and derived through one pure boundary otherwise. @fn TArray<FString> characterNgrams(const FString &Token) */
+TArray<FString> characterNgrams(const FString &Token) {
+  const MemoryConfiguration::FMemoryData &Data =
+      MemoryConfiguration::memoryData();
+  return Token.Len() < Data.Vector.MinimumCharacterTokenLength
+             ? TArray<FString>()
+             : collectCharacterNgrams(Token, Data.Iteration.InitialIndex,
+                                      TArray<FString>());
 }
 
 /** User Story: As SDK-owned vector memory, I need immutable signed feature updates so embedding construction stays functional. @fn TArray<float> addFeature(const TArray<float> &Vector, uint32 Hash, float Weight) */
@@ -63,7 +113,25 @@ TArray<float> addFeature(const TArray<float> &Vector, uint32 Hash,
   return Next;
 }
 
-/** User Story: As SDK-owned vector memory, I need ordered token features folded into a fixed vector so embeddings are stable across calls and platforms. @fn TArray<float> embedTokens(const TArray<FString> &Tokens, int32 Index, const TArray<float> &Vector) */
+/** User Story: As semantic memory recall, I need character features folded without mutation so morphology tolerance stays deterministic across runtimes. @fn TArray<float> addCharacterFeatures(const TArray<FString> &Ngrams, int32 Index, const TArray<float> &Vector) */
+TArray<float> addCharacterFeatures(const TArray<FString> &Ngrams, int32 Index,
+                                   const TArray<float> &Vector) {
+  const MemoryConfiguration::FMemoryData &Data =
+      MemoryConfiguration::memoryData();
+  return Index >= Ngrams.Num()
+             ? Vector
+             : addCharacterFeatures(
+                   Ngrams, Index + Data.Iteration.Step,
+                   addFeature(
+                       Vector,
+                       hashText(featureKey(Data.Vector.CharacterPrefix,
+                                           {Ngrams[Index]}),
+                                Data.Iteration.InitialIndex,
+                                Data.Vector.HashSeed),
+                       Data.Vector.CharacterNgramWeight));
+}
+
+/** User Story: As semantic memory recall, I need position-independent lexical features so a fact remains retrievable when the same subject appears later in a question. @fn TArray<float> embedTokens(const TArray<FString> &Tokens, int32 Index, const TArray<float> &Vector) */
 TArray<float> embedTokens(const TArray<FString> &Tokens, int32 Index,
                           const TArray<float> &Vector) {
   const MemoryConfiguration::FMemoryData &Data =
@@ -72,15 +140,35 @@ TArray<float> embedTokens(const TArray<FString> &Tokens, int32 Index,
              ? Vector
              : embedTokens(
                    Tokens, Index + Data.Iteration.Step,
+                   addCharacterFeatures(
+                       characterNgrams(Tokens[Index]),
+                       Data.Iteration.InitialIndex,
+                       addFeature(
+                           Vector,
+                           hashText(featureKey(Data.Vector.UnigramPrefix,
+                                               {Tokens[Index]}),
+                                    Data.Iteration.InitialIndex,
+                                    Data.Vector.HashSeed),
+                           Data.Vector.UnigramWeight)));
+}
+
+/** User Story: As semantic memory recall, I need adjacent content words represented without absolute positions so local meaning improves without making word order brittle. @fn TArray<float> embedBigrams(const TArray<FString> &Tokens, int32 Index, const TArray<float> &Vector) */
+TArray<float> embedBigrams(const TArray<FString> &Tokens, int32 Index,
+                           const TArray<float> &Vector) {
+  const MemoryConfiguration::FMemoryData &Data =
+      MemoryConfiguration::memoryData();
+  return Index + Data.Iteration.Step >= Tokens.Num()
+             ? Vector
+             : embedBigrams(
+                   Tokens, Index + Data.Iteration.Step,
                    addFeature(
                        Vector,
-                       hashText(FString::FromInt(Index) +
-                                    Data.Vector.FeatureSeparator + Tokens[Index],
-                                Data.Iteration.InitialIndex,
-                                Data.Vector.HashSeed),
-                       Data.Vector.PositiveWeight +
-                           FMath::Loge(Data.Vector.PositiveWeight +
-                                       static_cast<float>(Tokens[Index].Len()))));
+                       hashText(
+                           featureKey(Data.Vector.BigramPrefix,
+                                      {Tokens[Index],
+                                       Tokens[Index + Data.Iteration.Step]}),
+                           Data.Iteration.InitialIndex, Data.Vector.HashSeed),
+                       Data.Vector.BigramWeight));
 }
 
 /** User Story: As SDK-owned vector memory, I need vector magnitude derived recursively so normalization remains a pure transformation. @fn float sumSquares(const TArray<float> &Vector, int32 Index, float Sum) */
@@ -144,8 +232,10 @@ namespace MemoryVectorAdapters {
 TArray<float> embed(const FString &Text) {
   const MemoryConfiguration::FMemoryData &Data =
       MemoryConfiguration::memoryData();
-  const TArray<float> Features = embedTokens(
-      tokenize(Text), Data.Iteration.InitialIndex, emptyVector());
+  const TArray<FString> Tokens = tokenize(Text);
+  const TArray<float> Features = embedBigrams(
+      Tokens, Data.Iteration.InitialIndex,
+      embedTokens(Tokens, Data.Iteration.InitialIndex, emptyVector()));
   const float Norm = FMath::Sqrt(sumSquares(
       Features, Data.Iteration.InitialIndex, Data.Defaults.Similarity));
   return normalize(Features, Data.Iteration.InitialIndex, Norm,

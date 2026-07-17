@@ -13,6 +13,7 @@ struct FTranscriptEntry {
   TArray<FString> ExpectedRoutes;
   FString Status;
   FString Output;
+  double DurationMs{};
   FString Timestamp;
 };
 
@@ -82,6 +83,27 @@ typedef FUIState FUiState;
 
 struct FTranscriptState {
   TArray<FTranscriptEntry> Entries;
+};
+
+struct FTerminalRenderState {
+  FString GridText;
+  FString LegendText;
+};
+
+struct FTerminalLineViewModel {
+  bool bError{};
+  FString Text;
+
+  /** User Story: As a terminal presenter, I need an empty line model so selectors can compose output without sentinel text. @fn FTerminalLineViewModel() = default */
+  FTerminalLineViewModel() = default;
+
+  /** User Story: As a terminal presenter, I need line severity and authored text carried together so views only perform output. @fn FTerminalLineViewModel(bool bInError, FString InText) */
+  FTerminalLineViewModel(bool bInError, FString InText)
+      : bError(bInError), Text(MoveTemp(InText)) {}
+};
+
+struct FTerminalProgressViewModel {
+  TArray<FTerminalLineViewModel> Lines;
 };
 
 } // namespace TestGame

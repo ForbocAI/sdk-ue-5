@@ -171,6 +171,11 @@ bool FSoulTest::RunTest(const FString &Parameters) {
   const SoulStorage::Configuration::FSoulStorageConfigurationData &Data =
       SoulStorage::Configuration::soulStorageData();
   TestEqual(
+      Fixtures.Labels.ProviderUrls,
+      SoulStorage::Provider::soulProviderUrlsAdapter(
+          Fixtures.ProviderUrls.Response),
+      Fixtures.ProviderUrls.Expected);
+  TestEqual(
       Fixtures.Labels.ProviderRetryWithinCycle,
       SoulStorage::Provider::soulProviderRetryDelayAdapter(
           Fixtures.ProviderRetry.WithinCycleAttempt,

@@ -13,7 +13,6 @@
 #include "Features/NPC/NPCSelectors.h"
 #include "Features/NPC/NPCSlice.h"
 #include "Features/Protocol/ProtocolThunks.h"
-#include "Features/Config/ConfigAdapters.h"
 #include "Protocol/NPC/ProcessNPCTestAdapters.h"
 #include "Store.h"
 
@@ -31,7 +30,6 @@ bool ConfigureLiveApi(FAutomationTestBase &Test) {
     return false;
   }
 
-  SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(), ApiKey);
   return true;
 }
 

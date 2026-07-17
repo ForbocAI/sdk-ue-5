@@ -121,6 +121,7 @@ struct FCommandOutput {
   FString Output;
   FString RoutedThrough;
   FCommandAliasUpdate AliasUpdate;
+  double DurationMs{};
 
   /** User Story: As a command runner consumer, I need an empty transport value so progress records can be assembled before execution. @fn FCommandOutput() = default */
   FCommandOutput() = default;

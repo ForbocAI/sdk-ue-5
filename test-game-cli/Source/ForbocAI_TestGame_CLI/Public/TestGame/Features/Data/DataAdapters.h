@@ -14,6 +14,10 @@ struct FSettingsSource {
   TSharedRef<FJsonObject> Root;
 };
 
+struct FArraySource {
+  TArray<TSharedPtr<FJsonValue>> Root;
+};
+
 /** User Story: As a features data consumer, I need to invoke settings source key through a stable signature so the features data workflow remains explicit and composable. @fn inline FString SettingsSourceKey(const FString &Value) */
 inline FString SettingsSourceKey(const FString &Value) { return Value; }
 
@@ -30,6 +34,19 @@ inline FSettingsSource SettingsSource(const FString &RelativePath) {
   return {Root.ToSharedRef()};
 }
 
+/** User Story: As a features data consumer, I need root arrays loaded through the same authored-data boundary as object settings. @fn inline FArraySource ArraySource(const FString &RelativePath) */
+inline FArraySource ArraySource(const FString &RelativePath) {
+  const FString Path = FPaths::Combine(
+      FPaths::ProjectContentDir(), SettingsSourceKey(TEXT("Data")),
+      RelativePath);
+  FString Json;
+  check(FFileHelper::LoadFileToString(Json, *Path));
+  TArray<TSharedPtr<FJsonValue>> Root;
+  const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Json);
+  check(FJsonSerializer::Deserialize(Reader, Root));
+  return {Root};
+}
+
 /** User Story: As a features data consumer, I need to invoke read object field through a stable signature so the features data workflow remains explicit and composable. @fn inline TSharedRef<FJsonObject> ReadObjectField(const TSharedRef<FJsonObject> &Object, const FString &Field) */
 inline TSharedRef<FJsonObject>
 ReadObjectField(const TSharedRef<FJsonObject> &Object,
@@ -43,11 +60,29 @@ inline TSharedRef<FJsonObject> ReadObjectField(const FSettingsSource &Source,
   return ReadObjectField(Source.Root, Field);
 }
 
-/** User Story: As a features data consumer, I need to invoke read object array field through a stable signature so the features data workflow remains explicit and composable. @fn inline TArray<TSharedPtr<FJsonValue>> ReadObjectArrayField(const TSharedRef<FJsonObject> &Object, const FString &Field) */
+/**
+ * User Story: As a features data consumer, I need to invoke read object array field through a stable signature so the features data workflow remains explicit and composable.
+ * @fn inline TArray<TSharedPtr<FJsonValue>> ReadArrayField(const TSharedRef<FJsonObject> &Object, const FString &Field)
+ */
+inline TArray<TSharedPtr<FJsonValue>>
+ReadArrayField(const TSharedRef<FJsonObject> &Object,
+               const FString &Field) {
+  return Object->GetArrayField(Field);
+}
+
+/** User Story: As a features data consumer, I need arrays decoded through one schema adapter so nested authored data remains independent from behavior code. @fn inline TArray<TSharedPtr<FJsonValue>> ReadObjectArrayField(const TSharedRef<FJsonObject> &Object, const FString &Field) */
 inline TArray<TSharedPtr<FJsonValue>>
 ReadObjectArrayField(const TSharedRef<FJsonObject> &Object,
                      const FString &Field) {
-  return Object->GetArrayField(Field);
+  return ReadArrayField(Object, Field);
+}
+
+/** User Story: As a features data consumer, I need root object arrays decoded through one typed adapter. @fn inline TArray<TSharedPtr<FJsonObject>> ReadObjectArray(const FArraySource &Source) */
+inline TArray<TSharedPtr<FJsonObject>>
+ReadObjectArray(const FArraySource &Source) {
+  return func::map_array<TSharedPtr<FJsonValue>, TSharedPtr<FJsonObject>>(
+      Source.Root,
+      [](const TSharedPtr<FJsonValue> &Value) { return Value->AsObject(); });
 }
 
 /** User Story: As a features data consumer, I need to invoke read string field through a stable signature so the features data workflow remains explicit and composable. @fn inline FString ReadStringField(const TSharedRef<FJsonObject> &Object, const FString &Field) */
@@ -68,6 +103,19 @@ inline float ReadFloatField(const TSharedRef<FJsonObject> &Object,
   return static_cast<float>(Object->GetNumberField(Field));
 }
 
+/** User Story: As a quality report reader, I need report precision retained without narrowing fractional evidence to float. @fn inline double ReadDoubleField(const TSharedRef<FJsonObject> &Object, const FString &Field) */
+inline double ReadDoubleField(const TSharedRef<FJsonObject> &Object,
+                              const FString &Field) {
+  return Object->GetNumberField(Field);
+}
+
+/** User Story: As a quality report reader, I need nullable strings decoded without sentinel values. @fn inline FString ReadOptionalStringField(const TSharedRef<FJsonObject> &Object, const FString &Field) */
+inline FString ReadOptionalStringField(const TSharedRef<FJsonObject> &Object,
+                                       const FString &Field) {
+  FString Value;
+  return Object->TryGetStringField(Field, Value) ? Value : FString();
+}
+
 /** User Story: As a features data consumer, I need to invoke read boolean field through a stable signature so the features data workflow remains explicit and composable. @fn inline bool ReadBooleanField(const TSharedRef<FJsonObject> &Object, const FString &Field) */
 inline bool ReadBooleanField(const TSharedRef<FJsonObject> &Object,
                              const FString &Field) {
@@ -80,6 +128,44 @@ inline TArray<FString> ReadStringArrayField(
   return func::map_array<TSharedPtr<FJsonValue>, FString>(
       Object->GetArrayField(Field),
       [](const TSharedPtr<FJsonValue> &Value) { return Value->AsString(); });
+}
+
+/** User Story: As a report serializer, I need string schema fields written through one typed JSON boundary. @fn inline void WriteStringField(const TSharedRef<FJsonObject> &Object, const FString &Field, const FString &Value) */
+inline void WriteStringField(const TSharedRef<FJsonObject> &Object,
+                             const FString &Field, const FString &Value) {
+  Object->SetStringField(Field, Value);
+}
+
+/** User Story: As a report serializer, I need numeric schema fields written through one typed JSON boundary. @fn inline void WriteNumberField(const TSharedRef<FJsonObject> &Object, const FString &Field, double Value) */
+inline void WriteNumberField(const TSharedRef<FJsonObject> &Object,
+                             const FString &Field, double Value) {
+  Object->SetNumberField(Field, Value);
+}
+
+/** User Story: As a report serializer, I need boolean schema fields written through one typed JSON boundary. @fn inline void WriteBooleanField(const TSharedRef<FJsonObject> &Object, const FString &Field, bool bValue) */
+inline void WriteBooleanField(const TSharedRef<FJsonObject> &Object,
+                              const FString &Field, bool bValue) {
+  Object->SetBoolField(Field, bValue);
+}
+
+/** User Story: As a report serializer, I need nested object schema fields written through one typed JSON boundary. @fn inline void WriteObjectField(const TSharedRef<FJsonObject> &Object, const FString &Field, const TSharedRef<FJsonObject> &Value) */
+inline void WriteObjectField(const TSharedRef<FJsonObject> &Object,
+                             const FString &Field,
+                             const TSharedRef<FJsonObject> &Value) {
+  Object->SetObjectField(Field, Value);
+}
+
+/** User Story: As a report serializer, I need array schema fields written through one typed JSON boundary. @fn inline void WriteArrayField(const TSharedRef<FJsonObject> &Object, const FString &Field, const TArray<TSharedPtr<FJsonValue>> &Value) */
+inline void WriteArrayField(const TSharedRef<FJsonObject> &Object,
+                            const FString &Field,
+                            const TArray<TSharedPtr<FJsonValue>> &Value) {
+  Object->SetArrayField(Field, Value);
+}
+
+/** User Story: As a report serializer, I need absent optional values encoded explicitly rather than omitted or replaced with sentinels. @fn inline void WriteNullField(const TSharedRef<FJsonObject> &Object, const FString &Field) */
+inline void WriteNullField(const TSharedRef<FJsonObject> &Object,
+                           const FString &Field) {
+  Object->SetField(Field, MakeShared<FJsonValueNull>());
 }
 
 /**

@@ -14,7 +14,7 @@ postSoulStoragePreparation(const FSoul &Soul) {
       Configuration::endpointData();
   return Detail::MakeEndpoint<FSoul, FSoulStoragePreparation>(
       EndpointData.Names.PostSoulStoragePreparation, Soul,
-      [](const FSoul &Value) {
+      [](const FSoul &Value, const rtk::ApiContext<FRuntimeState> &) {
         return SoulStorageEndpoint::storageQueryResult(
             ::SoulStorage::prepareSoulStorageAdapter(Value));
       },
@@ -30,7 +30,8 @@ deleteSoulStoragePreparation(const FString &TxId) {
   return Detail::MakeEndpoint<FSoulStorageTransactionRequest,
                               rtk::FEmptyPayload>(
       Data.Names.DeleteSoulStoragePreparation, {TxId},
-      [](const FSoulStorageTransactionRequest &Request) {
+      [](const FSoulStorageTransactionRequest &Request,
+         const rtk::ApiContext<FRuntimeState> &) {
         return SoulStorageEndpoint::storageQueryResult(
             ::SoulStorage::discardSoulStorageAdapter(Request.TxId));
       },
@@ -45,7 +46,8 @@ postSoulStorageCommit(const FSoulStorageCommit &Commit) {
       Configuration::endpointData();
   return Detail::MakeEndpoint<FSoulStorageCommit, FSoulCatalogEntry>(
       EndpointData.Names.PostSoulStorageCommit, Commit,
-      [](const FSoulStorageCommit &Value) {
+      [](const FSoulStorageCommit &Value,
+         const rtk::ApiContext<FRuntimeState> &) {
         return SoulStorageEndpoint::storageQueryResult(
             ::SoulStorage::commitSoulStorageAdapter(Value));
       },
@@ -60,7 +62,8 @@ inline Thunk<TArray<FSoulListItem>> getSoulStorageCatalog(int32 Limit) {
   return Detail::MakeEndpoint<FSoulStorageListRequest,
                               TArray<FSoulListItem>>(
       EndpointData.Names.GetSoulStorageCatalog, {Limit},
-      [](const FSoulStorageListRequest &Request) {
+      [](const FSoulStorageListRequest &Request,
+         const rtk::ApiContext<FRuntimeState> &) {
         return SoulStorageEndpoint::storageQueryResult(
             ::SoulStorage::listSoulStorageAdapter(Request.Limit));
       },
@@ -75,7 +78,8 @@ getSoulStorageEntry(const FString &TxId) {
   return Detail::MakeEndpoint<FSoulStorageTransactionRequest,
                               FSoulCatalogEntry>(
       EndpointData.Names.GetSoulStorageEntry, {TxId},
-      [](const FSoulStorageTransactionRequest &Request) {
+      [](const FSoulStorageTransactionRequest &Request,
+         const rtk::ApiContext<FRuntimeState> &) {
         return SoulStorageEndpoint::storageQueryResult(
             ::SoulStorage::getSoulStorageEntryAdapter(Request.TxId));
       },

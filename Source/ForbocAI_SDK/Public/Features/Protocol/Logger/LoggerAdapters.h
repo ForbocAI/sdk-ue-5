@@ -16,11 +16,7 @@ inline void writeProtocolLogAdapter(const rtk::AnyAction &Action,
       Data.Text.Payload + Data.Text.KeyValueSeparator +
       Action.describePayload() + Data.Text.FieldSeparator + Data.Text.Delta +
       Data.Text.KeyValueSeparator + Delta;
-  LogForbocAIProtocol.IsSuppressed(ELogVerbosity::Display) || GLog == nullptr
-      ? void()
-      : (GLog->Serialize(*Line, ELogVerbosity::Display,
-                         LogForbocAIProtocol.GetCategoryName()),
-         LogForbocAIProtocol.PostTrigger(ELogVerbosity::Display), void());
+  UE_LOG(LogForbocAIProtocol, Display, TEXT("%s"), *Line);
 }
 
 } // namespace LoggerAdapters

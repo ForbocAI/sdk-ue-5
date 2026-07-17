@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TestGame/Features/Systems/Contract/Parsing/Command/CommandAdapters.h"
+#include "TestGame/Features/Systems/Contract/Parsing/Command/ParsingCommandAdapters.h"
 
 namespace TestGame::Contract::Parsing {
 

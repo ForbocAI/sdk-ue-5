@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1920, initial-scale=1">
+  <title>ForbocAI operational CLI</title>
+  <link rel="stylesheet" href="media.css">
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">The runtime path is directly testable</p>
+    <h1>Operate through the thin CLI</h1>
+    <section class="terminal-layout">
+      <article class="terminal">
+        <p><span class="prompt">$</span> forbocai status</p>
+        <p><span class="prompt">$</span> forbocai doctor</p>
+        <p><span class="prompt">$</span> forbocai npc create &lt;description&gt;</p>
+        <p><span class="prompt">$</span> forbocai npc chat &lt;npc-id&gt; "Hello"</p>
+        <p><span class="prompt">$</span> forbocai memory store &lt;npc-id&gt; "Observation"</p>
+        <p><span class="prompt">$</span> forbocai memory recall &lt;npc-id&gt; "Question"</p>
+        <p><span class="prompt">$</span> forbocai bridge validate &lt;action-json&gt;</p>
+        <p><span class="prompt">$</span> forbocai soul export &lt;npc-id&gt;</p>
+        <p><span class="prompt">$</span> forbocai soul verify &lt;transaction-id&gt;</p>
+      </article>
+      <aside class="operations">
+        <article class="operation"><h2>Diagnose</h2><p>Check API health, authentication, and local configuration.</p></article>
+        <article class="operation"><h2>Exercise</h2><p>Run NPC, memory, bridge, and soul workflows directly.</p></article>
+        <article class="operation"><h2>Automate</h2><p>Use the same SDK operations from scripts and continuous integration.</p></article>
+        <article class="operation"><h2>Verify</h2><p>Test the complete CLI to SDK to production inference path.</p></article>
+      </aside>
+    </section>
+  </main>
+</body>
+</html>

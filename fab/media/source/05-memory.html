@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1920, initial-scale=1">
+  <title>ForbocAI local vector memory</title>
+  <link rel="stylesheet" href="media.css">
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">SDK-owned persistent context</p>
+    <h1>Local vector memory</h1>
+    <p class="lead">Keep NPC observations close to the game while retrieving relevant context for each turn.</p>
+    <section class="memory-flow">
+      <article class="memory-step"><span class="stage-number">01</span><h2>Observe</h2><p>Your runtime supplies NPC-scoped facts, events, and player interactions.</p></article>
+      <article class="memory-step"><span class="stage-number">02</span><h2>Embed</h2><p>The SDK creates deterministic, model-independent memory vectors locally.</p></article>
+      <article class="memory-step"><span class="stage-number">03</span><h2>Persist</h2><p>SQLite stores identity, text, chronology, importance, and embeddings.</p></article>
+      <article class="memory-step"><span class="stage-number">04</span><h2>Recall</h2><p>Cosine search selects relevant memories before hosted inference.</p></article>
+    </section>
+    <section class="memory-note">
+      <span><strong class="accent">Local ownership</strong><br>Memory remains in the SDK.</span>
+      <span><strong class="accent">NPC scoped</strong><br>Each identity has its own store.</span>
+      <span><strong class="accent">Portable</strong><br>Soul export and import preserve context.</span>
+    </section>
+  </main>
+</body>
+</html>

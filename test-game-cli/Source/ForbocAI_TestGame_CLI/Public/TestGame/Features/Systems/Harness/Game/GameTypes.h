@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/rtk.hpp"
+#include "Features/Config/ConfigTypes.h"
 #include "TestGame/Features/Components/Inventory/InventoryTypes.h"
 #include "TestGame/Features/Components/Spatial/Grid/GridTypes.h"
 #include "TestGame/Features/Entities/NPCs/NPCsTypes.h"
@@ -8,9 +9,10 @@
 #include "TestGame/Features/Systems/Bridge/BridgeTypes.h"
 #include "TestGame/Features/Systems/Harness/CommandRunner/CommandRunnerTypes.h"
 #include "TestGame/Features/Systems/Harness/Coverage/CoverageTypes.h"
-#include "TestGame/Features/Systems/Harness/Game/Vocabulary/VocabularyTypes.h"
+#include "TestGame/Features/Systems/Harness/Game/Vocabulary/GameVocabularyTypes.h"
 #include "TestGame/Features/Systems/Harness/Scenario/ScenarioTypes.h"
 #include "TestGame/Features/Systems/Memory/MemoryTypes.h"
+#include "TestGame/Features/Systems/Quality/QualityTypes.h"
 #include "TestGame/Features/Systems/Social/SocialTypes.h"
 #include "TestGame/Features/Systems/Soul/SoulTypes.h"
 #include "TestGame/Features/Systems/Stealth/StealthTypes.h"
@@ -33,6 +35,8 @@ struct FTestGameState {
   FScenarioSliceState Scenario;
   FHarnessState Harness;
   CommandRunner::FCommandAliasState CommandRunner;
+  ConfigSlice::FConfigState Config;
+  FQualityState Quality;
 };
 
 typedef rtk::EnhancedStore<FTestGameState> FTestGameStore;
@@ -43,6 +47,10 @@ struct FGameRunResult {
   TArray<FString> MissingGroups;
   TArray<FTranscriptEntry> Transcript;
   int32 TranscriptErrorCount{};
+  bool bQualityRequired{};
+  bool bQualityGatePassed{};
+  func::Maybe<FQualityReport> QualityReport;
+  FString QualityReportPath;
   FString Summary;
 };
 

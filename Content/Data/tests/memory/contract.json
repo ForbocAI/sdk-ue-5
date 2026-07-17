@@ -1,0 +1,32 @@
+{
+  "suite": "ForbocAI.Memory.ContractMigration",
+  "databasePrefix": "memory_contract_",
+  "record": {
+    "id": "legacy-memory",
+    "text": "The signal changed from green to amber.",
+    "type": "observation",
+    "importance": 0.9,
+    "timestamp": 1700000000000
+  },
+  "numbers": {
+    "legacyVectorValue": 0.0,
+    "legacyFirstVectorValue": 1.0,
+    "expectedCount": 1,
+    "firstIndex": 0,
+    "similarityPrecision": 5
+  },
+  "scenarios": {
+    "legacyMigration": "migrates every legacy record through the current vector contract",
+    "newerRejection": "rejects a database authored by a newer vector contract"
+  },
+  "assertions": {
+    "legacyCreated": "The unversioned fixture is created through the real vector database",
+    "legacyOpened": "The SDK opens and migrates the unversioned database",
+    "migratedCount": "Every legacy memory remains available after migration",
+    "migratedText": "Migrated memory content remains lossless",
+    "migratedSimilarity": "The migrated memory uses the current production embedding",
+    "migratedVersion": "The migrated database records the current vector contract version",
+    "newerCreated": "The newer fixture is created through the real vector database",
+    "newerRejected": "The SDK rejects a database authored by a newer vector contract"
+  }
+}

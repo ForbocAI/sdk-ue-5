@@ -14,6 +14,7 @@ struct FRecordTranscriptPayload {
   TArray<FString> ExpectedRoutes;
   FString Status;
   FString Output;
+  double DurationMs{};
 };
 
 /** User Story: As a systems terminal transcript consumer, I need to invoke record transcript action creator through a stable signature so the systems terminal transcript workflow remains explicit and composable. @fn inline rtk::ActionCreator<FRecordTranscriptPayload> recordTranscriptActionCreator() */

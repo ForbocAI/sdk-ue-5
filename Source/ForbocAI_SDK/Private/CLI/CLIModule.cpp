@@ -1,5 +1,6 @@
 #include "CLI/CLIModule.h"
 #include "CLI/CliHandlers.h"
+#include "Features/CLI/Presentation/PresentationSelectors.h"
 #include "Store.h"
 #include <exception>
 
@@ -24,6 +25,10 @@ func::TestResult<void> DispatchCommand(const FString &CommandKey,
                                               const TArray<FString> &)>;
 
   rtk::EnhancedStore<FRuntimeState> &Store = GetStore();
+  const FRuntimeState &State = Store.getState();
+  const ForbocAI::CLI::Presentation::FCLIPresentationState
+      &PresentationState =
+          ForbocAI::CLI::Presentation::selectCliPresentation(State);
 
   /**
    * Phase 3.4: Handler chain — first match wins
@@ -38,20 +43,31 @@ func::TestResult<void> DispatchCommand(const FString &CommandKey,
     static func::TestResult<void>
     apply(const std::vector<Handler> &Hs, size_t Index,
           rtk::EnhancedStore<FRuntimeState> &Store, const FString &Key,
-          const TArray<FString> &Args) {
+          const TArray<FString> &Args,
+          const ForbocAI::CLI::FCLIParsingSettings &Parsing,
+          const ForbocAI::CLI::Presentation::FCLIPresentationState
+              &PresentationState) {
       return Index >= Hs.size()
                  ? Result::Failure(TCHAR_TO_UTF8(
-                       *FString::Printf(TEXT("Unknown command: %s"), *Key)))
+                       *ForbocAI::CLI::Presentation::
+                           selectCliUnknownCommandMessage(PresentationState,
+                                                          Key)))
                  : [&]() -> func::TestResult<void> {
                      HandlerResult R = Hs[Index](Store, Key, Args);
                      return R.hasValue ? R.value
-                                       : apply(Hs, Index + 1, Store, Key, Args);
+                                       : apply(
+                                             Hs,
+                                             Index + Parsing.NextIndexOffset,
+                                             Store, Key, Args, Parsing,
+                                             PresentationState);
                    }();
     }
   };
 
   try {
-    return DispatchRecursive::apply(Handlers, 0, Store, CommandKey, Args);
+    return DispatchRecursive::apply(
+        Handlers, State.CLI.Parsing.FirstTokenIndex, Store, CommandKey, Args,
+        State.CLI.Parsing, PresentationState);
   } catch (const std::exception &Error) {
     return Result::Failure(std::string(Error.what()));
   }

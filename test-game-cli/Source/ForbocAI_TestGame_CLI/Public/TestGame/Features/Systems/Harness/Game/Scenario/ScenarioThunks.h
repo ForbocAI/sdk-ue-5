@@ -3,6 +3,8 @@
 #include "TestGame/Features/Entities/NPCs/NPCsActions.h"
 #include "TestGame/Features/Entities/Player/PlayerActions.h"
 #include "TestGame/Features/Systems/Harness/Game/GameAdapters.h"
+#include "TestGame/Features/Systems/Harness/Game/Command/CommandThunks.h"
+#include "TestGame/Features/Systems/Harness/Game/Progress/ProgressThunks.h"
 #include "TestGame/Features/Systems/Harness/Game/GameTypes.h"
 #include "TestGame/Features/Systems/Memory/MemoryActions.h"
 #include "TestGame/Features/Systems/Social/SocialActions.h"
@@ -66,6 +68,31 @@ inline void ApplyScenarioInitialState(const FScenarioStep &Step,
               Data.initialState.persistence.npcId));
         }()
       : void();
+}
+
+/** User Story: As a contract runner, I need scenarios sequenced recursively through the same root store and CLI boundary. @fn inline void ProcessSteps(const TArray<FScenarioStep> &Steps, int32 Index, FTestGameStore &Store, const FString &ApiUrl, const FGameProgressSink &Sink) */
+inline void ProcessSteps(const TArray<FScenarioStep> &Steps, int32 Index,
+                         FTestGameStore &Store,
+                         const FString &ApiUrl,
+                         const FGameProgressSink &Sink) {
+  Index >= Steps.Num()
+      ? void()
+      : [&]() {
+          FGameProgress Progress;
+          Progress.Type =
+              GameAdapters::GameRuntimeData().lifecycleEvents.stepStarted;
+          Progress.Step = Steps[Index];
+          Emit(Sink, MoveTemp(Progress));
+          ApplyScenarioInitialState(Steps[Index], Store);
+          ProcessCommands(
+              Steps[Index],
+              GameAdapters::GameRuntimeData().numbers.emptyCount, Store,
+              ApiUrl, Sink);
+          ProcessSteps(
+              Steps,
+              Index + GameAdapters::GameRuntimeData().numbers.nextIndex,
+              Store, ApiUrl, Sink);
+        }();
 }
 
 } // namespace TestGame::GameThunksDetail

@@ -38,6 +38,24 @@ struct FIdentityData {
   FString MemoryPrefix;
 };
 
+struct FContractFieldsData {
+  FString SchemaVersion;
+  FString VectorVersion;
+};
+
+struct FContractData {
+  int32 SchemaVersion;
+  int32 VectorVersion;
+  int32 LegacyVectorVersion;
+  FString MetadataFile;
+  FString TemporarySuffix;
+  FString TextEncoding;
+  FString LineTerminator;
+  int32 JsonIndent;
+  int32 MigrationBatchSize;
+  FContractFieldsData Fields;
+};
+
 struct FVectorData {
   int32 Dimension;
   uint32 HashSeed;
@@ -45,6 +63,15 @@ struct FVectorData {
   FString TokenPattern;
   FString TokenFlags;
   FString FeatureSeparator;
+  FString UnigramPrefix;
+  FString BigramPrefix;
+  FString CharacterPrefix;
+  int32 CharacterNgramSize;
+  int32 MinimumCharacterTokenLength;
+  float UnigramWeight;
+  float BigramWeight;
+  float CharacterNgramWeight;
+  TArray<FString> StopWords;
   uint32 SignMask;
   uint32 EvenRemainder;
   float PositiveWeight;
@@ -83,6 +110,8 @@ struct FLanceData {
   FString Table;
   FString DatabaseExtension;
   FString TableExtension;
+  FString DistanceType;
+  FString OverwriteMode;
 };
 
 struct FOramaSchemaData {
@@ -132,6 +161,14 @@ struct FSqliteData {
   FString JsonClose;
   FString JsonSeparator;
   FString CreateVectorTable;
+  FString TableExists;
+  FString ReadUserVersion;
+  FString WriteUserVersion;
+  FString ListAll;
+  FString DropVectorTable;
+  FString BeginTransaction;
+  FString CommitTransaction;
+  FString RollbackTransaction;
   FString Clear;
   FString Upsert;
   FString Search;
@@ -186,6 +223,9 @@ struct FErrorsData {
   FString SqliteStepFailed;
   FString SqliteInvalidLimit;
   FString SqliteInvalidOffset;
+  FString MemoryContractInvalid;
+  FString MemoryContractNewer;
+  FString MemoryContractMigrationFailed;
 };
 
 struct FMemoryData {
@@ -194,6 +234,7 @@ struct FMemoryData {
   FStatusData Status;
   FTextData Text;
   FIdentityData Identity;
+  FContractData Contract;
   FVectorData Vector;
   FRegistryData Registry;
   FStorageData Storage;

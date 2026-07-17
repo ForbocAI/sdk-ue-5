@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1920, initial-scale=1">
+  <title>ForbocAI Unreal integration</title>
+  <link rel="stylesheet" href="media.css">
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Native Unreal Engine integration</p>
+    <h1>C++ and Blueprint ready</h1>
+    <section class="integration-layout">
+      <article class="surface">
+        <p class="surface-label">Blueprint-callable runtime</p>
+        <div class="node-flow">
+          <div class="node"><strong>Init</strong><span>API key and endpoint</span></div>
+          <div class="node"><strong>Process NPC</strong><span>NPC id and player input</span></div>
+          <div class="node"><strong>Get NPC State</strong><span>Immutable current state</span></div>
+          <div class="node"><strong>Get Memories</strong><span>Turn-specific recalled context</span></div>
+          <div class="node"><strong>Validate Action</strong><span>Game-owned constraints</span></div>
+        </div>
+      </article>
+      <article class="surface">
+        <p class="surface-label">Game-instance subsystem</p>
+        <div class="code-window"><span class="code-keyword">auto</span> *ForbocAI =
+    GetGameInstance()-&gt;
+      <span class="code-call">GetSubsystem&lt;UForbocAISubsystem&gt;</span>();
+
+ForbocAI-&gt;<span class="code-call">Init</span>(ApiKey);
+ForbocAI-&gt;<span class="code-call">ProcessNPC</span>(NpcId, PlayerInput);
+
+ForbocAI-&gt;OnMessageReceived
+    .<span class="code-call">AddDynamic</span>(this, &amp;ThisClass::OnMessage);
+ForbocAI-&gt;OnNPCActionReceived
+    .<span class="code-call">AddDynamic</span>(this, &amp;ThisClass::OnAction);</div>
+      </article>
+    </section>
+    <footer class="footer"><span>Source included</span><span>Runtime module for UE 5.8</span></footer>
+  </main>
+</body>
+</html>

@@ -23,7 +23,7 @@ bool FRtkApiTest::RunTest(const FString &Parameters) {
    * 1. Define an API Endpoint
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  ApiEndpoint<FString, int32> GetUserEndpoint;
+  ApiEndpoint<FString, int32, FAppFixtureState> GetUserEndpoint;
   GetUserEndpoint.EndpointName = ApiFixture.EndpointName;
   GetUserEndpoint.providesTags = {{ApiFixture.TagType, ApiFixture.TagId}};
 
@@ -31,14 +31,17 @@ bool FRtkApiTest::RunTest(const FString &Parameters) {
    * Deterministic endpoint request builder that resolves after parsing
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  GetUserEndpoint.RequestBuilder = [&ApiFixture](const FString &UserId) {
+  GetUserEndpoint.RequestBuilder =
+      [&ApiFixture](const FString &UserId,
+                    const ApiContext<FAppFixtureState> &Context) {
+    const int32 StateResult = Context.getState().ActiveNpc.Health;
     return func::AsyncResult<QueryReturnValue<int32>>::create(
-        [UserId, &ApiFixture](auto Resolve, auto Reject) {
+        [UserId, &ApiFixture, StateResult](auto Resolve, auto Reject) {
           if (UserId == ApiFixture.FailureArgument) {
             Resolve(QueryReturnValue<int32>::failure(
                 FetchBaseQueryError::fetchError(ApiFixture.FailureMessage)));
           } else {
-            Resolve(QueryReturnValue<int32>::success(ApiFixture.EndpointResult));
+            Resolve(QueryReturnValue<int32>::success(StateResult));
           }
         });
   };
@@ -94,7 +97,8 @@ bool FRtkApiTest::RunTest(const FString &Parameters) {
         EventLog.Add(Action.Type);
         return Action;
       };
-  const FAppFixtureState State{};
+  const FAppFixtureState State{
+      FNpcFixtureState{ApiFixture.SuccessArgument, ApiFixture.EndpointResult}};
   std::function<const FAppFixtureState &()> ReadState =
       [&State]() -> const FAppFixtureState & {
     return State;

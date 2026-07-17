@@ -85,7 +85,7 @@ unwrapEndpointResult(QueryReturnValue<Result> QueryResult) {
 }
 
 /**
- * @fn template <typename State, typename Arg, typename Result> Api<State> &injectEndpoints(Api<State> &Slice, const ApiEndpoint<Arg, Result> &EndpointDesc, bool OverrideExisting = false)
+ * @fn template <typename State, typename Arg, typename Result> Api<State> &injectEndpoints(Api<State> &Slice, const ApiEndpoint<Arg, Result, State> &EndpointDesc, bool OverrideExisting = false)
  * @brief Registers a typed endpoint on an existing API slice and returns that same slice.
  * @param Slice The API slice registry to extend.
  * @param EndpointDesc The endpoint descriptor to register.
@@ -97,7 +97,7 @@ unwrapEndpointResult(QueryReturnValue<Result> QueryResult) {
  */
 template <typename State, typename Arg, typename Result>
 Api<State> &injectEndpoints(Api<State> &Slice,
-                            const ApiEndpoint<Arg, Result> &EndpointDesc,
+                            const ApiEndpoint<Arg, Result, State> &EndpointDesc,
                             bool OverrideExisting = false) {
   check(!EndpointDesc.EndpointName.IsEmpty());
   const auto IsDeclaredTag = [&Slice](const FApiEndpointTag &Tag) {
@@ -122,7 +122,7 @@ Api<State> &injectEndpoints(Api<State> &Slice,
 }
 
 /**
- * @fn template <typename State, typename Arg, typename Result> AsyncThunkConfig<Result, Arg, State> initiate(const Api<State> &Slice, const ApiEndpoint<Arg, Result> &EndpointDesc)
+ * @fn template <typename State, typename Arg, typename Result> AsyncThunkConfig<Result, Arg, State> initiate(const Api<State> &Slice, const ApiEndpoint<Arg, Result, State> &EndpointDesc)
  * @brief Creates the executable lifecycle thunk for a registered endpoint.
  * @param Slice The API slice containing the endpoint registration.
  * @param EndpointDesc The typed endpoint request executor.
@@ -134,15 +134,17 @@ Api<State> &injectEndpoints(Api<State> &Slice,
 template <typename State, typename Arg, typename Result>
 AsyncThunkConfig<Result, Arg, State>
 initiate(const Api<State> &Slice,
-         const ApiEndpoint<Arg, Result> &EndpointDesc) {
+         const ApiEndpoint<Arg, Result, State> &EndpointDesc) {
   check(Slice.Endpoints.Contains(EndpointDesc.EndpointName));
   const FString ThunkPrefix = Slice.ReducerPath + TEXT("/") + EndpointDesc.EndpointName;
   return createAsyncThunk<Result, Arg, State>(
       ThunkPrefix,
       [EndpointDesc](const Arg &arg, const ThunkApi<State> &api)
           -> func::AsyncResult<Result> {
+        const ApiContext<State> Context{api.getState, api.dispatch};
         return func::AsyncChain::then<QueryReturnValue<Result>, Result>(
-            EndpointDesc.RequestBuilder(arg), unwrapEndpointResult<Result>);
+            EndpointDesc.RequestBuilder(arg, Context),
+            unwrapEndpointResult<Result>);
       });
 }
 

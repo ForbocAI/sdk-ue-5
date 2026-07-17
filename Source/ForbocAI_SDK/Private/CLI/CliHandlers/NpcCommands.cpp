@@ -63,16 +63,17 @@ HandlerResult HandleNpc(rtk::EnhancedStore<FRuntimeState> &Store,
                                 Args, Second, State.Syntax.MessageSeparator);
                         const FAgentResponse Response =
                             Ops::processNpc(Store, Args[First], Observation);
+                        const FString Dialogue =
+                            ForbocAI::CLI::NPC::selectDialogue(Response,
+                                                               State);
                         ForbocAI::CLI::Presentation::logCliMessage(
                             formatCliMessage(
-                                State.Messages.Dialogue,
-                                ForbocAI::CLI::NPC::selectDialogue(Response,
-                                                                   State)));
+                                State.Messages.Dialogue, Dialogue));
                         ForbocAI::CLI::Presentation::logCliMessageWhen(
                             !Response.Action.Type.IsEmpty(),
                             formatCliMessage(State.Messages.Action,
                                              Response.Action.Type));
-                        return just(NpcSuccess(State.Messages.ProcessDone));
+                        return just(NpcSuccess(Dialogue));
                       }())
          : CommandKey == Roles.NpcState
              ? [&]() -> HandlerResult {
@@ -168,16 +169,17 @@ HandlerResult HandleNpc(rtk::EnhancedStore<FRuntimeState> &Store,
                                              Message));
                         const FAgentResponse Response =
                             Ops::processNpc(Store, Args[First], Message);
+                        const FString Dialogue =
+                            ForbocAI::CLI::NPC::selectDialogue(Response,
+                                                               State);
                         ForbocAI::CLI::Presentation::logCliMessage(
                             formatCliMessage(
-                                State.Messages.ChatNpc,
-                                ForbocAI::CLI::NPC::selectDialogue(Response,
-                                                                   State)));
+                                State.Messages.ChatNpc, Dialogue));
                         ForbocAI::CLI::Presentation::logCliMessageWhen(
                             !Response.Action.Type.IsEmpty(),
                             formatCliMessage(State.Messages.ChatAction,
                                              Response.Action.Type));
-                        return just(NpcSuccess(State.Messages.ChatDone));
+                        return just(NpcSuccess(Dialogue));
                       }())
              : nothing<Result>();
 }

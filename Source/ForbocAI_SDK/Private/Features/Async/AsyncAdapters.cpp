@@ -1,6 +1,6 @@
 #include "Features/Async/AsyncAdapters.h"
 
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 
 namespace AsyncAdapters {
 namespace {

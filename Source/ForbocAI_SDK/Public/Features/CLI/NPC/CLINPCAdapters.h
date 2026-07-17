@@ -2,7 +2,7 @@
 
 #include "Core/fp.hpp"
 #include "Features/CLI/NPC/CLINPCTypes.h"
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 
 namespace ForbocAI {
 namespace CLI {
@@ -36,42 +36,30 @@ inline FCLINPCState readCliNpcState() {
        DataAdapters::ReadStringField(Syntax, TEXT("personaPattern"))},
       {DataAdapters::ReadStringField(Messages, TEXT("createUsage")),
        DataAdapters::ReadStringField(Messages, TEXT("creating")),
-       DataAdapters::ReadStringField(Messages, TEXT("unknownId")),
        DataAdapters::ReadStringField(Messages, TEXT("created")),
        DataAdapters::ReadStringField(Messages, TEXT("id")),
        DataAdapters::ReadStringField(Messages, TEXT("state")),
        DataAdapters::ReadStringField(Messages, TEXT("noActive")),
-       DataAdapters::ReadStringField(Messages, TEXT("missingId")),
        DataAdapters::ReadStringField(Messages, TEXT("notFound")),
-       DataAdapters::ReadStringField(Messages, TEXT("viewingActive")),
-       DataAdapters::ReadStringField(Messages, TEXT("stateEntry")),
        DataAdapters::ReadStringField(Messages, TEXT("updateUsage")),
        DataAdapters::ReadStringField(Messages, TEXT("updated")),
        DataAdapters::ReadStringField(Messages, TEXT("processUsage")),
        DataAdapters::ReadStringField(Messages, TEXT("dialogueFallback")),
        DataAdapters::ReadStringField(Messages, TEXT("dialogue")),
        DataAdapters::ReadStringField(Messages, TEXT("action")),
-       DataAdapters::ReadStringField(Messages, TEXT("verdict")),
-       DataAdapters::ReadStringField(Messages, TEXT("processDone")),
        DataAdapters::ReadStringField(Messages, TEXT("chatUsage")),
        DataAdapters::ReadStringField(Messages, TEXT("chatMissingId")),
        DataAdapters::ReadStringField(Messages, TEXT("chatHeader")),
-       DataAdapters::ReadStringField(Messages, TEXT("chatPrompt")),
        DataAdapters::ReadStringField(Messages, TEXT("chatUser")),
        DataAdapters::ReadStringField(Messages, TEXT("chatNpc")),
        DataAdapters::ReadStringField(Messages, TEXT("chatAction")),
-       DataAdapters::ReadStringField(Messages, TEXT("chatDone")),
        DataAdapters::ReadStringArrayField(Messages, TEXT("exitCommands")),
        DataAdapters::ReadStringField(Messages, TEXT("importUsage")),
        DataAdapters::ReadStringField(Messages, TEXT("imported")),
-       DataAdapters::ReadStringField(Messages, TEXT("importedLog")),
        DataAdapters::ReadStringField(Messages, TEXT("persona")),
        DataAdapters::ReadStringField(Messages, TEXT("importDone")),
        DataAdapters::ReadStringField(Messages, TEXT("statePrinted")),
-       DataAdapters::ReadStringField(Messages, TEXT("updateDone")),
-       DataAdapters::ReadStringField(Messages, TEXT("emptyPersona")),
-       DataAdapters::ReadStringField(Messages, TEXT("apiFailure")),
-       DataAdapters::ReadStringArrayField(Messages, TEXT("networkErrors"))}};
+       DataAdapters::ReadStringField(Messages, TEXT("updateDone"))}};
 }
 
 /** User Story: As a features cli npc consumer, I need to invoke join npc arguments through a stable signature so the features cli npc workflow remains explicit and composable. @fn inline FString joinNpcArguments(const TArray<FString> &Arguments, int32 Index, const FString &Separator) */

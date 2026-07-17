@@ -2,7 +2,7 @@
 #include "Features/Bridge/BridgeSelectors.h"
 #include "Features/Memory/MemorySelectors.h"
 #include "Features/NPC/NPCSelectors.h"
-#include "Features/Config/ConfigAdapters.h"
+#include "Features/CLI/Config/ConfigThunks.h"
 #include "Store.h"
 #include "Features/Protocol/ProtocolThunks.h"
 #include "Features/Soul/SoulThunks.h"
@@ -37,8 +37,8 @@ void UForbocAISubsystem::Deinitialize() {
  * @fn void UForbocAISubsystem::Init(FString ApiKey, FString ApiUrl)
  */
 void UForbocAISubsystem::Init(FString ApiKey, FString ApiUrl) {
-  SDKConfig::SetApiConfig(
-      ApiUrl.IsEmpty() ? FString(SDKConfig::DEFAULT_API_URL) : ApiUrl, ApiKey);
+  Store == nullptr ? void()
+                   : Ops::commitApiConfiguration(*Store, ApiUrl, ApiKey);
 }
 
 /**

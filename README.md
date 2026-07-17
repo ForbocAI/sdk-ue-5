@@ -4,12 +4,11 @@
 
   <br/>
 
-# ForbocAI SDK for Unreal Engine 5.8
+# ForbocAI NPC SDK for Unreal Engine 5.8
 
-Drop-in autonomous NPCs for Unreal Engine 5.8 — neuro-symbolic agents with persistent memory, identity, and ruleset-aware decision making, callable from C++ and Blueprints.
+Build genre-agnostic NPC interactions with persistent local memory, rules-aware actions, portable identity, and hosted ForbocAI inference, callable from C++ and Blueprints.
 
 [![Documentation](https://img.shields.io/badge/docs-docs.forboc.ai-blue)](https://docs.forboc.ai)
-[![Fab](https://img.shields.io/badge/Fab-ForbocAI-orange)](https://fab.com)
 
 </div>
 
@@ -17,11 +16,11 @@ Drop-in autonomous NPCs for Unreal Engine 5.8 — neuro-symbolic agents with per
 
 ## What you get
 
-- **Agents**: Persona-driven NPCs you can spawn, update, and delete from a single factory call.
+- **NPCs**: Game-defined NPC identities you can create, process, and update through immutable APIs.
 - **Memory**: Embedding-backed recall so agents remember past interactions across sessions.
 - **Bridge**: Validate agent-proposed actions against your game's ruleset before they fire.
 - **Souls**: Export and re-import an agent's identity (JSON) — portable across projects and saves.
-- **Speech & dialogue hooks**: Drop-in components for TTS, viseme blending, and chat UI.
+- **Presentation hooks**: A finalized-dialogue delegate that your own TTS, animation, or chat UI can consume.
 - **Blueprint surface**: All public operations exposed as `BlueprintCallable` nodes.
 - **CLI**: `doctor`, `status`, `npc create`, `npc process`, `soul export`, and friends, runnable from the SDK checkout through `scripts/forbocai-ue`.
 
@@ -31,9 +30,9 @@ NPC reasoning is hosted on the ForbocAI API; the plugin handles local capabiliti
 
 ## Installation
 
-### Option 1 — Fab (recommended)
+### Option 1 — Fab
 
-1. Search for **ForbocAI** on [Fab](https://fab.com).
+1. Find **ForbocAI NPC SDK** on [Fab](https://fab.com).
 2. Add to library and install to your engine.
 3. Enable the plugin in your project: `Edit → Plugins → ForbocAI`.
 
@@ -52,38 +51,36 @@ NPC reasoning is hosted on the ForbocAI API; the plugin handles local capabiliti
 | macOS | UE 5.8, Xcode 15+ |
 | Linux | UE 5.8, Clang 16+ |
 
-The plugin uses `https://api.forboc.ai` by default. Override it explicitly with `FORBOCAI_API_URL`, `FAgentConfig::ApiUrl`, or the SDK config file.
+NPC inference requires a ForbocAI account and API key from <https://account.forboc.ai>. The plugin uses `https://api.forboc.ai` by default; configure another endpoint through `FORBOCAI_API_URL`, `FAgentConfig::ApiUrl`, or the SDK config file.
 
 ---
 
 ## Quick start (C++)
 
 ```cpp
-#include "AgentModule.h"
-#include "MemoryModule.h"
+#include "NPC/NPCModule.h"
 
 // 1. Create an agent
 FAgentConfig Config;
-Config.Persona = TEXT("Cyber-Merchant");
-// Config.ApiUrl is optional — defaults to localhost, then api.forboc.ai.
+Config.Persona = TEXT("A careful local merchant who knows today's inventory.");
+// Config.ApiUrl is optional and defaults to the SDK's configured API URL.
 
-const FAgent Merchant = AgentFactory::Create(Config);
+const FAgent Npc = AgentFactory::Create(Config);
 
 // 2. Process player input asynchronously
-AgentOps::Process(
-    Merchant, TEXT("What wares do you have?"), {},
-    [](FAgentResponse Response) {
+AgentOps::Process(Npc, TEXT("What do you have available?"), {})
+    .then([](const FAgentResponse& Response) {
         UE_LOG(LogTemp, Log, TEXT("Reply: %s"), *Response.Dialogue);
-    });
+    })
+    .catch_([](const std::string& Error) {
+        UE_LOG(LogTemp, Error, TEXT("ForbocAI request failed: %s"),
+               *FString(Error.c_str()));
+    })
+    .execute();
 
 // 3. Update agent state — returns a NEW agent (originals stay untouched)
 const FAgentState Suspicious = TypeFactory::AgentState(TEXT("Suspicious"));
-const FAgent Updated = AgentOps::WithState(Merchant, Suspicious);
-
-// 4. Memory store — add an interaction
-const FMemoryStore Store = MemoryOps::CreateStore();
-const FMemoryStore After = MemoryOps::Store(
-    Store, TEXT("Customer asked about wares"), TEXT("interaction"), 0.8f);
+const FAgent Updated = AgentOps::WithState(Npc, Suspicious);
 ```
 
 > All public types are immutable structs. Operations return new values rather than mutating in place — assign the result back if you want to keep it.
@@ -158,4 +155,4 @@ On Windows, use `scripts\forbocai-ue-test-game.cmd` with the same arguments. The
 
 ## License
 
-© 2026 ForbocAI, Inc. All rights reserved. See [LICENSE](./LICENSE) for full terms.
+Fab acquisitions use the Fab Standard License. Other distribution channels require a separate ForbocAI license. See [LICENSE](./LICENSE).

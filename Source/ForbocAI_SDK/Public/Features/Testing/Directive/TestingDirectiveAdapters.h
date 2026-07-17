@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 #include "Features/Testing/Fixture/FixtureAdapters.h"
 #include "Features/Testing/Directive/TestingDirectiveTypes.h"
 

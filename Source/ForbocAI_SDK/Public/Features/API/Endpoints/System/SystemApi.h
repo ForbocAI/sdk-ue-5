@@ -12,8 +12,7 @@ inline Thunk<FApiStatusResponse> getApiStatus() {
       Configuration::endpointData();
   return Detail::MakeGet<FApiStatusResponse>(
       Data.Names.GetApiStatus,
-      Configuration::apiEndpoint(
-          Configuration::endpointPath({Data.Segments.Status})),
+      Configuration::endpointPath({Data.Segments.Status}),
       TArray<FApiEndpointTag>{systemTagAdapter()}, Data.Timeouts.StatusMs);
 }
 

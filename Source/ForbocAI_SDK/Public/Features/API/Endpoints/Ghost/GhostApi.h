@@ -14,8 +14,8 @@ inline Thunk<FGhostRunResponse> postGhostRun(const FGhostRunRequest &Request) {
   const TArray<FApiEndpointTag> Invalidates{ghostListTagAdapter()};
   return Detail::MakePostWithCodec<FGhostRunRequest, FGhostRunResponse>(
       Data.Names.PostGhostRun,
-      Configuration::apiEndpoint(Configuration::endpointPath(
-          {Data.Segments.Ghost, Data.Segments.Run})),
+      Configuration::endpointPath(
+          {Data.Segments.Ghost, Data.Segments.Run}),
       Request, Detail::ToJson<FGhostRunRequest>,
       Detail::DecodeGhostRunResponse, Invalidates);
 }
@@ -33,8 +33,8 @@ inline Thunk<FGhostStatus> getGhostStatus(const FString &SessionId) {
   const TArray<FApiEndpointTag> Tags{ghostTagAdapter(SessionId)};
   return Detail::MakeGetWithCodec<FGhostStatus>(
       Data.Names.GetGhostStatus,
-      Configuration::apiEndpoint(Configuration::endpointPath(
-          {Data.Segments.Ghost, SessionId, Data.Segments.Status})),
+      Configuration::endpointPath(
+          {Data.Segments.Ghost, SessionId, Data.Segments.Status}),
       Detail::DecodeGhostStatusResponse, Tags);
 }
 
@@ -45,8 +45,8 @@ inline Thunk<FGhostResults> getGhostResults(const FString &SessionId) {
   const TArray<FApiEndpointTag> Tags{ghostTagAdapter(SessionId)};
   return Detail::MakeGetWithCodec<FGhostResults>(
       Data.Names.GetGhostResults,
-      Configuration::apiEndpoint(Configuration::endpointPath(
-          {Data.Segments.Ghost, SessionId, Data.Segments.Results})),
+      Configuration::endpointPath(
+          {Data.Segments.Ghost, SessionId, Data.Segments.Results}),
       Detail::DecodeGhostResultsResponse, Tags);
 }
 
@@ -58,8 +58,8 @@ inline Thunk<FGhostStopResponse> postGhostStop(const FString &SessionId) {
       ghostTagAdapter(SessionId), ghostListTagAdapter()};
   return Detail::MakePostRawWithCodec<FGhostStopResponse>(
       Data.Names.PostGhostStop,
-      Configuration::apiEndpoint(Configuration::endpointPath(
-          {Data.Segments.Ghost, SessionId, Data.Segments.Stop})),
+      Configuration::endpointPath(
+          {Data.Segments.Ghost, SessionId, Data.Segments.Stop}),
       Data.Payloads.EmptyObject, Detail::DecodeGhostStopResponse,
       Invalidates);
 }
@@ -71,10 +71,10 @@ inline Thunk<FGhostHistoryResponse> getGhostHistory(int32 Limit) {
   const TArray<FApiEndpointTag> Tags{ghostListTagAdapter()};
   return Detail::MakeGetWithCodec<FGhostHistoryResponse>(
       Data.Names.GetGhostHistory,
-      Configuration::apiEndpoint(Configuration::endpointQuery(
+      Configuration::endpointQuery(
           Configuration::endpointPath(
               {Data.Segments.Ghost, Data.Segments.History}),
-          Data.QueryKeys.Limit, FString::FromInt(Limit))),
+          Data.QueryKeys.Limit, FString::FromInt(Limit)),
       Detail::DecodeGhostHistoryResponse, Tags);
 }
 

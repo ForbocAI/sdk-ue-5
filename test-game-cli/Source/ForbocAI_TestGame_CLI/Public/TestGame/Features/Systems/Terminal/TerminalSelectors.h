@@ -5,29 +5,9 @@
 #include "TestGame/Features/Systems/Harness/Game/GameAdapters.h"
 #include "TestGame/Features/Systems/Harness/Game/GameTypes.h"
 #include "TestGame/Features/Systems/Terminal/TerminalAdapters.h"
+#include "TestGame/Features/Systems/Terminal/Quality/TerminalQualitySelectors.h"
 
 namespace TestGame {
-
-struct FTerminalRenderState {
-  FString GridText;
-  FString LegendText;
-};
-
-struct FTerminalLineViewModel {
-  bool bError{};
-  FString Text;
-
-  /** User Story: As a terminal presenter, I need an empty line model so selectors can compose output without sentinel text. @fn FTerminalLineViewModel() = default */
-  FTerminalLineViewModel() = default;
-
-  /** User Story: As a terminal presenter, I need line severity and authored text carried together so views only perform output. @fn FTerminalLineViewModel(bool bInError, FString InText) */
-  FTerminalLineViewModel(bool bInError, FString InText)
-      : bError(bInError), Text(MoveTemp(InText)) {}
-};
-
-struct FTerminalProgressViewModel {
-  TArray<FTerminalLineViewModel> Lines;
-};
 
 namespace TerminalSelectorsDetail {
 
@@ -226,6 +206,11 @@ SelectTerminalProgressViewModel(const FGameProgress &Progress) {
          TerminalSelectorsDetail::AppendTranscriptLines(
              Progress.RunResult.Transcript, Runtime.numbers.emptyCount,
              ViewModel.Lines),
+         Progress.RunResult.QualityReport.hasValue
+             ? ViewModel.Lines.Append(selectQualitySummaryViewModel(
+                   Progress.RunResult.QualityReport.value,
+                   Progress.RunResult.QualityReportPath))
+             : void(),
          ViewModel.Lines.Add(FTerminalLineViewModel{
              !Progress.RunResult.bComplete, Progress.RunResult.Summary}),
          void())

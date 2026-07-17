@@ -10,13 +10,12 @@
 namespace TestGame {
 namespace Contract {
 
-/** User Story: As a test-game contract command, I need the API-owned contract resolved through the package RTK Query slice so CLI execution has one server-data path. @fn inline FContractQueryResult queryContractJson(FTestGameStore &Store, const FString &ApiUrl) */
-inline FContractQueryResult queryContractJson(FTestGameStore &Store,
-                                              const FString &ApiUrl) {
+/** User Story: As a test-game contract command, I need the API-owned contract resolved through the package RTK Query slice and its root-store configuration. @fn inline FContractQueryResult queryContractJson(FTestGameStore &Store) */
+inline FContractQueryResult queryContractJson(FTestGameStore &Store) {
   FContractQueryResult Result;
   try {
     Result.Body = AsyncAdapters::waitForResult(
-        Store.dispatch(ContractApi::getTestGameContractThunk(ApiUrl)),
+        Store.dispatch(ContractApi::getTestGameContractThunk()),
         static_cast<double>(GameAdapters::GameData()
                                 .numbers.contractTimeoutSeconds));
     Result.bSuccess = !Result.Body.IsEmpty();

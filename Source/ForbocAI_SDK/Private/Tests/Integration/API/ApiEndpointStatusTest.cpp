@@ -1,7 +1,9 @@
 #include "ApiEndpointTestAdapters.h"
 
 #include "Features/API/APIApi.h"
-#include "Features/Config/ConfigAdapters.h"
+#include "Features/CLI/Config/ConfigThunks.h"
+#include "Features/Config/ConfigSelectors.h"
+#include "Store.h"
 
 // @covers:api:getApiStatus
 // @covers:api:postNpcProcess
@@ -27,6 +29,7 @@
 // @covers:api:getSoulStorageCatalog
 // @covers:api:getSoulStorageEntry
 // @covers:coreThunk:MakePostQueryWithCodec
+// @covers:cliOp:commitApiConfiguration
 
 namespace {
 
@@ -138,7 +141,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 /** User Story: As a tests integration api consumer, I need to invoke run test through a stable signature so the tests integration api workflow remains explicit and composable. @fn bool FApiEndpointStatusNoAuthTest::RunTest(const FString &Parameters) */
 bool FApiEndpointStatusNoAuthTest::RunTest(const FString &Parameters) {
-  SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(), TEXT(""));
+  Ops::commitApiConfiguration(
+      store(), ConfigSelectors::selectApiUrl(store().getState()), TEXT(""));
 
   auto State = MakeShared<FApiEndpointTestState>();
   ADD_LATENT_AUTOMATION_COMMAND(FHttpGetWaitComplete(
@@ -170,7 +174,8 @@ bool FApiEndpointNotFoundTest::RunTest(const FString &Parameters) {
   if (Key.IsEmpty()) {
     return true;
   }
-  SDKConfig::SetApiConfig(SDKConfig::GetApiUrl(), Key);
+  Ops::commitApiConfiguration(
+      store(), ConfigSelectors::selectApiUrl(store().getState()), Key);
 
   auto State = MakeShared<FApiEndpointTestState>();
   ADD_LATENT_AUTOMATION_COMMAND(FHttpGetWaitComplete(

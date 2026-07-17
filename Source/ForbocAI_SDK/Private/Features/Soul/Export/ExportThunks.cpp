@@ -2,7 +2,7 @@
 
 #include "Features/API/APIApi.h"
 #include "Features/API/Serialization/Agent/AgentAdapters.h"
-#include "Features/Config/ConfigAdapters.h"
+#include "Features/Config/ConfigSelectors.h"
 #include "Features/Errors/ErrorsAdapters.h"
 #include "Features/Memory/MemorySelectors.h"
 #include "Features/NPC/NPCSelectors.h"
@@ -195,8 +195,9 @@ exportSoulThunk() {
           [](const FString &RequestedNpcId,
              const ThunkApi<FRuntimeState> &Api) {
             const func::Maybe<FString> ApiKeyError =
-                Errors::requireApiKeyGuidance(SDKConfig::GetApiUrl(),
-                                              SDKConfig::GetApiKey());
+                Errors::requireApiKeyGuidance(
+                    ConfigSelectors::selectApiUrl(Api.getState()),
+                    ConfigSelectors::selectApiKey(Api.getState()));
             return func::match(
                 ApiKeyError,
                 [](const FString &Error) {

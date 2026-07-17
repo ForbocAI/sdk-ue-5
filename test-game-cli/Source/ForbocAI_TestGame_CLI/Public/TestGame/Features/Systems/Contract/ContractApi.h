@@ -1,12 +1,11 @@
 #pragma once
 
 #include "Core/rtk.hpp"
-#include "Features/Config/ConfigAdapters.h"
 #include "TestGame/Features/Systems/Contract/ContractAdapters.h"
+#include "TestGame/Features/Systems/Contract/Execution/ExecutionThunks.h"
+#include "TestGame/Features/Systems/Harness/Game/GameTypes.h"
 
 namespace TestGame {
-struct FTestGameState;
-
 namespace ContractApi {
 
 inline rtk::Api<FTestGameState> testGameApi = []() {
@@ -17,38 +16,37 @@ inline rtk::Api<FTestGameState> testGameApi = []() {
   return ApiDefinition;
 }();
 
-/** User Story: As a features systems contract consumer, I need to invoke provides tags through a stable signature so the features systems contract workflow remains explicit and composable. @fn inline bool providesTags( const rtk::ApiEndpoint<FString, FString> &EndpointDefinition) */
+/** User Story: As a features systems contract consumer, I need to invoke provides tags through a stable signature so the features systems contract workflow remains explicit and composable. @fn inline bool providesTags( const rtk::ApiEndpoint<rtk::FEmptyPayload, FString, FTestGameState> &EndpointDefinition) */
 inline bool providesTags(
-    const rtk::ApiEndpoint<FString, FString> &EndpointDefinition) {
+    const rtk::ApiEndpoint<rtk::FEmptyPayload, FString, FTestGameState>
+        &EndpointDefinition) {
   return !EndpointDefinition.providesTags.IsEmpty();
 }
 
-/** User Story: As a features systems contract consumer, I need to invoke contract endpoint through a stable signature so the features systems contract workflow remains explicit and composable. @fn inline rtk::ApiEndpoint<FString, FString> contractEndpoint() */
-inline rtk::ApiEndpoint<FString, FString> contractEndpoint() {
-  rtk::ApiEndpoint<FString, FString> Endpoint;
+/** User Story: As a features systems contract consumer, I need to invoke contract endpoint through a stable signature so the features systems contract workflow remains explicit and composable. @fn inline rtk::ApiEndpoint<rtk::FEmptyPayload, FString, FTestGameState> contractEndpoint() */
+inline rtk::ApiEndpoint<rtk::FEmptyPayload, FString, FTestGameState>
+contractEndpoint() {
+  rtk::ApiEndpoint<rtk::FEmptyPayload, FString, FTestGameState> Endpoint;
   const Contract::FContractApiData &Data = Contract::ContractData().Api;
   Endpoint.EndpointName = Data.EndpointName;
   Endpoint.providesTags = {rtk::FApiEndpointTag{Data.TagType, Data.TagId}};
-  Endpoint.RequestBuilder = [](const FString &ApiUrl) {
-    rtk::FetchBaseQueryArgs Options;
-    const FString ApiKey = SDKConfig::GetApiKey();
-    const Contract::FTestGameContractRequest Request =
-        Contract::createTestGameContractRequest(ApiUrl, ApiKey);
-    Options.headers = Request.Headers;
-    return rtk::fetchBaseQuery<FString>(Options)(
-        Request.Args, rtk::BaseQueryApi(), rtk::FEmptyPayload{});
+  Endpoint.RequestBuilder = [](
+                                const rtk::FEmptyPayload &,
+                                const rtk::ApiContext<FTestGameState> &Context) {
+    return Contract::Execution::executeContractQuery(Context);
   };
   check(providesTags(Endpoint));
   return Endpoint;
 }
 
-/** User Story: As a features systems contract consumer, I need to invoke get test game contract thunk through a stable signature so the features systems contract workflow remains explicit and composable. @fn inline rtk::ThunkAction<FString, FTestGameState> getTestGameContractThunk(const FString &ApiUrl) */
+/** User Story: As a features systems contract consumer, I need to invoke the contract endpoint through root-store configuration so transport has one authority. @fn inline rtk::ThunkAction<FString, FTestGameState> getTestGameContractThunk() */
 inline rtk::ThunkAction<FString, FTestGameState>
-getTestGameContractThunk(const FString &ApiUrl) {
-  const rtk::ApiEndpoint<FString, FString> Endpoint = contractEndpoint();
+getTestGameContractThunk() {
+  const rtk::ApiEndpoint<rtk::FEmptyPayload, FString, FTestGameState>
+      Endpoint = contractEndpoint();
   rtk::Api<FTestGameState> &InjectedApi =
       rtk::injectEndpoints(testGameApi, Endpoint);
-  return rtk::initiate(InjectedApi, Endpoint)(ApiUrl);
+  return rtk::initiate(InjectedApi, Endpoint)(rtk::FEmptyPayload{});
 }
 
 } // namespace ContractApi

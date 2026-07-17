@@ -6,7 +6,8 @@ public class ForbocAI_SDK : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HTTP", "Json", "JsonUtilities", "Projects" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HTTP", "Json", "JsonUtilities" });
+		PrivateDependencyModuleNames.Add("Projects");
 		AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL");
 
 		/**

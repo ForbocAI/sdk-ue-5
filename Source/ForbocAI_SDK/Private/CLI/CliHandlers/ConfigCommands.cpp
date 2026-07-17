@@ -1,6 +1,7 @@
 // User Story: As a developer, I need this module to function.
 #include "CLI/CliHandlers.h"
 #include "Features/CLI/Config/ConfigThunks.h"
+#include "Features/CLI/Presentation/PresentationSelectors.h"
 #include "Store.h"
 
 namespace CLIOps {
@@ -10,52 +11,84 @@ namespace Handlers {
 HandlerResult HandleConfig(rtk::EnhancedStore<FRuntimeState> &Store,
                           const FString &CommandKey,
                           const TArray<FString> &Args) {
-  (void)Store;
   using func::just;
   using func::nothing;
+  const FRuntimeState &State = Store.getState();
+  const ForbocAI::CLI::FCLIParsingSettings &Parsing = State.CLI.Parsing;
+  const ForbocAI::CLI::FCLICommandRoles &Roles = State.CLI.CommandRoles;
+  const ForbocAI::CLI::Presentation::FCLIPresentationState
+      &PresentationState =
+          ForbocAI::CLI::Presentation::selectCliPresentation(State);
 
-  return CommandKey == TEXT("config_set")
-             ? (Args.Num() < 2
-                    ? just(Result::Failure("Usage: config_set <key> <value>"))
-                    : (Ops::setConfigValue(Args[0], Args[1]),
-                       just(Result::Success("Config updated"))))
-         : CommandKey == TEXT("config_get")
-             ? (Args.Num() < 1
-                    ? just(Result::Failure("Usage: config_get <key>"))
+  return CommandKey == Roles.ConfigSet
+             ? (!Args.IsValidIndex(Parsing.SecondTokenIndex)
+                    ? just(Result::Failure(TCHAR_TO_UTF8(
+                          *PresentationState.Common.ConfigSetUsage)))
+                    : (Ops::setConfigValue(
+                           Store, Args[Parsing.FirstTokenIndex],
+                           Args[Parsing.SecondTokenIndex])
+                           ? just(Result::Success(TCHAR_TO_UTF8(
+                                 *PresentationState.Results.ConfigUpdated)))
+                           : just(Result::Failure(TCHAR_TO_UTF8(
+                                 *PresentationState.Results
+                                      .ConfigPersistenceFailed)))))
+         : CommandKey == Roles.ConfigGet
+             ? (!Args.IsValidIndex(Parsing.FirstTokenIndex)
+                    ? just(Result::Failure(TCHAR_TO_UTF8(
+                          *PresentationState.Common.ConfigGetUsage)))
                     : [&]() -> HandlerResult {
-                        FString Value = Ops::getConfigValue(Args[0]);
-                        UE_LOG(LogTemp, Display, TEXT("%s = %s"), *Args[0],
-                               *Value);
-                        return just(Result::Success("Config retrieved"));
+                        const FString &Key = Args[Parsing.FirstTokenIndex];
+                        const FString Value = Ops::getConfigValue(State, Key);
+                        ForbocAI::CLI::Presentation::logCliMessage(
+                            ForbocAI::CLI::Presentation::
+                                selectCliConfigEntryLine(
+                                    PresentationState, Key, Value,
+                                    Key == ConfigSlice::configRuntimeData()
+                                               .Fields.ApiKey,
+                                    false));
+                        return just(Result::Success(TCHAR_TO_UTF8(
+                            *PresentationState.Results.ConfigRetrieved)));
                       }())
-         : CommandKey == TEXT("config_list")
+         : CommandKey == Roles.ConfigList
              ? [&]() -> HandlerResult {
-                 static const TArray<FString> ConfigKeys = {
-                     TEXT("version"), TEXT("apiUrl"), TEXT("apiKey"),
-                     TEXT("databasePath"),
-                     TEXT("vectorDimension"), TEXT("maxRecallResults")};
+                 const ConfigSlice::FConfigRuntimeData &Data =
+                     ConfigSlice::configRuntimeData();
+                 const TArray<FString> ConfigKeys = {
+                     Data.Fields.SdkVersion, Data.Fields.ApiUrl,
+                     Data.Fields.ApiKey,
+                     Data.Fields.DatabasePath, Data.Fields.VectorDimension,
+                     Data.Fields.MaxRecallResults};
                  struct LogKeys {
-                   static void apply(const TArray<FString> &Keys, int32 Idx) {
+                   static void apply(const TArray<FString> &Keys, int32 Idx,
+                                     const FRuntimeState &State,
+                                     const FString &ApiKeyField,
+                                     const ForbocAI::CLI::FCLIParsingSettings
+                                         &Parsing,
+                                     const ForbocAI::CLI::Presentation::
+                                         FCLIPresentationState
+                                             &PresentationState) {
                      Idx >= Keys.Num()
                          ? void()
                          : ([&]() {
-                              const FString Val = Ops::getConfigValue(Keys[Idx]);
-                              const bool bMask =
-                                  Keys[Idx].Contains(TEXT("key"),
-                                                     ESearchCase::IgnoreCase) ||
-                                  Keys[Idx].Contains(
-                                      TEXT("Key"),
-                                      ESearchCase::CaseSensitive);
-                              UE_LOG(LogTemp, Display, TEXT("  %s = %s"),
-                                     *Keys[Idx],
-                                     bMask && !Val.IsEmpty() ? TEXT("********")
-                                                             : *Val);
+                              const FString Val =
+                                  Ops::getConfigValue(State, Keys[Idx]);
+                              const bool bMask = Keys[Idx] == ApiKeyField;
+                              ForbocAI::CLI::Presentation::logCliMessage(
+                                  ForbocAI::CLI::Presentation::
+                                      selectCliConfigEntryLine(
+                                          PresentationState, Keys[Idx], Val,
+                                          bMask, true));
                             }(),
-                            apply(Keys, Idx + 1), void());
+                            apply(Keys, Idx + Parsing.NextIndexOffset, State,
+                                  ApiKeyField, Parsing, PresentationState),
+                            void());
                    }
                  };
-                 LogKeys::apply(ConfigKeys, 0);
-                 return just(Result::Success("Config listed"));
+                 LogKeys::apply(ConfigKeys, Parsing.FirstTokenIndex, State,
+                                Data.Fields.ApiKey, Parsing,
+                                PresentationState);
+                 return just(Result::Success(TCHAR_TO_UTF8(
+                     *PresentationState.Results.ConfigListed)));
                }()
              : nothing<Result>();
 }

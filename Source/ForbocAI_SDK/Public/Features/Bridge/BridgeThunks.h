@@ -4,7 +4,7 @@
 #include "Core/rtk.hpp"
 #include "Features/API/APIApi.h"
 #include "Features/Bridge/BridgeSlice.h"
-#include "Features/Config/ConfigAdapters.h"
+#include "Features/Config/ConfigSelectors.h"
 #include "Features/Errors/ErrorsAdapters.h"
 
 namespace rtk {
@@ -20,7 +20,8 @@ validateBridgeThunk(const FAgentAction &Action,
              -> func::AsyncResult<FValidationResult> {
     Dispatch(BridgeSlice::Actions::validationRequested());
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
-        SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
+        ConfigSelectors::selectApiUrl(GetState()),
+        ConfigSelectors::selectApiKey(GetState()));
     return ApiKeyError.hasValue
                ? (Dispatch(BridgeSlice::Actions::validationFailed(
                       ApiKeyError.value)),
@@ -50,7 +51,8 @@ loadBridgePresetThunk(const FString &PresetName) {
                       std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FDirectiveRuleSet> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
-        SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
+        ConfigSelectors::selectApiUrl(GetState()),
+        ConfigSelectors::selectApiKey(GetState()));
     return ApiKeyError.hasValue
                ? detail::RejectAsync<FDirectiveRuleSet>(ApiKeyError.value)
                : func::AsyncChain::then<FDirectiveRuleSet,
@@ -71,7 +73,8 @@ inline ThunkAction<TArray<FBridgeRule>, FRuntimeState> getBridgeRulesThunk() {
             std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<TArray<FBridgeRule>> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
-        SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
+        ConfigSelectors::selectApiUrl(GetState()),
+        ConfigSelectors::selectApiKey(GetState()));
     return ApiKeyError.hasValue
                ? detail::RejectAsync<TArray<FBridgeRule>>(ApiKeyError.value)
                : APISlice::Endpoints::getBridgeRules()(Dispatch, GetState);
@@ -85,7 +88,8 @@ listRulesetsThunk() {
             std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<TArray<FDirectiveRuleSet>> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
-        SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
+        ConfigSelectors::selectApiUrl(GetState()),
+        ConfigSelectors::selectApiKey(GetState()));
     return ApiKeyError.hasValue
                ? detail::RejectAsync<TArray<FDirectiveRuleSet>>(
                      ApiKeyError.value)
@@ -106,7 +110,8 @@ inline ThunkAction<TArray<FString>, FRuntimeState> listRulePresetsThunk() {
             std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<TArray<FString>> {
     const auto ApiKeyError = Errors::requireApiKeyGuidance(
-        SDKConfig::GetApiUrl(), SDKConfig::GetApiKey());
+        ConfigSelectors::selectApiUrl(GetState()),
+        ConfigSelectors::selectApiKey(GetState()));
     return ApiKeyError.hasValue
                ? detail::RejectAsync<TArray<FString>>(ApiKeyError.value)
                : func::AsyncChain::then<TArray<FString>, TArray<FString>>(

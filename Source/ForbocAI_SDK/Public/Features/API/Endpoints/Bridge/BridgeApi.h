@@ -21,7 +21,7 @@ getBridgeValidation(const FString &NpcId,
   const TArray<FApiEndpointTag> Tags{bridgeTagAdapter(NpcId)};
   return Detail::MakePostQueryWithCodec<FBridgeValidateRequest,
                                         FValidationResult>(
-      Data.Names.GetBridgeValidation, Configuration::apiEndpoint(Path),
+      Data.Names.GetBridgeValidation, Path,
       Request, Detail::EncodeBridgeValidateRequest,
       Detail::DecodeValidationResult, Tags);
 }
@@ -33,8 +33,8 @@ inline Thunk<TArray<FBridgeRule>> getBridgeRules() {
   const TArray<FApiEndpointTag> Tags{bridgeListTagAdapter()};
   return Detail::MakeGetWithCodec<TArray<FBridgeRule>>(
       Data.Names.GetBridgeRules,
-      Configuration::apiEndpoint(Configuration::endpointPath(
-          {Data.Segments.Bridge, Data.Segments.Rules})),
+      Configuration::endpointPath(
+          {Data.Segments.Bridge, Data.Segments.Rules}),
       Detail::DecodeBridgeRulesResponse, Tags);
 }
 

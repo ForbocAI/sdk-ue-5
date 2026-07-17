@@ -186,7 +186,7 @@ bool UForbocAIBlueprintLibrary::ValidateBridgeAction(const FString &ActionJson) 
  */
 void UForbocAIBlueprintLibrary::setConfigValue(const FString &Key,
                                            const FString &Value) {
-  Ops::setConfigValue(Key, Value);
+  Ops::setConfigValue(GetBPStore(), Key, Value);
 }
 
 /**
@@ -196,5 +196,5 @@ void UForbocAIBlueprintLibrary::setConfigValue(const FString &Key,
  * @fn FString UForbocAIBlueprintLibrary::getConfigValue(const FString &Key)
  */
 FString UForbocAIBlueprintLibrary::getConfigValue(const FString &Key) {
-  return Ops::getConfigValue(Key);
+  return Ops::getConfigValue(GetBPStore().getState(), Key);
 }

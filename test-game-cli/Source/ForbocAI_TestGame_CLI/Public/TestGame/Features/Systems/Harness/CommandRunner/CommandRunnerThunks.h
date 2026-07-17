@@ -1,5 +1,6 @@
 #pragma once
 
+#include "HAL/PlatformTime.h"
 #include "CLI/CLIModule.h"
 #include "Core/fp.hpp"
 #include "TestGame/Features/Systems/Contract/ContractThunks.h"
@@ -30,7 +31,7 @@ inline FCommandOutput ExecuteTestGameCommand(const TArray<FString> &Tokens,
              ? InvalidCommandOutput()
              : [&]() {
                  const Contract::FContractQueryResult Result =
-                     Contract::queryContractJson(Store, ApiUrl);
+                     Contract::queryContractJson(Store);
                  return FCommandOutput{
                      Result.bSuccess
                          ? GameAdapters::GameRuntimeData().statuses.ok
@@ -82,14 +83,21 @@ inline FCommandOutput Execute(const FString &CommandText,
                               const FCommandAliasState &Aliases) {
   const FCommandRunnerData &Data = CommandRunnerData();
   const TArray<FString> Tokens = detail::Tokenize(CommandText);
-  return Tokens.Num() < Data.limits.rootTokenCount
-             ? detail::InvalidCommandOutput()
-         : Tokens[Data.limits.firstTokenIndex] ==
-                   Data.syntax.testGameRootCommand
-             ? detail::ExecuteTestGameCommand(Tokens, Store, ApiUrl)
-         : Tokens[Data.limits.firstTokenIndex] == Data.syntax.sdkRootCommand
-             ? detail::ExecuteSdkCommand(CommandText, Tokens, Aliases)
-             : detail::InvalidCommandOutput();
+  const double StartedAt = FPlatformTime::Seconds();
+  FCommandOutput Result =
+      Tokens.Num() < Data.limits.rootTokenCount
+          ? detail::InvalidCommandOutput()
+      : Tokens[Data.limits.firstTokenIndex] ==
+                Data.syntax.testGameRootCommand
+          ? detail::ExecuteTestGameCommand(Tokens, Store, ApiUrl)
+      : Tokens[Data.limits.firstTokenIndex] == Data.syntax.sdkRootCommand
+          ? detail::ExecuteSdkCommand(CommandText, Tokens, Aliases)
+          : detail::InvalidCommandOutput();
+  Result.DurationMs =
+      (FPlatformTime::Seconds() - StartedAt) *
+      static_cast<double>(GameAdapters::GameData()
+                              .numbers.millisecondsPerSecond);
+  return Result;
 }
 
 } // namespace CommandRunner

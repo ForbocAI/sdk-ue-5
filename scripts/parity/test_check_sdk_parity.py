@@ -108,6 +108,20 @@ class PathNormalizationTests(unittest.TestCase):
             "features/systems/terminal/ui/uislice",
         )
 
+    def test_indexes_a_cpp_ancestor_qualified_role_as_the_ts_leaf(self) -> None:
+        source = "Source/Runtime/Public/Features/CLI/Ghost/CLIGhostSelectors.h"
+
+        index = PARITY.ue_suffix_index([source])
+
+        self.assertEqual(index["features/cli/ghost/ghostselectors"], [source])
+
+    def test_does_not_strip_the_immediate_feature_domain(self) -> None:
+        source = "Source/Runtime/Public/Features/Ghost/GhostSelectors.h"
+
+        index = PARITY.ue_suffix_index([source])
+
+        self.assertNotIn("features/ghost/selectors", index)
+
 
 class CppSymbolDiscoveryTests(unittest.TestCase):
     def test_finds_reference_returning_functions_without_namespace_symbols(self) -> None:

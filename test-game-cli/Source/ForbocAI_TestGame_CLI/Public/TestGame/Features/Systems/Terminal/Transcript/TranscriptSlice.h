@@ -28,6 +28,7 @@ inline rtk::Slice<FTranscriptState> CreateTranscriptSlice() {
               Entry.ExpectedRoutes = A.PayloadValue.ExpectedRoutes;
               Entry.Status = A.PayloadValue.Status;
               Entry.Output = A.PayloadValue.Output;
+              Entry.DurationMs = A.PayloadValue.DurationMs;
               Entry.Timestamp = FDateTime::Now().ToIso8601();
               Next.Entries.Add(Entry);
               return Next;

@@ -6,10 +6,11 @@
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Misc/Guid.h"
-#include "Features/Config/ConfigAdapters.h"
+#include "Features/CLI/Config/ConfigThunks.h"
+#include "Features/Config/ConfigSelectors.h"
 #include "Features/Soul/SoulAdapters.h"
 #include "Features/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
-#include "Features/Soul/SoulAdapters.h"
+#include "Store.h"
 #include "Dom/JsonObject.h"
 #include "Policies/CondensedJsonPrintPolicy.h"
 #include "Serialization/JsonWriter.h"
@@ -71,7 +72,9 @@ FAgent AgentFactory::Create(const FAgentConfig &Config) {
   Agent.Persona = Config.Persona;
   Agent.State = Config.InitialState;
   Agent.ApiUrl =
-      Config.ApiUrl.IsEmpty() ? SDKConfig::GetApiUrl() : Config.ApiUrl;
+      Config.ApiUrl.IsEmpty()
+          ? ConfigSelectors::selectApiUrl(store().getState())
+          : Config.ApiUrl;
   return Agent;
 }
 
@@ -88,7 +91,8 @@ FAgent AgentFactory::FromSoul(const FSoul &Soul, const FString &ApiUrl) {
   Agent.State = Soul.State;
   Agent.Memories = Soul.Memories;
   Agent.ApiUrl =
-      ApiUrl.IsEmpty() ? SDKConfig::GetApiUrl() : ApiUrl;
+      ApiUrl.IsEmpty() ? ConfigSelectors::selectApiUrl(store().getState())
+                       : ApiUrl;
   return Agent;
 }
 
@@ -132,7 +136,6 @@ FAgentState AgentOps::CalculateNewState(const FAgentState &Current,
              : TypeFactory::AgentState(Updates.JsonData);
 }
 
-#include "Store.h"
 #include "Features/Protocol/ProtocolThunks.h"
 
 /**
@@ -147,8 +150,10 @@ AgentOps::Process(const FAgent &Agent, const FString &Input,
   return AgentTypes::AsyncResult<FAgentResponse>::create(
       [Agent, Input, Context](std::function<void(FAgentResponse)> resolve,
                               std::function<void(std::string)> reject) {
-        SDKConfig::SetApiConfig(Agent.ApiUrl, SDKConfig::GetApiKey());
         rtk::EnhancedStore<FRuntimeState> *Store = &store();
+        Ops::commitApiConfiguration(
+            *Store, Agent.ApiUrl,
+            ConfigSelectors::selectApiKey(Store->getState()));
 
         Store->dispatch(rtk::processNPC(Agent.Id, Input,
                                         SerializeContextMap(Context),

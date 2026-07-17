@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Features/CLI/Memory/CLIMemoryTypes.h"
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 #include "Features/Memory/MemoryTypes.h"
 
 namespace ForbocAI {

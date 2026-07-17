@@ -3,6 +3,7 @@
 #include "Core/fp.hpp"
 #include "Features/CLI/Bridge/CLIBridgeSelectors.h"
 #include "Features/CLI/CLITypes.h"
+#include "Features/CLI/Ghost/CLIGhostSelectors.h"
 #include "Features/CLI/Memory/CLIMemorySelectors.h"
 #include "Features/CLI/NPC/CLINPCSelectors.h"
 #include "Features/CLI/Soul/CLISoulSelectors.h"

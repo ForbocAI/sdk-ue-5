@@ -74,7 +74,10 @@
     "accept": "application/json",
     "gatewayScheme": "https://",
     "gatewayPathSeparator": "/",
-    "retrievalGateways": ["https://arweave.net"],
+    "retrievalGateways": [
+      "https://arweave.net",
+      "https://gateway.ar.io"
+    ],
     "requestTimeoutMs": 60000,
     "successMinimum": 200,
     "successMaximumExclusive": 300,

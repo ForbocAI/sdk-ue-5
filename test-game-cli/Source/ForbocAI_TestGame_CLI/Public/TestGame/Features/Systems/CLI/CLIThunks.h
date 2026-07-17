@@ -5,6 +5,8 @@
 #include "TestGame/Features/Systems/Harness/CommandRunner/CommandRunnerThunks.h"
 #include "TestGame/Features/Systems/Harness/Game/GameThunks.h"
 #include "TestGame/Features/Systems/Terminal/TerminalSelectors.h"
+#include "Features/Config/ConfigActions.h"
+#include "Features/Config/ConfigSelectors.h"
 
 namespace TestGame::CLI {
 
@@ -49,11 +51,13 @@ inline int32 runGameCommand(FTestGameStore &Store, const FString &Mode,
 /** User Story: As a test-game CLI operator, I need one thunk to normalize host arguments, configure the SDK, route commands through the package root store, and return authored exit codes on every platform. @fn inline int32 runCli(const FString &Params, FTestGameStore &Store, const FCliPresenter &Presenter) */
 inline int32 runCli(const FString &Params, FTestGameStore &Store,
                     const FCliPresenter &Presenter) {
-  SDKConfig::InitializeConfig();
   const FCliInvocation Invocation =
       normalizeInvocation(buildCliArgTokens(Params));
-  const FString ApiUrl = resolveApiUrl(Invocation);
-  SDKConfig::SetApiConfig(ApiUrl, resolveApiKey(Invocation));
+  Store.dispatch(ConfigSlice::Actions::configurationHydrated(
+      ConfigSlice::readConfigState({Invocation.ApiUrl, Invocation.ApiKey})));
+  const ConfigSlice::FConfigState &Config =
+      ConfigSelectors::selectConfig(Store.getState());
+  const FString ApiUrl = Config.ApiUrl;
   return requestsHelp(Invocation)
              ? (detail::present(Presenter, SelectUsageViewModel()),
                 cliRuntimeData().exitCodes.success)

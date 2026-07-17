@@ -30,42 +30,30 @@ struct FCLINPCSyntax {
 struct FCLINPCMessages {
   FString CreateUsage;
   FString Creating;
-  FString UnknownId;
   FString Created;
   FString Id;
   FString State;
   FString NoActive;
-  FString MissingId;
   FString NotFound;
-  FString ViewingActive;
-  FString StateEntry;
   FString UpdateUsage;
   FString Updated;
   FString ProcessUsage;
   FString DialogueFallback;
   FString Dialogue;
   FString Action;
-  FString Verdict;
-  FString ProcessDone;
   FString ChatUsage;
   FString ChatMissingId;
   FString ChatHeader;
-  FString ChatPrompt;
   FString ChatUser;
   FString ChatNpc;
   FString ChatAction;
-  FString ChatDone;
   TArray<FString> ExitCommands;
   FString ImportUsage;
   FString Imported;
-  FString ImportedLog;
   FString Persona;
   FString ImportDone;
   FString StatePrinted;
   FString UpdateDone;
-  FString EmptyPersona;
-  FString ApiFailure;
-  TArray<FString> NetworkErrors;
 };
 
 struct FCLINPCState {

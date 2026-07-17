@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 #include "Features/Testing/API/Codec/Bridge/CodecBridgeAdapters.h"
 #include "Features/Testing/API/Codec/Process/CodecProcessAdapters.h"
 #include "Features/Testing/API/Codec/Protocol/ProtocolAdapters.h"

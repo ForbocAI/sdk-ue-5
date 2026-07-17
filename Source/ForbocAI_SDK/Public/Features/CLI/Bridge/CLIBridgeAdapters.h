@@ -3,7 +3,7 @@
 #include "Core/fp.hpp"
 #include "Features/Bridge/BridgeTypes.h"
 #include "Features/CLI/Bridge/CLIBridgeTypes.h"
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 #include "Features/API/Serialization/APISerializationAdapters.h"
 #include "HAL/FileManager.h"
 #include "Misc/FileHelper.h"

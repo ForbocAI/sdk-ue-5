@@ -1,7 +1,7 @@
 #include "Features/Soul/SoulThunks.h"
 
 #include "Features/API/APIApi.h"
-#include "Features/Config/ConfigAdapters.h"
+#include "Features/Config/ConfigSelectors.h"
 #include "Features/Errors/ErrorsAdapters.h"
 #include "Features/State/StateTypes.h"
 #include "Features/Soul/SoulAdapters.h"
@@ -59,8 +59,9 @@ const AsyncThunkConfig<FSoul, FString, FRuntimeState> &importSoulThunk() {
           TEXT("soul/import"),
           [](const FString &TxId, const ThunkApi<FRuntimeState> &Api) {
             const func::Maybe<FString> ApiKeyError =
-                Errors::requireApiKeyGuidance(SDKConfig::GetApiUrl(),
-                                              SDKConfig::GetApiKey());
+                Errors::requireApiKeyGuidance(
+                    ConfigSelectors::selectApiUrl(Api.getState()),
+                    ConfigSelectors::selectApiKey(Api.getState()));
             return ApiKeyError.hasValue
                        ? detail::RejectAsync<FSoul>(ApiKeyError.value)
                        : loadVerifiedSoulThunk(TxId, Api);

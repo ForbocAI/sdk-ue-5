@@ -1,8 +1,10 @@
 #include "CLI/RuntimeCommandlet.h"
 #include "CLI/CLIModule.h"
 #include "Features/CLI/CLISelectors.h"
+#include "Features/CLI/Config/ConfigThunks.h"
 #include "Features/CLI/Invocation/InvocationAdapters.h"
-#include "Features/Config/ConfigAdapters.h"
+#include "Features/CLI/Invocation/InvocationSelectors.h"
+#include "Features/CLI/Presentation/PresentationSelectors.h"
 #include "Store.h"
 
 /** User Story: As a cli consumer, I need to invoke uforboc aicommandlet through a stable signature so the cli workflow remains explicit and composable. @fn UForbocAICommandlet::UForbocAICommandlet() */
@@ -15,38 +17,40 @@ UForbocAICommandlet::UForbocAICommandlet() {
 
 /** User Story: As a cli consumer, I need to invoke main through a stable signature so the cli workflow remains explicit and composable. @fn int32 UForbocAICommandlet::Main(const FString &Params) */
 int32 UForbocAICommandlet::Main(const FString &Params) {
-  SDKConfig::InitializeConfig();
+  rtk::EnhancedStore<FRuntimeState> &RuntimeStore = store();
   const CommandletInvocation::FInvocation Invocation =
       CommandletInvocation::ResolveInvocation(Params,
-                                              store().getState().CLI);
+                                              RuntimeStore.getState().CLI);
+  Ops::hydrateRuntimeConfig(RuntimeStore,
+                            {Invocation.ApiUrl, Invocation.ApiKey});
+  const ForbocAI::CLI::Presentation::FCLIPresentationState
+      &PresentationState = ForbocAI::CLI::Presentation::selectCliPresentation(
+          RuntimeStore.getState());
 
-  (!Invocation.ApiUrl.IsEmpty() || !Invocation.ApiKey.IsEmpty())
-      ? (SDKConfig::SetApiConfig(
-             Invocation.ApiUrl.IsEmpty() ? SDKConfig::GetApiUrl()
-                                         : Invocation.ApiUrl,
-             Invocation.ApiKey.IsEmpty() ? SDKConfig::GetApiKey()
-                                         : Invocation.ApiKey),
-         void())
-      : void();
-
-  UE_LOG(LogTemp, Display, TEXT("ForbocAI CLI (UE5) - Command: %s"),
-         *Invocation.Command);
+  ForbocAI::CLI::Presentation::logCliMessage(
+      ForbocAI::CLI::Presentation::selectCliCommandStartedLine(
+          PresentationState, Invocation.Command));
 
   bool bCommandFailed = false;
+  const FString Blank = PresentationState.Common.Blank;
+  const FString Success = PresentationState.Runtime.CommandSucceeded;
+  const FString FailureTemplate = PresentationState.Runtime.CommandFailed;
   createCommandPipeline(Invocation.Command, Invocation.Args)
-      .then([]() {
-        UE_LOG(LogTemp, Display, TEXT(""));
-        UE_LOG(LogTemp, Display,
-               TEXT("[RESULT] Command completed successfully"));
+      .then([Blank, Success]() {
+        ForbocAI::CLI::Presentation::logCliMessage(Blank);
+        ForbocAI::CLI::Presentation::logCliMessage(Success);
       })
-      .catch_([&bCommandFailed](std::string Message) {
+      .catch_([&bCommandFailed, Blank,
+               FailureTemplate](std::string Message) {
         bCommandFailed = true;
-        UE_LOG(LogTemp, Error, TEXT(""));
-        UE_LOG(LogTemp, Error, TEXT("[RESULT] Command failed: %s"),
-               UTF8_TO_TCHAR(Message.c_str()));
+        ForbocAI::CLI::Presentation::logCliMessage(Blank);
+        ForbocAI::CLI::Presentation::logCliError(
+            ForbocAI::CLI::Presentation::formatCliMessage(
+                FailureTemplate, UTF8_TO_TCHAR(Message.c_str())));
       })
       .execute();
-  return bCommandFailed ? 1 : 0;
+  return bCommandFailed ? PresentationState.Defaults.FailureExitCode
+                        : PresentationState.Defaults.SuccessExitCode;
 }
 
 /** User Story: As a cli consumer, I need to invoke execute command through a stable signature so the cli workflow remains explicit and composable. @fn UForbocAICommandlet::CommandResult UForbocAICommandlet::executeCommand(const FString &Command, const TArray<FString> &Args) */
@@ -60,9 +64,14 @@ UForbocAICommandlet::executeCommand(const FString &Command,
 UForbocAICommandlet::CommandExecution
 UForbocAICommandlet::createCommandPipeline(const FString &Command,
                                            const TArray<FString> &Args) {
+  const ForbocAI::CLI::Presentation::FCLIPresentationState
+      PresentationState =
+          ForbocAI::CLI::Presentation::selectCliPresentation(
+              store().getState());
   return UForbocAICommandlet::CommandExecution::create(
-      [this, Command, Args](std::function<void()> Resolve,
-                            std::function<void(std::string)> Reject) {
+      [this, Command, Args,
+       PresentationState](std::function<void()> Resolve,
+                          std::function<void(std::string)> Reject) {
         const auto Validation =
             func::runValidation(commandValidationPipeline(), Command);
         func::ematch(
@@ -70,8 +79,8 @@ UForbocAICommandlet::createCommandPipeline(const FString &Command,
             [&Reject](const FString &Error) {
               Reject(TCHAR_TO_UTF8(*Error));
             },
-            [this, &Command, &Args, &Resolve,
-             &Reject](const FString &) {
+            [this, &Command, &Args, &Resolve, &Reject,
+             &PresentationState](const FString &) {
               const CommandResult Result = executeCommand(Command, Args);
               const FString Message =
                   Result.message.empty()
@@ -81,8 +90,9 @@ UForbocAICommandlet::createCommandPipeline(const FString &Command,
                   ? (Resolve(), void())
                   : (Reject(TCHAR_TO_UTF8(
                          *(Message.IsEmpty()
-                               ? FString::Printf(TEXT("Command failed: %s"),
-                                                 *Command)
+                               ? ForbocAI::CLI::Presentation::
+                                     selectCliDispatchFailedMessage(
+                                         PresentationState, Command)
                                : Message))),
                      void());
             });
@@ -92,20 +102,8 @@ UForbocAICommandlet::createCommandPipeline(const FString &Command,
 /** User Story: As a cli consumer, I need to invoke command validation pipeline through a stable signature so the cli workflow remains explicit and composable. @fn CLITypes::ValidationPipeline<FString, FString> UForbocAICommandlet::commandValidationPipeline() */
 CLITypes::ValidationPipeline<FString, FString>
 UForbocAICommandlet::commandValidationPipeline() {
-  return func::validationPipeline<FString, FString>() |
-         [](const FString &Command) -> CLITypes::Either<FString, FString> {
-           return Command.IsEmpty()
-                      ? CLITypes::make_left(
-                            FString(TEXT("Command cannot be empty")), FString())
-                      : CLITypes::make_right(FString(), Command);
-         } |
-         [](const FString &Command) -> CLITypes::Either<FString, FString> {
-           return !ForbocAI::CLI::isValidCommandKey(
-                      store().getState().CLI, Command)
-                      ? CLITypes::make_left(
-                            FString::Printf(TEXT("Invalid command: %s"),
-                                             *Command),
-                            FString())
-                      : CLITypes::make_right(FString(), Command);
-         };
+  const FRuntimeState &State = store().getState();
+  return CommandletInvocation::selectCommandValidationPipeline(
+      State.CLI,
+      ForbocAI::CLI::Presentation::selectCliPresentation(State));
 }

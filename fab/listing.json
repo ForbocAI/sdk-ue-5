@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "title": "ForbocAI NPC SDK",
+  "subtitle": "Persistent, rules-aware NPC intelligence for Unreal Engine 5.8",
+  "category": [
+    "Tools & Plugins",
+    "Artificial Intelligence"
+  ],
+  "description": [
+    "ForbocAI NPC SDK gives Unreal Engine teams a production-oriented C++ and Blueprint surface for game-defined NPCs that can respond to players and world events without baking a genre, setting, role, or personality into the model.",
+    "Your game owns identity and context. The SDK owns local vector memory, immutable runtime state, rules-aware action validation, portable soul data, and the integration boundary to the hosted ForbocAI NPC model.",
+    "The plugin includes source, Blueprint-callable APIs, a thin CLI for diagnostics, and authored configuration. The public SDK repository maintains a full end-to-end quality harness that exercises the CLI, SDK, production API, and model together."
+  ],
+  "media": [
+    {
+      "file": "media/generated/01-product.png",
+      "purpose": "Thumbnail and product overview"
+    },
+    {
+      "file": "media/generated/02-ownership.png",
+      "purpose": "Runtime ownership architecture"
+    },
+    {
+      "file": "media/generated/03-toolkit.png",
+      "purpose": "SDK capability overview"
+    },
+    {
+      "file": "media/generated/04-integration.png",
+      "purpose": "C++ and Blueprint integration surface"
+    },
+    {
+      "file": "media/generated/05-memory.png",
+      "purpose": "Local vector memory lifecycle"
+    },
+    {
+      "file": "media/generated/06-operations.png",
+      "purpose": "Operational CLI workflow"
+    }
+  ],
+  "features": [
+    "Game-defined NPC identity and context",
+    "Genre-agnostic hosted NPC inference",
+    "Persistent local SQLite vector memory",
+    "Rules-aware action validation bridge",
+    "Portable soul import and export",
+    "C++ and Blueprint-callable APIs",
+    "RTK-style single-store state ownership",
+    "Functional immutable operations",
+    "CLI diagnostics and API health checks",
+    "Source included"
+  ],
+  "technicalDetails": {
+    "engineVersion": "5.8",
+    "codeModules": 1,
+    "moduleType": "Runtime",
+    "testedPlatforms": [
+      "Win64"
+    ],
+    "network": "HTTPS access to api.forboc.ai is required for NPC inference",
+    "account": "A ForbocAI account and API key are required for hosted inference",
+    "localStorage": "SQLite-backed vector memory is included in the plugin",
+    "dependencies": "Uses Unreal Engine HTTP, JSON, JsonUtilities, Projects, and OpenSSL modules"
+  },
+  "pricing": {
+    "license": "Fab Standard License",
+    "personalUsd": 49.99,
+    "professionalUsd": 149.99
+  },
+  "tags": [
+    "AI",
+    "NPC",
+    "Dialogue",
+    "Character",
+    "Memory",
+    "Blueprint",
+    "C++",
+    "SDK",
+    "Behavior",
+    "Conversation"
+  ],
+  "contentDisclosures": {
+    "mature": false,
+    "allowsUsageWithGenerativeAI": true,
+    "generatedWithGenerativeAI": true
+  },
+  "support": {
+    "documentation": "https://docs.forboc.ai",
+    "issues": "https://github.com/ForbocAI/sdk-ue-5/issues",
+    "account": "https://account.forboc.ai",
+    "website": "https://forboc.ai"
+  },
+  "faq": [
+    {
+      "question": "Does the plugin ship a language model?",
+      "answer": "No. ForbocAI NPC inference is hosted by the ForbocAI API. The SDK keeps game integration and vector memory local."
+    },
+    {
+      "question": "Does ForbocAI decide who an NPC is?",
+      "answer": "No. Your game supplies the NPC identity, state, rules, memories, and current context for each interaction."
+    },
+    {
+      "question": "Can I use it from Blueprints?",
+      "answer": "Yes. Runtime status, NPC processing, memory, soul, bridge, and configuration operations have Blueprint-callable entry points."
+    },
+    {
+      "question": "Is an internet connection required?",
+      "answer": "Yes for hosted NPC inference. Local memory and immutable state operations remain in the plugin."
+    },
+    {
+      "question": "Can I evaluate hosted inference before choosing a paid plan?",
+      "answer": "Yes. New ForbocAI accounts begin on the free Initiate tier. Higher-volume plans are managed through the ForbocAI account portal."
+    }
+  ]
+}

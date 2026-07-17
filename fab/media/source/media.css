@@ -1,0 +1,385 @@
+:root {
+  color-scheme: dark;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #090c10;
+  color: #f4f7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 1920px;
+  height: 1080px;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background: #090c10;
+}
+
+.frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 88px 104px;
+  border-top: 16px solid #2f6bff;
+}
+
+.eyebrow {
+  margin: 0 0 22px;
+  color: #78d6bd;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  max-width: 1280px;
+  margin-bottom: 28px;
+  font-size: 92px;
+  font-weight: 760;
+  line-height: 1.02;
+}
+
+h2 {
+  margin-bottom: 12px;
+  font-size: 34px;
+  line-height: 1.15;
+}
+
+.lead {
+  max-width: 1140px;
+  color: #c1c9d5;
+  font-size: 38px;
+  line-height: 1.35;
+}
+
+.logo {
+  width: 300px;
+  height: 300px;
+  object-fit: contain;
+  filter: invert(39%) sepia(94%) saturate(2670%) hue-rotate(215deg) brightness(105%);
+}
+
+.cover-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+  gap: 84px;
+}
+
+.facts {
+  position: absolute;
+  right: 104px;
+  bottom: 76px;
+  left: 104px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid #394250;
+}
+
+.fact {
+  min-height: 180px;
+  padding: 34px 38px 20px 0;
+  border-right: 1px solid #394250;
+}
+
+.fact + .fact {
+  padding-left: 38px;
+}
+
+.fact:last-child {
+  border-right: 0;
+}
+
+.fact p {
+  margin-bottom: 0;
+  color: #aeb8c6;
+  font-size: 26px;
+  line-height: 1.35;
+}
+
+.platforms {
+  margin-top: 54px;
+  color: #f1b94a;
+  font-size: 27px;
+  font-weight: 650;
+}
+
+.pipeline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 34px;
+  margin-top: 86px;
+}
+
+.stage {
+  position: relative;
+  min-height: 300px;
+  padding: 38px 34px;
+  border: 2px solid #3b4657;
+  border-radius: 8px;
+  background: #111720;
+}
+
+.stage:not(:last-child)::after {
+  position: absolute;
+  top: 132px;
+  right: -29px;
+  color: #78d6bd;
+  content: ">";
+  font-size: 44px;
+  font-weight: 800;
+}
+
+.stage-number {
+  color: #78d6bd;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.stage h2 {
+  margin-top: 40px;
+}
+
+.stage p {
+  color: #aeb8c6;
+  font-size: 25px;
+  line-height: 1.4;
+}
+
+.ownership {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 72px;
+  margin-top: 44px;
+  padding-top: 34px;
+  border-top: 1px solid #394250;
+  color: #c1c9d5;
+  font-size: 25px;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 26px 52px;
+  margin-top: 56px;
+}
+
+.feature {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 22px;
+  min-height: 126px;
+  padding: 24px 0;
+  border-top: 1px solid #394250;
+}
+
+.feature-mark {
+  color: #78d6bd;
+  font-size: 38px;
+  font-weight: 800;
+}
+
+.feature p {
+  margin-bottom: 0;
+  color: #aeb8c6;
+  font-size: 24px;
+  line-height: 1.35;
+}
+
+.footer {
+  position: absolute;
+  right: 104px;
+  bottom: 54px;
+  left: 104px;
+  display: flex;
+  justify-content: space-between;
+  color: #8995a5;
+  font-size: 22px;
+}
+
+.accent {
+  color: #78d6bd;
+}
+
+.integration-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 72px;
+  margin-top: 48px;
+}
+
+.surface {
+  min-height: 560px;
+  padding-top: 28px;
+  border-top: 1px solid #394250;
+}
+
+.surface-label {
+  margin-bottom: 28px;
+  color: #f1b94a;
+  font-size: 24px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.node-flow {
+  display: grid;
+  gap: 16px;
+}
+
+.node {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  min-height: 72px;
+  overflow: hidden;
+  border: 1px solid #4a5668;
+  border-radius: 6px;
+  background: #111720;
+}
+
+.node strong,
+.node span {
+  display: flex;
+  align-items: center;
+  padding: 18px 22px;
+  font-size: 23px;
+}
+
+.node strong {
+  background: #1d4fae;
+}
+
+.node span {
+  color: #c1c9d5;
+}
+
+.code-window {
+  min-height: 430px;
+  padding: 34px 38px;
+  border: 1px solid #4a5668;
+  border-radius: 6px;
+  background: #07090c;
+  color: #d9e1eb;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 23px;
+  line-height: 1.72;
+  white-space: pre-wrap;
+}
+
+.code-keyword {
+  color: #78d6bd;
+}
+
+.code-call {
+  color: #7ca6ff;
+}
+
+.memory-flow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 30px;
+  margin-top: 72px;
+}
+
+.memory-step {
+  position: relative;
+  min-height: 300px;
+  padding: 34px 30px;
+  border-top: 4px solid #78d6bd;
+  background: #111720;
+}
+
+.memory-step:not(:last-child)::after {
+  position: absolute;
+  top: 124px;
+  right: -25px;
+  color: #f1b94a;
+  content: ">";
+  font-size: 38px;
+  font-weight: 800;
+}
+
+.memory-step h2 {
+  margin-top: 26px;
+}
+
+.memory-step p {
+  color: #aeb8c6;
+  font-size: 24px;
+  line-height: 1.4;
+}
+
+.memory-note {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 50px;
+  margin-top: 54px;
+  padding-top: 30px;
+  border-top: 1px solid #394250;
+  color: #c1c9d5;
+  font-size: 24px;
+}
+
+.terminal-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+  gap: 64px;
+  margin-top: 48px;
+}
+
+.terminal {
+  min-height: 570px;
+  padding: 34px 40px;
+  border: 1px solid #4a5668;
+  border-radius: 6px;
+  background: #050709;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 23px;
+  line-height: 1.58;
+}
+
+.terminal p {
+  margin-bottom: 12px;
+}
+
+.prompt {
+  color: #78d6bd;
+}
+
+.operations {
+  display: grid;
+  align-content: start;
+  gap: 0;
+  min-height: 570px;
+  border-top: 1px solid #394250;
+}
+
+.operation {
+  padding: 24px 0;
+  border-bottom: 1px solid #394250;
+}
+
+.operation h2 {
+  margin-bottom: 8px;
+  font-size: 29px;
+}
+
+.operation p {
+  margin-bottom: 0;
+  color: #aeb8c6;
+  font-size: 23px;
+  line-height: 1.35;
+}

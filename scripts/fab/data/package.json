@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "pluginName": "ForbocAI_SDK",
+  "productName": "ForbocAI NPC SDK",
+  "engineVersion": "5.8",
+  "descriptor": "ForbocAI_SDK.uplugin",
+  "paths": {
+    "stageDirectory": "dist/fab/stage/ForbocAI_SDK",
+    "buildDirectory": "dist/fab/build/ForbocAI_SDK",
+    "releaseDirectory": "dist/fab/releases"
+  },
+  "archiveTemplate": "ForbocAI_SDK-{version}-UE-{engineVersion}.zip",
+  "include": [
+    "ForbocAI_SDK.uplugin",
+    "README.md",
+    "LICENSE",
+    "Config",
+    "Content/Data",
+    "Resources",
+    "Source/ForbocAI_SDK",
+    "ThirdParty"
+  ],
+  "exclude": [
+    "Content/Data/tests/**",
+    "Source/ForbocAI_SDK/Private/Tests/**",
+    "Source/ForbocAI_SDK/Public/Features/Testing/**"
+  ],
+  "required": [
+    "ForbocAI_SDK.uplugin",
+    "README.md",
+    "LICENSE",
+    "Config/DefaultForbocAI_SDK.ini",
+    "Config/FilterPlugin.ini",
+    "Content/Data/config/runtime.json",
+    "Resources/Icon128.png",
+    "Source/ForbocAI_SDK/ForbocAI_SDK.Build.cs",
+    "Source/ForbocAI_SDK/Public/Store.h",
+    "ThirdParty/sqlite-vss/include/sqlite3.h",
+    "ThirdParty/sqlite-vss/src/sqlite3.c"
+  ],
+  "forbiddenPathParts": [
+    ".git",
+    ".github",
+    ".vs",
+    ".vscode",
+    "DerivedDataCache",
+    "Intermediate",
+    "Saved",
+    "Tests",
+    "Testing",
+    "test-game-cli",
+    "node_modules",
+    "scripts"
+  ],
+  "forbiddenExtensions": [
+    ".env",
+    ".log",
+    ".pdb",
+    ".suo",
+    ".tmp",
+    ".user"
+  ]
+}

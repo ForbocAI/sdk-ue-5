@@ -5,7 +5,7 @@
 #include "Serialization/JsonSerializer.h"
 #include "TestGame/Features/Data/DataAdapters.h"
 #include "TestGame/Features/Systems/Harness/Game/GameTypes.h"
-#include "TestGame/Features/Systems/Harness/Game/Vocabulary/VocabularyAdapters.h"
+#include "TestGame/Features/Systems/Harness/Game/Vocabulary/GameVocabularyAdapters.h"
 
 namespace TestGame::GameAdapters {
 namespace detail {

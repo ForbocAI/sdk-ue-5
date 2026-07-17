@@ -3,8 +3,7 @@
 #include "Core/fp.hpp"
 #include "Core/rtk.hpp"
 #include "Features/API/Endpoints/Configuration/EndpointsConfigurationTypes.h"
-#include "Features/Config/ConfigAdapters.h"
-#include "Features/Data/DataAdapters.h"
+#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
 #include "GenericPlatform/GenericPlatformHttp.h"
 
 namespace APISlice::Endpoints::Configuration {
@@ -204,11 +203,11 @@ inline FString endpointQuery(const FString &Path, const FString &Key,
 }
 
 /**
- * @fn inline FString apiEndpoint(const FString &Path)
+ * @fn inline FString apiEndpoint(const FString &ApiUrl, const FString &Path)
  * User Story: As an API endpoint consumer, I need relative authored routes resolved against the configured API origin in one place.
  */
-inline FString apiEndpoint(const FString &Path) {
-  return SDKConfig::GetApiUrl() + Path;
+inline FString apiEndpoint(const FString &ApiUrl, const FString &Path) {
+  return ApiUrl + Path;
 }
 
 /**

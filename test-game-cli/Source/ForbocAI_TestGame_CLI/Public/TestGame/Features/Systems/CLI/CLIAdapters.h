@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Features/Config/ConfigAdapters.h"
 #include "Misc/Parse.h"
 #include "TestGame/Features/Data/DataAdapters.h"
 #include "TestGame/Features/Systems/CLI/CLITypes.h"
@@ -213,18 +212,6 @@ inline FString resolveMode(const FCliInvocation &Invocation) {
              : GameAdapters::GameRuntimeData().modes.all.Contains(Command)
                    ? Command
                    : GameAdapters::GameRuntimeData().modes.autoplay;
-}
-
-/** User Story: As a test-game CLI host, I need API URL precedence resolved once so explicit invocations override the SDK environment consistently. @fn inline FString resolveApiUrl(const FCliInvocation &Invocation) */
-inline FString resolveApiUrl(const FCliInvocation &Invocation) {
-  return !Invocation.ApiUrl.IsEmpty() ? Invocation.ApiUrl
-                                      : SDKConfig::GetApiUrl();
-}
-
-/** User Story: As a test-game CLI host, I need API key precedence resolved once so credentials flow through configuration without extra shell steps. @fn inline FString resolveApiKey(const FCliInvocation &Invocation) */
-inline FString resolveApiKey(const FCliInvocation &Invocation) {
-  return !Invocation.ApiKey.IsEmpty() ? Invocation.ApiKey
-                                      : SDKConfig::GetApiKey();
 }
 
 } // namespace TestGame::CLI

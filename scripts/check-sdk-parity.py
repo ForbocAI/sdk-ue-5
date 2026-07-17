@@ -401,13 +401,30 @@ def normalize_path_signature(path: str) -> str:
     return "/".join(normalized_path_segments(path))
 
 
+def normalized_path_segment_variants(path: str) -> tuple[tuple[str, ...], ...]:
+    segments = normalized_path_segments(path)
+    if not Path(path).suffix or len(segments) < 3:
+        return (segments,)
+
+    leaf = segments[-1]
+    variants = [segments]
+    # C++ packages share one public include namespace, so a role leaf may need
+    # an ancestor-domain qualifier when another feature owns the plain name.
+    for ancestor in segments[:-2]:
+        if leaf.startswith(ancestor) and len(leaf) > len(ancestor):
+            variants.append((*segments[:-1], leaf[len(ancestor) :]))
+    return tuple(dict.fromkeys(variants))
+
+
 def ue_suffix_index(paths: Sequence[str]) -> dict[str, list[str]]:
     index: dict[str, list[str]] = {}
     for path in paths:
-        segments = normalized_path_segments(path)
-        for start in range(len(segments)):
-            signature = "/".join(segments[start:])
-            index.setdefault(signature, []).append(path)
+        for segments in normalized_path_segment_variants(path):
+            for start in range(len(segments)):
+                signature = "/".join(segments[start:])
+                matches = index.setdefault(signature, [])
+                if path not in matches:
+                    matches.append(path)
     return index
 
 
@@ -445,7 +462,7 @@ def mirror_status(candidates: Sequence[object], exact: bool) -> str:
 
 def mirror_notes(candidates: Sequence[object], exact: bool) -> str:
     if exact:
-        return "Same normalized path/name signature."
+        return "Same normalized path/name signature, including a derived C++ ancestor qualifier when required."
     if candidates:
         return "No same normalized path/name signature; listed UE item(s) are dynamic nearest candidates."
     return "No UE item has the same normalized path/name signature; no close dynamic candidate was found."
@@ -1170,7 +1187,7 @@ def build_generated_section(
             f"{inventory.program.label}"
             for inventory in inventories
         ) + ".",
-        "- `Same` for folders/files means a UE path contains the same normalized TS path/name suffix inside that parity program.",
+        "- `Same` for folders/files means a UE path contains the same normalized TS path/name suffix inside that parity program; C++ ancestor-domain qualifiers are derived from the path when a shared include namespace requires them.",
         "- `Different` means no same normalized path/name suffix was found; listed UE item(s), when present, are closest dynamic candidates from that same parity program.",
         "- Function names are included in the generated symbol/function mirrors.",
         "",
