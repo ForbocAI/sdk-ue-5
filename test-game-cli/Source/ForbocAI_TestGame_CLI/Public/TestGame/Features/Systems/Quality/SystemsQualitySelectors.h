@@ -144,6 +144,8 @@ inline FString baselineStatus(const FQualityState &State) {
                        qualityData().SchemaVersion &&
                    State.Baseline.value.ContractVersion ==
                        qualityData().ContractVersion &&
+                   State.Baseline.value.EvaluationScope ==
+                       qualityData().EvaluationScope &&
                    State.Baseline.value.Host == State.Host
              ? qualityData().BaselineStatuses.Compatible
              : qualityData().BaselineStatuses.Incompatible;
@@ -256,6 +258,7 @@ selectQualityReport(const FQualityState &State) {
              ? func::just(FQualityReport{
                    qualityData().SchemaVersion,
                    qualityData().ContractVersion,
+                   qualityData().EvaluationScope,
                    State.Host,
                    State.CompletedAt,
                    State.Metadata.value,

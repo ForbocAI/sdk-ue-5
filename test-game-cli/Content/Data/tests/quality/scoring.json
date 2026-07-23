@@ -1,6 +1,6 @@
 {
   "automationName": "ForbocAI.Slices.TestGame.QualityRejectsContradictions",
-  "story": "User Story: As a model evaluator, Given contradictory answers with high lexical overlap, When the production scorer runs, Then every adversarial answer is rejected",
+  "story": "User Story: As an end-to-end evaluator, Given contradictory answers with high lexical overlap, When the production scorer runs, Then every adversarial answer is rejected",
   "host": "unreal-cli",
   "durationMs": 125,
   "cases": [

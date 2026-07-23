@@ -88,6 +88,7 @@ inline const FQualityData &qualityData() {
     return FQualityData{
         DataAdapters::ReadNumberField(Root, TEXT("schemaVersion")),
         DataAdapters::ReadStringField(Root, TEXT("contractVersion")),
+        DataAdapters::ReadStringField(Root, TEXT("evaluationScope")),
         {DataAdapters::ReadStringField(Run, TEXT("idle")),
          DataAdapters::ReadStringField(Run, TEXT("running")),
          DataAdapters::ReadStringField(Run, TEXT("completed")),

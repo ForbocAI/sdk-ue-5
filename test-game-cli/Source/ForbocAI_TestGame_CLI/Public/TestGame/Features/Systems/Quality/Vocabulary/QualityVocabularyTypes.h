@@ -177,6 +177,7 @@ struct FQualityProbe {
 struct FQualityData {
   int32 SchemaVersion{};
   FString ContractVersion;
+  FString EvaluationScope;
   FQualityRunStatuses RunStatuses;
   FQualityCommandStatuses CommandStatuses;
   FQualityBaselineStatuses BaselineStatuses;

@@ -182,6 +182,8 @@ qualityReportObject(const FQualityReport &Report) {
                                  Report.SchemaVersion);
   DataAdapters::WriteStringField(Object, TEXT("contractVersion"),
                                  Report.ContractVersion);
+  DataAdapters::WriteStringField(Object, TEXT("evaluationScope"),
+                                 Report.EvaluationScope);
   DataAdapters::WriteStringField(Object, TEXT("host"), Report.Host);
   DataAdapters::WriteStringField(Object, TEXT("generatedAt"),
                                  Report.GeneratedAt);
@@ -238,6 +240,7 @@ readQualityBaselineReport(const TSharedRef<FJsonObject> &Object) {
           });
   return {DataAdapters::ReadNumberField(Object, TEXT("schemaVersion")),
           DataAdapters::ReadStringField(Object, TEXT("contractVersion")),
+          DataAdapters::ReadStringField(Object, TEXT("evaluationScope")),
           DataAdapters::ReadStringField(Object, TEXT("host")),
           DataAdapters::ReadStringField(Object, TEXT("generatedAt")),
           {DataAdapters::ReadStringField(Metadata, TEXT("apiStatus")),

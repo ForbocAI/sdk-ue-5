@@ -76,6 +76,7 @@ struct FQualityReportSummary {
 struct FQualityReport {
   int32 SchemaVersion{};
   FString ContractVersion;
+  FString EvaluationScope;
   FString Host;
   FString GeneratedAt;
   FQualityModelMetadata Metadata;

@@ -1,6 +1,7 @@
 {
-	"schemaVersion": 1,
-	"contractVersion": "1.1.0",
+	"schemaVersion": 2,
+	"contractVersion": "1.2.0",
+	"evaluationScope": "api_symbolic_enforced_output",
 	"host": "unreal-cli",
 	"generatedAt": "2026-07-17T16:43:19.531Z",
 	"metadata":

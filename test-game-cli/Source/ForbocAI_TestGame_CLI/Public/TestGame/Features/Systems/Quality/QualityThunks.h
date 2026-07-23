@@ -74,7 +74,7 @@ inline func::Maybe<FQualitySetupFailure> runSetupCommands(
 }
 
 /**
- * User Story: As a model evaluator, I need every authored quality category exercised even when an earlier probe fails.
+ * User Story: As an end-to-end evaluator, I need every authored quality category exercised even when an earlier probe fails.
  * @fn inline void runQualityProbes( const TArray<FQualityProbe> &Probes, const FQualityModelMetadata &Metadata, FTestGameStore &Store, const FQualityRunDependencies &Dependencies, int32 Index)
  */
 inline void runQualityProbes(
@@ -98,7 +98,7 @@ inline void runQualityProbes(
 } // namespace QualityThunksDetail
 
 /**
- * User Story: As a release operator, I need the minimal game measure live SLM quality through the CLI before declaring the run complete.
+ * User Story: As a release operator, I need the minimal game measure API-enforced NPC output through the CLI before declaring the run complete.
  * @fn inline void runQualityEvaluation( FTestGameStore &Store, const FQualityRunDependencies &Dependencies)
  */
 inline void runQualityEvaluation(
