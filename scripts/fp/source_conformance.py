@@ -227,10 +227,10 @@ def iter_files(root: Path, suffixes: set[str] = SOURCE_SUFFIXES) -> list[Path]:
 def ue_authored_source_roots() -> list[Path]:
     roots: list[Path] = []
     for target in ue_targets():
-        if target.label == "sdk":
+        if target.kind == "sdk":
             module_root = target.root / "Source" / "ForbocAI_SDK"
             roots.append(module_root if module_root.exists() else target.root / "Source")
-        elif target.label == "sdk-cli":
+        elif target.kind == "sdk-cli":
             module_root = target.root / "Source" / "ForbocAI_TestGame_CLI"
             roots.append(module_root if module_root.exists() else target.root / "Source")
         else:

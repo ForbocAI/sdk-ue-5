@@ -46,12 +46,12 @@ def default_scan_roots(project_root: Path) -> list[Path]:
 def discovered_target_scan_roots(project_root: Path) -> list[tuple[str, Path, list[Path]]]:
     targets: list[tuple[str, Path, list[Path]]] = []
     for target in ue_targets():
-        if target.label == "sdk":
+        if target.kind == "sdk":
             roots = [
                 target.root / "Source" / "ForbocAI_SDK" / "Public" / "Features",
                 target.root / "Source" / "ForbocAI_SDK" / "Private" / "Features",
             ]
-        elif target.label == "sdk-cli":
+        elif target.kind == "sdk-cli":
             roots = [
                 target.root / "Source" / "ForbocAI_TestGame_CLI" / "Public" / "TestGame" / "Features",
                 target.root / "Source" / "ForbocAI_TestGame_CLI" / "Public" / "TestGame" / "Views",
