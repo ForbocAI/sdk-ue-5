@@ -70,10 +70,9 @@ inline void ApplyScenarioInitialState(const FScenarioStep &Step,
       : void();
 }
 
-/** User Story: As a contract runner, I need scenarios sequenced recursively through the same root store and CLI boundary. @fn inline void ProcessSteps(const TArray<FScenarioStep> &Steps, int32 Index, FTestGameStore &Store, const FString &ApiUrl, const FGameProgressSink &Sink) */
+/** User Story: As a contract runner, I need scenarios sequenced recursively through the same root store and SDK CLI boundary. @fn inline void ProcessSteps(const TArray<FScenarioStep> &Steps, int32 Index, FTestGameStore &Store, const FGameProgressSink &Sink) */
 inline void ProcessSteps(const TArray<FScenarioStep> &Steps, int32 Index,
                          FTestGameStore &Store,
-                         const FString &ApiUrl,
                          const FGameProgressSink &Sink) {
   Index >= Steps.Num()
       ? void()
@@ -86,12 +85,11 @@ inline void ProcessSteps(const TArray<FScenarioStep> &Steps, int32 Index,
           ApplyScenarioInitialState(Steps[Index], Store);
           ProcessCommands(
               Steps[Index],
-              GameAdapters::GameRuntimeData().numbers.emptyCount, Store,
-              ApiUrl, Sink);
+              GameAdapters::GameRuntimeData().numbers.emptyCount, Store, Sink);
           ProcessSteps(
               Steps,
               Index + GameAdapters::GameRuntimeData().numbers.nextIndex,
-              Store, ApiUrl, Sink);
+              Store, Sink);
         }();
 }
 

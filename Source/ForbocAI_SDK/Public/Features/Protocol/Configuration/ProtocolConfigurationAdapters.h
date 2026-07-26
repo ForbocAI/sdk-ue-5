@@ -11,8 +11,6 @@ inline const FProtocolData &protocolData() {
     const DataAdapters::FSettingsSource Source =
         DataAdapters::SettingsSource(TEXT("ForbocAI_SDK"),
                                      TEXT("Data/protocol/handlers.json"));
-    const TSharedRef<FJsonObject> History =
-        DataAdapters::ReadObjectField(Source, TEXT("history"));
     const TSharedRef<FJsonObject> Iteration =
         DataAdapters::ReadObjectField(Source, TEXT("iteration"));
     const TSharedRef<FJsonObject> RuntimeTypes =
@@ -23,14 +21,6 @@ inline const FProtocolData &protocolData() {
         DataAdapters::ReadObjectField(Source, TEXT("limits"));
     const TSharedRef<FJsonObject> Classifications =
         DataAdapters::ReadObjectField(Source, TEXT("classifications"));
-    const TSharedRef<FJsonObject> Decision =
-        DataAdapters::ReadObjectField(Source, TEXT("decision"));
-    const TSharedRef<FJsonObject> ActionTypes =
-        DataAdapters::ReadObjectField(Decision, TEXT("actionTypes"));
-    const TSharedRef<FJsonObject> Goal =
-        DataAdapters::ReadObjectField(Decision, TEXT("goal"));
-    const TSharedRef<FJsonObject> MetadataFields =
-        DataAdapters::ReadObjectField(Decision, TEXT("metadataFields"));
     const TSharedRef<FJsonObject> Roles =
         DataAdapters::ReadObjectField(Source, TEXT("roles"));
     const TSharedRef<FJsonObject> Text =
@@ -40,8 +30,6 @@ inline const FProtocolData &protocolData() {
     const TSharedRef<FJsonObject> Debug =
         DataAdapters::ReadObjectField(Source, TEXT("debug"));
     return FProtocolData{
-        {DataAdapters::ReadNumberField(History,
-                                       TEXT("recentInteractionLimit"))},
         {DataAdapters::ReadNumberField(Iteration, TEXT("initialIndex")),
          DataAdapters::ReadNumberField(Iteration, TEXT("step"))},
         {DataAdapters::ReadStringField(RuntimeTypes, TEXT("function")),
@@ -56,7 +44,9 @@ inline const FProtocolData &protocolData() {
          DataAdapters::ReadStringField(Errors, TEXT("missingNpcId")),
          DataAdapters::ReadStringField(Errors,
                                        TEXT("missingStructuredPersona")),
-         DataAdapters::ReadStringField(Errors, TEXT("processingFailed"))},
+         DataAdapters::ReadStringField(Errors, TEXT("processingFailed")),
+         DataAdapters::ReadStringField(Errors,
+                                       TEXT("missingApiDecisionIntent"))},
         {DataAdapters::ReadNumberField(Limits, TEXT("maxTurns"))},
         {DataAdapters::ReadStringField(Classifications,
                                        TEXT("IdentifyActor")),
@@ -64,24 +54,6 @@ inline const FProtocolData &protocolData() {
          DataAdapters::ReadStringField(Classifications, TEXT("Decision")),
          DataAdapters::ReadStringField(Classifications, TEXT("Reasoning")),
          DataAdapters::ReadStringField(Classifications, TEXT("Finalize"))},
-        {DataAdapters::ReadStringArrayField(Decision, TEXT("moveVerbs")),
-         DataAdapters::ReadStringArrayField(Decision, TEXT("interactVerbs")),
-         DataAdapters::ReadStringArrayField(Decision, TEXT("stopWords")),
-         {DataAdapters::ReadStringField(ActionTypes, TEXT("move")),
-          DataAdapters::ReadStringField(ActionTypes, TEXT("interact")),
-          DataAdapters::ReadStringField(ActionTypes, TEXT("speak"))},
-         {DataAdapters::ReadStringField(Goal, TEXT("prefix")),
-          DataAdapters::ReadStringField(Goal, TEXT("memoryPrefix")),
-          DataAdapters::ReadStringField(Goal, TEXT("memorySuffix"))},
-         DataAdapters::ReadStringField(Decision, TEXT("metadataSource")),
-         {DataAdapters::ReadStringField(MetadataFields, TEXT("source")),
-          DataAdapters::ReadStringField(MetadataFields, TEXT("context")),
-          DataAdapters::ReadStringField(MetadataFields, TEXT("npcState")),
-          DataAdapters::ReadStringField(MetadataFields, TEXT("memories")),
-          DataAdapters::ReadStringField(MetadataFields,
-                                        TEXT("recentInteractions")),
-          DataAdapters::ReadStringField(MetadataFields, TEXT("role")),
-          DataAdapters::ReadStringField(MetadataFields, TEXT("content"))}},
         {DataAdapters::ReadStringField(Roles, TEXT("user")),
          DataAdapters::ReadStringField(Roles, TEXT("assistant"))},
         {DataAdapters::ReadStringField(Text, TEXT("empty")),

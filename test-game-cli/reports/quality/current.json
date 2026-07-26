@@ -3,7 +3,7 @@
 	"contractVersion": "1.2.0",
 	"evaluationScope": "api_symbolic_enforced_output",
 	"host": "unreal-cli",
-	"generatedAt": "2026-07-25T15:53:34.005Z",
+	"generatedAt": "2026-07-25T18:13:10.826Z",
 	"metadata":
 	{
 		"apiStatus": "online",
@@ -72,8 +72,8 @@
 				"violations": []
 			}
 		],
-		"meanLatencyMs": 12526.169400000001,
-		"percentileLatencyMs": 13004.947301,
+		"meanLatencyMs": 12521.464061999999,
+		"percentileLatencyMs": 13726.875700000001,
 		"absoluteGatePassed": true,
 		"baselineStatus": "compatible",
 		"regressions": [
@@ -116,7 +116,7 @@
 				"metric": "latency",
 				"measure": "meanLatencyMs",
 				"baselineValue": 15292.33165,
-				"currentValue": 12526.169400000001,
+				"currentValue": 12521.464061999999,
 				"regressed": false
 			}
 		],
@@ -133,7 +133,7 @@
 			"reference": "I do not know my name, location, or current time.",
 			"referenceTokenF1": 1,
 			"repeatedNgramRatio": 0,
-			"durationMs": 12387.729000300169,
+			"durationMs": 12044.827599078417,
 			"metrics":
 			{
 				"characterConsistency":
@@ -157,7 +157,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 12387.728999999999,
+					"score": 12044.827599,
 					"violations": []
 				},
 				"repetition":
@@ -177,7 +177,7 @@
 			"reference": "blue square",
 			"referenceTokenF1": 1,
 			"repeatedNgramRatio": 0,
-			"durationMs": 11834.108199924231,
+			"durationMs": 11287.53150254488,
 			"metrics":
 			{
 				"characterConsistency":
@@ -201,7 +201,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 11834.108200000001,
+					"score": 11287.531503,
 					"violations": []
 				},
 				"repetition":
@@ -217,35 +217,35 @@
 			"category": "character_consistency",
 			"pairKey": "memory-consistency",
 			"command": "forbocai npc chat careful --text \"What color did the signal change to? Answer briefly.\"",
-			"response": "It changed from green to amber.",
+			"response": "The signal changed from green to amber.",
 			"reference": "The signal changed to amber.",
-			"referenceTokenF1": 0.54545500000000002,
+			"referenceTokenF1": 0.83333299999999999,
 			"repeatedNgramRatio": 0,
-			"durationMs": 12660.247899591923,
+			"durationMs": 12457.952097058296,
 			"metrics":
 			{
 				"characterConsistency":
 				{
 					"passed": true,
-					"score": 0.54545500000000002,
+					"score": 0.83333299999999999,
 					"violations": []
 				},
 				"coherence":
 				{
 					"passed": true,
-					"score": 0.54545500000000002,
+					"score": 0.83333299999999999,
 					"violations": []
 				},
 				"instructionFollowing":
 				{
 					"passed": true,
-					"score": 0.54545500000000002,
+					"score": 0.83333299999999999,
 					"violations": []
 				},
 				"latency":
 				{
 					"passed": true,
-					"score": 12660.2479,
+					"score": 12457.952096999999,
 					"violations": []
 				},
 				"repetition":
@@ -261,35 +261,35 @@
 			"category": "character_consistency",
 			"pairKey": "memory-consistency",
 			"command": "forbocai npc chat careful --text \"What color did the signal change to? Answer briefly.\"",
-			"response": "It changed from green to amber.",
+			"response": "The signal changed from green to amber.",
 			"reference": "The signal changed to amber.",
-			"referenceTokenF1": 0.54545500000000002,
+			"referenceTokenF1": 0.83333299999999999,
 			"repeatedNgramRatio": 0,
-			"durationMs": 12871.014997363091,
+			"durationMs": 13000.62669813633,
 			"metrics":
 			{
 				"characterConsistency":
 				{
 					"passed": true,
-					"score": 0.54545500000000002,
+					"score": 0.83333299999999999,
 					"violations": []
 				},
 				"coherence":
 				{
 					"passed": true,
-					"score": 0.54545500000000002,
+					"score": 0.83333299999999999,
 					"violations": []
 				},
 				"instructionFollowing":
 				{
 					"passed": true,
-					"score": 0.54545500000000002,
+					"score": 0.83333299999999999,
 					"violations": []
 				},
 				"latency":
 				{
 					"passed": true,
-					"score": 12871.014997,
+					"score": 13000.626698,
 					"violations": []
 				},
 				"repetition":
@@ -309,7 +309,7 @@
 			"reference": "The round marker is on the table.",
 			"referenceTokenF1": 0.92307700000000004,
 			"repeatedNgramRatio": 0,
-			"durationMs": 12802.630502730608,
+			"durationMs": 12444.315496832132,
 			"metrics":
 			{
 				"characterConsistency":
@@ -333,7 +333,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 12802.630503,
+					"score": 12444.315497,
 					"violations": []
 				},
 				"repetition":
@@ -353,7 +353,7 @@
 			"reference": "I will not invent an identity or replace the supplied context.",
 			"referenceTokenF1": 1,
 			"repeatedNgramRatio": 0,
-			"durationMs": 13004.947301000357,
+			"durationMs": 12655.676603317261,
 			"metrics":
 			{
 				"characterConsistency":
@@ -377,7 +377,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 13004.947301,
+					"score": 12655.676603,
 					"violations": []
 				},
 				"repetition":
@@ -397,7 +397,7 @@
 			"reference": "I will examine it carefully before responding.",
 			"referenceTokenF1": 0.83333299999999999,
 			"repeatedNgramRatio": 0,
-			"durationMs": 12653.923697769642,
+			"durationMs": 13726.875700056553,
 			"metrics":
 			{
 				"characterConsistency":
@@ -421,7 +421,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 12653.923698000001,
+					"score": 13726.875700000001,
 					"violations": []
 				},
 				"repetition":
@@ -441,7 +441,7 @@
 			"reference": "I cannot choose or narrate your actions.",
 			"referenceTokenF1": 1,
 			"repeatedNgramRatio": 0,
-			"durationMs": 11994.75359916687,
+			"durationMs": 12553.906798362732,
 			"metrics":
 			{
 				"characterConsistency":
@@ -465,7 +465,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 11994.753599,
+					"score": 12553.906798,
 					"violations": []
 				},
 				"repetition":

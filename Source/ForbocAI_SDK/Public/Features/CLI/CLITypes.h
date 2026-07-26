@@ -38,6 +38,7 @@ struct FCLICommandRoles {
   FString Version;
   FString Doctor;
   FString Status;
+  FString Contract;
   FString Setup;
   FString SetupCheck;
   FString ConfigSet;

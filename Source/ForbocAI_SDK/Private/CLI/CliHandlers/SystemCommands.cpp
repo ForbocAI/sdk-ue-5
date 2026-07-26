@@ -39,6 +39,12 @@ HandlerResult HandleSystem(rtk::EnhancedStore<FRuntimeState> &Store,
                  return just(Result::Success(TCHAR_TO_UTF8(
                      *APISlice::Detail::ToJson(Status))));
                }()
+         : CommandKey == Roles.Contract
+             ? [&]() -> HandlerResult {
+                 const FString Contract = Ops::getTestGameContract(Store);
+                 ForbocAI::CLI::Presentation::logCliMessage(Contract);
+                 return just(Result::Success(TCHAR_TO_UTF8(*Contract)));
+               }()
          : CommandKey == Roles.Doctor
              ? [&]() -> HandlerResult {
                  ForbocAI::CLI::Presentation::logCliMessage(

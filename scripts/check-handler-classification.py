@@ -129,6 +129,31 @@ def main() -> int:
         else:
             print(f"[OK] {function_name} returns through {required} ({path}).")
 
+    if ue_classifications.get("Decision") == "Pass-through":
+        decision_root = UE_PROTOCOL_ROOT / "Instructions" / "Decision"
+        decision_content = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in sorted(decision_root.rglob("*.h"))
+        )
+        forbidden_decision_policy = (
+            "BuildDecisionIntent",
+            "DecisionAdapters",
+            "NPCSelectors::selectNPCHistory",
+            "sdk_decision_policy",
+        )
+        discovered_policy = [
+            symbol for symbol in forbidden_decision_policy
+            if symbol in decision_content
+        ]
+        if discovered_policy:
+            print(
+                "[FAIL] Pass-through Decision handlers contain SDK-owned "
+                f"decision policy: {', '.join(discovered_policy)}."
+            )
+            failures += 1
+        else:
+            print("[OK] Decision policy remains API-owned.")
+
     ts_contract_path, ts_classifications = discover_classifications(TS_DATA_ROOT)
     if ts_contract_path is None:
         print(

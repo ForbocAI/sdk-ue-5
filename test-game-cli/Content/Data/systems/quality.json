@@ -213,6 +213,30 @@
         "local only"
       ],
       "outputAssertions": []
+    },
+    {
+      "group": "npc_lifecycle",
+      "command": "forbocai npc create grounded",
+      "expectedRoutes": [
+        "local only"
+      ],
+      "outputAssertions": []
+    },
+    {
+      "group": "npc_lifecycle",
+      "command": "forbocai npc update grounded --npcName Mira --npcRole watchkeeper --npcLocation \"Lantern Gate\" --mood alert --accessPolicy \"entry requires authorization after curfew\"",
+      "expectedRoutes": [
+        "local only"
+      ],
+      "outputAssertions": []
+    },
+    {
+      "group": "memory_store",
+      "command": "forbocai memory store grounded \"Rowan found a brass key beneath the fountain.\"",
+      "expectedRoutes": [
+        "local only"
+      ],
+      "outputAssertions": []
     }
   ],
   "probeCommand": {

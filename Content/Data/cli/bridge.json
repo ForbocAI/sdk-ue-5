@@ -27,7 +27,6 @@
     "actionSeparator": ", ",
     "validateUsage": "Usage: bridge validate <inline-json-payload|file.json>",
     "validation": "Validation: {0}",
-    "valid": "Valid: {0}",
     "pass": "PASS",
     "fail": "FAIL",
     "reason": "Reason: {0}",

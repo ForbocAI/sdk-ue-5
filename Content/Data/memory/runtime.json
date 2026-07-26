@@ -30,7 +30,7 @@
   },
   "contract": {
     "schemaVersion": 1,
-    "vectorVersion": 2,
+    "vectorVersion": 3,
     "legacyVectorVersion": 0,
     "metadataFile": "memory-contract.json",
     "temporarySuffix": ".tmp-",
@@ -60,6 +60,7 @@
     "characterNgramWeight": 1.5,
     "stopWords": [
       "a",
+      "about",
       "an",
       "and",
       "answer",
@@ -99,6 +100,8 @@
       "or",
       "our",
       "please",
+      "recall",
+      "remember",
       "she",
       "that",
       "the",

@@ -1,7 +1,10 @@
 #include "Misc/AutomationTest.h"
 #include "TestGame/Features/Components/Inventory/InventorySelectors.h"
 #include "TestGame/Features/Systems/Harness/Verification/VerificationAdapters.h"
+#include "TestGame/Features/Systems/Harness/Game/GameSelectors.h"
+#include "TestGame/Features/Systems/Harness/Scenario/ScenarioActions.h"
 #include "TestGame/Features/Systems/Memory/MemorySelectors.h"
+#include "TestGame/Features/Systems/Terminal/UI/UIActions.h"
 #include "TestGame/TestGameStore.h"
 
 using namespace TestGame;
@@ -64,6 +67,17 @@ bool FTestGameStoreDomainSelectorsTest::RunTest(const FString &Parameters) {
             GameSoulSelectors::SelectImportedSoulTxIds(Store.getState().Soul)
                 .Num(),
             Data.store.soul.expectedImportedCount);
+
+  FScenarioContractPayload ChatContract;
+  ChatContract.RequiredCommandGroups = {
+      GameAdapters::GameRuntimeData().commandGroups.status};
+  Store.dispatch(ScenarioActions::setContract(MoveTemp(ChatContract)));
+  Store.dispatch(UIActions::setMode(
+      GameAdapters::GameRuntimeData().modes.chat));
+  const FGameRunResult ChatResult =
+      GameSelectors::SelectGameRunResult(Store.getState());
+  TestEqual(Data.stories.store, ChatResult.MissingGroups.Num(),
+            GameAdapters::GameRuntimeData().numbers.emptyCount);
 
   return true;
 }

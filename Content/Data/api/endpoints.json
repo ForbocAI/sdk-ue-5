@@ -21,7 +21,9 @@
     "export": "export",
     "confirm": "confirm",
     "souls": "souls",
-    "verify": "verify"
+    "verify": "verify",
+    "testGame": "test-game",
+    "contract": "contract"
   },
   "queryKeys": {
     "limit": "limit"
@@ -49,7 +51,8 @@
     "deleteSoulStoragePreparation": "deleteSoulStoragePreparation",
     "postSoulStorageCommit": "postSoulStorageCommit",
     "getSoulStorageCatalog": "getSoulStorageCatalog",
-    "getSoulStorageEntry": "getSoulStorageEntry"
+    "getSoulStorageEntry": "getSoulStorageEntry",
+    "getTestGameContract": "getTestGameContract"
   },
   "fields": {
     "ghostRunSessionId": "sessionId",
@@ -105,6 +108,7 @@
     "soulListLimit": 50
   },
   "timeouts": {
-    "statusMs": 1500
+    "statusMs": 1500,
+    "contractMs": 5000
   }
 }

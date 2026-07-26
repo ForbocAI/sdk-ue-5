@@ -60,7 +60,9 @@ inline FEndpointConfigurationData readEndpointConfigurationData() {
        DataAdapters::ReadStringField(Segments, TEXT("export")),
        DataAdapters::ReadStringField(Segments, TEXT("confirm")),
        DataAdapters::ReadStringField(Segments, TEXT("souls")),
-       DataAdapters::ReadStringField(Segments, TEXT("verify"))},
+       DataAdapters::ReadStringField(Segments, TEXT("verify")),
+       DataAdapters::ReadStringField(Segments, TEXT("testGame")),
+       DataAdapters::ReadStringField(Segments, TEXT("contract"))},
       {DataAdapters::ReadStringField(QueryKeys, TEXT("limit"))},
       {DataAdapters::ReadStringField(Names, TEXT("getApiStatus")),
        DataAdapters::ReadStringField(Names, TEXT("postNpcProcess")),
@@ -89,7 +91,8 @@ inline FEndpointConfigurationData readEndpointConfigurationData() {
                                      TEXT("deleteSoulStoragePreparation")),
        DataAdapters::ReadStringField(Names, TEXT("postSoulStorageCommit")),
        DataAdapters::ReadStringField(Names, TEXT("getSoulStorageCatalog")),
-       DataAdapters::ReadStringField(Names, TEXT("getSoulStorageEntry"))},
+       DataAdapters::ReadStringField(Names, TEXT("getSoulStorageEntry")),
+       DataAdapters::ReadStringField(Names, TEXT("getTestGameContract"))},
       {DataAdapters::ReadStringField(Fields, TEXT("ghostRunSessionId")),
        DataAdapters::ReadStringField(Fields, TEXT("ghostRunStatus")),
        DataAdapters::ReadStringField(Fields, TEXT("ghostStatusSessionId")),
@@ -129,7 +132,8 @@ inline FEndpointConfigurationData readEndpointConfigurationData() {
       {DataAdapters::ReadStringField(TagIds, TEXT("list"))},
       {DataAdapters::ReadNumberField(Defaults, TEXT("ghostHistoryLimit")),
        DataAdapters::ReadNumberField(Defaults, TEXT("soulListLimit"))},
-      {DataAdapters::ReadNumberField(Timeouts, TEXT("statusMs"))}};
+      {DataAdapters::ReadNumberField(Timeouts, TEXT("statusMs")),
+       DataAdapters::ReadNumberField(Timeouts, TEXT("contractMs"))}};
 }
 
 /**
@@ -169,7 +173,8 @@ inline TArray<FString> endpointNames(const FEndpointNameData &Names) {
           Names.DeleteSoulStoragePreparation,
           Names.PostSoulStorageCommit,
           Names.GetSoulStorageCatalog,
-          Names.GetSoulStorageEntry};
+          Names.GetSoulStorageEntry,
+          Names.GetTestGameContract};
 }
 
 /**

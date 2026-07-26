@@ -13,6 +13,14 @@
 namespace CLIOps {
 
 /**
+ * Hydrates invocation-scoped SDK configuration before command dispatch.
+ * @fn FORBOCAI_SDK_API void ConfigureInvocation(const FString &ApiUrl, const FString &ApiKey)
+ * User Story: As an embedded CLI host, I need runtime overrides applied through the SDK root store without accessing that store directly.
+ */
+FORBOCAI_SDK_API void ConfigureInvocation(const FString &ApiUrl,
+                                          const FString &ApiKey);
+
+/**
  * Dispatches a CLI command through the SDK store.
  * @fn FORBOCAI_SDK_API func::TestResult<void> DispatchCommand(const FString &CommandKey, const TArray<FString> &Args)
  * @param CommandKey  Command in "domain_action" format (e.g. "npc_create",

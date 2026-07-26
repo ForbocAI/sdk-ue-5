@@ -7,9 +7,6 @@
     "valueOffset": 1,
     "pairOffset": 2
   },
-  "commands": {
-    "contract": "contract"
-  },
   "exitCodes": {
     "success": 0,
     "failure": 1,

@@ -28,6 +28,8 @@ struct FEndpointSegmentData {
   FString Confirm;
   FString Souls;
   FString Verify;
+  FString TestGame;
+  FString Contract;
 };
 
 struct FEndpointQueryKeyData {
@@ -58,6 +60,7 @@ struct FEndpointNameData {
   FString PostSoulStorageCommit;
   FString GetSoulStorageCatalog;
   FString GetSoulStorageEntry;
+  FString GetTestGameContract;
 };
 
 struct FEndpointFieldData {
@@ -123,6 +126,7 @@ struct FEndpointDefaultData {
 
 struct FEndpointTimeoutData {
   int32 StatusMs;
+  int32 ContractMs;
 };
 
 struct FEndpointConfigurationData {

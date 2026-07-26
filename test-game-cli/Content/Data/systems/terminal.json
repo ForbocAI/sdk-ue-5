@@ -14,7 +14,7 @@
     "invalidMode": "Invalid mode: {mode}"
   },
   "usage": [
-    "Usage: forbocai-ue-test-game [contract|--mode autoplay|manual]",
+    "Usage: forbocai-ue-test-game [--mode autoplay|manual|chat]",
     "       forbocai-ue-test-game --api-url https://api.forboc.ai --mode autoplay"
   ],
   "grid": {

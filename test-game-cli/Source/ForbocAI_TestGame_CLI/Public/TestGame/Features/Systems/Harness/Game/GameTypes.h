@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Core/rtk.hpp"
-#include "Features/Config/ConfigTypes.h"
 #include "TestGame/Features/Components/Inventory/InventoryTypes.h"
 #include "TestGame/Features/Components/Spatial/Grid/GridTypes.h"
 #include "TestGame/Features/Entities/NPCs/NPCsTypes.h"
@@ -35,7 +34,6 @@ struct FTestGameState {
   FScenarioSliceState Scenario;
   FHarnessState Harness;
   CommandRunner::FCommandAliasState CommandRunner;
-  ConfigSlice::FConfigState Config;
   FQualityState Quality;
 };
 

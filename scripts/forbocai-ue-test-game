@@ -22,6 +22,8 @@ if grep -qi microsoft /proc/version 2>/dev/null; then
   fi
 fi
 
+export FORBOCAI_TEST_GAME_LOG_PATH="${FORBOCAI_TEST_GAME_LOG_PATH:-$ROOT/output/test-game-cli/last.log}"
+
 PROJECT="$ROOT/test-game-cli/ForbocAI_SDK.uproject"
 forbocai_prepare_plugin_host "$ROOT"
 case "$(uname -s)" in

@@ -67,6 +67,25 @@ bool FTestGameCommandRunnerOutputAssertionsTest::RunTest(
                                               Aliases)
           .Status,
       Runtime.statuses.error);
+  FCommandSpec ExcludingCommand;
+  ExcludingCommand.Group = Runtime.commandGroups.memory_list;
+  ExcludingCommand.Command = Data.commands.soulExport;
+  FOutputAssertion ExcludingAssertion;
+  ExcludingAssertion.Kind = Runtime.outputAssertionKinds.excludesText;
+  ExcludingAssertion.Value = Data.commands.soulExport;
+  ExcludingCommand.OutputAssertions.Add(ExcludingAssertion);
+  TestEqual(
+      Data.messages.absentForbiddenLiteralPreservesSuccess,
+      CommandRunner::ValidateOutputAssertions(ExcludingCommand, MissingValue,
+                                              Aliases)
+          .Status,
+      Runtime.statuses.ok);
+  TestEqual(
+      Data.messages.presentForbiddenLiteralFails,
+      CommandRunner::ValidateOutputAssertions(ExcludingCommand, Observable,
+                                              Aliases)
+          .Status,
+      Runtime.statuses.error);
   TestEqual(
       Data.messages.missingAliasFails,
       CommandRunner::ValidateOutputAssertions(

@@ -1,6 +1,7 @@
 #include "Misc/AutomationTest.h"
 #include "TestGame/Features/Data/DataAdapters.h"
 #include "TestGame/Features/Systems/Quality/Scoring/ScoringAdapters.h"
+#include "TestGame/Features/Systems/Quality/SystemsQualitySelectors.h"
 
 using namespace TestGame;
 
@@ -88,5 +89,30 @@ bool FTestGameQualityRejectsContradictionsTest::RunTest(const FString &Parameter
   }
 
   TestEqual(*TestData.Story, RejectedCount, TestData.Cases.Num());
+
+  FQualityState LatencyState;
+  LatencyState.Host = TestData.Host;
+  FQualityReport Baseline;
+  Baseline.Summary.MeanLatencyMs = TestData.DurationMs;
+  LatencyState.Baseline = func::just(Baseline);
+  const double HostBudget =
+      Runtime.Hosts.FindChecked(TestData.Host).OverheadBudgetMs;
+  const double JitterLatency = TestData.DurationMs +
+                               HostBudget /
+                                   (Runtime.Numbers.SingularCount +
+                                    Runtime.Numbers.SingularCount);
+  const double MaterialLatency = TestData.DurationMs + HostBudget +
+                                 Runtime.Numbers.SingularCount;
+  const TArray<FQualityRegression> Jitter =
+      QualitySelectorsDetail::latencyRegression(
+          JitterLatency, LatencyState,
+          Runtime.BaselineStatuses.Compatible);
+  const TArray<FQualityRegression> Material =
+      QualitySelectorsDetail::latencyRegression(
+          MaterialLatency, LatencyState,
+          Runtime.BaselineStatuses.Compatible);
+
+  TestFalse(*TestData.Story, Jitter.Last().bRegressed);
+  TestTrue(*TestData.Story, Material.Last().bRegressed);
   return true;
 }

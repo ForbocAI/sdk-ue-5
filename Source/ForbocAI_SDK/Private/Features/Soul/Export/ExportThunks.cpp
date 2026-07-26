@@ -4,7 +4,8 @@
 #include "Features/API/Serialization/Agent/AgentAdapters.h"
 #include "Features/Config/ConfigSelectors.h"
 #include "Features/Errors/ErrorsAdapters.h"
-#include "Features/Memory/MemorySelectors.h"
+#include "Features/Memory/Configuration/MemoryConfigurationAdapters.h"
+#include "Features/Memory/Local/MemoryLocalThunks.h"
 #include "Features/NPC/NPCSelectors.h"
 #include "Features/State/StateTypes.h"
 #include "Features/Soul/SoulAdapters.h"
@@ -214,18 +215,34 @@ exportSoulThunk() {
                   return func::match(
                       Npc,
                       [&NpcId, &Api](const FNPCInternalState &NpcState) {
-                        const SoulStorage::Configuration::FSoulData &SoulData =
-                            SoulStorage::Configuration::soulStorageData().Soul;
-                        const FSoul Soul = SoulAdapters::createSoulAdapter(
-                            NpcId,
-                            JsonInterop::StringifyObject(
-                                JsonInterop::StructuredPersonaToObject(
-                                    NpcState.Persona)),
-                            NpcState.State,
-                            MemorySelectors::selectAllMemories(
-                                Api.getState().Memory),
-                            SoulData.DefaultName, SoulData.Version);
-                        return executeSoulExportThunk(Soul, NpcId, Api);
+                        const MemoryConfiguration::FMemoryData &MemoryData =
+                            MemoryConfiguration::memoryData();
+                        return func::AsyncChain::then<
+                            TArray<FMemoryItem>, FSoulExportResult>(
+                            listNodeMemoryThunk(
+                                MemoryData.Defaults.ListLimit,
+                                MemoryData.Defaults.ListOffset,
+                                NpcId)(Api.dispatch, Api.getState),
+                            [NpcId, Api, NpcState](
+                                const TArray<FMemoryItem> &Memories) {
+                              const SoulStorage::Configuration::FSoulData
+                                  &SoulData =
+                                      SoulStorage::Configuration::
+                                          soulStorageData()
+                                              .Soul;
+                              const FSoul Soul =
+                                  SoulAdapters::createSoulAdapter(
+                                      NpcId,
+                                      JsonInterop::StringifyObject(
+                                          JsonInterop::
+                                              StructuredPersonaToObject(
+                                                  NpcState.Persona)),
+                                      NpcState.State, Memories,
+                                      SoulData.DefaultName,
+                                      SoulData.Version);
+                              return executeSoulExportThunk(
+                                  Soul, NpcId, Api);
+                            });
                       },
                       [&NpcId]() {
                         return detail::RejectAsync<FSoulExportResult>(

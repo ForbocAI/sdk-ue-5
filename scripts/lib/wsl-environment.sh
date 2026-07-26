@@ -20,7 +20,7 @@ forbocai_wsl_env_entry_for() {
   local value="${!name:-}"
 
   case "$name" in
-    API_TEST_GAME_CONTRACT|FORBOCAI_CONFIG_PATH|FORBOCAI_DATABASE_PATH|FORBOCAI_TEST_ENV_FILE|FORBOC_SDK_SOURCE_PATH|UE_ROOT)
+    API_TEST_GAME_CONTRACT|FORBOCAI_CONFIG_PATH|FORBOCAI_DATABASE_PATH|FORBOCAI_TEST_ENV_FILE|FORBOCAI_TEST_GAME_LOG_PATH|FORBOC_SDK_SOURCE_PATH|UE_ROOT)
       [[ "$value" == /* ]] && printf '%s/p\n' "$name" || printf '%s\n' "$name"
       ;;
     *)

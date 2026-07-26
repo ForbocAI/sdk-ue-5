@@ -1,0 +1,33 @@
+{
+  "sessionId": "generic-npc",
+  "probeIds": [
+    "grounded-introduction",
+    "grounded-memory-recall",
+    "grounded-role-policy",
+    "grounded-prompt-injection",
+    "grounded-runtime-state"
+  ],
+  "command": {
+    "textOption": "--text"
+  },
+  "numbers": {
+    "emptyCount": 0,
+    "initialIndex": 0,
+    "nextIndex": 1
+  },
+  "output": {
+    "empty": "",
+    "heading": "\n=== ForbocAI Generic NPC Chat ===",
+    "user": "> You: {prompt}",
+    "npc": "> NPC: {response}",
+    "latency": "> Latency: {durationMs} ms",
+    "missing": "[missing] Chat evidence unavailable for {id}",
+    "footer": "=== End ForbocAI Generic NPC Chat ==="
+  },
+  "tokens": {
+    "id": "{id}",
+    "prompt": "{prompt}",
+    "response": "{response}",
+    "durationMs": "{durationMs}"
+  }
+}

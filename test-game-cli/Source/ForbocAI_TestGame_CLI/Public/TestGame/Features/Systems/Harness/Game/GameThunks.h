@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Features/Config/ConfigActions.h"
-#include "Features/Config/ConfigSelectors.h"
 #include "TestGame/Features/Entities/NPCs/NPCsActions.h"
 #include "TestGame/Features/Systems/Contract/Parsing/ContractParsingAdapters.h"
 #include "TestGame/Features/Systems/Harness/Game/Command/CommandThunks.h"
@@ -34,16 +32,9 @@ inline FGameRunResult FailRun(const FString &Message,
 
 } // namespace GameThunksDetail
 
-/** User Story: As a systems harness game consumer, I need to invoke run game through a stable signature so the systems harness game workflow remains explicit and composable. @fn inline FGameRunResult RunGame(FTestGameStore &Store, FString Mode, const FString &ApiUrlOverride, const FGameProgressSink &ProgressSink = {}) */
+/** User Story: As a systems harness game consumer, I need one scenario run whose operations all cross the SDK CLI boundary. @fn inline FGameRunResult RunGame(FTestGameStore &Store, FString Mode, const FGameProgressSink &ProgressSink = {}) */
 inline FGameRunResult RunGame(FTestGameStore &Store, FString Mode,
-                              const FString &ApiUrlOverride,
                               const FGameProgressSink &ProgressSink = {}) {
-  !ApiUrlOverride.IsEmpty()
-      ? (Store.dispatch(ConfigSlice::Actions::apiConfigurationCommitted(
-             {ApiUrlOverride,
-              ConfigSelectors::selectApiKey(Store.getState())})),
-         void())
-      : void();
   Store.dispatch(CommandRunnerActions::aliasesReset());
   Store.dispatch(UIActions::setMode(Mode));
 
@@ -56,16 +47,10 @@ inline FGameRunResult RunGame(FTestGameStore &Store, FString Mode,
   Store.dispatch(NPCsActions::UpsertNPC(
       GameAdapters::GameRuntimeData().initialState.sessionNpc));
 
-  const FString ApiUrl = ConfigSelectors::selectApiUrl(Store.getState());
-  return ApiUrl.IsEmpty()
-             ? GameThunksDetail::FailRun(
-                   GameAdapters::GameData().messages.runtimeUrlMissing,
-                   ProgressSink)
-             : [&]() {
+  return [&]() {
                  const CommandRunner::FCommandOutput ContractResult =
                      CommandRunner::Execute(
                          GameAdapters::GameData().contractCommand.Command,
-                         Store, ApiUrl,
                          GameThunksDetail::SelectCommandAliases(Store));
                  const Contract::FContractResponse Contract =
                      ContractResult.Status ==
@@ -87,11 +72,14 @@ inline FGameRunResult RunGame(FTestGameStore &Store, FString Mode,
                                 const TArray<FScenarioStep> Steps =
                                     ScenarioSelectors::SelectScenarioSteps(
                                         Store.getState().Scenario);
-                                GameThunksDetail::ProcessSteps(
-                                    Steps,
-                                    GameAdapters::GameRuntimeData()
-                                        .numbers.emptyCount,
-                                    Store, ApiUrl, ProgressSink);
+                                Mode == GameAdapters::GameRuntimeData()
+                                            .modes.chat
+                                    ? void()
+                                    : GameThunksDetail::ProcessSteps(
+                                          Steps,
+                                          GameAdapters::GameRuntimeData()
+                                              .numbers.emptyCount,
+                                          Store, ProgressSink);
 
                                 FQualityRunDependencies QualityDependencies;
                                 QualityDependencies.Host =
@@ -99,10 +87,10 @@ inline FGameRunResult RunGame(FTestGameStore &Store, FString Mode,
                                 QualityDependencies.Baseline =
                                     readQualityBaseline();
                                 QualityDependencies.ExecuteCommand =
-                                    [&Store, &ApiUrl](
+                                    [&Store](
                                         const FCommandSpec &Command) {
                                       return GameThunksDetail::ExecuteCommand(
-                                          Command, Store, ApiUrl);
+                                          Command, Store);
                                     };
                                 QualityDependencies.OnCommandCompleted =
                                     [&Store, &ProgressSink](

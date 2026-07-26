@@ -61,6 +61,7 @@ local_infrastructure/
 dist_ForbocAI_SDK/
 dist_ForbocAI_SDK_v*/
 /dist/
+/output/
 
 # JavaScript package installs for CLI test-game tooling
 node_modules/

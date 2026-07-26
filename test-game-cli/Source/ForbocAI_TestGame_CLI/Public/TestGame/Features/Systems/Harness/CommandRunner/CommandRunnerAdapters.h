@@ -15,87 +15,6 @@ inline FString ResolveAliasValue(const TMap<FString, FString> &Aliases,
   return func::map_value_or<FString, FString>(Aliases, Candidate, Candidate);
 }
 
-/** User Story: As a systems harness command runner consumer, I need to invoke map to command key through a stable signature so the systems harness command runner workflow remains explicit and composable. @fn inline FString MapToCommandKey(const TArray<FString> &Tokens) */
-inline FString MapToCommandKey(const TArray<FString> &Tokens) {
-  const FCommandRunnerData &Data = CommandRunnerData();
-  return Tokens.Num() < Data.limits.domainTokenCount
-             ? Data.syntax.unknownCommandKey
-         : Tokens.Num() < Data.limits.commandTokenCount
-             ? Tokens[Data.limits.domainTokenIndex]
-             : Tokens[Data.limits.domainTokenIndex] +
-                   Data.syntax.commandSeparator +
-                   Tokens[Data.limits.actionTokenIndex];
-}
-
-/** User Story: As a systems harness command runner consumer, I need to invoke extract args recursive through a stable signature so the systems harness command runner workflow remains explicit and composable. @fn inline TArray<FString> ExtractArgsRecursive(const TArray<FString> &Tokens, int32 Index, TArray<FString> Acc) */
-inline TArray<FString> ExtractArgsRecursive(const TArray<FString> &Tokens,
-                                            int32 Index,
-                                            TArray<FString> Acc) {
-  const FCommandRunnerData &Data = CommandRunnerData();
-  return Index >= Tokens.Num()
-             ? Acc
-             : ExtractArgsRecursive(
-                   Tokens, Index + Data.limits.nextIndex,
-                   Tokens[Index] == Data.syntax.textOption
-                       ? MoveTemp(Acc)
-                       : func::append_value<FString>(MoveTemp(Acc),
-                                                     Tokens[Index]));
-}
-
-/** User Story: As a systems harness command runner consumer, I need to invoke extract args through a stable signature so the systems harness command runner workflow remains explicit and composable. @fn inline TArray<FString> ExtractArgs(const TArray<FString> &Tokens) */
-inline TArray<FString> ExtractArgs(const TArray<FString> &Tokens) {
-  const FCommandRunnerData &Data = CommandRunnerData();
-  return Tokens.Num() <= Data.limits.argumentStartIndex
-             ? TArray<FString>()
-             : ExtractArgsRecursive(Tokens,
-                                    Data.limits.argumentStartIndex,
-                                    TArray<FString>());
-}
-
-/** User Story: As a systems harness command runner consumer, I need to invoke is quote character through a stable signature so the systems harness command runner workflow remains explicit and composable. @fn inline bool IsQuoteCharacter(const TCHAR Character) */
-inline bool IsQuoteCharacter(const TCHAR Character) {
-  const FCommandRunnerQuotes &Quotes = CommandRunnerData().quotes;
-  const int32 FirstCharacterIndex =
-      CommandRunnerData().limits.firstTokenIndex;
-  return Character == Quotes.doubleQuote[FirstCharacterIndex] ||
-         Character == Quotes.singleQuote[FirstCharacterIndex];
-}
-
-/** User Story: As a systems harness command runner consumer, I need to invoke tokenize recursive through a stable signature so the systems harness command runner workflow remains explicit and composable. @fn inline TArray<FString> TokenizeRecursive(const FString &Command, int32 Index, TCHAR QuoteCharacter, FString Current, TArray<FString> Tokens) */
-inline TArray<FString> TokenizeRecursive(const FString &Command, int32 Index,
-                                         TCHAR QuoteCharacter,
-                                         FString Current,
-                                         TArray<FString> Tokens) {
-  const FCommandRunnerData &Data = CommandRunnerData();
-  return Index >= Command.Len()
-             ? (Current.IsEmpty()
-                    ? Tokens
-                    : func::append_value<FString>(MoveTemp(Tokens), Current))
-         : QuoteCharacter != TCHAR() && Command[Index] == QuoteCharacter
-             ? TokenizeRecursive(Command, Index + Data.limits.nextIndex,
-                                 TCHAR(), MoveTemp(Current), MoveTemp(Tokens))
-         : QuoteCharacter == TCHAR() && IsQuoteCharacter(Command[Index])
-             ? TokenizeRecursive(Command, Index + Data.limits.nextIndex,
-                                 Command[Index], MoveTemp(Current),
-                                 MoveTemp(Tokens))
-         : QuoteCharacter == TCHAR() && FChar::IsWhitespace(Command[Index])
-             ? TokenizeRecursive(
-                   Command, Index + Data.limits.nextIndex, TCHAR(), FString(),
-                   Current.IsEmpty()
-                       ? MoveTemp(Tokens)
-                       : func::append_value<FString>(MoveTemp(Tokens), Current))
-             : TokenizeRecursive(
-                   Command, Index + Data.limits.nextIndex, QuoteCharacter,
-                   Current + FString::Chr(Command[Index]), MoveTemp(Tokens));
-}
-
-/** User Story: As a systems harness command runner consumer, I need to invoke tokenize through a stable signature so the systems harness command runner workflow remains explicit and composable. @fn inline TArray<FString> Tokenize(const FString &Command) */
-inline TArray<FString> Tokenize(const FString &Command) {
-  return TokenizeRecursive(Command,
-                           CommandRunnerData().limits.firstTokenIndex,
-                           TCHAR(), FString(), TArray<FString>());
-}
-
 /** User Story: As a systems harness command runner consumer, I need to invoke resolves npc alias through a stable signature so the systems harness command runner workflow remains explicit and composable. @fn inline bool ResolvesNpcAlias(const FString &CommandKey) */
 inline bool ResolvesNpcAlias(const FString &CommandKey) {
   const FCommandRunnerCommands &Commands = CommandRunnerData().commands;
@@ -218,6 +137,12 @@ inline func::Maybe<FString> OutputAssertionFailureReason(
   return !Data.outputAssertionKinds.all.Contains(Assertion.Kind)
              ? func::just(GameAdapters::FormatGameTemplate(
                    Data.messages.outputAssertionKindUnsupported, Values))
+         : Assertion.Kind == Data.outputAssertionKinds.excludesText
+             ? (Result.Output.Contains(Assertion.Value)
+                    ? func::just(GameAdapters::FormatGameTemplate(
+                          Data.messages.outputAssertionValuePresent,
+                          Values))
+                    : func::nothing<FString>())
          : Assertion.Kind == Data.outputAssertionKinds.includesText
              ? (Result.Output.Contains(Assertion.Value)
                     ? func::nothing<FString>()

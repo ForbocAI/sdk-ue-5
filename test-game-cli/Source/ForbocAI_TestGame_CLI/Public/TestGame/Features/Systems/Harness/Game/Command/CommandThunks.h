@@ -94,14 +94,12 @@ SelectCommandAliases(const FTestGameStore &Store) {
 
 /**
  * User Story: As a game and quality harness, I need all command families assertion-validated through one public CLI boundary.
- * @fn inline CommandRunner::FCommandOutput ExecuteCommand( const FCommandSpec &Command, FTestGameStore &Store, const FString &ApiUrl)
+ * @fn inline CommandRunner::FCommandOutput ExecuteCommand( const FCommandSpec &Command, FTestGameStore &Store)
  */
 inline CommandRunner::FCommandOutput ExecuteCommand(
-    const FCommandSpec &Command, FTestGameStore &Store,
-    const FString &ApiUrl) {
+    const FCommandSpec &Command, FTestGameStore &Store) {
   const CommandRunner::FCommandOutput ExecutionResult =
-      CommandRunner::Execute(Command.Command, Store, ApiUrl,
-                             SelectCommandAliases(Store));
+      CommandRunner::Execute(Command.Command, SelectCommandAliases(Store));
   CommandRunner::HasCommandAliasUpdate(ExecutionResult.AliasUpdate)
       ? (Store.dispatch(CommandRunnerActions::aliasesCaptured(
              ExecutionResult.AliasUpdate)),
@@ -111,14 +109,13 @@ inline CommandRunner::FCommandOutput ExecuteCommand(
       Command, ExecutionResult, SelectCommandAliases(Store));
 }
 
-/** User Story: As a scenario runner, I need each authored command reduced through one root store and emitted for presentation. @fn inline void ProcessCommand(const FScenarioStep &Step, const FCommandSpec &Command, FTestGameStore &Store, const FString &ApiUrl, const FGameProgressSink &Sink) */
+/** User Story: As a scenario runner, I need each authored SDK CLI result reduced through one root store and emitted for presentation. @fn inline void ProcessCommand(const FScenarioStep &Step, const FCommandSpec &Command, FTestGameStore &Store, const FGameProgressSink &Sink) */
 inline void ProcessCommand(const FScenarioStep &Step,
                            const FCommandSpec &Command,
                            FTestGameStore &Store,
-                           const FString &ApiUrl,
                            const FGameProgressSink &Sink) {
   const CommandRunner::FCommandOutput Result =
-      ExecuteCommand(Command, Store, ApiUrl);
+      ExecuteCommand(Command, Store);
   Result.Status == GameAdapters::GameRuntimeData().statuses.ok
       ? (Store.dispatch(CoverageActions::markCovered(Command.Group)), void())
       : void();
@@ -167,19 +164,18 @@ inline void CompleteQualityCommand(
   Emit(Sink, MoveTemp(Progress));
 }
 
-/** User Story: As a scenario runner, I need authored commands sequenced recursively through one CLI boundary. @fn inline void ProcessCommands(const FScenarioStep &Step, int32 Index, FTestGameStore &Store, const FString &ApiUrl, const FGameProgressSink &Sink) */
+/** User Story: As a scenario runner, I need authored commands sequenced recursively through one SDK CLI boundary. @fn inline void ProcessCommands(const FScenarioStep &Step, int32 Index, FTestGameStore &Store, const FGameProgressSink &Sink) */
 inline void ProcessCommands(const FScenarioStep &Step, int32 Index,
                             FTestGameStore &Store,
-                            const FString &ApiUrl,
                             const FGameProgressSink &Sink) {
   Index >= Step.Commands.Num()
       ? void()
-      : (ProcessCommand(Step, Step.Commands[Index], Store, ApiUrl, Sink),
+      : (ProcessCommand(Step, Step.Commands[Index], Store, Sink),
          DelayAfterCommand(),
          ProcessCommands(
              Step,
              Index + GameAdapters::GameRuntimeData().numbers.nextIndex,
-             Store, ApiUrl, Sink));
+             Store, Sink));
 }
 
 } // namespace TestGame::GameThunksDetail

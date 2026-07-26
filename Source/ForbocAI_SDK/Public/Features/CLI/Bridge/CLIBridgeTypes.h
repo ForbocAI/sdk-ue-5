@@ -37,7 +37,6 @@ struct FCLIBridgeMessages {
   FString ActionSeparator;
   FString ValidateUsage;
   FString Validation;
-  FString Valid;
   FString Pass;
   FString Fail;
   FString Reason;

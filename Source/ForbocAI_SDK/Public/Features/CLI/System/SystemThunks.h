@@ -16,4 +16,11 @@ checkApiStatus(rtk::EnhancedStore<RuntimeState> &Store) {
       Store.dispatch(rtk::checkApiStatusThunk()));
 }
 
+/** User Story: As an SDK CLI caller, I need test-contract transport delegated to the SDK root store. @fn template <typename RuntimeState = FRuntimeState> inline FString getTestGameContract(rtk::EnhancedStore<RuntimeState> &Store) */
+template <typename RuntimeState = FRuntimeState>
+inline FString getTestGameContract(rtk::EnhancedStore<RuntimeState> &Store) {
+  return AsyncAdapters::waitForResult(
+      Store.dispatch(rtk::getTestGameContractThunk()));
+}
+
 } // namespace Ops

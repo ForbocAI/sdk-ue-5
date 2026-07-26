@@ -1,22 +1,4 @@
 {
-  "defaultApiUrl": "https://api.forboc.ai",
-  "api": {
-    "reducerPath": "testGameApi",
-    "tagType": "TestGameContract",
-    "endpointName": "getTestGameContract",
-    "tagId": "CURRENT"
-  },
-  "authorization": {
-    "header": "Authorization",
-    "template": "Bearer {0}"
-  },
-  "request": {
-    "path": "/test-game/contract",
-    "method": "GET"
-  },
-  "separators": {
-    "trailingUrl": "/"
-  },
   "schema": {
     "kind": "kind",
     "value": "value",

@@ -6,8 +6,8 @@
     "naturalQuestion": "User Story: As a character, Given a stored fact, When the same subject is asked as a natural question, Then recall similarity clears the protocol threshold",
     "unrelatedQuestion": "User Story: As a character, Given a stored fact, When an unrelated subject is asked, Then recall similarity remains below the protocol threshold"
   },
-  "fact": "The signal changed from green to amber.",
-  "naturalQuestion": "What color did the signal change to? Answer briefly.",
+  "fact": "Rowan found a brass key beneath the fountain.",
+  "naturalQuestion": "What do you remember about the brass key?",
   "unrelatedQuestion": "A round marker was placed on the table.",
   "minimumRelevantSimilarity": 0.5,
   "maximumUnrelatedSimilarity": 0.5,

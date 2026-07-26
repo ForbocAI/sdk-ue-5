@@ -12,7 +12,8 @@
   },
   "modes": {
     "manual": true,
-    "autoplay": true
+    "autoplay": true,
+    "chat": true
   },
   "scenarioEventTypes": {
     "stealth": true,
@@ -45,7 +46,8 @@
   },
   "outputAssertionKinds": {
     "includesAlias": true,
-    "includesText": true
+    "includesText": true,
+    "excludesText": true
   },
   "lifecycleEvents": {
     "sessionStarted": true,
@@ -102,6 +104,7 @@
     "contractFailed": "Failed to fetch or parse test-game contract",
     "outputAssertionAliasMissing": "Output assertion failed for {command}: alias {value} was not captured.",
     "outputAssertionValueMissing": "Output assertion failed for {command}: output did not include required value {value}.",
+    "outputAssertionValuePresent": "Output assertion failed for {command}: output included forbidden value {value}.",
     "outputAssertionKindUnsupported": "Output assertion failed for {command}: assertion kind {kind} is unsupported.",
     "outputAssertionFailure": "{reason}\nCommand output:\n{output}",
     "commandAliasUnavailable": "Command dependency unavailable for {command}: alias {alias} was not captured by a successful prerequisite."

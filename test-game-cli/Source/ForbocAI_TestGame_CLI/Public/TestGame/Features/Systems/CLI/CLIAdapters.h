@@ -14,8 +14,6 @@ inline const FCliRuntimeData &cliRuntimeData() {
         DataAdapters::SettingsSource(TEXT("cli/runtime.json"));
     const TSharedRef<FJsonObject> Argv =
         DataAdapters::ReadObjectField(Source, TEXT("argv"));
-    const TSharedRef<FJsonObject> Commands =
-        DataAdapters::ReadObjectField(Source, TEXT("commands"));
     const TSharedRef<FJsonObject> ExitCodes =
         DataAdapters::ReadObjectField(Source, TEXT("exitCodes"));
     const TSharedRef<FJsonObject> Flags =
@@ -32,11 +30,6 @@ inline const FCliRuntimeData &cliRuntimeData() {
 #undef FORBOCAI_READ_CLI_ARGV
 #undef FORBOCAI_READ_CLI_ARGV_int32
 #undef FORBOCAI_READ_CLI_ARGV_FString
-
-#define FORBOCAI_READ_CLI_COMMAND(Type, Name)                            \
-  Value.commands.Name = DataAdapters::ReadStringField(Commands, TEXT(#Name));
-    FORBOCAI_CLI_COMMAND_FIELDS(FORBOCAI_READ_CLI_COMMAND)
-#undef FORBOCAI_READ_CLI_COMMAND
 
 #define FORBOCAI_READ_CLI_EXIT_CODE(Type, Name)                          \
   Value.exitCodes.Name = DataAdapters::ReadNumberField(ExitCodes, TEXT(#Name));

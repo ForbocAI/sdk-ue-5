@@ -104,5 +104,27 @@ else
   echo "[ok] Canonical CLI dispatch is isolated to CommandRunnerThunks.h"
 fi
 
+# 5) Test-game code must not own transport or an API endpoint. Contract
+# bootstrap is an SDK CLI command like every other scenario operation.
+DIRECT_TRANSPORT="$(rg -n '\b(fetchBaseQuery|FHttpModule|IHttpRequest|getTestGameContractThunk|ContractApi)\b' \
+  "$TEST_GAME_SRC/Public" "$TEST_GAME_SRC/Private" 2>/dev/null | \
+  normalize_crlf || true)"
+if [ -n "$DIRECT_TRANSPORT" ]; then
+  echo "[fail] Test-game code owns SDK/API transport:" >&2
+  echo "$DIRECT_TRANSPORT" >&2
+  STATUS=1
+else
+  echo "[ok] Test-game code owns no API transport"
+fi
+
+CONTRACT_COMMAND="$ROOT/test-game-cli/Content/Data/harness/game.json"
+if ! rg -q '"command"[[:space:]]*:[[:space:]]*"forbocai contract"' \
+  "$CONTRACT_COMMAND"; then
+  echo "[fail] Contract bootstrap does not use the SDK CLI command." >&2
+  STATUS=1
+else
+  echo "[ok] Contract bootstrap uses the SDK CLI"
+fi
+
 echo "[done] Test-game executor boundary check complete (exit $STATUS)"
 exit "$STATUS"

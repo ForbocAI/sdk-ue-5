@@ -4,10 +4,6 @@
 
 namespace ProtocolConfiguration {
 
-struct FHistoryData {
-  int32 RecentInteractionLimit;
-};
-
 struct FIterationData {
   int32 InitialIndex;
   int32 Step;
@@ -28,6 +24,7 @@ struct FErrorMessages {
   FString MissingNpcId;
   FString MissingStructuredPersona;
   FString ProcessingFailed;
+  FString MissingApiDecisionIntent;
 };
 
 struct FLimitsData {
@@ -40,38 +37,6 @@ struct FClassificationData {
   FString Decision;
   FString Reasoning;
   FString Finalize;
-};
-
-struct FDecisionActionTypes {
-  FString Move;
-  FString Interact;
-  FString Speak;
-};
-
-struct FDecisionGoalData {
-  FString Prefix;
-  FString MemoryPrefix;
-  FString MemorySuffix;
-};
-
-struct FDecisionMetadataFields {
-  FString Source;
-  FString Context;
-  FString NpcState;
-  FString Memories;
-  FString RecentInteractions;
-  FString Role;
-  FString Content;
-};
-
-struct FDecisionData {
-  TArray<FString> MoveVerbs;
-  TArray<FString> InteractVerbs;
-  TArray<FString> StopWords;
-  FDecisionActionTypes ActionTypes;
-  FDecisionGoalData Goal;
-  FString MetadataSource;
-  FDecisionMetadataFields MetadataFields;
 };
 
 struct FRoleData {
@@ -99,13 +64,11 @@ struct FDebugData {
 };
 
 struct FProtocolData {
-  FHistoryData History;
   FIterationData Iteration;
   FRuntimeTypes RuntimeTypes;
   FErrorMessages Errors;
   FLimitsData Limits;
   FClassificationData Classifications;
-  FDecisionData Decision;
   FRoleData Roles;
   FTextData Text;
   FFormatData Formats;

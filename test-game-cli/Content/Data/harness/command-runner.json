@@ -4,7 +4,6 @@
     "commandSeparator": "_",
     "textOption": "--text",
     "sdkRootCommand": "forbocai",
-    "testGameRootCommand": "forbocai-test-game-cli",
     "invalidCommandMessage": "Not a forbocai command"
   },
   "commands": {
@@ -15,8 +14,7 @@
     "npcCreate": "npc_create",
     "ghostRun": "ghost_run",
     "soulExport": "soul_export",
-    "soulImport": "soul_import",
-    "contract": "contract"
+    "soulImport": "soul_import"
   },
   "aliases": {
     "ghostSession": "ghost-session",
@@ -26,11 +24,9 @@
     "rootTokenCount": 1,
     "domainTokenCount": 2,
     "commandTokenCount": 3,
-    "testGameCommandTokenCount": 2,
     "firstTokenIndex": 0,
     "domainTokenIndex": 1,
     "actionTokenIndex": 2,
-    "testGameCommandTokenIndex": 1,
     "argumentStartIndex": 3,
     "firstArgumentIndex": 0,
     "nextIndex": 1
@@ -45,6 +41,8 @@
     "missingCapturedValueFails": "Missing captured value converts success into failure",
     "requiredLiteralPreservesSuccess": "Required literal evidence preserves success",
     "missingLiteralFails": "Missing literal evidence converts success into failure",
+    "absentForbiddenLiteralPreservesSuccess": "Absent forbidden literal preserves success",
+    "presentForbiddenLiteralFails": "Present forbidden literal converts success into failure",
     "missingAliasFails": "Missing alias converts success into failure",
     "unresolvedIdentifierRejected": "Unresolved generated identifiers are rejected before dispatch",
     "capturedIdentifierDispatchable": "Captured generated identifiers are dispatchable"

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Core/rtk.hpp"
 #include "TestGame/Features/Systems/Harness/Scenario/ScenarioTypes.h"
 
 namespace TestGame {
@@ -28,27 +27,6 @@ namespace Contract {
   X(ghostSessionAlias)                                                   \
   X(soulTransactionAlias)
 
-struct FContractAuthorizationData {
-  FString Header;
-  FString Template;
-};
-
-struct FContractRequestData {
-  FString Path;
-  FString Method;
-};
-
-struct FContractSeparatorData {
-  FString TrailingUrl;
-};
-
-struct FContractApiData {
-  FString ReducerPath;
-  FString TagType;
-  FString EndpointName;
-  FString TagId;
-};
-
 struct FContractSchemaData {
 #define FORBOCAI_DECLARE_CONTRACT_SCHEMA_FIELD(Name) FString Name;
   FORBOCAI_CONTRACT_SCHEMA_FIELDS(FORBOCAI_DECLARE_CONTRACT_SCHEMA_FIELD)
@@ -56,17 +34,7 @@ struct FContractSchemaData {
 };
 
 struct FContractData {
-  FString DefaultApiUrl;
-  FContractApiData Api;
-  FContractAuthorizationData Authorization;
-  FContractRequestData Request;
-  FContractSeparatorData Separators;
   FContractSchemaData Schema;
-};
-
-struct FTestGameContractRequest {
-  rtk::FetchArgs Args;
-  TMap<FString, FString> Headers;
 };
 
 struct FContractAliasRules {
@@ -82,12 +50,6 @@ struct FContractResponse {
   FContractAliasRules AliasRules;
   TArray<FScenarioStep> Scenarios;
   bool bValid{};
-};
-
-struct FContractQueryResult {
-  bool bSuccess{};
-  FString Body;
-  FString Error;
 };
 
 } // namespace Contract

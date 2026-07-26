@@ -8,7 +8,6 @@
   X(FString, commandSeparator)                                             \
   X(FString, textOption)                                                   \
   X(FString, sdkRootCommand)                                               \
-  X(FString, testGameRootCommand)                                          \
   X(FString, invalidCommandMessage)
 
 #define FORBOCAI_COMMAND_RUNNER_COMMAND_FIELDS(X)                          \
@@ -19,8 +18,7 @@
   X(FString, npcCreate)                                                    \
   X(FString, ghostRun)                                                     \
   X(FString, soulExport)                                                   \
-  X(FString, soulImport)                                                   \
-  X(FString, contract)
+  X(FString, soulImport)
 
 #define FORBOCAI_COMMAND_RUNNER_ALIAS_FIELDS(X)                            \
   X(FString, ghostSession)                                                 \
@@ -30,11 +28,9 @@
   X(int32, rootTokenCount)                                                 \
   X(int32, domainTokenCount)                                               \
   X(int32, commandTokenCount)                                              \
-  X(int32, testGameCommandTokenCount)                                      \
   X(int32, firstTokenIndex)                                                \
   X(int32, domainTokenIndex)                                               \
   X(int32, actionTokenIndex)                                               \
-  X(int32, testGameCommandTokenIndex)                                      \
   X(int32, argumentStartIndex)                                             \
   X(int32, firstArgumentIndex)                                             \
   X(int32, nextIndex)
@@ -49,6 +45,8 @@
   X(FString, missingCapturedValueFails)                                    \
   X(FString, requiredLiteralPreservesSuccess)                              \
   X(FString, missingLiteralFails)                                          \
+  X(FString, absentForbiddenLiteralPreservesSuccess)                       \
+  X(FString, presentForbiddenLiteralFails)                                 \
   X(FString, missingAliasFails)                                            \
   X(FString, unresolvedIdentifierRejected)                                 \
   X(FString, capturedIdentifierDispatchable)

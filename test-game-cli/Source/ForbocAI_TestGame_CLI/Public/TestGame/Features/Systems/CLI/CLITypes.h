@@ -10,9 +10,6 @@
   X(int32, valueOffset)                                                   \
   X(int32, pairOffset)
 
-#define FORBOCAI_CLI_COMMAND_FIELDS(X)                                   \
-  X(FString, contract)
-
 #define FORBOCAI_CLI_EXIT_CODE_FIELDS(X)                                 \
   X(int32, success)                                                       \
   X(int32, failure)                                                       \
@@ -24,10 +21,6 @@ namespace TestGame::CLI {
 
 struct FCliArgvData {
   FORBOCAI_CLI_ARGV_FIELDS(FORBOCAI_DECLARE_CLI_FIELD)
-};
-
-struct FCliCommandData {
-  FORBOCAI_CLI_COMMAND_FIELDS(FORBOCAI_DECLARE_CLI_FIELD)
 };
 
 struct FCliExitCodeData {
@@ -46,7 +39,6 @@ struct FCliFlagData {
 
 struct FCliRuntimeData {
   FCliArgvData argv;
-  FCliCommandData commands;
   FCliExitCodeData exitCodes;
   FCliFlagData flags;
 };

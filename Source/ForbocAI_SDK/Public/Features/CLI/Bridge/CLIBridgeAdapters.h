@@ -52,7 +52,6 @@ inline FCLIBridgeState readCliBridgeState() {
        DataAdapters::ReadStringField(Messages, TEXT("actionSeparator")),
        DataAdapters::ReadStringField(Messages, TEXT("validateUsage")),
        DataAdapters::ReadStringField(Messages, TEXT("validation")),
-       DataAdapters::ReadStringField(Messages, TEXT("valid")),
        DataAdapters::ReadStringField(Messages, TEXT("pass")),
        DataAdapters::ReadStringField(Messages, TEXT("fail")),
        DataAdapters::ReadStringField(Messages, TEXT("reason")),

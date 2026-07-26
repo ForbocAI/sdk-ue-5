@@ -181,7 +181,7 @@ inline TArray<FQualityRegression> metricRegressions(
 }
 
 /**
- * User Story: As a player-experience reviewer, I need mean latency compared against the compatible accepted baseline.
+ * User Story: As a player-experience reviewer, I need latency regression require both a relative slowdown and host-sized absolute evidence so transport jitter cannot create a false failure.
  * @fn inline TArray<FQualityRegression> latencyRegression( double MeanLatencyMs, const FQualityState &State, const FString &Status)
  */
 inline TArray<FQualityRegression> latencyRegression(
@@ -196,10 +196,15 @@ inline TArray<FQualityRegression> latencyRegression(
                    State.Baseline.value.Summary.MeanLatencyMs,
                    MeanLatencyMs,
                    MeanLatencyMs >
-                       State.Baseline.value.Summary.MeanLatencyMs *
-                           (qualityData().Numbers.SingularCount +
-                            qualityData()
-                                .Numbers.LatencyRegressionToleranceRatio)}};
+                           State.Baseline.value.Summary.MeanLatencyMs *
+                               (qualityData().Numbers.SingularCount +
+                                qualityData()
+                                    .Numbers.LatencyRegressionToleranceRatio) &&
+                       MeanLatencyMs -
+                               State.Baseline.value.Summary.MeanLatencyMs >
+                           qualityData()
+                               .Hosts.FindChecked(State.Host)
+                               .OverheadBudgetMs}};
 }
 
 } // namespace QualitySelectorsDetail

@@ -89,6 +89,7 @@ inline FCLICommandRoles ReadCommandRoles(
       DataAdapters::ReadStringField(Roles, TEXT("version")),
       DataAdapters::ReadStringField(Roles, TEXT("doctor")),
       DataAdapters::ReadStringField(Roles, TEXT("status")),
+      DataAdapters::ReadStringField(Roles, TEXT("contract")),
       DataAdapters::ReadStringField(Roles, TEXT("setup")),
       DataAdapters::ReadStringField(Roles, TEXT("setupCheck")),
       DataAdapters::ReadStringField(Roles, TEXT("configSet")),

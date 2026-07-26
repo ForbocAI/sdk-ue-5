@@ -1,6 +1,7 @@
 #include "CLI/CLIModule.h"
 #include "CLI/CliHandlers.h"
 #include "Features/CLI/Presentation/PresentationSelectors.h"
+#include "Features/CLI/Config/ConfigThunks.h"
 #include "Store.h"
 #include <exception>
 
@@ -14,6 +15,11 @@ rtk::EnhancedStore<FRuntimeState> &GetStore() {
 }
 
 } // namespace
+
+/** User Story: As an embedded CLI host, I need invocation overrides delegated to the SDK config thunk and root store. @fn void ConfigureInvocation(const FString &ApiUrl, const FString &ApiKey) */
+void ConfigureInvocation(const FString &ApiUrl, const FString &ApiKey) {
+  Ops::hydrateRuntimeConfig(GetStore(), {ApiUrl, ApiKey});
+}
 
 /** User Story: As a cli consumer, I need to invoke dispatch command through a stable signature so the cli workflow remains explicit and composable. @fn func::TestResult<void> DispatchCommand(const FString &CommandKey, const TArray<FString> &Args) */
 func::TestResult<void> DispatchCommand(const FString &CommandKey,

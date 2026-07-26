@@ -18,7 +18,8 @@
 
 #define FORBOCAI_GAME_MODE_FIELDS(X)                                      \
   X(manual)                                                               \
-  X(autoplay)
+  X(autoplay)                                                             \
+  X(chat)
 
 #define FORBOCAI_GAME_SCENARIO_EVENT_TYPE_FIELDS(X)                       \
   X(stealth)                                                              \
@@ -51,7 +52,8 @@
 
 #define FORBOCAI_GAME_OUTPUT_ASSERTION_KIND_FIELDS(X)                     \
   X(includesAlias)                                                        \
-  X(includesText)
+  X(includesText)                                                         \
+  X(excludesText)
 
 #define FORBOCAI_GAME_LIFECYCLE_EVENT_FIELDS(X)                           \
   X(sessionStarted)                                                       \
@@ -76,6 +78,7 @@
   X(FString, contractFailed)                                              \
   X(FString, outputAssertionAliasMissing)                                 \
   X(FString, outputAssertionValueMissing)                                 \
+  X(FString, outputAssertionValuePresent)                                 \
   X(FString, outputAssertionKindUnsupported)                              \
   X(FString, outputAssertionFailure)                                      \
   X(FString, commandAliasUnavailable)

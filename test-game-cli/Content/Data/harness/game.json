@@ -5,7 +5,7 @@
   },
   "contractCommand": {
     "group": "contract",
-    "command": "forbocai-test-game-cli contract",
+    "command": "forbocai contract",
     "expectedRoutes": ["GET /test-game/contract"],
     "outputAssertions": []
   },

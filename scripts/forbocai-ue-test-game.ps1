@@ -58,6 +58,11 @@ $SuccessMarker = if ($CliArgs.Count -gt 0 -and $CliArgs[0] -in @("contract", "--
 } else {
     "CLI coverage complete."
 }
+$LogPath = if ($env:FORBOCAI_TEST_GAME_LOG_PATH) {
+    $env:FORBOCAI_TEST_GAME_LOG_PATH
+} else {
+    Join-Path $Root "output\test-game-cli\last.log"
+}
 
-Invoke-ForbocCommandlet -Executable $EditorCmd -Arguments $CommandletArgs -SuccessMarker $SuccessMarker
+Invoke-ForbocCommandlet -Executable $EditorCmd -Arguments $CommandletArgs -SuccessMarker $SuccessMarker -LogPath $LogPath
 exit 0
