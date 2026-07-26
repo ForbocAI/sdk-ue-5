@@ -24,6 +24,8 @@ struct FApiFixture {
   FString RejectedActionType;
   FString SerializedQueryKey;
   FString RetryFailureMessage;
+  FString HttpErrorBody;
+  int32 HttpErrorStatus;
   int32 EndpointResult;
   int32 PendingEventIndex;
   int32 TerminalEventIndex;
@@ -99,6 +101,7 @@ struct FToolkitSurfaceLabels {
   FString ApiFailurePending;
   FString ApiFailureRejected;
   FString ApiSerializedArgs;
+  FString ApiHttpErrorBody;
   FString ApiRetryAttempts;
   FString ApiRetryResult;
   FString PreparedPayload;

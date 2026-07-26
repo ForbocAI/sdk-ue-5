@@ -113,9 +113,10 @@ inline bool applyBody(IHttpRequest &Request, const FetchArgs &Args) {
 inline bool applyTimeout(IHttpRequest &Request, const FetchArgs &Args,
                          const FetchBaseQueryArgs &Options) {
   const int32 Timeout = Args.timeout > 0 ? Args.timeout : Options.timeout;
+  const float TimeoutSeconds = static_cast<float>(Timeout) / 1000.0f;
   return Timeout > 0
-             ? (Request.SetTimeout(static_cast<float>(Timeout) / 1000.0f),
-                true)
+             ? (Request.SetTimeout(TimeoutSeconds),
+                Request.SetActivityTimeout(TimeoutSeconds), true)
              : true;
 }
 

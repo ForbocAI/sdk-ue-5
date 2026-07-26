@@ -135,7 +135,9 @@ inline FEndpointConfigurationData readEndpointConfigurationData() {
       {DataAdapters::ReadNumberField(Defaults, TEXT("ghostHistoryLimit")),
        DataAdapters::ReadNumberField(Defaults, TEXT("soulListLimit"))},
       {DataAdapters::ReadNumberField(Timeouts, TEXT("statusMs")),
-       DataAdapters::ReadNumberField(Timeouts, TEXT("contractMs"))}};
+       DataAdapters::ReadNumberField(Timeouts, TEXT("contractMs")),
+       DataAdapters::ReadNumberField(Timeouts, TEXT("npcProcessMs")),
+       DataAdapters::ReadNumberField(Timeouts, TEXT("npcConversationMs"))}};
 }
 
 /**

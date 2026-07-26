@@ -129,6 +129,8 @@ struct FEndpointDefaultData {
 struct FEndpointTimeoutData {
   int32 StatusMs;
   int32 ContractMs;
+  int32 NpcProcessMs;
+  int32 NpcConversationMs;
 };
 
 struct FEndpointConfigurationData {

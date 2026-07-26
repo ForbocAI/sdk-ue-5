@@ -14,7 +14,8 @@ inline Thunk<FNPCConversationResponse> postNpcConversation() {
       Data.Names.PostNpcConversation,
       Configuration::endpointPath(
           {Data.Segments.Npcs, Data.Segments.Conversation}),
-      Detail::DecodeNpcConversationResponse);
+      Detail::DecodeNpcConversationResponse, TArray<FApiEndpointTag>(),
+      Data.Timeouts.NpcConversationMs);
 }
 
 /** User Story: As a api endpoints npc consumer, I need to invoke post npc process through a stable signature so the api endpoints npc workflow remains explicit and composable. @fn inline Thunk<FNPCProcessResponse> postNpcProcess(const FString &NpcId, const FNPCProcessRequest &Request) */
@@ -28,7 +29,8 @@ postNpcProcess(const FString &NpcId, const FNPCProcessRequest &Request) {
       Configuration::endpointPath(
           {Data.Segments.Npcs, NpcId, Data.Segments.Process}),
       Request, Detail::EncodeNpcProcessRequest,
-      Detail::DecodeNpcProcessResponse, Invalidates);
+      Detail::DecodeNpcProcessResponse, Invalidates,
+      Data.Timeouts.NpcProcessMs);
 }
 
 } // namespace Endpoints

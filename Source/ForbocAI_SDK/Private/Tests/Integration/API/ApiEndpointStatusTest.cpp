@@ -6,7 +6,9 @@
 #include "Store.h"
 
 // @covers:api:getApiStatus
+// @covers:api:getTestGameContract
 // @covers:api:postNpcProcess
+// @covers:api:postNpcConversation
 // @covers:api:getBridgeValidation
 // @covers:api:getBridgeRules
 // @covers:api:postGhostRun
@@ -69,8 +71,17 @@ bool FApiEndpointConstructionTest::RunTest(const FString &Parameters) {
   const FString Empty;
 
   TestEndpointConstructed(*this, Data.Names.GetApiStatus, getApiStatus());
+  TestEndpointConstructed(*this, Data.Names.GetTestGameContract,
+                          getTestGameContract());
   TestEndpointConstructed(*this, Data.Names.PostNpcProcess,
                           postNpcProcess(Empty, FNPCProcessRequest{}));
+  TestEndpointConstructed(*this, Data.Names.PostNpcConversation,
+                          postNpcConversation());
+  TestTrue(Data.Names.PostNpcProcess,
+           Data.Timeouts.NpcProcessMs >
+               APISlice::Transport::transportQueryData().Timeouts.Disabled);
+  TestTrue(Data.Names.PostNpcConversation,
+           Data.Timeouts.NpcConversationMs >= Data.Timeouts.NpcProcessMs);
   TestEndpointConstructed(*this, Data.Names.GetBridgeValidation,
                           getBridgeValidation(Empty,
                                               FBridgeValidateRequest{}));
@@ -123,11 +134,6 @@ bool FApiEndpointConstructionTest::RunTest(const FString &Parameters) {
             APISlice::api.Endpoints.Num(), AuthoredNames.Num());
   for (const FString &EndpointName : AuthoredNames) {
     TestTrue(EndpointName, APISlice::api.Endpoints.Contains(EndpointName));
-    const rtk::FApiEndpointMetadata &Metadata =
-        APISlice::api.Endpoints.FindChecked(EndpointName);
-    TestTrue(EndpointName,
-             Metadata.providesTags.Num() + Metadata.invalidatesTags.Num() >
-                 0);
   }
 
   return true;

@@ -111,6 +111,8 @@
   },
   "timeouts": {
     "statusMs": 1500,
-    "contractMs": 5000
+    "contractMs": 5000,
+    "npcProcessMs": 90000,
+    "npcConversationMs": 300000
   }
 }

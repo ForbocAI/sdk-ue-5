@@ -133,6 +133,17 @@ bool FRtkApiTest::RunTest(const FString &Parameters) {
             EventLog[ApiFixture.TerminalEventIndex],
             ApiFixture.RejectedActionType);
 
+  FString HttpErrorMessage;
+  unwrapEndpointResult<int32>(QueryReturnValue<int32>::failure(
+      FetchBaseQueryError::httpError(ApiFixture.HttpErrorStatus,
+                                     ApiFixture.HttpErrorBody)))
+      .catch_([&HttpErrorMessage](std::string Error) {
+        HttpErrorMessage = UTF8_TO_TCHAR(Error.c_str());
+      })
+      .execute();
+  TestEqual(Fixture.Labels.ApiHttpErrorBody, HttpErrorMessage,
+            ApiFixture.HttpErrorBody);
+
   SerializeQueryArgsOptions SerializeOptions;
   SerializeOptions.endpointName = ApiFixture.EndpointName;
   SerializeOptions.queryArgs = ApiFixture.SuccessArgument;

@@ -6,7 +6,7 @@ namespace APISlice::Detail {
 
 /**
  * User Story: As custom API codecs, I need one helper for hand-rolled payloads so endpoints can bypass generic struct serialization when needed.
- * @fn template <typename Request, typename Result> inline ThunkAction<Result, FRuntimeState> MakePostWithCodec( const FString &EndpointName, const FString &Path, const Request &RequestValue, std::function<FString(const Request &)> Encoder, std::function<bool(const FString &, Result &)> Decoder, const TArray<FApiEndpointTag> &Invalidates = TArray<FApiEndpointTag>())
+ * @fn template <typename Request, typename Result> inline ThunkAction<Result, FRuntimeState> MakePostWithCodec( const FString &EndpointName, const FString &Path, const Request &RequestValue, std::function<FString(const Request &)> Encoder, std::function<bool(const FString &, Result &)> Decoder, const TArray<FApiEndpointTag> &Invalidates = TArray<FApiEndpointTag>(), int32 Timeout = Transport::transportQueryData().Timeouts.Disabled)
  */
 template <typename Request, typename Result>
 inline ThunkAction<Result, FRuntimeState> MakePostWithCodec(
@@ -14,17 +14,18 @@ inline ThunkAction<Result, FRuntimeState> MakePostWithCodec(
     const Request &RequestValue,
     std::function<FString(const Request &)> Encoder,
     std::function<bool(const FString &, Result &)> Decoder,
-    const TArray<FApiEndpointTag> &Invalidates = TArray<FApiEndpointTag>()) {
+    const TArray<FApiEndpointTag> &Invalidates = TArray<FApiEndpointTag>(),
+    int32 Timeout = Transport::transportQueryData().Timeouts.Disabled) {
   const Transport::FTransportQueryData &Data =
       Transport::transportQueryData();
   return MakeEndpoint<Request, Result>(
       EndpointName, RequestValue,
-      [Path, Encoder, Decoder, Data](
+      [Path, Encoder, Decoder, Data, Timeout](
           const Request &Arg,
           const rtk::ApiContext<FRuntimeState> &Context) {
         return DecodeQueryReturnValue<Result>(
             ExecuteApiBaseQuery<FString>(Data.Methods.Post, Path, Context,
-                                         Encoder(Arg)),
+                                         Encoder(Arg), Timeout),
             Decoder);
       },
       TArray<FApiEndpointTag>(), Invalidates, rtk::DefinitionType::mutation);
@@ -81,22 +82,24 @@ inline ThunkAction<Result, FRuntimeState> MakeGetWithCodec(
 
 /**
  * User Story: As body-free API mutations, I need custom response decoding without inventing a request payload.
- * @fn template <typename Result> inline ThunkAction<Result, FRuntimeState> MakePostNoBodyWithCodec( const FString &EndpointName, const FString &Path, std::function<bool(const FString &, Result &)> Decoder, const TArray<FApiEndpointTag> &Invalidates = TArray<FApiEndpointTag>())
+ * @fn template <typename Result> inline ThunkAction<Result, FRuntimeState> MakePostNoBodyWithCodec( const FString &EndpointName, const FString &Path, std::function<bool(const FString &, Result &)> Decoder, const TArray<FApiEndpointTag> &Invalidates = TArray<FApiEndpointTag>(), int32 Timeout = Transport::transportQueryData().Timeouts.Disabled)
  */
 template <typename Result>
 inline ThunkAction<Result, FRuntimeState> MakePostNoBodyWithCodec(
     const FString &EndpointName, const FString &Path,
     std::function<bool(const FString &, Result &)> Decoder,
-    const TArray<FApiEndpointTag> &Invalidates = TArray<FApiEndpointTag>()) {
+    const TArray<FApiEndpointTag> &Invalidates = TArray<FApiEndpointTag>(),
+    int32 Timeout = Transport::transportQueryData().Timeouts.Disabled) {
   const Transport::FTransportQueryData &Data =
       Transport::transportQueryData();
   return MakeEndpoint<rtk::FEmptyPayload, Result>(
       EndpointName, rtk::FEmptyPayload{},
-      [Path, Decoder, Data](
+      [Path, Decoder, Data, Timeout](
           const rtk::FEmptyPayload &,
           const rtk::ApiContext<FRuntimeState> &Context) {
         return DecodeQueryReturnValue<Result>(
-            ExecuteApiBaseQuery<FString>(Data.Methods.Post, Path, Context),
+            ExecuteApiBaseQuery<FString>(Data.Methods.Post, Path, Context,
+                                         FString(), Timeout),
             Decoder);
       },
       TArray<FApiEndpointTag>(), Invalidates,

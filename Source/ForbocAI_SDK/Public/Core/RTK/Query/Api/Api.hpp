@@ -78,7 +78,9 @@ unwrapEndpointResult(QueryReturnValue<Result> QueryResult) {
                          QueryResult.error.hasValue
                              ? (!QueryResult.error.value.error.IsEmpty()
                                     ? QueryResult.error.value.error
-                                    : QueryResult.error.value.status)
+                                    : (!QueryResult.error.value.data.IsEmpty()
+                                           ? QueryResult.error.value.data
+                                           : QueryResult.error.value.status))
                              : TEXT("RTK Query endpoint returned no data");
                      Reject(std::string(TCHAR_TO_UTF8(*Error)));
                    });
