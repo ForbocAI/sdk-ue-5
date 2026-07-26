@@ -17,8 +17,12 @@ source "$SCRIPT_DIR/lib/wsl-environment.sh"
 if grep -qi microsoft /proc/version 2>/dev/null; then
   if command -v powershell.exe >/dev/null 2>&1; then
     forbocai_export_wsl_environment
-    powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$(wslpath -w "$SCRIPT_DIR/forbocai-ue-test-game.ps1")" "$@"
-    exit $?
+    powershell_status=0
+    # Avoid a ConPTY cursor-position handshake that non-emulating PTYs cannot answer.
+    powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
+      -File "$(wslpath -w "$SCRIPT_DIR/forbocai-ue-test-game.ps1")" "$@" \
+      </dev/null 2>&1 | cat || powershell_status=${PIPESTATUS[0]}
+    exit "$powershell_status"
   fi
 fi
 
