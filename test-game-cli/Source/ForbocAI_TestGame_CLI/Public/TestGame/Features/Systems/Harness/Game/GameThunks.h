@@ -72,14 +72,22 @@ inline FGameRunResult RunGame(FTestGameStore &Store, FString Mode,
                                 const TArray<FScenarioStep> Steps =
                                     ScenarioSelectors::SelectScenarioSteps(
                                         Store.getState().Scenario);
-                                Mode == GameAdapters::GameRuntimeData()
-                                            .modes.chat
-                                    ? void()
-                                    : GameThunksDetail::ProcessSteps(
-                                          Steps,
-                                          GameAdapters::GameRuntimeData()
-                                              .numbers.emptyCount,
-                                          Store, ProgressSink);
+                                const TArray<FScenarioStep> ActiveSteps =
+                                    Mode == GameAdapters::GameRuntimeData()
+                                                .modes.chat
+                                        ? ScenarioSelectors::
+                                              SelectScenarioStepsByCommandGroup(
+                                                  Store.getState().Scenario,
+                                                  GameAdapters::
+                                                      GameRuntimeData()
+                                                          .commandGroups
+                                                          .npc_conversation)
+                                        : Steps;
+                                GameThunksDetail::ProcessSteps(
+                                    ActiveSteps,
+                                    GameAdapters::GameRuntimeData()
+                                        .numbers.emptyCount,
+                                    Store, ProgressSink);
 
                                 FQualityRunDependencies QualityDependencies;
                                 QualityDependencies.Host =

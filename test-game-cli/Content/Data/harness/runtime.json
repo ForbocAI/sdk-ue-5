@@ -25,6 +25,7 @@
     "status": true,
     "npc_lifecycle": true,
     "npc_process_chat": true,
+    "npc_conversation": true,
     "memory_list": true,
     "memory_recall": true,
     "memory_store": true,

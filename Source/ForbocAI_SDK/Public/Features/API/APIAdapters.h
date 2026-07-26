@@ -4,6 +4,7 @@
 #include "Features/API/Transport/Query/TransportQueryAdapters.h"
 #include "Features/API/Endpoints/Configuration/EndpointsConfigurationAdapters.h"
 #include "Features/API/Endpoints/NPC/Process/NPCProcessAdapters.h"
+#include "Features/API/Endpoints/NPC/Conversation/ConversationAdapters.h"
 #include "Features/API/Endpoints/NPC/Directive/NPCDirectiveAdapters.h"
 #include "Features/API/Endpoints/NPC/EndpointsNPCAdapters.h"
 #include "Features/API/Endpoints/Bridge/EndpointsBridgeAdapters.h"

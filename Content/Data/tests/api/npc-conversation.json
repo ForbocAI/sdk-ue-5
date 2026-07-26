@@ -1,0 +1,76 @@
+{
+  "automationName": "ForbocAI.Core.API.NpcConversationContract",
+  "stories": {
+    "acceptance": "User Story: As a UE SDK consumer, Given a complete API-owned NPC conversation, When the response is decoded, Then every generated field enters the domain atomically",
+    "emptyProfileList": "User Story: As a UE SDK consumer, Given an empty generated profile list, When the response is decoded, Then the malformed participant is rejected",
+    "turnIndex": "User Story: As a UE SDK consumer, Given a turn index below the API minimum, When the response is decoded, Then the malformed turn is rejected",
+    "blankDialogue": "User Story: As a UE SDK consumer, Given whitespace-only generated dialogue, When the response is decoded, Then the malformed turn is rejected",
+    "emptyTranscript": "User Story: As a UE SDK consumer, Given an empty API transcript, When the response is decoded, Then the incomplete response is rejected"
+  },
+  "indices": {
+    "first": 0
+  },
+  "replacements": {
+    "turnIndex": 0,
+    "dialogue": "   "
+  },
+  "response": {
+    "schemaVersion": "1.0.0",
+    "conversationId": "conversation-valid",
+    "valid": true,
+    "participants": [
+      {
+        "slot": "NPC1",
+        "npcId": "npc-one",
+        "name": "Generated One",
+        "role": "generated role one",
+        "traits": ["generated trait one"],
+        "goals": ["generated goal one"],
+        "relationships": ["generated relationship one"],
+        "location": "generated location one",
+        "mood": "generated mood one",
+        "speakingStyle": ["generated style one"],
+        "constraints": ["generated constraint one"]
+      },
+      {
+        "slot": "NPC2",
+        "npcId": "npc-two",
+        "name": "Generated Two",
+        "role": "generated role two",
+        "traits": ["generated trait two"],
+        "goals": ["generated goal two"],
+        "relationships": ["generated relationship two"],
+        "location": "generated location two",
+        "mood": "generated mood two",
+        "speakingStyle": ["generated style two"],
+        "constraints": ["generated constraint two"]
+      }
+    ],
+    "topic": "generated topic",
+    "opening": "generated opening",
+    "turns": [
+      {
+        "index": 1,
+        "speakerSlot": "NPC1",
+        "speakerName": "Generated One",
+        "listenerSlot": "NPC2",
+        "listenerName": "Generated Two",
+        "dialogue": "Generated first turn.",
+        "action": {
+          "type": "SPEAK",
+          "target": "npc-two",
+          "reason": "continue the generated topic",
+          "confidence": 0.9
+        },
+        "valid": true
+      }
+    ],
+    "transcriptLines": [
+      "=== ForbocAI Two NPC Chat ===",
+      "NPC1: Generated One",
+      "NPC2: Generated Two",
+      "Turn 1: Generated first turn.",
+      "=== End ForbocAI Two NPC Chat ==="
+    ]
+  }
+}

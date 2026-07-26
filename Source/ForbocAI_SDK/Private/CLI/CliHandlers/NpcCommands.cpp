@@ -75,6 +75,12 @@ HandlerResult HandleNpc(rtk::EnhancedStore<FRuntimeState> &Store,
                                              Response.Action.Type));
                         return just(NpcSuccess(Dialogue));
                       }())
+         : CommandKey == Roles.NpcConverse
+             ? [&]() -> HandlerResult {
+                 const FNPCConversationResponse Response =
+                     Ops::converseNpcs(Store);
+                 return just(NpcSuccess(Response.RawJson));
+               }()
          : CommandKey == Roles.NpcState
              ? [&]() -> HandlerResult {
                  const func::Maybe<FNPCInternalState> Target =

@@ -80,6 +80,30 @@ inline ThunkAction<Result, FRuntimeState> MakeGetWithCodec(
 }
 
 /**
+ * User Story: As body-free API mutations, I need custom response decoding without inventing a request payload.
+ * @fn template <typename Result> inline ThunkAction<Result, FRuntimeState> MakePostNoBodyWithCodec( const FString &EndpointName, const FString &Path, std::function<bool(const FString &, Result &)> Decoder, const TArray<FApiEndpointTag> &Invalidates = TArray<FApiEndpointTag>())
+ */
+template <typename Result>
+inline ThunkAction<Result, FRuntimeState> MakePostNoBodyWithCodec(
+    const FString &EndpointName, const FString &Path,
+    std::function<bool(const FString &, Result &)> Decoder,
+    const TArray<FApiEndpointTag> &Invalidates = TArray<FApiEndpointTag>()) {
+  const Transport::FTransportQueryData &Data =
+      Transport::transportQueryData();
+  return MakeEndpoint<rtk::FEmptyPayload, Result>(
+      EndpointName, rtk::FEmptyPayload{},
+      [Path, Decoder, Data](
+          const rtk::FEmptyPayload &,
+          const rtk::ApiContext<FRuntimeState> &Context) {
+        return DecodeQueryReturnValue<Result>(
+            ExecuteApiBaseQuery<FString>(Data.Methods.Post, Path, Context),
+            Decoder);
+      },
+      TArray<FApiEndpointTag>(), Invalidates,
+      rtk::DefinitionType::mutation);
+}
+
+/**
  * User Story: As raw-payload endpoints, I need a helper that accepts JSON text directly so already-shaped payloads can be posted without double encoding.
  * @fn template <typename Result> inline ThunkAction<Result, FRuntimeState> MakePostRawWithCodec( const FString &EndpointName, const FString &Path, const FString &PayloadJson, std::function<bool(const FString &, Result &)> Decoder, const TArray<FApiEndpointTag> &Invalidates = TArray<FApiEndpointTag>())
  */

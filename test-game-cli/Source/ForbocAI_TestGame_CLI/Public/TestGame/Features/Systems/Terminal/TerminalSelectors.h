@@ -6,6 +6,7 @@
 #include "TestGame/Features/Systems/Harness/Game/GameTypes.h"
 #include "TestGame/Features/Systems/Terminal/TerminalAdapters.h"
 #include "TestGame/Features/Systems/Terminal/Chat/TerminalChatSelectors.h"
+#include "TestGame/Features/Systems/Terminal/Conversation/ConversationSelectors.h"
 #include "TestGame/Features/Systems/Terminal/Quality/TerminalQualitySelectors.h"
 
 namespace TestGame {
@@ -217,6 +218,10 @@ SelectTerminalProgressViewModel(const FGameProgress &Progress) {
          ViewModel.Lines.Append(
              TerminalChatSelectors::SelectChatTranscriptViewModel(
                  Progress.RunResult.QualityReport)),
+         ViewModel.Lines.Append(
+             ConversationSelectors::
+                 SelectConversationTranscriptViewModel(
+                     Progress.RunResult.Transcript)),
          void())
       : void();
   return ViewModel;

@@ -99,6 +99,7 @@ inline FCLICommandRoles ReadCommandRoles(
       DataAdapters::ReadStringField(Roles, TEXT("npcState")),
       DataAdapters::ReadStringField(Roles, TEXT("npcUpdate")),
       DataAdapters::ReadStringField(Roles, TEXT("npcProcess")),
+      DataAdapters::ReadStringField(Roles, TEXT("npcConverse")),
       DataAdapters::ReadStringField(Roles, TEXT("npcChat")),
       DataAdapters::ReadStringField(Roles, TEXT("npcImport")),
       DataAdapters::ReadStringField(Roles, TEXT("soulExport")),

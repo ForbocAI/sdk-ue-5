@@ -3,6 +3,7 @@
 #include "Core/fp.hpp"
 #include "Core/rtk.hpp"
 #include "Features/Async/AsyncAdapters.h"
+#include "Features/API/Endpoints/NPC/NPCApi.h"
 #include "Features/Memory/Local/MemoryLocalThunks.h"
 #include "Features/NPC/NPCActions.h"
 #include "Features/NPC/NPCSelectors.h"
@@ -73,6 +74,14 @@ inline FAgentResponse processNpc(rtk::EnhancedStore<RuntimeState> &Store,
       Store.dispatch(rtk::processNPC(NpcId, Text, TEXT("{}"), TEXT(""),
                                      FAgentState(),
                                      rtk::LocalProtocolHandlerContext(NpcId))));
+}
+
+/** User Story: As the thin UE CLI boundary, I need the API-owned random NPC conversation dispatched through the package root store. @fn template <typename RuntimeState = FRuntimeState> inline FNPCConversationResponse converseNpcs(rtk::EnhancedStore<RuntimeState> &Store) */
+template <typename RuntimeState = FRuntimeState>
+inline FNPCConversationResponse
+converseNpcs(rtk::EnhancedStore<RuntimeState> &Store) {
+  return AsyncAdapters::waitForResult(
+      Store.dispatch(APISlice::Endpoints::postNpcConversation()));
 }
 
 /** User Story: As a features cli npc consumer, I need to invoke import npc from soul through a stable signature so the features cli npc workflow remains explicit and composable. @fn template <typename RuntimeState = FRuntimeState> inline FImportedNpc importNpcFromSoul(rtk::EnhancedStore<RuntimeState> &Store, const FString &TxId) */

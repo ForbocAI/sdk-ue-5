@@ -57,11 +57,13 @@ HandlerResult HandleBridge(rtk::EnhancedStore<FRuntimeState> &Store,
                                   Ops::validateBridgePayload(
                                       Store, Decoded.Action, Decoded.Context,
                                       Decoded.NpcId);
-                              ForbocAI::CLI::Presentation::logCliMessage(
+                              const FString ValidationMessage =
                                   formatCliMessage(
                                       State.Messages.Validation,
                                       Result.bValid ? State.Messages.Pass
-                                                    : State.Messages.Fail));
+                                                    : State.Messages.Fail);
+                              ForbocAI::CLI::Presentation::logCliMessage(
+                                  ValidationMessage);
                               ForbocAI::CLI::Presentation::logCliMessageWhen(
                                   !Result.Reason.IsEmpty(),
                                   formatCliMessage(State.Messages.Reason,
@@ -73,8 +75,7 @@ HandlerResult HandleBridge(rtk::EnhancedStore<FRuntimeState> &Store,
                                       JsonInterop::StringifyObject(
                                           JsonInterop::ActionToObject(
                                               Result.CorrectedAction))));
-                              return just(
-                                  Success(State.Messages.ValidationDone));
+                              return just(Success(ValidationMessage));
                             },
                             [&State]() -> HandlerResult {
                               return just(

@@ -13,13 +13,16 @@ namespace TestGame::GameSelectors {
 /** User Story: As a harness maintainer, I need run completeness derived from root-store coverage, transcript, and active API contract state so no duplicated completion flag can drift. @fn inline FGameRunResult SelectGameRunResult(const FTestGameState &State) */
 inline FGameRunResult SelectGameRunResult(const FTestGameState &State) {
   FGameRunResult Result;
-  Result.MissingGroups =
+  const bool bChatOnly =
       UISelectors::SelectUiMode(State.UI) ==
-              GameAdapters::GameRuntimeData().modes.chat
-          ? TArray<FString>{}
-          : CoverageSelectors::SelectHarnessMissingGroups(
-                State.Harness, ScenarioSelectors::SelectRequiredCommandGroups(
-                                   State.Scenario));
+      GameAdapters::GameRuntimeData().modes.chat;
+  const TArray<FString> RequiredGroups =
+      bChatOnly
+          ? TArray<FString>{GameAdapters::GameRuntimeData()
+                                .commandGroups.npc_conversation}
+          : ScenarioSelectors::SelectRequiredCommandGroups(State.Scenario);
+  Result.MissingGroups = CoverageSelectors::SelectHarnessMissingGroups(
+      State.Harness, RequiredGroups);
   Result.Transcript =
       TranscriptSelectors::SelectTranscriptEntries(State.Transcript);
   Result.TranscriptErrorCount =

@@ -5,7 +5,8 @@
     "commandParsing": "User Story: As a chat-log reader, Given a quoted SDK CLI command, When its text option is decoded, Then the original prompt is preserved",
     "selection": "User Story: As a test-game operator, Given live quality evidence, When the chat transcript is selected, Then the authored generic-NPC turns remain ordered",
     "missingEvidence": "User Story: As a release reviewer, Given incomplete chat evidence, When the final log is selected, Then every absent turn remains visible",
-    "logOrdering": "User Story: As a test-game player, Given a completed run, When terminal output is selected, Then the chat transcript is the final test-game log block"
+    "chatExecution": "User Story: As an NPC interaction verifier, Given API-owned scenario commands, When chat mode selects its work, Then only the two-NPC CLI command remains",
+    "logOrdering": "User Story: As a test-game player, Given a completed run, When terminal output is selected, Then the generic chat is followed by the API-owned two-NPC transcript"
   },
   "samples": [
     {
@@ -47,5 +48,76 @@
   "summary": "test-game summary",
   "tones": {
     "summary": "chrome"
+  },
+  "conversation": {
+    "entry": {
+      "at": "2026-01-01T00:00:00.000Z",
+      "commandGroup": "npc_conversation",
+      "command": "forbocai npc converse",
+      "status": "ok"
+    },
+    "response": {
+      "schemaVersion": "1.0.0",
+      "conversationId": "conversation-test",
+      "valid": true,
+      "participants": [
+        {
+          "slot": "NPC1",
+          "npcId": "npc-generated-one",
+          "name": "Generated One",
+          "role": "generated role one",
+          "traits": ["generated trait one"],
+          "goals": ["generated goal one"],
+          "relationships": ["generated relationship one"],
+          "location": "generated location one",
+          "mood": "generated mood one",
+          "speakingStyle": ["generated style one"],
+          "constraints": ["generated constraint one"]
+        },
+        {
+          "slot": "NPC2",
+          "npcId": "npc-generated-two",
+          "name": "Generated Two",
+          "role": "generated role two",
+          "traits": ["generated trait two"],
+          "goals": ["generated goal two"],
+          "relationships": ["generated relationship two"],
+          "location": "generated location two",
+          "mood": "generated mood two",
+          "speakingStyle": ["generated style two"],
+          "constraints": ["generated constraint two"]
+        }
+      ],
+      "topic": "generated topic",
+      "opening": "generated opening",
+      "turns": [
+        {
+          "index": 1,
+          "speakerSlot": "NPC1",
+          "speakerName": "Generated One",
+          "listenerSlot": "NPC2",
+          "listenerName": "Generated Two",
+          "dialogue": "Generated first turn.",
+          "valid": true
+        },
+        {
+          "index": 2,
+          "speakerSlot": "NPC2",
+          "speakerName": "Generated Two",
+          "listenerSlot": "NPC1",
+          "listenerName": "Generated One",
+          "dialogue": "Generated second turn.",
+          "valid": true
+        }
+      ],
+      "transcriptLines": [
+        "=== ForbocAI Two NPC Chat ===",
+        "NPC1: Generated One",
+        "NPC2: Generated Two",
+        "Turn 1: Generated first turn.",
+        "Turn 2: Generated second turn.",
+        "=== End ForbocAI Two NPC Chat ==="
+      ]
+    }
   }
 }

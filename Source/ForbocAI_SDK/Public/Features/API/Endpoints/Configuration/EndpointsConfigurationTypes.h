@@ -22,6 +22,7 @@ struct FEndpointSegmentData {
   FString History;
   FString Npcs;
   FString Process;
+  FString Conversation;
   FString Presets;
   FString Soul;
   FString Export;
@@ -39,6 +40,7 @@ struct FEndpointQueryKeyData {
 struct FEndpointNameData {
   FString GetApiStatus;
   FString PostNpcProcess;
+  FString PostNpcConversation;
   FString GetBridgeValidation;
   FString GetBridgeRules;
   FString PostGhostRun;

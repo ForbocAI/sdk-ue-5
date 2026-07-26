@@ -31,6 +31,7 @@
   X(status)                                                               \
   X(npc_lifecycle)                                                        \
   X(npc_process_chat)                                                     \
+  X(npc_conversation)                                                     \
   X(memory_list)                                                          \
   X(memory_recall)                                                        \
   X(memory_store)                                                         \

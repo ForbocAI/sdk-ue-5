@@ -1,7 +1,9 @@
+#include "Core/JsonInterop.h"
 #include "Misc/AutomationTest.h"
 #include "TestGame/Features/Data/DataAdapters.h"
 #include "TestGame/Features/Systems/Chat/SystemsChatSelectors.h"
 #include "TestGame/Features/Systems/Harness/Game/GameAdapters.h"
+#include "TestGame/Features/Systems/Harness/Scenario/ScenarioSelectors.h"
 #include "TestGame/Features/Systems/Quality/QualityAdapters.h"
 #include "TestGame/Features/Systems/Terminal/Chat/TerminalChatSelectors.h"
 #include "TestGame/Features/Systems/Terminal/TerminalSelectors.h"
@@ -22,7 +24,17 @@ struct FChatTestStories {
   FString CommandParsing;
   FString Selection;
   FString MissingEvidence;
+  FString ChatExecution;
   FString LogOrdering;
+};
+
+struct FChatConversationTestData {
+  FString At;
+  FString CommandGroup;
+  FString Command;
+  FString Status;
+  FString ResponseJson;
+  TArray<FString> TranscriptLines;
 };
 
 struct FChatTestData {
@@ -30,34 +42,66 @@ struct FChatTestData {
   FChatTestStories Stories;
   TArray<FChatTestSample> Samples;
   FString Summary;
+  FChatConversationTestData Conversation;
 };
 
 /** User Story: As a UE chat test, I need authored transcript examples decoded independently from production selectors. @fn const FChatTestData &chatTestData() */
 const FChatTestData &chatTestData() {
   static const FChatTestData Data = []() {
     const TSharedRef<FJsonObject> Root =
-        DataAdapters::SettingsSource(TEXT("tests/chat.json")).Root;
+        TestGame::DataAdapters::SettingsSource(TEXT("tests/chat.json")).Root;
     const TSharedRef<FJsonObject> Stories =
-        DataAdapters::ReadObjectField(Root, TEXT("stories"));
+        TestGame::DataAdapters::ReadObjectField(Root, TEXT("stories"));
+    const TSharedRef<FJsonObject> Conversation =
+        TestGame::DataAdapters::ReadObjectField(Root, TEXT("conversation"));
+    const TSharedRef<FJsonObject> ConversationEntry =
+        TestGame::DataAdapters::ReadObjectField(Conversation, TEXT("entry"));
+    const TSharedRef<FJsonObject> ConversationResponse =
+        TestGame::DataAdapters::ReadObjectField(Conversation,
+                                                TEXT("response"));
     return FChatTestData{
-        DataAdapters::ReadStringField(Root, TEXT("automationName")),
-        {DataAdapters::ReadStringField(Stories, TEXT("commandParsing")),
-         DataAdapters::ReadStringField(Stories, TEXT("selection")),
-         DataAdapters::ReadStringField(Stories, TEXT("missingEvidence")),
-         DataAdapters::ReadStringField(Stories, TEXT("logOrdering"))},
+        TestGame::DataAdapters::ReadStringField(Root,
+                                                TEXT("automationName")),
+        {TestGame::DataAdapters::ReadStringField(
+             Stories, TEXT("commandParsing")),
+         TestGame::DataAdapters::ReadStringField(Stories,
+                                                 TEXT("selection")),
+         TestGame::DataAdapters::ReadStringField(
+             Stories, TEXT("missingEvidence")),
+         TestGame::DataAdapters::ReadStringField(Stories,
+                                                 TEXT("chatExecution")),
+         TestGame::DataAdapters::ReadStringField(Stories,
+                                                 TEXT("logOrdering"))},
         func::map_array<TSharedPtr<FJsonValue>, FChatTestSample>(
-            DataAdapters::ReadObjectArrayField(Root, TEXT("samples")),
+            TestGame::DataAdapters::ReadObjectArrayField(
+                Root, TEXT("samples")),
             [](const TSharedPtr<FJsonValue> &Value) {
               const TSharedRef<FJsonObject> Object =
                   Value->AsObject().ToSharedRef();
               return FChatTestSample{
-                  DataAdapters::ReadStringField(Object, TEXT("id")),
-                  DataAdapters::ReadStringField(Object, TEXT("command")),
-                  DataAdapters::ReadStringField(Object, TEXT("prompt")),
-                  DataAdapters::ReadStringField(Object, TEXT("response")),
-                  DataAdapters::ReadDoubleField(Object, TEXT("durationMs"))};
+                  TestGame::DataAdapters::ReadStringField(Object,
+                                                          TEXT("id")),
+                  TestGame::DataAdapters::ReadStringField(
+                      Object, TEXT("command")),
+                  TestGame::DataAdapters::ReadStringField(
+                      Object, TEXT("prompt")),
+                  TestGame::DataAdapters::ReadStringField(
+                      Object, TEXT("response")),
+                  TestGame::DataAdapters::ReadDoubleField(
+                      Object, TEXT("durationMs"))};
             }),
-        DataAdapters::ReadStringField(Root, TEXT("summary"))};
+        TestGame::DataAdapters::ReadStringField(Root, TEXT("summary")),
+        {TestGame::DataAdapters::ReadStringField(ConversationEntry,
+                                                 TEXT("at")),
+         TestGame::DataAdapters::ReadStringField(
+             ConversationEntry, TEXT("commandGroup")),
+         TestGame::DataAdapters::ReadStringField(ConversationEntry,
+                                                 TEXT("command")),
+         TestGame::DataAdapters::ReadStringField(ConversationEntry,
+                                                 TEXT("status")),
+         JsonInterop::StringifyObject(ConversationResponse),
+         TestGame::DataAdapters::ReadStringArrayField(
+             ConversationResponse, TEXT("transcriptLines"))}};
   }();
   return Data;
 }
@@ -155,12 +199,44 @@ bool FTestGameChatTranscriptSelectorsTest::RunTest(
            Missing[Runtime.Numbers.NextIndex].Text.Contains(
                Runtime.ProbeIds[Runtime.Numbers.InitialIndex]));
 
+  FCommandSpec OtherCommand;
+  OtherCommand.Group = GameAdapters::GameRuntimeData().commandGroups.status;
+  OtherCommand.Command =
+      TestData.Samples[Runtime.Numbers.InitialIndex].Command;
+  FCommandSpec ConversationCommand;
+  ConversationCommand.Group = TestData.Conversation.CommandGroup;
+  ConversationCommand.Command = TestData.Conversation.Command;
+  FScenarioStep FocusedStep;
+  FocusedStep.Commands = {OtherCommand, ConversationCommand};
+  FScenarioSliceState FocusedScenario;
+  FocusedScenario.Steps.Add(MoveTemp(FocusedStep));
+  const TArray<FScenarioStep> ConversationSteps =
+      ScenarioSelectors::SelectScenarioStepsByCommandGroup(
+          FocusedScenario, TestData.Conversation.CommandGroup);
+  TestEqual(*TestData.Stories.ChatExecution, ConversationSteps.Num(),
+            Runtime.Numbers.NextIndex);
+  TestEqual(*TestData.Stories.ChatExecution,
+            ConversationSteps[Runtime.Numbers.InitialIndex].Commands.Num(),
+            Runtime.Numbers.NextIndex);
+  TestEqual(*TestData.Stories.ChatExecution,
+            ConversationSteps[Runtime.Numbers.InitialIndex]
+                .Commands[Runtime.Numbers.InitialIndex]
+                .Command,
+            TestData.Conversation.Command);
+
   FGameProgress Progress;
   Progress.Type = GameAdapters::GameRuntimeData()
                       .lifecycleEvents.sessionCompleted;
   Progress.RunResult.QualityReport = Evidence;
   Progress.RunResult.Summary = TestData.Summary;
   Progress.RunResult.bComplete = true;
+  FTranscriptEntry ConversationEntry;
+  ConversationEntry.CommandGroup = TestData.Conversation.CommandGroup;
+  ConversationEntry.Command = TestData.Conversation.Command;
+  ConversationEntry.Status = TestData.Conversation.Status;
+  ConversationEntry.Output = TestData.Conversation.ResponseJson;
+  ConversationEntry.Timestamp = TestData.Conversation.At;
+  Progress.RunResult.Transcript.Add(MoveTemp(ConversationEntry));
   const FTerminalProgressViewModel ViewModel =
       SelectTerminalProgressViewModel(Progress);
   const int32 SummaryIndex = ViewModel.Lines.IndexOfByPredicate(
@@ -171,8 +247,19 @@ bool FTestGameChatTranscriptSelectorsTest::RunTest(
       [&Runtime](const FTerminalLineViewModel &Line) {
         return Line.Text == Runtime.Output.Heading;
       });
+  const int32 FooterIndex = ViewModel.Lines.IndexOfByPredicate(
+      [&Runtime](const FTerminalLineViewModel &Line) {
+        return Line.Text == Runtime.Output.Footer;
+      });
+  const int32 ConversationHeadingIndex = ViewModel.Lines.IndexOfByPredicate(
+      [&TestData, &Runtime](const FTerminalLineViewModel &Line) {
+        return Line.Text == TestData.Conversation.TranscriptLines[
+                                Runtime.Numbers.InitialIndex];
+      });
   TestTrue(*TestData.Stories.LogOrdering, HeadingIndex > SummaryIndex);
+  TestTrue(*TestData.Stories.LogOrdering,
+           ConversationHeadingIndex > FooterIndex);
   TestEqual(*TestData.Stories.LogOrdering, ViewModel.Lines.Last().Text,
-            Runtime.Output.Footer);
+            TestData.Conversation.TranscriptLines.Last());
   return true;
 }

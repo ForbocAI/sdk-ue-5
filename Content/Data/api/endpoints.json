@@ -16,6 +16,7 @@
     "history": "history",
     "npcs": "npcs",
     "process": "process",
+    "conversation": "conversation",
     "presets": "presets",
     "soul": "soul",
     "export": "export",
@@ -31,6 +32,7 @@
   "names": {
     "getApiStatus": "getApiStatus",
     "postNpcProcess": "postNpcProcess",
+    "postNpcConversation": "postNpcConversation",
     "getBridgeValidation": "getBridgeValidation",
     "getBridgeRules": "getBridgeRules",
     "postGhostRun": "postGhostRun",

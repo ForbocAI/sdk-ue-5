@@ -1,5 +1,6 @@
 #include "Misc/AutomationTest.h"
 #include "TestGame/Features/Components/Inventory/InventorySelectors.h"
+#include "TestGame/Features/Systems/Harness/Coverage/CoverageActions.h"
 #include "TestGame/Features/Systems/Harness/Verification/VerificationAdapters.h"
 #include "TestGame/Features/Systems/Harness/Game/GameSelectors.h"
 #include "TestGame/Features/Systems/Harness/Scenario/ScenarioActions.h"
@@ -74,6 +75,17 @@ bool FTestGameStoreDomainSelectorsTest::RunTest(const FString &Parameters) {
   Store.dispatch(ScenarioActions::setContract(MoveTemp(ChatContract)));
   Store.dispatch(UIActions::setMode(
       GameAdapters::GameRuntimeData().modes.chat));
+  const FGameRunResult MissingConversationResult =
+      GameSelectors::SelectGameRunResult(Store.getState());
+  TestEqual(Data.stories.store,
+            MissingConversationResult.MissingGroups.Num(),
+            GameAdapters::GameRuntimeData().numbers.nextIndex);
+  TestEqual(Data.stories.store,
+            MissingConversationResult.MissingGroups[
+                GameAdapters::GameRuntimeData().numbers.emptyCount],
+            GameAdapters::GameRuntimeData().commandGroups.npc_conversation);
+  Store.dispatch(CoverageActions::markCovered(
+      GameAdapters::GameRuntimeData().commandGroups.npc_conversation));
   const FGameRunResult ChatResult =
       GameSelectors::SelectGameRunResult(Store.getState());
   TestEqual(Data.stories.store, ChatResult.MissingGroups.Num(),
