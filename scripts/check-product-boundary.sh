@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # check-product-boundary.sh
-# Audits the UE SDK for game-specific terminology outside the separate test-game module.
+# Audits the UE SDK for game-specific terminology outside the separate micro-game module.
 #
 # The SDK module should be game-agnostic. Scenario-specific language belongs in
-# the separate test-game-cli/Source/ForbocAI_TestGame_CLI module.
+# the separate micro-game-cli/Source/ForbocAI_MicroGame_CLI module.
 #
-# This script checks all non-TestGame headers for:
+# This script checks all non-MicroGame headers for:
 #   1. Game-domain framing (gameplay, game logic, combat system, etc.)
 #   2. Scenario-specific references (doomguard, miller, stealth, etc.)
-#   3. Test-game types leaking into generic surfaces
+#   3. Micro-game types leaking into generic surfaces
 #   4. Harness-specific helpers exported as product APIs
 #
 # Run from the SDK plugin root:
@@ -38,10 +38,10 @@ echo "=== Product Boundary Audit ==="
 echo "Checking SDK surfaces for game-specific terminology..."
 echo ""
 
-# Define excluded paths. Test-game harness code is separate from the SDK module,
-# but keep the glob so a reintroduced embedded TestGame folder is still ignored
+# Define excluded paths. Micro-game harness code is separate from the SDK module,
+# but keep the glob so a reintroduced embedded MicroGame folder is still ignored
 # by terminology rules and caught by the dedicated boundary checks.
-EXCLUDE_DIRS="--glob=!**/TestGame/**"
+EXCLUDE_DIRS="--glob=!**/MicroGame/**"
 EXCLUDE_TESTS="--glob=!**/Tests/**"
 
 # ── Rule 1: No game-domain framing in generic headers ──
@@ -70,16 +70,16 @@ else
 fi
 echo ""
 
-# ── Rule 3: No TestGame types imported in generic headers ──
-echo "[Rule 3] No TestGame type imports in generic headers..."
-TG_IMPORTS="TestGame/TestGame|FTestGameState|FScenarioStep|FCommandSpec|ECommandGroup|FTranscriptEntry|ETranscriptStatus"
+# ── Rule 3: No MicroGame types imported in generic headers ──
+echo "[Rule 3] No MicroGame type imports in generic headers..."
+TG_IMPORTS="MicroGame/MicroGame|FMicroGameState|FScenarioStep|FCommandSpec|ECommandGroup|FTranscriptEntry|ETranscriptStatus"
 # Check CLI, Protocol, Core, Blueprint directories
 GENERIC_DIRS=("$PUBLIC/CLI" "$PUBLIC/Protocol" "$PUBLIC/Core")
 for dir in "${GENERIC_DIRS[@]}"; do
   [ -d "$dir" ] || continue
   HITS=$(rg -ci "$TG_IMPORTS" "$dir" 2>/dev/null || true)
   if [ -n "$HITS" ]; then
-    echo "  ✗ TestGame types leaked into $(basename "$dir"):"
+    echo "  ✗ MicroGame types leaked into $(basename "$dir"):"
     rg -ni "$TG_IMPORTS" "$dir" 2>/dev/null || true
     VIOLATIONS=$((VIOLATIONS + 1))
   fi
@@ -102,12 +102,12 @@ for term in "${PRODUCT_TERMS[@]}"; do
 done
 echo ""
 
-# ── Rule 5: No ASCII grid rendering outside TestGame ──
+# ── Rule 5: No ASCII grid rendering outside MicroGame ──
 echo "[Rule 5] No rendering helpers in the SDK module..."
 RENDER_TERMS="RenderGrid|RenderRow|CellAt|RenderLegend|ASCII grid"
 HITS=$(rg -ci "$RENDER_TERMS" "${SRC_DIRS[@]}" $EXCLUDE_DIRS $EXCLUDE_TESTS 2>/dev/null || true)
 if [ -n "$HITS" ]; then
-  echo "  ✗ Rendering helpers found outside TestGame:"
+  echo "  ✗ Rendering helpers found outside MicroGame:"
   rg -ni "$RENDER_TERMS" "${SRC_DIRS[@]}" $EXCLUDE_DIRS $EXCLUDE_TESTS 2>/dev/null || true
   VIOLATIONS=$((VIOLATIONS + 1))
 else
@@ -115,12 +115,12 @@ else
 fi
 echo ""
 
-# ── Rule 6: No transcript/harness types outside TestGame ──
+# ── Rule 6: No transcript/harness types outside MicroGame ──
 echo "[Rule 6] No transcript/harness types in the SDK module..."
 HARNESS_TERMS="FTranscriptEntry|ETranscriptStatus|FHarnessState|FScenarioSliceState|EEventType"
 HITS=$(rg -ci "$HARNESS_TERMS" "${SRC_DIRS[@]}" $EXCLUDE_DIRS $EXCLUDE_TESTS 2>/dev/null || true)
 if [ -n "$HITS" ]; then
-  echo "  ✗ Harness types found outside TestGame:"
+  echo "  ✗ Harness types found outside MicroGame:"
   rg -ni "$HARNESS_TERMS" "${SRC_DIRS[@]}" $EXCLUDE_DIRS $EXCLUDE_TESTS 2>/dev/null || true
   VIOLATIONS=$((VIOLATIONS + 1))
 else
@@ -150,6 +150,6 @@ else
   echo "✗ $VIOLATIONS boundary violation(s) found."
   echo "  Generic SDK surfaces should describe: NPC decisioning, thought/context flow,"
   echo "  rule validation, memory, soul/ghost, host-local execution."
-  echo "  Scenario-specific language belongs in test-game-cli/Source/ForbocAI_TestGame_CLI."
+  echo "  Scenario-specific language belongs in micro-game-cli/Source/ForbocAI_MicroGame_CLI."
   exit 1
 fi

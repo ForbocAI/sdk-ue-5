@@ -6,14 +6,14 @@
 
 namespace APISlice::Endpoints {
 
-/** User Story: As the Bridge cache owner, I need validation and rule entities identified consistently across queries and mutations. @fn inline FApiEndpointTag bridgeTagAdapter(const FString &Id = FString()) */
-inline FApiEndpointTag bridgeTagAdapter(const FString &Id = FString()) {
+/** User Story: As the Bridge cache owner, I need validation and rule entities identified consistently across queries and mutations. @fn inline rtk::FApiEndpointTag bridgeTagAdapter(const FString &Id = FString()) */
+inline rtk::FApiEndpointTag bridgeTagAdapter(const FString &Id = FString()) {
   return Configuration::endpointTag(
       Transport::transportQueryData().Tags.Bridge, Id);
 }
 
-/** User Story: As the Bridge cache owner, I need one authored list identity for the rule catalog. @fn inline FApiEndpointTag bridgeListTagAdapter() */
-inline FApiEndpointTag bridgeListTagAdapter() {
+/** User Story: As the Bridge cache owner, I need one authored list identity for the rule catalog. @fn inline rtk::FApiEndpointTag bridgeListTagAdapter() */
+inline rtk::FApiEndpointTag bridgeListTagAdapter() {
   return Configuration::endpointListTag(
       Transport::transportQueryData().Tags.Bridge);
 }

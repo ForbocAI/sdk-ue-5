@@ -6,14 +6,14 @@
 
 namespace APISlice::Endpoints {
 
-/** User Story: As the Rule cache owner, I need rulesets identified consistently across preset mutations and catalog queries. @fn inline FApiEndpointTag ruleTagAdapter(const FString &RulesetId) */
-inline FApiEndpointTag ruleTagAdapter(const FString &RulesetId) {
+/** User Story: As the Rule cache owner, I need rulesets identified consistently across preset mutations and catalog queries. @fn inline rtk::FApiEndpointTag ruleTagAdapter(const FString &RulesetId) */
+inline rtk::FApiEndpointTag ruleTagAdapter(const FString &RulesetId) {
   return Configuration::endpointTag(
       Transport::transportQueryData().Tags.Rule, RulesetId);
 }
 
-/** User Story: As the Rule cache owner, I need one authored list identity for ruleset and preset catalogs. @fn inline FApiEndpointTag ruleListTagAdapter() */
-inline FApiEndpointTag ruleListTagAdapter() {
+/** User Story: As the Rule cache owner, I need one authored list identity for ruleset and preset catalogs. @fn inline rtk::FApiEndpointTag ruleListTagAdapter() */
+inline rtk::FApiEndpointTag ruleListTagAdapter() {
   return Configuration::endpointListTag(
       Transport::transportQueryData().Tags.Rule);
 }

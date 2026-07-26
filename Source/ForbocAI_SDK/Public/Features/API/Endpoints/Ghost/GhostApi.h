@@ -11,7 +11,7 @@ namespace Endpoints {
 inline Thunk<FGhostRunResponse> postGhostRun(const FGhostRunRequest &Request) {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const TArray<FApiEndpointTag> Invalidates{ghostListTagAdapter()};
+  const TArray<rtk::FApiEndpointTag> Invalidates{ghostListTagAdapter()};
   return Detail::MakePostWithCodec<FGhostRunRequest, FGhostRunResponse>(
       Data.Names.PostGhostRun,
       Configuration::endpointPath(
@@ -30,7 +30,7 @@ inline Thunk<FGhostRunResponse> postGhostRun(const FGhostConfig &Config) {
 inline Thunk<FGhostStatus> getGhostStatus(const FString &SessionId) {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const TArray<FApiEndpointTag> Tags{ghostTagAdapter(SessionId)};
+  const TArray<rtk::FApiEndpointTag> Tags{ghostTagAdapter(SessionId)};
   return Detail::MakeGetWithCodec<FGhostStatus>(
       Data.Names.GetGhostStatus,
       Configuration::endpointPath(
@@ -42,7 +42,7 @@ inline Thunk<FGhostStatus> getGhostStatus(const FString &SessionId) {
 inline Thunk<FGhostResults> getGhostResults(const FString &SessionId) {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const TArray<FApiEndpointTag> Tags{ghostTagAdapter(SessionId)};
+  const TArray<rtk::FApiEndpointTag> Tags{ghostTagAdapter(SessionId)};
   return Detail::MakeGetWithCodec<FGhostResults>(
       Data.Names.GetGhostResults,
       Configuration::endpointPath(
@@ -54,7 +54,7 @@ inline Thunk<FGhostResults> getGhostResults(const FString &SessionId) {
 inline Thunk<FGhostStopResponse> postGhostStop(const FString &SessionId) {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const TArray<FApiEndpointTag> Invalidates{
+  const TArray<rtk::FApiEndpointTag> Invalidates{
       ghostTagAdapter(SessionId), ghostListTagAdapter()};
   return Detail::MakePostRawWithCodec<FGhostStopResponse>(
       Data.Names.PostGhostStop,
@@ -68,7 +68,7 @@ inline Thunk<FGhostStopResponse> postGhostStop(const FString &SessionId) {
 inline Thunk<FGhostHistoryResponse> getGhostHistory(int32 Limit) {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const TArray<FApiEndpointTag> Tags{ghostListTagAdapter()};
+  const TArray<rtk::FApiEndpointTag> Tags{ghostListTagAdapter()};
   return Detail::MakeGetWithCodec<FGhostHistoryResponse>(
       Data.Names.GetGhostHistory,
       Configuration::endpointQuery(

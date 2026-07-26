@@ -25,7 +25,7 @@ fi
 
 PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="$PLUGIN_ROOT/Source/ForbocAI_SDK"
-TEST_GAME_SRC="$PLUGIN_ROOT/test-game-cli/Source/ForbocAI_TestGame_CLI"
+MICRO_GAME_SRC="$PLUGIN_ROOT/micro-game-cli/Source/ForbocAI_MicroGame_CLI"
 
 # Directories to check (command surfaces only)
 COMMAND_SURFACES=(
@@ -35,13 +35,13 @@ COMMAND_SURFACES=(
 while IFS= read -r command_surface; do
   COMMAND_SURFACES+=("$command_surface")
 done < <(
-  find "$TEST_GAME_SRC/Public/TestGame/Features" -type f \
+  find "$MICRO_GAME_SRC/Public/MicroGame/Features" -type f \
     \( -name 'CommandRunner*.h' -o -name 'CommandRunner*.hpp' \) \
     -print | sort
 )
 
 if [ "${#COMMAND_SURFACES[@]}" -le 2 ]; then
-  echo "[FAIL] No test-game CommandRunner role files were discovered." >&2
+  echo "[FAIL] No micro-game CommandRunner role files were discovered." >&2
   exit 1
 fi
 

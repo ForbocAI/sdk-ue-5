@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Shared UE check target discovery.
 
-SDK-owned checks run against the UE SDK, the SDK CLI/test-game target, and every
+SDK-owned checks run against the UE SDK, the SDK CLI/micro-game target, and every
 UE project that consumes this SDK. Consumers are discovered structurally, so the
 checks cover the same ground from either checkout shape:
 
@@ -66,7 +66,7 @@ def _consumer_projects() -> tuple[Path, ...]:
 def ue_targets() -> tuple[UeTarget, ...]:
     candidates = (
         UeTarget("sdk", SDK_ROOT, "sdk"),
-        UeTarget("sdk-cli", SDK_ROOT / "test-game-cli", "sdk-cli"),
+        UeTarget("sdk-cli", SDK_ROOT / "micro-game-cli", "sdk-cli"),
         *(UeTarget(root.name, root, "project") for root in _consumer_projects()),
     )
     return tuple(target for target in candidates if _has_source(target.root))
@@ -81,4 +81,4 @@ def sdk_module_root() -> Path:
 
 
 def sdk_cli_module_root() -> Path:
-    return SDK_ROOT / "test-game-cli" / "Source" / "ForbocAI_TestGame_CLI"
+    return SDK_ROOT / "micro-game-cli" / "Source" / "ForbocAI_MicroGame_CLI"

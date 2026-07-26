@@ -88,7 +88,7 @@ inline FString removeLeadingStatusCode(const FString &Message, int32 StatusCode)
 
 /**
  * Summarizes provider HTML error pages into stable HTTP error text.
- * User Story: As CLI and test-game diagnostics, I need non-2xx provider pages
+ * User Story: As CLI and micro-game diagnostics, I need non-2xx provider pages
  * reduced to status and title so strict failures stay readable.
  * @fn inline FString summarizeHttpError(int32 StatusCode, const FString &Message)
  */

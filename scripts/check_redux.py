@@ -38,8 +38,8 @@ def default_scan_roots(project_root: Path) -> list[Path]:
         project_root / "Source" / "Views",
         project_root / "Source" / "ForbocAI_SDK" / "Public" / "Features",
         project_root / "Source" / "ForbocAI_SDK" / "Private" / "Features",
-        project_root / "test-game-cli" / "Source" / "ForbocAI_TestGame_CLI" / "Public" / "TestGame" / "Features",
-        project_root / "test-game-cli" / "Source" / "ForbocAI_TestGame_CLI" / "Public" / "TestGame" / "Views",
+        project_root / "micro-game-cli" / "Source" / "ForbocAI_MicroGame_CLI" / "Public" / "MicroGame" / "Features",
+        project_root / "micro-game-cli" / "Source" / "ForbocAI_MicroGame_CLI" / "Public" / "MicroGame" / "Views",
     ]
 
 
@@ -53,8 +53,8 @@ def discovered_target_scan_roots(project_root: Path) -> list[tuple[str, Path, li
             ]
         elif target.kind == "sdk-cli":
             roots = [
-                target.root / "Source" / "ForbocAI_TestGame_CLI" / "Public" / "TestGame" / "Features",
-                target.root / "Source" / "ForbocAI_TestGame_CLI" / "Public" / "TestGame" / "Views",
+                target.root / "Source" / "ForbocAI_MicroGame_CLI" / "Public" / "MicroGame" / "Features",
+                target.root / "Source" / "ForbocAI_MicroGame_CLI" / "Public" / "MicroGame" / "Views",
             ]
         else:
             roots = [

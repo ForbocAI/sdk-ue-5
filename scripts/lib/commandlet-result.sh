@@ -7,8 +7,8 @@ forbocai_run_commandlet() {
   local output_file
   local command_status
   local temporary_output=0
-  if [[ -n "${FORBOCAI_TEST_GAME_LOG_PATH:-}" ]]; then
-    output_file="$FORBOCAI_TEST_GAME_LOG_PATH"
+  if [[ -n "${FORBOCAI_MICRO_GAME_LOG_PATH:-}" ]]; then
+    output_file="$FORBOCAI_MICRO_GAME_LOG_PATH"
     mkdir -p "$(dirname "$output_file")"
   else
     output_file="$(mktemp "${TMPDIR:-/tmp}/forbocai-commandlet.XXXXXX")"

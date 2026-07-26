@@ -41,7 +41,7 @@ HandlerResult HandleSystem(rtk::EnhancedStore<FRuntimeState> &Store,
                }()
          : CommandKey == Roles.Contract
              ? [&]() -> HandlerResult {
-                 const FString Contract = Ops::getTestGameContract(Store);
+                 const FString Contract = Ops::getMicroGameContract(Store);
                  ForbocAI::CLI::Presentation::logCliMessage(Contract);
                  return just(Result::Success(TCHAR_TO_UTF8(*Contract)));
                }()

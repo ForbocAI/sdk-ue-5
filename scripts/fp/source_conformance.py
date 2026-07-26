@@ -231,7 +231,7 @@ def ue_authored_source_roots() -> list[Path]:
             module_root = target.root / "Source" / "ForbocAI_SDK"
             roots.append(module_root if module_root.exists() else target.root / "Source")
         elif target.kind == "sdk-cli":
-            module_root = target.root / "Source" / "ForbocAI_TestGame_CLI"
+            module_root = target.root / "Source" / "ForbocAI_MicroGame_CLI"
             roots.append(module_root if module_root.exists() else target.root / "Source")
         else:
             roots.append(target.root / "Source")
@@ -279,7 +279,7 @@ def command_surface_files() -> list[Path]:
                 files.append(candidate)
             elif candidate.is_dir():
                 files.extend(path for path in iter_files(candidate, CPP_SUFFIXES) if path.suffix in {".h", ".hpp", ".cpp"})
-        features = root / "Public" / "TestGame" / "Features"
+        features = root / "Public" / "MicroGame" / "Features"
         if features.is_dir():
             files.extend(
                 path

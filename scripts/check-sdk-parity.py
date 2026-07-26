@@ -204,7 +204,7 @@ def parity_group(name: str) -> str | None:
     normalized = normalize_name(name)
     if "browser" in normalized:
         return None
-    return "test-game" if "testgame" in normalized else "sdk"
+    return "micro-game" if "microgame" in normalized else "sdk"
 
 
 def program_label(
@@ -212,7 +212,7 @@ def program_label(
     ts_source_roots: Sequence[Path],
     ue_source_roots: Sequence[Path],
 ) -> str:
-    title = group.replace("-", " ").title()
+    title = group[:1].upper() + group[1:]
     ts_names = " + ".join(ts_package_name(root) for root in ts_source_roots)
     ue_names = " + ".join(ue_module_name(root) for root in ue_source_roots)
     return f"{title}: TS {ts_names} -> UE {ue_names}"
@@ -223,7 +223,7 @@ def build_parity_programs(
     ue_source_roots: Sequence[Path],
 ) -> tuple[ParityProgram, ...]:
     programs: list[ParityProgram] = []
-    for group in ("sdk", "test-game"):
+    for group in ("sdk", "micro-game"):
         matching_ts_roots = tuple(
             sorted(
                 (

@@ -95,7 +95,7 @@ For SDK/API validation, call the `UForbocAIBlueprintLibrary` nodes from source-c
 
 ## CLI smoke tests
 
-The SDK ships a dedicated CLI host project at `ForbocAI_CLI.uproject` and runner scripts under `scripts/`. The runner builds the commandlet host when needed and dispatches through the same `CLIOps`/RTK store path used by runtime C++ and Blueprint integrations. It does not use the test game.
+The SDK ships a dedicated CLI host project at `ForbocAI_CLI.uproject` and runner scripts under `scripts/`. The runner builds the commandlet host when needed and dispatches through the same `CLIOps`/RTK store path used by runtime C++ and Blueprint integrations. It does not use the micro-game.
 
 ### Windows
 
@@ -132,16 +132,16 @@ ForbocAI CLI (UE5) — Command: doctor
 API Status: online (v0.4.0)
 ```
 
-## Test-game CLI coverage
+## Micro-game CLI coverage
 
-The separate `test-game-cli/` host project wraps the SDK CLI path for full scenario coverage. It fetches the API-owned test-game contract, runs every scenario command through `TestGame::CommandSurface`, and `TestGame::CommandSurface` delegates each command to the canonical SDK `CLIOps::DispatchCommand` boundary.
+The separate `micro-game-cli/` host project wraps the SDK CLI path for full scenario coverage. It fetches the API-owned micro-game contract, runs every scenario command through `MicroGame::CommandSurface`, and `MicroGame::CommandSurface` delegates each command to the canonical SDK `CLIOps::DispatchCommand` boundary.
 
 ```bash
-scripts/forbocai-ue-test-game contract
-scripts/forbocai-ue-test-game --mode autoplay
+scripts/forbocai-ue-micro-game contract
+scripts/forbocai-ue-micro-game --mode autoplay
 ```
 
-On Windows, use `scripts\forbocai-ue-test-game.cmd` with the same arguments. The runner loads `FORBOCAI_API_KEY` from the process environment or `FORBOCAI_TEST_ENV_FILE` (defaulting to `~/.config/forbocai/test-api.env`) and uses `https://api.forboc.ai` when `FORBOCAI_API_URL` is unset.
+On Windows, use `scripts\forbocai-ue-micro-game.cmd` with the same arguments. The runner loads `FORBOCAI_API_KEY` from the process environment or `FORBOCAI_TEST_ENV_FILE` (defaulting to `~/.config/forbocai/test-api.env`) and uses `https://api.forboc.ai` when `FORBOCAI_API_URL` is unset.
 
 ---
 

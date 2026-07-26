@@ -22,7 +22,7 @@ if grep -qi microsoft /proc/version 2>/dev/null && command -v powershell.exe >/d
   exit $?
 fi
 
-PROJECT="$ROOT/test-game-cli/ForbocAI_SDK.uproject"
+PROJECT="$ROOT/micro-game-cli/ForbocAI_SDK.uproject"
 forbocai_prepare_plugin_host "$ROOT"
 case "$(uname -s)" in
   Darwin)
@@ -44,7 +44,7 @@ case "$(uname -s)" in
 esac
 
 if [[ ! -f "$PROJECT" ]]; then
-  echo "UE test-game host project not found: $PROJECT" >&2
+  echo "UE micro-game host project not found: $PROJECT" >&2
   exit 1
 fi
 if [[ ! -x "$BUILD" && ! -f "$BUILD" ]]; then

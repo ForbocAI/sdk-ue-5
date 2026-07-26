@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 
 $ScriptsDir = Split-Path -Parent $PSScriptRoot
 $Root = Split-Path -Parent $ScriptsDir
-$Project = Join-Path $Root "test-game-cli\ForbocAI_SDK.uproject"
+$Project = Join-Path $Root "micro-game-cli\ForbocAI_SDK.uproject"
 $UERoot = if ($env:UE_ROOT) { $env:UE_ROOT } else { "C:\Program Files\Epic Games\UE_5.8" }
 $Build = Join-Path $UERoot "Engine\Build\BatchFiles\Build.bat"
 $EditorCmd = Join-Path $UERoot "Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
@@ -16,7 +16,7 @@ Import-ForbocTestEnvironment -KeyRequirement Required
 . (Join-Path $ScriptsDir "lib\PluginHost.ps1")
 
 if (-not (Test-Path $Project)) {
-    throw "UE test-game host project not found: $Project"
+    throw "UE micro-game host project not found: $Project"
 }
 if (-not (Test-Path $Build)) {
     throw "Unreal Build.bat not found: $Build. Set UE_ROOT to your UE 5.8 install."

@@ -8,14 +8,14 @@
 
 namespace APISlice::Endpoints {
 
-/** User Story: As the Soul cache owner, I need one typed tag constructor so API, provider, and local storage endpoints invalidate the same entities. @fn inline FApiEndpointTag soulTagAdapter(const FString &Id) */
-inline FApiEndpointTag soulTagAdapter(const FString &Id) {
+/** User Story: As the Soul cache owner, I need one typed tag constructor so API, provider, and local storage endpoints invalidate the same entities. @fn inline rtk::FApiEndpointTag soulTagAdapter(const FString &Id) */
+inline rtk::FApiEndpointTag soulTagAdapter(const FString &Id) {
   return Configuration::endpointTag(
       Transport::transportQueryData().Tags.Soul, Id);
 }
 
-/** User Story: As the Soul catalog cache owner, I need the authored list identity shared by every endpoint that reads or mutates the catalog. @fn inline FApiEndpointTag soulListTagAdapter() */
-inline FApiEndpointTag soulListTagAdapter() {
+/** User Story: As the Soul catalog cache owner, I need the authored list identity shared by every endpoint that reads or mutates the catalog. @fn inline rtk::FApiEndpointTag soulListTagAdapter() */
+inline rtk::FApiEndpointTag soulListTagAdapter() {
   return Configuration::endpointListTag(
       Transport::transportQueryData().Tags.Soul);
 }

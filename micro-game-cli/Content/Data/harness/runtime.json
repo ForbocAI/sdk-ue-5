@@ -1,0 +1,174 @@
+{
+  "runtimeTypes": {
+    "object": true,
+    "string": true,
+    "boolean": true
+  },
+  "numbers": {
+    "emptyCount": 0,
+    "singularCount": 1,
+    "captureIndex": 1,
+    "nextIndex": 1
+  },
+  "modes": {
+    "manual": true,
+    "autoplay": true,
+    "chat": true
+  },
+  "scenarioEventTypes": {
+    "stealth": true,
+    "social": true,
+    "escape": true,
+    "persistence": true
+  },
+  "commandGroups": {
+    "status": true,
+    "npc_lifecycle": true,
+    "npc_process_chat": true,
+    "npc_conversation": true,
+    "memory_list": true,
+    "memory_recall": true,
+    "memory_store": true,
+    "memory_clear": true,
+    "memory_export": true,
+    "bridge_rules": true,
+    "bridge_validate": true,
+    "bridge_preset": true,
+    "soul_export": true,
+    "soul_import": true,
+    "soul_list": true,
+    "soul_chat": true,
+    "ghost_lifecycle": true,
+    "contract": true
+  },
+  "statuses": {
+    "ok": true,
+    "error": true
+  },
+  "outputAssertionKinds": {
+    "includesAlias": true,
+    "includesText": true,
+    "excludesText": true
+  },
+  "lifecycleEvents": {
+    "sessionStarted": true,
+    "contractFailed": true,
+    "sessionReady": true,
+    "stepStarted": true,
+    "commandCompleted": true,
+    "autoplayTick": true,
+    "sessionCompleted": true
+  },
+  "patterns": {
+    "npcCommand": "npc (?:process|chat) (\\w+)"
+  },
+  "template": {
+    "tokenPrefix": "{",
+    "tokenSuffix": "}"
+  },
+  "wireFields": {
+    "action": "action",
+    "type": "type",
+    "targetHex": "targetHex",
+    "x": "x",
+    "y": "y",
+    "stateDelta": "stateDelta",
+    "suspicion": "suspicion"
+  },
+  "separators": {
+    "list": ", "
+  },
+  "tokens": {
+    "alias": "alias",
+    "command": "command",
+    "count": "count",
+    "errors": "errors",
+    "groups": "groups",
+    "kind": "kind",
+    "missing": "missing",
+    "output": "output",
+    "reason": "reason",
+    "suffix": "suffix",
+    "value": "value"
+  },
+  "messages": {
+    "bridgeValidationFailed": "Bridge validation failed: {output}",
+    "bridgeActionBlocked": "System Bridge Blocked Action: {reason}",
+    "unknownReason": "unknown",
+    "coverageComplete": "CLI coverage complete.",
+    "coverageErrors": "{count} transcript error{suffix}",
+    "singularSuffix": "",
+    "pluralSuffix": "s",
+    "missingGroups": "missing groups: {groups}",
+    "noMissingGroups": "no missing groups",
+    "coverageIncomplete": "CLI coverage incomplete: {errors}; {missing}.",
+    "contractFailed": "Failed to fetch or parse micro-game contract",
+    "finalCommandsMissing": "API micro-game contract is missing required final command groups: {groups}",
+    "outputAssertionAliasMissing": "Output assertion failed for {command}: alias {value} was not captured.",
+    "outputAssertionValueMissing": "Output assertion failed for {command}: output did not include required value {value}.",
+    "outputAssertionValuePresent": "Output assertion failed for {command}: output included forbidden value {value}.",
+    "outputAssertionKindUnsupported": "Output assertion failed for {command}: assertion kind {kind} is unsupported.",
+    "outputAssertionFailure": "{reason}\nCommand output:\n{output}",
+    "commandAliasUnavailable": "Command dependency unavailable for {command}: alias {alias} was not captured by a successful prerequisite."
+  },
+  "initialState": {
+    "stealth": {
+      "doorOpen": true,
+      "alertDelta": 25,
+      "npc": {
+        "id": "doomguard",
+        "name": "Doomguard Patrol",
+        "faction": "Doomguards",
+        "hp": 100,
+        "suspicion": 40,
+        "inventory": [],
+        "knownSecrets": [],
+        "position": { "x": 5, "y": 10 }
+      },
+      "memory": {
+        "id": "mem-door-001",
+        "npcId": "doomguard",
+        "text": "Armory door found open at x:5, y:12",
+        "importance": 0.9
+      }
+    },
+    "social": {
+      "npc": {
+        "id": "miller",
+        "name": "Miller",
+        "faction": "Neutral",
+        "hp": 100,
+        "suspicion": 50,
+        "inventory": ["medkit"],
+        "knownSecrets": ["player_stole_rations"],
+        "position": { "x": 5, "y": 12 }
+      },
+      "dialogue": "I know you took those rations...",
+      "tradeOffer": {
+        "npcId": "miller",
+        "item": "medkit",
+        "price": 100
+      },
+      "patch": {
+        "suspicion": 75
+      }
+    },
+    "escape": {
+      "hidden": false
+    },
+    "persistence": {
+      "npcId": "miller",
+      "txId": "soul-transaction"
+    },
+    "sessionNpc": {
+      "id": "scout",
+      "name": "Scout",
+      "faction": "Player",
+      "hp": 100,
+      "suspicion": 0,
+      "inventory": ["coin-pouch"],
+      "knownSecrets": [],
+      "position": { "x": 1, "y": 1 }
+    }
+  }
+}

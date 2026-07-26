@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Reject authored UE target files over the 300-line ceiling.
 
-This guard is SDK-owned and scans the UE SDK, SDK CLI/test-game target, and
+This guard is SDK-owned and scans the UE SDK, SDK CLI/micro-game target, and
 sibling UE demo when present:
 
   python3 scripts/check_line_count.py

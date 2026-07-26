@@ -1,0 +1,28 @@
+#pragma once
+
+#include "MicroGame/Features/Data/DataAdapters.h"
+#include "MicroGame/Features/Entities/Player/PlayerTypes.h"
+
+namespace MicroGame {
+
+/** User Story: As a features entities player consumer, I need to invoke create player initial state through a stable signature so the features entities player workflow remains explicit and composable. @fn inline FPlayerState CreatePlayerInitialState() */
+inline FPlayerState CreatePlayerInitialState() {
+  static const DataAdapters::FSettingsSource Source =
+      DataAdapters::SettingsSource(TEXT("entities/player.json"));
+  const TSharedRef<FJsonObject> Initial =
+      DataAdapters::ReadObjectField(Source, TEXT("initialState"));
+  const TSharedRef<FJsonObject> Position =
+      DataAdapters::ReadObjectField(Initial, TEXT("position"));
+  FPlayerState State{};
+  State.Name = DataAdapters::ReadStringField(Initial, TEXT("name"));
+  State.Hp = DataAdapters::ReadNumberField(Initial, TEXT("hp"));
+  State.bHidden = DataAdapters::ReadBooleanField(Initial, TEXT("hidden"));
+  State.Position = FPosition(
+      DataAdapters::ReadNumberField(Position, TEXT("x")),
+      DataAdapters::ReadNumberField(Position, TEXT("y")));
+  State.Inventory =
+      DataAdapters::ReadStringArrayField(Initial, TEXT("inventory"));
+  return State;
+}
+
+} // namespace MicroGame

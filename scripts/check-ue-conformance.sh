@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SRC="$ROOT/Source/ForbocAI_SDK"
-SDK_CLI_SRC="$ROOT/test-game-cli/Source/ForbocAI_TestGame_CLI"
+SDK_CLI_SRC="$ROOT/micro-game-cli/Source/ForbocAI_MicroGame_CLI"
 DEMO_SRC="$ROOT/../demo-ue-5/Source"
 STATUS=0
 
@@ -150,8 +150,8 @@ fi
 #    Approved locations (Public + Private):
 #      CLI/                         — CLI command handlers (build, host tools)
 #      Features/Dependencies/**/Adapters   — portable native dependency processes
-#    The retired TestGame/TestGameLib.h scenario command runner was removed
-#    in favor of TestGame::CommandSurface — no test-game exemption remains.
+#    The retired MicroGame/MicroGameLib.h scenario command runner was removed
+#    in favor of MicroGame::CommandSurface — no micro-game exemption remains.
 DIRECT_PROC="$(rg -n 'FPlatformProcess::CreateProc' \
   "${FIRST_PARTY_ROOTS[@]}" \
   --glob '!**/CLI/**' \

@@ -23,7 +23,7 @@
     "confirm": "confirm",
     "souls": "souls",
     "verify": "verify",
-    "testGame": "test-game",
+    "microGame": "micro-game",
     "contract": "contract"
   },
   "queryKeys": {
@@ -54,7 +54,7 @@
     "postSoulStorageCommit": "postSoulStorageCommit",
     "getSoulStorageCatalog": "getSoulStorageCatalog",
     "getSoulStorageEntry": "getSoulStorageEntry",
-    "getTestGameContract": "getTestGameContract"
+    "getMicroGameContract": "getMicroGameContract"
   },
   "fields": {
     "ghostRunSessionId": "sessionId",

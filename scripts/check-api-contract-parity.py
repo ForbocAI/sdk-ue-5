@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static UE parity guard for the API-published test-game contract."""
+"""Static UE parity guard for the API-published micro-game contract."""
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ def get_contract_data() -> dict:
     api_url = os.environ.get("FORBOCAI_API_URL")
     if api_url:
         try:
-            url = api_url.rstrip("/") + "/test-game/contract"
+            url = api_url.rstrip("/") + "/micro-game/contract"
             request = urllib.request.Request(url)
             api_key = os.environ.get("FORBOCAI_API_KEY")
             if api_key:
@@ -57,7 +57,7 @@ def get_contract_data() -> dict:
             print(f"Failed to fetch contract from {api_url}: {e}", file=sys.stderr)
 
     candidates: list[Path] = []
-    for env_name in ("API_TEST_GAME_CONTRACT", "TEST_GAME_CONTRACT", "UE_API_CONTRACT"):
+    for env_name in ("API_MICRO_GAME_CONTRACT", "MICRO_GAME_CONTRACT", "UE_API_CONTRACT"):
         value = os.environ.get(env_name)
         if value:
             raw = Path(value)
@@ -65,9 +65,9 @@ def get_contract_data() -> dict:
 
     candidates.extend(
         [
-            Path.cwd() / "api-checkout/api/contract/test-game-contract.json",
-            REPO_ROOT / "api-checkout/api/contract/test-game-contract.json",
-            WORKSPACE_ROOT / "api/api/contract/test-game-contract.json",
+            Path.cwd() / "api-checkout/api/contract/micro-game-contract.json",
+            REPO_ROOT / "api-checkout/api/contract/micro-game-contract.json",
+            WORKSPACE_ROOT / "api/api/contract/micro-game-contract.json",
         ]
     )
 
@@ -76,9 +76,9 @@ def get_contract_data() -> dict:
             print(f"API contract: {candidate.resolve()}")
             return json.loads(candidate.read_text(encoding="utf-8"))
 
-    print("API test-game contract not found.", file=sys.stderr)
+    print("API micro-game contract not found.", file=sys.stderr)
     print(
-        "Set API_TEST_GAME_CONTRACT to ForbocAI/api/api/contract/test-game-contract.json or FORBOCAI_API_URL.",
+        "Set API_MICRO_GAME_CONTRACT to ForbocAI/api/api/contract/micro-game-contract.json or FORBOCAI_API_URL.",
         file=sys.stderr,
     )
     sys.exit(2)
@@ -145,39 +145,39 @@ def parse_transcript_fields(header: str) -> set[str]:
 
 def validate_ue_sources(contract: dict) -> list[str]:
     failures: list[str] = []
-    test_game_root = (
+    micro_game_root = (
         PLUGIN_ROOT
-        / "test-game-cli"
+        / "micro-game-cli"
         / "Source"
-        / "ForbocAI_TestGame_CLI"
+        / "ForbocAI_MicroGame_CLI"
         / "Public"
-        / "TestGame"
+        / "MicroGame"
     )
-    all_sources = source_text(test_game_root)
-    contract_sources = source_text(test_game_root / "Features", domain="Contract")
+    all_sources = source_text(micro_game_root)
+    contract_sources = source_text(micro_game_root / "Features", domain="Contract")
     parser_sources = source_text(
-        test_game_root / "Features" / "Systems" / "Contract" / "Parsing"
+        micro_game_root / "Features" / "Systems" / "Contract" / "Parsing"
     )
     contract_types_path = (
-        test_game_root / "Features" / "Systems" / "Contract" / "ContractTypes.h"
+        micro_game_root / "Features" / "Systems" / "Contract" / "ContractTypes.h"
     )
     contract_adapters_path = (
-        test_game_root / "Features" / "Systems" / "Contract" / "ContractAdapters.h"
+        micro_game_root / "Features" / "Systems" / "Contract" / "ContractAdapters.h"
     )
     contract_data_path = (
-        PLUGIN_ROOT / "test-game-cli" / "Content" / "Data" /
+        PLUGIN_ROOT / "micro-game-cli" / "Content" / "Data" /
         "systems" / "contract.json"
     )
     runtime_data_path = (
-        PLUGIN_ROOT / "test-game-cli" / "Content" / "Data" /
+        PLUGIN_ROOT / "micro-game-cli" / "Content" / "Data" /
         "harness" / "runtime.json"
     )
     game_data_path = (
-        PLUGIN_ROOT / "test-game-cli" / "Content" / "Data" /
+        PLUGIN_ROOT / "micro-game-cli" / "Content" / "Data" /
         "harness" / "game.json"
     )
     runner_data_path = (
-        PLUGIN_ROOT / "test-game-cli" / "Content" / "Data" /
+        PLUGIN_ROOT / "micro-game-cli" / "Content" / "Data" /
         "harness" / "command-runner.json"
     )
     runner_aliases = json.loads(

@@ -6,7 +6,7 @@
 #include "Store.h"
 
 // @covers:api:getApiStatus
-// @covers:api:getTestGameContract
+// @covers:api:getMicroGameContract
 // @covers:api:postNpcProcess
 // @covers:api:postNpcConversation
 // @covers:api:getBridgeValidation
@@ -71,8 +71,8 @@ bool FApiEndpointConstructionTest::RunTest(const FString &Parameters) {
   const FString Empty;
 
   TestEndpointConstructed(*this, Data.Names.GetApiStatus, getApiStatus());
-  TestEndpointConstructed(*this, Data.Names.GetTestGameContract,
-                          getTestGameContract());
+  TestEndpointConstructed(*this, Data.Names.GetMicroGameContract,
+                          getMicroGameContract());
   TestEndpointConstructed(*this, Data.Names.PostNpcProcess,
                           postNpcProcess(Empty, FNPCProcessRequest{}));
   TestEndpointConstructed(*this, Data.Names.PostNpcConversation,

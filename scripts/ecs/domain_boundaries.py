@@ -77,7 +77,7 @@ def _target_feature_roots() -> tuple[Path, ...]:
                 ]
             )
         elif target.kind == "sdk-cli":
-            roots.append(target.root / "Source" / "ForbocAI_TestGame_CLI" / "Public" / "TestGame" / "Features")
+            roots.append(target.root / "Source" / "ForbocAI_MicroGame_CLI" / "Public" / "MicroGame" / "Features")
         else:
             roots.append(target.root / "Source" / "Features")
     return _existing(roots) or _existing([SOURCE_FEATURES_ROOT])
@@ -87,7 +87,7 @@ def _target_view_roots() -> tuple[Path, ...]:
     roots: list[Path] = []
     for target in ue_targets():
         if target.kind == "sdk-cli":
-            roots.append(target.root / "Source" / "ForbocAI_TestGame_CLI" / "Public" / "TestGame" / "Views")
+            roots.append(target.root / "Source" / "ForbocAI_MicroGame_CLI" / "Public" / "MicroGame" / "Views")
         elif target.kind == "project":
             roots.append(target.root / "Source" / "Views")
     return _existing(roots) or _existing([SOURCE_VIEWS_ROOT])

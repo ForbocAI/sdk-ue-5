@@ -14,7 +14,7 @@ inline Thunk<FNPCConversationResponse> postNpcConversation() {
       Data.Names.PostNpcConversation,
       Configuration::endpointPath(
           {Data.Segments.Npcs, Data.Segments.Conversation}),
-      Detail::DecodeNpcConversationResponse, TArray<FApiEndpointTag>(),
+      Detail::DecodeNpcConversationResponse, TArray<rtk::FApiEndpointTag>(),
       Data.Timeouts.NpcConversationMs);
 }
 
@@ -23,7 +23,7 @@ inline Thunk<FNPCProcessResponse>
 postNpcProcess(const FString &NpcId, const FNPCProcessRequest &Request) {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const TArray<FApiEndpointTag> Invalidates{npcTagAdapter(NpcId)};
+  const TArray<rtk::FApiEndpointTag> Invalidates{npcTagAdapter(NpcId)};
   return Detail::MakePostWithCodec<FNPCProcessRequest, FNPCProcessResponse>(
       Data.Names.PostNpcProcess,
       Configuration::endpointPath(

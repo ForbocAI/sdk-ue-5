@@ -1,0 +1,13 @@
+{
+  "name": "@forbocai/ue-sdk-micro-game-cli",
+  "version": "0.6.5",
+  "private": true,
+  "type": "module",
+  "description": "Bun terminal-view dependency surface for the ForbocAI UE SDK micro-game-cli harness.",
+  "scripts": {
+    "renderer:check": "bun --version"
+  },
+  "dependencies": {
+    "@gridland/bun": "0.4.3"
+  }
+}

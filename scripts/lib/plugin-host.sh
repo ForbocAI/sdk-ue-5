@@ -2,7 +2,7 @@
 
 forbocai_prepare_plugin_host() {
   local root="$1"
-  local host="$root/test-game-cli/.forbocai-plugin-host"
+  local host="$root/micro-game-cli/.forbocai-plugin-host"
   local plugin="$host/ForbocAI_SDK"
   local directory
 

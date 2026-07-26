@@ -1,0 +1,53 @@
+{
+  "syntax": {
+    "unknownCommandKey": "unknown",
+    "commandSeparator": "_",
+    "textOption": "--text",
+    "sdkRootCommand": "forbocai",
+    "invalidCommandMessage": "Not a forbocai command"
+  },
+  "commands": {
+    "npcPrefix": "npc_",
+    "memoryPrefix": "memory_",
+    "soulPrefix": "soul_",
+    "ghostPrefix": "ghost_",
+    "npcCreate": "npc_create",
+    "ghostRun": "ghost_run",
+    "soulExport": "soul_export",
+    "soulImport": "soul_import"
+  },
+  "aliases": {
+    "ghostSession": "ghost-session",
+    "soulTransaction": "soul-transaction"
+  },
+  "limits": {
+    "rootTokenCount": 1,
+    "domainTokenCount": 2,
+    "commandTokenCount": 3,
+    "firstTokenIndex": 0,
+    "domainTokenIndex": 1,
+    "actionTokenIndex": 2,
+    "argumentStartIndex": 3,
+    "firstArgumentIndex": 0,
+    "nextIndex": 1
+  },
+  "quotes": {
+    "doubleQuote": "\"",
+    "singleQuote": "'"
+  },
+  "messages": {
+    "unresolvedAlias": "Command dependency unavailable for {0}: alias {1} was not captured by a successful prerequisite.",
+    "capturedValuePreservesSuccess": "Captured value in output preserves success",
+    "missingCapturedValueFails": "Missing captured value converts success into failure",
+    "requiredLiteralPreservesSuccess": "Required literal evidence preserves success",
+    "missingLiteralFails": "Missing literal evidence converts success into failure",
+    "absentForbiddenLiteralPreservesSuccess": "Absent forbidden literal preserves success",
+    "presentForbiddenLiteralFails": "Present forbidden literal converts success into failure",
+    "missingAliasFails": "Missing alias converts success into failure",
+    "unresolvedIdentifierRejected": "Unresolved generated identifiers are rejected before dispatch",
+    "capturedIdentifierDispatchable": "Captured generated identifiers are dispatchable"
+  },
+  "testNames": {
+    "outputAssertions": "ForbocAI.Slices.MicroGame.CommandRunner.OutputAssertions"
+  }
+}

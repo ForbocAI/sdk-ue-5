@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """UE target dead-code and dead-data guard.
 
-This SDK-owned guard scans the UE SDK, SDK CLI/test-game target, and sibling UE
+This SDK-owned guard scans the UE SDK, SDK CLI/micro-game target, and sibling UE
 demo when present. It fails on orphan authored headers and orphan authored data:
 
 * DEAD-SRC-001: an authored header (.h/.hpp) no other source file includes.

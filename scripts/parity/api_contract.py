@@ -1,4 +1,4 @@
-"""Pure API-contract parity analysis for the UE test-game checker."""
+"""Pure API-contract parity analysis for the UE micro-game checker."""
 
 from __future__ import annotations
 

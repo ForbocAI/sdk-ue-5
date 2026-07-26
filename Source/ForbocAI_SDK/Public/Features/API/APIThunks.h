@@ -31,12 +31,12 @@ inline ThunkAction<FApiStatusResponse, FRuntimeState> checkApiStatusThunk() {
   return doctorThunk();
 }
 
-/** User Story: As an SDK verifier, I need contract transport exposed as a root-store thunk. @fn inline ThunkAction<FString, FRuntimeState> getTestGameContractThunk() */
-inline ThunkAction<FString, FRuntimeState> getTestGameContractThunk() {
+/** User Story: As an SDK verifier, I need contract transport exposed as a root-store thunk. @fn inline ThunkAction<FString, FRuntimeState> getMicroGameContractThunk() */
+inline ThunkAction<FString, FRuntimeState> getMicroGameContractThunk() {
   return [](std::function<AnyAction(const AnyAction &)> Dispatch,
             std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<FString> {
-    return APISlice::Endpoints::getTestGameContract()(Dispatch, GetState);
+    return APISlice::Endpoints::getMicroGameContract()(Dispatch, GetState);
   };
 }
 

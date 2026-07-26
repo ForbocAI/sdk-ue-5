@@ -13,18 +13,18 @@ inline Thunk<FApiStatusResponse> getApiStatus() {
   return Detail::MakeGet<FApiStatusResponse>(
       Data.Names.GetApiStatus,
       Configuration::endpointPath({Data.Segments.Status}),
-      TArray<FApiEndpointTag>{systemTagAdapter()}, Data.Timeouts.StatusMs);
+      TArray<rtk::FApiEndpointTag>{systemTagAdapter()}, Data.Timeouts.StatusMs);
 }
 
-/** User Story: As an SDK verifier, I need the API-owned test contract fetched through the SDK API cache. @fn inline Thunk<FString> getTestGameContract() */
-inline Thunk<FString> getTestGameContract() {
+/** User Story: As an SDK verifier, I need the API-owned test contract fetched through the SDK API cache. @fn inline Thunk<FString> getMicroGameContract() */
+inline Thunk<FString> getMicroGameContract() {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
   return Detail::MakeGet<FString>(
-      Data.Names.GetTestGameContract,
+      Data.Names.GetMicroGameContract,
       Configuration::endpointPath(
-          {Data.Segments.TestGame, Data.Segments.Contract}),
-      TArray<FApiEndpointTag>{systemTagAdapter()},
+          {Data.Segments.MicroGame, Data.Segments.Contract}),
+      TArray<rtk::FApiEndpointTag>{systemTagAdapter()},
       Data.Timeouts.ContractMs);
 }
 

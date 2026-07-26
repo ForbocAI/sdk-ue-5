@@ -5,8 +5,8 @@
 
 namespace APISlice::Endpoints {
 
-/** User Story: As the NPC cache owner, I need process state identified by NPC so mutations invalidate only the affected entity. @fn inline FApiEndpointTag npcTagAdapter(const FString &NpcId) */
-inline FApiEndpointTag npcTagAdapter(const FString &NpcId) {
+/** User Story: As the NPC cache owner, I need process state identified by NPC so mutations invalidate only the affected entity. @fn inline rtk::FApiEndpointTag npcTagAdapter(const FString &NpcId) */
+inline rtk::FApiEndpointTag npcTagAdapter(const FString &NpcId) {
   return Configuration::endpointTag(
       Transport::transportQueryData().Tags.Npc, NpcId);
 }

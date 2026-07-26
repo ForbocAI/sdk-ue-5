@@ -21,18 +21,18 @@ class ParityProgramDiscoveryTests(unittest.TestCase):
         ts_roots = (
             Path("packages/runtime/src"),
             Path("packages/runtime-browser/src"),
-            Path("packages/test-game-runtime/src"),
+            Path("packages/micro-game-runtime/src"),
         )
         ue_roots = (
             Path("Source/RuntimeSDK"),
-            Path("test-game-cli/Source/RuntimeTestGame"),
+            Path("micro-game-cli/Source/RuntimeMicroGame"),
         )
 
         programs = PARITY.build_parity_programs(ts_roots, ue_roots)
 
-        self.assertEqual([program.label.split(":", 1)[0] for program in programs], ["Sdk", "Test Game"])
+        self.assertEqual([program.label.split(":", 1)[0] for program in programs], ["Sdk", "Micro-game"])
         self.assertEqual(programs[0].ts_source_roots, (Path("packages/runtime/src"),))
-        self.assertEqual(programs[1].ts_source_roots, (Path("packages/test-game-runtime/src"),))
+        self.assertEqual(programs[1].ts_source_roots, (Path("packages/micro-game-runtime/src"),))
         self.assertNotIn(Path("packages/runtime-browser/src"), programs[0].ts_source_roots)
 
     def test_browser_programs_remain_unmapped(self) -> None:

@@ -1,0 +1,60 @@
+{
+  "initialState": {
+    "mode": "autoplay",
+    "messages": ["SYSTEM_OVERRIDE :: terminal HUD online"]
+  },
+  "messages": {
+    "npcMoved": "{name} moved to {x},{y}",
+    "legend": "Legend :: P=Scout  D=Doomguard  M=Miller  #=Blocked  .=Open",
+    "transcriptEntry": "{timestamp} | {status} | {command}",
+    "sessionStarted": "ForbocAI micro-game session started: mode={mode}",
+    "stepStarted": ":: {title} [{id}]",
+    "commandResult": "[{status}] {command}",
+    "transcriptHeading": "=== Transcript Summary ===",
+    "invalidMode": "Invalid mode: {mode}"
+  },
+  "usage": [
+    "Usage: forbocai-ue-micro-game [--mode autoplay|manual|chat]",
+    "       forbocai-ue-micro-game --api-url https://api.forboc.ai --mode autoplay"
+  ],
+  "grid": {
+    "blocked": "#",
+    "player": "P",
+    "open": ".",
+    "cellSeparator": " ",
+    "rowSeparator": "\n"
+  },
+  "npcGlyphs": [
+    { "id": "miller", "glyph": "M" },
+    { "id": "doomguard", "glyph": "D" }
+  ],
+  "unknownNpcGlyph": "N",
+  "levels": {
+    "display": false,
+    "error": true
+  },
+  "transcript": {
+    "idFormat": "{0}-{1}"
+  },
+  "conversationTranscript": {
+    "errorStatus": "error",
+    "failureFallback": "Error: NPC conversation evidence unavailable.",
+    "failureLines": [
+      { "template": "\n=== ForbocAI Two NPC Chat ===", "error": false },
+      { "template": "{output}", "error": true },
+      { "template": "=== End ForbocAI Two NPC Chat ===", "error": false }
+    ]
+  },
+  "tokens": {
+    "name": "name",
+    "x": "x",
+    "y": "y",
+    "timestamp": "timestamp",
+    "status": "status",
+    "command": "command",
+    "mode": "mode",
+    "title": "title",
+    "id": "id",
+    "output": "output"
+  }
+}

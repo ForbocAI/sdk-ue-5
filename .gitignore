@@ -9,10 +9,10 @@ Content/
 !Content/Data/
 !Content/Data/**/
 !Content/Data/**/*.json
-!test-game-cli/Content/
-!test-game-cli/Content/Data/
-!test-game-cli/Content/Data/**/
-!test-game-cli/Content/Data/**/*.json
+!micro-game-cli/Content/
+!micro-game-cli/Content/Data/
+!micro-game-cli/Content/Data/**/
+!micro-game-cli/Content/Data/**/*.json
 Releases/
 Developers/
 User/
@@ -63,8 +63,8 @@ dist_ForbocAI_SDK_v*/
 /dist/
 /output/
 
-# JavaScript package installs for CLI test-game tooling
+# JavaScript package installs for CLI micro-game tooling
 node_modules/
 
-# Local plugin discovery host created by scripts/forbocai-ue-test-game
-test-game-cli/.forbocai-plugin-host/
+# Local plugin discovery host created by scripts/forbocai-ue-micro-game
+micro-game-cli/.forbocai-plugin-host/

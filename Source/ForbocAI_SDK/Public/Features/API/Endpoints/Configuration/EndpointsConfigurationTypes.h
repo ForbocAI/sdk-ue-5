@@ -29,7 +29,7 @@ struct FEndpointSegmentData {
   FString Confirm;
   FString Souls;
   FString Verify;
-  FString TestGame;
+  FString MicroGame;
   FString Contract;
 };
 
@@ -62,7 +62,7 @@ struct FEndpointNameData {
   FString PostSoulStorageCommit;
   FString GetSoulStorageCatalog;
   FString GetSoulStorageEntry;
-  FString GetTestGameContract;
+  FString GetMicroGameContract;
 };
 
 struct FEndpointFieldData {

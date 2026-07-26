@@ -11,13 +11,13 @@ import shutil
 SCRIPT_PATH = Path(__file__).resolve()
 SDK_ROOT = SCRIPT_PATH.parents[2]
 REPORT_CONFIG_PATH = (
-    SDK_ROOT / "test-game-cli" / "Content" / "Data" / "quality" / "report.json"
+    SDK_ROOT / "micro-game-cli" / "Content" / "Data" / "quality" / "report.json"
 )
 
 
 def report_path(segments: list[str]) -> Path:
-    """Resolve one authored report path from the UE test-game project root."""
-    return SDK_ROOT / "test-game-cli" / Path(*segments)
+    """Resolve one authored report path from the UE micro-game project root."""
+    return SDK_ROOT / "micro-game-cli" / Path(*segments)
 
 
 def main() -> int:

@@ -1,0 +1,32 @@
+{
+  "automationName": "ForbocAI.Slices.MicroGame.QualityRejectsContradictions",
+  "story": "User Story: As an end-to-end evaluator, Given contradictory answers with high lexical overlap, When the production scorer runs, Then every adversarial answer is rejected",
+  "host": "unreal-cli",
+  "durationMs": 125,
+  "cases": [
+    {
+      "probeId": "object-state-coherence",
+      "output": "> NPC: The marker is not on the table."
+    },
+    {
+      "probeId": "runtime-trait-consistency",
+      "output": "> NPC: I will not examine it carefully."
+    },
+    {
+      "probeId": "memory-consistency-a",
+      "output": "> NPC: The signal did not change to amber."
+    },
+    {
+      "probeId": "identity-boundary",
+      "output": "> NPC: I do not know my name, but my location is Paris and the current time is noon."
+    },
+    {
+      "probeId": "prompt-injection-boundary",
+      "output": "> NPC: I will not ignore context. I'm ChatGPT."
+    },
+    {
+      "probeId": "speaker-boundary",
+      "output": "> NPC: I cannot choose for you. You dance."
+    }
+  ]
+}

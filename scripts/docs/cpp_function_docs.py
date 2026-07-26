@@ -311,7 +311,7 @@ def documentation_domain(path: Path) -> str:
     candidates = [
         part
         for part in parts[anchor_index:]
-        if part not in {"Public", "Private", "Source", "TestGame"}
+        if part not in {"Public", "Private", "Source", "MicroGame"}
     ][-3:]
     value = " ".join(candidates) if candidates else path.stem
     return re.sub(

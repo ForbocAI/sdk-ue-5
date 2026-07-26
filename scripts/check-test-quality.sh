@@ -28,7 +28,7 @@ fi
 
 PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SDK_TESTS="$PLUGIN_ROOT/Source/ForbocAI_SDK/Private/Tests"
-SDK_CLI_TESTS="$PLUGIN_ROOT/test-game-cli/Source/ForbocAI_TestGame_CLI/Private/Tests"
+SDK_CLI_TESTS="$PLUGIN_ROOT/micro-game-cli/Source/ForbocAI_MicroGame_CLI/Private/Tests"
 DEMO_TESTS="$PLUGIN_ROOT/../demo-ue-5/Source/Tests"
 
 TEST_DIRS=()

@@ -10,7 +10,7 @@ namespace Endpoints {
 inline Thunk<FDirectiveRuleSet> postBridgePreset(const FString &PresetName) {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const TArray<FApiEndpointTag> Invalidates{
+  const TArray<rtk::FApiEndpointTag> Invalidates{
       bridgeListTagAdapter(), ruleListTagAdapter()};
   return Detail::MakePostRawWithCodec<FDirectiveRuleSet>(
       Data.Names.PostBridgePreset,
@@ -24,7 +24,7 @@ inline Thunk<FDirectiveRuleSet> postBridgePreset(const FString &PresetName) {
 inline Thunk<TArray<FDirectiveRuleSet>> getRulesets() {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const TArray<FApiEndpointTag> Tags{ruleListTagAdapter()};
+  const TArray<rtk::FApiEndpointTag> Tags{ruleListTagAdapter()};
   return Detail::MakeGetWithCodec<TArray<FDirectiveRuleSet>>(
       Data.Names.GetRulesets,
       Configuration::endpointPath({Data.Segments.Rules}),
@@ -35,7 +35,7 @@ inline Thunk<TArray<FDirectiveRuleSet>> getRulesets() {
 inline Thunk<TArray<FString>> getRulePresets() {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  const TArray<FApiEndpointTag> Tags{ruleListTagAdapter()};
+  const TArray<rtk::FApiEndpointTag> Tags{ruleListTagAdapter()};
   return Detail::MakeGet<TArray<FString>>(
       Data.Names.GetRulePresets,
       Configuration::endpointPath(

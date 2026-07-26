@@ -1,7 +1,7 @@
 function Initialize-ForbocPluginHost {
     param([Parameter(Mandatory = $true)][string]$Root)
 
-    $PluginHost = Join-Path $Root "test-game-cli\.forbocai-plugin-host"
+    $PluginHost = Join-Path $Root "micro-game-cli\.forbocai-plugin-host"
     $PluginRoot = Join-Path $PluginHost "ForbocAI_SDK"
 
     if (-not (Test-Path $PluginHost)) {

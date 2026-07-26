@@ -62,7 +62,7 @@ inline FEndpointConfigurationData readEndpointConfigurationData() {
        DataAdapters::ReadStringField(Segments, TEXT("confirm")),
        DataAdapters::ReadStringField(Segments, TEXT("souls")),
        DataAdapters::ReadStringField(Segments, TEXT("verify")),
-       DataAdapters::ReadStringField(Segments, TEXT("testGame")),
+       DataAdapters::ReadStringField(Segments, TEXT("microGame")),
        DataAdapters::ReadStringField(Segments, TEXT("contract"))},
       {DataAdapters::ReadStringField(QueryKeys, TEXT("limit"))},
       {DataAdapters::ReadStringField(Names, TEXT("getApiStatus")),
@@ -94,7 +94,7 @@ inline FEndpointConfigurationData readEndpointConfigurationData() {
        DataAdapters::ReadStringField(Names, TEXT("postSoulStorageCommit")),
        DataAdapters::ReadStringField(Names, TEXT("getSoulStorageCatalog")),
        DataAdapters::ReadStringField(Names, TEXT("getSoulStorageEntry")),
-       DataAdapters::ReadStringField(Names, TEXT("getTestGameContract"))},
+       DataAdapters::ReadStringField(Names, TEXT("getMicroGameContract"))},
       {DataAdapters::ReadStringField(Fields, TEXT("ghostRunSessionId")),
        DataAdapters::ReadStringField(Fields, TEXT("ghostRunStatus")),
        DataAdapters::ReadStringField(Fields, TEXT("ghostStatusSessionId")),
@@ -179,7 +179,7 @@ inline TArray<FString> endpointNames(const FEndpointNameData &Names) {
           Names.PostSoulStorageCommit,
           Names.GetSoulStorageCatalog,
           Names.GetSoulStorageEntry,
-          Names.GetTestGameContract};
+          Names.GetMicroGameContract};
 }
 
 /**
@@ -221,19 +221,19 @@ inline FString apiEndpoint(const FString &ApiUrl, const FString &Path) {
 }
 
 /**
- * @fn inline FApiEndpointTag endpointTag(const FString &Type, const FString &Id = FString())
+ * @fn inline rtk::FApiEndpointTag endpointTag(const FString &Type, const FString &Id = FString())
  * User Story: As an RTK Query endpoint maintainer, I need tag construction centralized so cache ownership remains explicit and composable.
  */
-inline FApiEndpointTag endpointTag(const FString &Type,
-                                   const FString &Id = FString()) {
-  return FApiEndpointTag{Type, Id};
+inline rtk::FApiEndpointTag endpointTag(const FString &Type,
+                                        const FString &Id = FString()) {
+  return rtk::FApiEndpointTag{Type, Id};
 }
 
 /**
- * @fn inline FApiEndpointTag endpointListTag(const FString &Type)
+ * @fn inline rtk::FApiEndpointTag endpointListTag(const FString &Type)
  * User Story: As an RTK Query catalog owner, I need one authored list identity so collection reads and writes invalidate the same cache entry.
  */
-inline FApiEndpointTag endpointListTag(const FString &Type) {
+inline rtk::FApiEndpointTag endpointListTag(const FString &Type) {
   return endpointTag(Type, endpointData().TagIds.List);
 }
 

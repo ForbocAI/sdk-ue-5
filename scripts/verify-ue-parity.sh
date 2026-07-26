@@ -18,7 +18,7 @@
 #   10. Function documentation (docs/check_function_docs.py)
 #   11. Line-count discipline (check_line_count.py)
 #   12. Dead-code/data guard (check_dead_code.py)
-#   13. Test-game executor-boundary guard (check-test-game-executor-boundary.sh)
+#   13. Micro-game executor-boundary guard (check-micro-game-executor-boundary.sh)
 #   14. Product boundary audit (check-product-boundary.sh)
 #   15. API contract parity (check-api-contract-parity.py)
 #   16. Handler classification parity (check-handler-classification.py)
@@ -45,7 +45,7 @@ SKIPPED=0
 UE_CONFORMANCE_STATUS="skipped"
 FP_CONFORMANCE_STATUS="skipped"
 THIN_WRAPPER_STATUS="skipped"
-TEST_GAME_BOUNDARY_STATUS="skipped"
+MICRO_GAME_BOUNDARY_STATUS="skipped"
 SDK_PARITY_STATUS="skipped"
 PARITY_GENERATOR_TEST_STATUS="skipped"
 RTK_SURFACE_STATUS="skipped"
@@ -189,7 +189,7 @@ run_check "Thin-Wrapper Guardrails (command surface rules)" \
   "$SCRIPT_DIR/check-thin-wrapper-guardrails.sh" THIN_WRAPPER_STATUS
 
 # ── Phase 3b: SDK parity inventory + CLI command parity ──
-run_check "SDK Parity (core/node/test-game inventory and CLI keys)" \
+run_check "SDK Parity (core/node/micro-game inventory and CLI keys)" \
   "$SCRIPT_DIR/check-sdk-parity.py" SDK_PARITY_STATUS
 
 # ── Phase 3c: Source-derived parity generator regressions ──
@@ -226,9 +226,9 @@ run_check "Line-count discipline (Source/Content authored files)" \
 run_check "Dead-code/data guard (orphan authored files)" \
   "$SCRIPT_DIR/check_dead_code.py" DEAD_CODE_STATUS
 
-# ── Phase 3j: Test-game executor boundary ──
-run_check "Test-game executor boundary (no TestGameLib.h, no shadow executor)" \
-  "$SCRIPT_DIR/check-test-game-executor-boundary.sh" TEST_GAME_BOUNDARY_STATUS
+# ── Phase 3j: Micro-game executor boundary ──
+run_check "Micro-game executor boundary (no MicroGameLib.h, no shadow executor)" \
+  "$SCRIPT_DIR/check-micro-game-executor-boundary.sh" MICRO_GAME_BOUNDARY_STATUS
 
 # ── Phase 4: Product Boundary ──
 run_check "Product Boundary (game-agnostic audit)" \
@@ -239,15 +239,15 @@ if [ "$QUICK_MODE" -eq 1 ]; then
   TOTAL=$((TOTAL + 1))
   SKIPPED=$((SKIPPED + 1))
   echo -e "\n${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  echo -e "${CYAN}[SKIPPED] Canonical Contract Parity (API test-game contract)${NC}"
+  echo -e "${CYAN}[SKIPPED] Canonical Contract Parity (API micro-game contract)${NC}"
   echo -e "${YELLOW}Skipped in --quick mode${NC}"
 else
-  run_check "Canonical Contract Parity (API test-game contract)" \
+  run_check "Canonical Contract Parity (API micro-game contract)" \
     "$SCRIPT_DIR/check-api-contract-parity.py" CONTRACT_PARITY_STATUS
 fi
 
 if [ "$QUICK_MODE" -eq 0 ] && [ "$CONTRACT_PARITY_STATUS" = "skipped" ]; then
-  echo -e "${RED}✗ Canonical Contract Parity (API test-game contract) — FAILED${NC}"
+  echo -e "${RED}✗ Canonical Contract Parity (API micro-game contract) — FAILED${NC}"
   echo -e "${RED}Required contract-parity execution did not run.${NC}"
   FAILURES=$((FAILURES + 1))
   CONTRACT_PARITY_STATUS="failed"
@@ -325,7 +325,7 @@ echo "  [$(mark_for_status "$ECS_DATA_STATUS")] ECS authored-data naming"
 echo "  [$(mark_for_status "$FUNCTION_DOCS_STATUS")] Function documentation"
 echo "  [$(mark_for_status "$LINE_COUNT_STATUS")] Line-count discipline"
 echo "  [$(mark_for_status "$DEAD_CODE_STATUS")] Dead-code/data guard"
-echo "  [$(mark_for_status "$TEST_GAME_BOUNDARY_STATUS")] Test-game executor boundary"
+echo "  [$(mark_for_status "$MICRO_GAME_BOUNDARY_STATUS")] Micro-game executor boundary"
 echo "  [$(mark_for_status "$PRODUCT_BOUNDARY_STATUS")] Product boundary audit"
 if [ "$QUICK_MODE" -eq 1 ]; then
   echo "  [ ] Canonical-contract parity (skipped by --quick)"
