@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "requiredFiles": [
+    "Source/ForbocAI_SDK/Public/Systems/CLI/CLIThunks.h",
+    "Source/ForbocAI_SDK/Public/Systems/CLI/CommandRouting/CommandRoutingThunks.h",
+    "Source/ForbocAI_SDK/Public/Systems/CLI/Commandlet/CommandletThunks.h",
+    "Source/ForbocAI_SDK/Private/Systems/CLI/CLIThunks.cpp",
+    "Source/ForbocAI_SDK/Private/Systems/CLI/Commandlet/CommandletThunks.cpp"
+  ],
+  "discovery": [
+    {
+      "name": "SDK CLI domain command routes",
+      "root": "Source/ForbocAI_SDK/Private/Systems/CLI",
+      "glob": "*Commands/*CommandsThunks.cpp",
+      "minimumMatches": 8
+    },
+    {
+      "name": "micro-game command runners",
+      "root": "micro-game-cli/Source/ForbocAI_MicroGame_CLI/Public/MicroGame/Features",
+      "glob": "**/CommandRunner*.h",
+      "minimumMatches": 1
+    }
+  ],
+  "sourceRules": [
+    {
+      "id": "CLI-THIN-001",
+      "summary": "direct HTTP call in a command surface",
+      "pattern": "\\b(?:fetchBaseQuery|FHttpModule|IHttpRequest)\\b"
+    },
+    {
+      "id": "CLI-THIN-002",
+      "summary": "JSON construction in a command surface",
+      "pattern": "\\b(?:MakeShared<FJsonObject>|FJsonObjectConverter|SetStringField|SetNumberField|SetBoolField)\\b"
+    },
+    {
+      "id": "CLI-THIN-003",
+      "summary": "direct store dispatch in a command surface",
+      "pattern": "\\.(?:dispatch|Dispatch)\\s*\\("
+    },
+    {
+      "id": "CLI-THIN-004",
+      "summary": "scenario-specific reference in a command surface",
+      "pattern": "\\b(?:doomguard|miller|stealth|social-encounter|escape-pursuit|persistence-recovery)\\b",
+      "ignoreCase": true
+    },
+    {
+      "id": "CLI-THIN-005",
+      "summary": "game-domain policy term in a command surface",
+      "pattern": "\\b(?:gameplay|game logic|game rules|combat system|rpg|inventory system|quest)\\b",
+      "ignoreCase": true
+    }
+  ],
+  "functionSize": {
+    "id": "CLI-THIN-006",
+    "summary": "command-surface function exceeds the composability budget",
+    "maxLines": 50
+  }
+}

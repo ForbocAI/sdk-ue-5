@@ -11,6 +11,7 @@ public functional-core surface contract.
 from __future__ import annotations
 
 import argparse
+from functools import lru_cache
 from pathlib import Path
 import re
 import sys
@@ -214,17 +215,23 @@ def is_cpp_source(path: Path) -> bool:
     return path.suffix in CPP_SUFFIXES
 
 
-def iter_files(root: Path, suffixes: set[str] = SOURCE_SUFFIXES) -> list[Path]:
+@lru_cache(maxsize=None)
+def _iter_files(root: Path, suffixes: tuple[str, ...]) -> tuple[Path, ...]:
     if not root.exists():
-        return []
-    return sorted(
+        return ()
+    return tuple(sorted(
         path
         for path in root.rglob("*")
         if path.is_file() and path.suffix in suffixes and not has_part(path, IGNORED_PARTS)
-    )
+    ))
 
 
-def ue_authored_source_roots() -> list[Path]:
+def iter_files(root: Path, suffixes: set[str] = SOURCE_SUFFIXES) -> tuple[Path, ...]:
+    return _iter_files(root, tuple(sorted(suffixes)))
+
+
+@lru_cache(maxsize=1)
+def ue_authored_source_roots() -> tuple[Path, ...]:
     roots: list[Path] = []
     for target in ue_targets():
         if target.kind == "sdk":
@@ -235,35 +242,39 @@ def ue_authored_source_roots() -> list[Path]:
             roots.append(module_root if module_root.exists() else target.root / "Source")
         else:
             roots.append(target.root / "Source")
-    return sorted(dict.fromkeys(root for root in roots if root.exists()))
+    return tuple(sorted(dict.fromkeys(root for root in roots if root.exists())))
 
 
-def authored_source_roots() -> list[Path]:
+@lru_cache(maxsize=1)
+def authored_source_roots() -> tuple[Path, ...]:
     ue_roots = ue_authored_source_roots()
     if ue_roots:
         return ue_roots
     if PACKAGES_ROOT.exists():
-        return sorted(path for path in PACKAGES_ROOT.glob("*/src") if path.is_dir())
-    return [SOURCE_ROOT] if SOURCE_ROOT.exists() else []
+        return tuple(sorted(path for path in PACKAGES_ROOT.glob("*/src") if path.is_dir()))
+    return (SOURCE_ROOT,) if SOURCE_ROOT.exists() else ()
 
 
-def authored_source_files() -> list[Path]:
+@lru_cache(maxsize=1)
+def authored_source_files() -> tuple[Path, ...]:
     files = [path for root in authored_source_roots() for path in iter_files(root)]
-    return sorted(dict.fromkeys(files))
+    return tuple(sorted(dict.fromkeys(files)))
 
 
-def public_header_files() -> list[Path]:
+@lru_cache(maxsize=1)
+def public_header_files() -> tuple[Path, ...]:
     public_roots = tuple(root / "Public" for root in authored_source_roots() if (root / "Public").exists())
     roots = public_roots or tuple(root for root in (SOURCE_ROOT,) if root.exists())
-    return [
+    return tuple(
         path
         for root in roots
         for path in iter_files(root, CPP_SUFFIXES)
         if path.suffix in {".h", ".hpp"} and not has_part(path, {"ThirdParty", "__pycache__"})
-    ]
+    )
 
 
-def command_surface_files() -> list[Path]:
+@lru_cache(maxsize=1)
+def command_surface_files() -> tuple[Path, ...]:
     files: list[Path] = []
     if COMMANDLET_FILE.exists():
         files.append(COMMANDLET_FILE)
@@ -295,10 +306,11 @@ def command_surface_files() -> list[Path]:
             and "commands" in path.parts
             and ("cli" in path.parts or "browserCli" in path.parts)
         )
-    return sorted(dict.fromkeys(files))
+    return tuple(sorted(dict.fromkeys(files)))
 
 
-def mock_scan_files() -> list[Path]:
+@lru_cache(maxsize=1)
+def mock_scan_files() -> tuple[Path, ...]:
     files: list[Path] = []
     roots = authored_source_roots()
     if roots:
@@ -307,17 +319,26 @@ def mock_scan_files() -> list[Path]:
         files.extend(path for path in iter_files(SOURCE_ROOT, SOURCE_SUFFIXES) if not has_part(path, {"ThirdParty", "__pycache__"}))
     elif PACKAGES_ROOT.exists():
         files.extend(authored_source_files())
-    return sorted(dict.fromkeys(files))
+    return tuple(sorted(dict.fromkeys(files)))
+
+
+@lru_cache(maxsize=None)
+def source_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8", errors="replace")
+
+
+@lru_cache(maxsize=None)
+def source_code(path: Path) -> str:
+    return code_only(source_text(path))
 
 
 def _finding(path: Path, index: int, rule: Rule, message: str) -> Finding:
-    text = path.read_text(encoding="utf-8", errors="replace")
+    text = source_text(path)
     return Finding(path, line_number(text, index), rule.id, rule.severity, message, column_number(text, index))
 
 
 def _scan_pattern(path: Path, pattern: re.Pattern[str], rule: Rule, message) -> list[Finding]:
-    raw = path.read_text(encoding="utf-8", errors="replace")
-    code = code_only(raw)
+    code = source_code(path)
     return [
         Finding(path, line_number(code, match.start()), rule.id, rule.severity, message(match), column_number(code, match.start()))
         for match in pattern.finditer(code)
@@ -355,8 +376,7 @@ def scan_class_declarations() -> list[Finding]:
     for path in authored_source_files():
         if not is_runtime_source(path):
             continue
-        raw = path.read_text(encoding="utf-8", errors="replace")
-        code = code_only(raw)
+        code = source_code(path)
         for match in CLASS_RE.finditer(code):
             if (match.group("end") or "") == ";":
                 continue
@@ -386,7 +406,7 @@ def scan_public_mutable() -> list[Finding]:
 
 
 def line_count(path: Path) -> int:
-    return len(path.read_text(encoding="utf-8", errors="replace").splitlines())
+    return len(source_text(path).splitlines())
 
 
 def command_limit(path: Path) -> int:
@@ -472,8 +492,8 @@ def scan_fp_substrate_adoption() -> list[Finding]:
     for path in authored_source_files():
         if not is_runtime_source(path) or path.name in FP_IMPLEMENTATION_EXCEPTIONS:
             continue
-        raw = path.read_text(encoding="utf-8", errors="replace")
-        code = code_only(raw)
+        raw = source_text(path)
+        code = source_code(path)
         if not any(pattern.search(code) for pattern in signal_patterns):
             continue
         if FP_SUBSTRATE_RE.search(raw):
@@ -505,7 +525,7 @@ def cpp_include_closure(entry_path: Path, include_root: Path) -> str:
         except ValueError:
             return
         visited.add(resolved)
-        text = resolved.read_text(encoding="utf-8", errors="replace")
+        text = source_text(resolved)
         exposed_source.append(text)
         for include in re.findall(r'^\s*#include\s+"([^"]+)"', text, flags=re.MULTILINE):
             visit(include_root / include)
@@ -548,7 +568,7 @@ def scan_fp_core_surface() -> list[Finding]:
     if PACKAGES_ROOT.exists():
         core_path = PROJECT_ROOT / "packages" / "core" / "src" / "core" / "fp.ts"
         if core_path.exists():
-            missing = missing_ts_surface_names(core_path.read_text(encoding="utf-8", errors="replace"))
+            missing = missing_ts_surface_names(source_text(core_path))
             if missing:
                 findings.append(Finding(
                     core_path,

@@ -1,6 +1,6 @@
-#include "Features/API/Endpoints/NPC/Conversation/Configuration/ConversationConfigurationAdapters.h"
-#include "Features/API/Endpoints/NPC/Conversation/ConversationAdapters.h"
-#include "ForbocAI_SDK/Public/Features/Data/DataAdapters.h"
+#include "Systems/API/Endpoints/NPC/Conversation/Configuration/ConversationConfigurationAdapters.h"
+#include "Systems/API/Endpoints/NPC/Conversation/ConversationAdapters.h"
+#include "ForbocAI_SDK/Public/Systems/Data/DataAdapters.h"
 #include "Misc/AutomationTest.h"
 
 namespace {

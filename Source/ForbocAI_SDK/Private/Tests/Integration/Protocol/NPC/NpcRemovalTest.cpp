@@ -1,15 +1,16 @@
 #include "Core/rtk.hpp"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 #include "CoreMinimal.h"
-#include "Features/Directive/DirectiveSelectors.h"
-#include "Features/Directive/DirectiveSlice.h"
-#include "Features/NPC/NPCActions.h"
-#include "Features/NPC/NPCSelectors.h"
+#include "Entities/Directive/DirectiveSelectors.h"
+#include "Entities/Directive/DirectiveSlice.h"
+#include "Entities/NPC/NPCActions.h"
+#include "Entities/NPC/NPCSelectors.h"
 #include "Misc/AutomationTest.h"
 #include "Store.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FProtocolNpcRemovalCascadeTest,
-    "ForbocAI.Integration.Protocol.NpcRemovalCascade",
+    FORBOCAI_SDK_AUTHORED_STRINGV276741B8CBD3,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
@@ -18,23 +19,23 @@ bool FProtocolNpcRemovalCascadeTest::RunTest(const FString &Parameters) {
   rtk::EnhancedStore<FRuntimeState> TestStore = createRuntimeStore();
 
   FNPCInternalState Npc;
-  Npc.Id = TEXT("ag_cascade");
-  Npc.Persona = TEXT("Cascade test");
+  Npc.Id = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV90C6CC7116F9);
+  Npc.Persona = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD82F4DE3E20E);
   TestStore.dispatch(NPCActions::setNPCInfo(Npc));
   TestStore.dispatch(DirectiveSlice::Actions::directiveRunStarted(
-      TEXT("dir_cascade"), TEXT("ag_cascade"), TEXT("obs")));
+      TEXT(FORBOCAI_SDK_AUTHORED_STRINGV45F249BC72C6), TEXT(FORBOCAI_SDK_AUTHORED_STRINGV90C6CC7116F9), TEXT(FORBOCAI_SDK_AUTHORED_STRINGV2695DC6FB088)));
 
   FRuntimeState State = TestStore.getState();
-  TestTrue("NPC exists",
-           NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_cascade")).hasValue);
-  TestTrue("Directive exists",
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV28F2157B6D54,
+           NPCSelectors::selectNPCById(State.NPCs, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV90C6CC7116F9)).hasValue);
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV6B6F76A78959,
            DirectiveSlice::selectDirectiveById(State.Directives,
-                                                TEXT("dir_cascade")).hasValue);
+                                                TEXT(FORBOCAI_SDK_AUTHORED_STRINGV45F249BC72C6)).hasValue);
 
-  TestStore.dispatch(NPCActions::removeNPC(TEXT("ag_cascade")));
+  TestStore.dispatch(NPCActions::removeNPC(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV90C6CC7116F9)));
   State = TestStore.getState();
   TestFalse(
-      "NPC removed",
-      NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_cascade")).hasValue);
+      FORBOCAI_SDK_AUTHORED_STRINGVD794830A5AF2,
+      NPCSelectors::selectNPCById(State.NPCs, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV90C6CC7116F9)).hasValue);
   return true;
 }

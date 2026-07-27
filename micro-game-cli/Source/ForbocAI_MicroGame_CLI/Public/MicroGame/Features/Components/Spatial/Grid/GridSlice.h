@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -21,7 +22,7 @@ inline TArray<FPosition> SelectGridBlocked(const FGridState &S) {
 /** User Story: As a components spatial grid consumer, I need to invoke create grid slice through a stable signature so the components spatial grid workflow remains explicit and composable. @fn inline rtk::Slice<FGridState> CreateGridSlice() */
 inline rtk::Slice<FGridState> CreateGridSlice() {
   return rtk::createSlice<FGridState>(
-      TEXT("microgame/grid"), CreateGridInitialState(),
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV7C71E8A84336), CreateGridInitialState(),
       [](rtk::ActionReducerMapBuilder<FGridState> &Builder) {
         Builder.addCase(
             GridActions::setGridSizeActionCreator(),

@@ -365,7 +365,14 @@ def main() -> int:
         ExportGroup("@reduxjs/toolkit/query runtime", node_runtime_exports(ts_root, "@reduxjs/toolkit/query")),
         ExportGroup("@reduxjs/toolkit/query source exports", source_exports(package_root / "query/index.ts")),
     )
-    ue_sources = local_include_closure(rtk_hpp, public_root)
+    from generate_authored_values import generated_output_paths
+
+    generated = generated_output_paths()
+    ue_sources = tuple(
+        path
+        for path in local_include_closure(rtk_hpp, public_root)
+        if path not in generated
+    )
     ue_names = rtk_hpp_names(ue_sources)
     section, missing_total = build_section(
         version, ts_root, ue_root, ue_sources, groups, ue_names

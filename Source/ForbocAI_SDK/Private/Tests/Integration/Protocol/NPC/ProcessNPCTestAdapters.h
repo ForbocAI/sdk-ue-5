@@ -1,8 +1,9 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
-#include "Features/Memory/Local/MemoryLocalThunks.h"
-#include "Features/CLI/Config/ConfigThunks.h"
-#include "Features/Protocol/ProtocolThunks.h"
+#include "Systems/Memory/Local/LocalThunks.h"
+#include "Systems/CLI/Config/ConfigThunks.h"
+#include "Systems/Protocol/ProtocolThunks.h"
 #include "ProcessNPCTestTypes.h"
 
 namespace ProcessNPCTestAdapters {
@@ -28,7 +29,7 @@ inline void CleanupAndComplete(
       .catch_([State, Error](std::string CleanupError) {
         const FString Detail = UTF8_TO_TCHAR(CleanupError.c_str());
         Complete(State, false, FAgentResponse(),
-                 FString::Printf(TEXT("%s; memory cleanup failed: %s"),
+                 FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV5BF11EC15CA2),
                                  *Error, *Detail));
       })
       .execute();
@@ -47,7 +48,7 @@ inline void Start(const TSharedPtr<FProcessNPCTestState> &State,
                 const MemoryLocalTypes::FMemoryDatabasePaths &) {
         State->Store
             ->dispatch(rtk::processNPC(
-                Params.NpcId, Params.Input, FString(TEXT("{") TEXT("}")),
+                Params.NpcId, Params.Input, FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF0320EEDEC6F) TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3E3D7634AB68)),
                 Params.Persona, FAgentState(),
                 rtk::LocalProtocolHandlerContext(Params.NpcId)))
             .then([State](const FAgentResponse &Response) {

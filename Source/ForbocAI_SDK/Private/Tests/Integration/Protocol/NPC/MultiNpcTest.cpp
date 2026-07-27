@@ -1,12 +1,13 @@
 #include "Core/rtk.hpp"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 #include "CoreMinimal.h"
-#include "Features/NPC/NPCActions.h"
-#include "Features/NPC/NPCSelectors.h"
+#include "Entities/NPC/NPCActions.h"
+#include "Entities/NPC/NPCSelectors.h"
 #include "Misc/AutomationTest.h"
 #include "Store.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProtocolMultiNpcTest,
-                                 "ForbocAI.Integration.Protocol.MultiNpc",
+                                 FORBOCAI_SDK_AUTHORED_STRINGVC85DF374DA3A,
                                  EAutomationTestFlags_ApplicationContextMask |
                                      EAutomationTestFlags::EngineFilter)
 
@@ -15,46 +16,46 @@ bool FProtocolMultiNpcTest::RunTest(const FString &Parameters) {
   rtk::EnhancedStore<FRuntimeState> TestStore = createRuntimeStore();
 
   FNPCInternalState Npc1;
-  Npc1.Id = TEXT("ag_m1");
-  Npc1.Persona = TEXT("Guard");
+  Npc1.Id = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV81C8915D1051);
+  Npc1.Persona = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV68B64CD755A8);
   FNPCInternalState Npc2;
-  Npc2.Id = TEXT("ag_m2");
-  Npc2.Persona = TEXT("Merchant");
+  Npc2.Id = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV24C7B2B7E77A);
+  Npc2.Persona = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVEF19BC30A5ED);
 
   TestStore.dispatch(NPCActions::setNPCInfo(Npc1));
   TestStore.dispatch(NPCActions::setNPCInfo(Npc2));
-  TestStore.dispatch(NPCActions::setActiveNPC(TEXT("ag_m1")));
+  TestStore.dispatch(NPCActions::setActiveNPC(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV81C8915D1051)));
 
   FRuntimeState State = TestStore.getState();
-  TestEqual("Two NPCs", NPCSelectors::selectAllNPCs(State.NPCs).Num(), 2);
-  TestEqual("Active is m1", NPCSelectors::selectActiveNpcId(State.NPCs),
-            FString(TEXT("ag_m1")));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV1003F8EB9F42, NPCSelectors::selectAllNPCs(State.NPCs).Num(), FORBOCAI_SDK_AUTHORED_NUMBERV6AC392A47561);
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV17B703EF14B8, NPCSelectors::selectActiveNpcId(State.NPCs),
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV81C8915D1051)));
 
   FAgentState M2State;
-  M2State.JsonData = TEXT("{") TEXT("\n\"goods\":[\"sword\",\"potion\"]\n}");
-  TestStore.dispatch(NPCActions::updateNPCState(TEXT("ag_m2"), M2State));
+  M2State.JsonData = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF0320EEDEC6F) TEXT(FORBOCAI_SDK_AUTHORED_STRINGVC092A63A601F);
+  TestStore.dispatch(NPCActions::updateNPCState(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV24C7B2B7E77A), M2State));
 
   State = TestStore.getState();
-  auto M1 = NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_m1"));
-  auto M2 = NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_m2"));
-  TestTrue("M1 exists", M1.hasValue);
-  TestTrue("M2 exists", M2.hasValue);
+  auto M1 = NPCSelectors::selectNPCById(State.NPCs, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV81C8915D1051));
+  auto M2 = NPCSelectors::selectNPCById(State.NPCs, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV24C7B2B7E77A));
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV195B6D36C8DD, M1.hasValue);
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV03E7DD1AF75E, M2.hasValue);
   if (M1.hasValue && M2.hasValue) {
-    TestEqual("M1 state unchanged", M1.value.State.JsonData,
-              FString(FString(TEXT("{") TEXT("}"))));
-    TestTrue("M2 state updated", M2.value.State.JsonData.Contains(TEXT("sword")));
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV1BDA4B2DFB5A, M1.value.State.JsonData,
+              FString(FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF0320EEDEC6F) TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3E3D7634AB68))));
+    TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVB5F8F1F13876, M2.value.State.JsonData.Contains(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVFAA99951D061)));
   }
 
-  TestStore.dispatch(NPCActions::setActiveNPC(TEXT("ag_m2")));
+  TestStore.dispatch(NPCActions::setActiveNPC(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV24C7B2B7E77A)));
   State = TestStore.getState();
-  TestEqual("Active is m2", NPCSelectors::selectActiveNpcId(State.NPCs),
-            FString(TEXT("ag_m2")));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV6E8171B60246, NPCSelectors::selectActiveNpcId(State.NPCs),
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV24C7B2B7E77A)));
 
   auto Active = NPCSelectors::selectActiveNPC(State.NPCs);
-  TestTrue("Active NPC found", Active.hasValue);
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVA2E78A7003A7, Active.hasValue);
   if (Active.hasValue) {
-    TestEqual("Active persona", Active.value.Persona,
-              FString(TEXT("Merchant")));
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVCC5C42496F06, Active.value.Persona,
+              FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVEF19BC30A5ED)));
   }
   return true;
 }

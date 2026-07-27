@@ -131,6 +131,21 @@ inline TSharedRef<FJsonObject> sampleObject(const FQualitySample &Sample) {
   return Object;
 }
 
+/** User Story: As a before-and-after evaluator, I need comparison-authoritative sample fields restored from the committed baseline. @fn inline FQualitySample baselineSample(const TSharedPtr<FJsonValue> &Value) */
+inline FQualitySample baselineSample(const TSharedPtr<FJsonValue> &Value) {
+  const TSharedRef<FJsonObject> Object = Value->AsObject().ToSharedRef();
+  return {DataAdapters::ReadStringField(Object, TEXT("id")),
+          DataAdapters::ReadStringField(Object, TEXT("category")),
+          DataAdapters::ReadStringField(Object, TEXT("pairKey")),
+          DataAdapters::ReadStringField(Object, TEXT("command")),
+          DataAdapters::ReadStringField(Object, TEXT("response")),
+          DataAdapters::ReadStringField(Object, TEXT("reference")),
+          DataAdapters::ReadDoubleField(Object, TEXT("referenceTokenF1")),
+          DataAdapters::ReadDoubleField(Object, TEXT("repeatedNgramRatio")),
+          DataAdapters::ReadDoubleField(Object, TEXT("durationMs")),
+          {}};
+}
+
 /** User Story: As a release gate consumer, I need aggregate decisions serialized independently from rendering. @fn inline TSharedRef<FJsonObject> summaryObject(const FQualityReportSummary &Summary) */
 inline TSharedRef<FJsonObject>
 summaryObject(const FQualityReportSummary &Summary) {
@@ -267,7 +282,9 @@ readQualityBaselineReport(const TSharedRef<FJsonObject> &Object) {
                                           TEXT("regressionGatePassed")),
            DataAdapters::ReadBooleanField(Summary,
                                           TEXT("qualityGatePassed"))},
-          {}};
+          func::map_array<TSharedPtr<FJsonValue>, FQualitySample>(
+              DataAdapters::ReadObjectArrayField(Object, TEXT("samples")),
+              QualityReportSerializationAdaptersDetail::baselineSample)};
 }
 
 } // namespace MicroGame

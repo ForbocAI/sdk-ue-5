@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -16,7 +17,7 @@ namespace InventoryActions {
 inline rtk::ActionCreator<FSetOwnerInventoryPayload>
 setOwnerInventoryActionCreator() {
   static auto C = rtk::createAction<FSetOwnerInventoryPayload>(
-      TEXT("microgame/inventory/setOwnerInventory"));
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV5347332B8186));
   return C;
 }
 

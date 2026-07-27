@@ -201,7 +201,7 @@ run_check "Redux Toolkit surface parity (rtk.hpp + RTK Query)" \
   "$SCRIPT_DIR/check-rtk-parity.py" RTK_SURFACE_STATUS
 
 # ── Phase 3e: Redux/RTK explicit guidance guard ──
-run_check "Redux/RTK Boundary Discipline (UE SDK Features + Views)" \
+run_check "Redux/RTK Boundary Discipline (UE SDK ECS roles + Views)" \
   "$SCRIPT_DIR/check_redux.py" REDUX_RTK_STATUS
 
 # ── Phase 3f: Source/data literal discipline ──

@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/RTK/Entity/Types.hpp"
 
@@ -35,7 +36,7 @@ template <typename T> struct EntityAdapter {
    */
   EntityState<T> addMany(const EntityState<T> &state,
                          const TArray<T> &newEntities) const {
-    return detail::addManyEntitiesRecursive(*this, newEntities, 0, state);
+    return detail::addManyEntitiesRecursive(*this, newEntities, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, state);
   }
 
   /**
@@ -59,7 +60,7 @@ template <typename T> struct EntityAdapter {
    */
   EntityState<T> setAll(const EntityState<T> &state,
                         const TArray<T> &newEntities) const {
-    return detail::setAllEntitiesRecursive(*this, newEntities, 0,
+    return detail::setAllEntitiesRecursive(*this, newEntities, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA,
                                            EntityState<T>());
   }
 
@@ -81,7 +82,7 @@ template <typename T> struct EntityAdapter {
    */
   EntityState<T> upsertMany(const EntityState<T> &state,
                             const TArray<T> &entitiesToUpsert) const {
-    return detail::upsertManyEntitiesRecursive(*this, entitiesToUpsert, 0,
+    return detail::upsertManyEntitiesRecursive(*this, entitiesToUpsert, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA,
                                                state);
   }
 
@@ -106,7 +107,7 @@ template <typename T> struct EntityAdapter {
    */
   EntityState<T> removeMany(const EntityState<T> &state,
                             const TArray<FString> &removeIds) const {
-    return detail::removeManyEntitiesRecursive(removeIds, 0, state);
+    return detail::removeManyEntitiesRecursive(removeIds, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, state);
   }
 
   /**
@@ -140,7 +141,7 @@ template <typename T> struct EntityAdapter {
    */
   EntitySelectors<T> getSelectors() const {
     const auto SelectAll = [](const EntityState<T> &state) -> TArray<T> {
-      return detail::selectAllEntitiesRecursive(state, 0, TArray<T>());
+      return detail::selectAllEntitiesRecursive(state, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, TArray<T>());
     };
 
     const auto SelectById =
@@ -171,7 +172,7 @@ EntityState<T> addManyEntitiesRecursive(const EntityAdapter<T> &Ops,
              ? Next
              : (addEntityIfMissing(Next, Ops.selectId(NewEntities[Index]),
                                    NewEntities[Index]),
-                addManyEntitiesRecursive(Ops, NewEntities, Index + 1,
+                addManyEntitiesRecursive(Ops, NewEntities, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
                                          std::move(Next)));
 }
 
@@ -185,7 +186,7 @@ EntityState<T> setAllEntitiesRecursive(const EntityAdapter<T> &Ops,
              : (Next.ids.Add(Ops.selectId(NewEntities[Index])),
                 Next.entities.Add(Ops.selectId(NewEntities[Index]),
                                   NewEntities[Index]),
-                setAllEntitiesRecursive(Ops, NewEntities, Index + 1,
+                setAllEntitiesRecursive(Ops, NewEntities, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
                                         std::move(Next)));
 }
 
@@ -196,7 +197,7 @@ EntityState<T> upsertManyEntitiesRecursive(const EntityAdapter<T> &Ops,
                                            int32 Index, EntityState<T> Next) {
   return Index >= EntitiesToUpsert.Num()
              ? Next
-             : upsertManyEntitiesRecursive(Ops, EntitiesToUpsert, Index + 1,
+             : upsertManyEntitiesRecursive(Ops, EntitiesToUpsert, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
                                            Ops.setOne(Next,
                                                       EntitiesToUpsert[Index]));
 }
@@ -208,7 +209,7 @@ EntityState<T> removeManyEntitiesRecursive(const TArray<FString> &RemoveIds,
   return Index >= RemoveIds.Num()
              ? Next
              : (removeEntityIfPresent(Next, RemoveIds[Index]),
-                removeManyEntitiesRecursive(RemoveIds, Index + 1,
+                removeManyEntitiesRecursive(RemoveIds, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
                                             std::move(Next)));
 }
 
@@ -219,7 +220,7 @@ TArray<T> selectAllEntitiesRecursive(const EntityState<T> &State, int32 Index,
   return Index >= State.ids.Num()
              ? Result
              : (appendEntityIfPresent(Result, State, State.ids[Index]),
-                selectAllEntitiesRecursive(State, Index + 1,
+                selectAllEntitiesRecursive(State, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
                                            std::move(Result)));
 }
 } // namespace detail

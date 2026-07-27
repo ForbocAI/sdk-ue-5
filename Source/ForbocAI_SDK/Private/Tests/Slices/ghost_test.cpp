@@ -1,7 +1,8 @@
 #include "Core/rtk.hpp"
-#include "Features/Ghost/GhostSelectors.h"
-#include "Features/Ghost/GhostSlice.h"
-#include "Features/Testing/Ghost/TestingGhostAdapters.h"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
+#include "Entities/Ghost/GhostSelectors.h"
+#include "Entities/Ghost/GhostSlice.h"
+#include "Systems/Testing/Ghost/TestingGhostAdapters.h"
 #include "Misc/AutomationTest.h"
 
 using namespace Testing::Ghost;
@@ -149,7 +150,7 @@ inline FGhostSliceState ApplyGhostTestAction(
 } // namespace
 
 IMPLEMENT_COMPLEX_AUTOMATION_TEST(
-    FGhostTest, "ForbocAI.Slices.Ghost",
+    FGhostTest, FORBOCAI_SDK_AUTHORED_STRINGVB684AEDDE438,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 

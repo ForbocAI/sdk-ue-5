@@ -131,7 +131,7 @@ def main() -> int:
             ("source-if", source_rules(root, "Source/ForbocAI_SDK/Private/Demo.cpp", "void r(){ if (Ready()) Step(); }"), {"FP-SOURCE-006"}),
             ("source-switch", source_rules(root, "Source/ForbocAI_SDK/Private/Demo.cpp", "void r(){ switch (Mode) { default: break; } }"), {"FP-SOURCE-007"}),
             ("source-mutable", source_rules(root, "Source/ForbocAI_SDK/Public/Demo.h", "struct FDemo { mutable int32 Value; };"), {"FP-SOURCE-003"}),
-            ("source-http", source_rules(root, "Source/ForbocAI_SDK/Private/CLI/Demo.cpp", "auto Request = FHttpModule::Get().CreateRequest();"), {"FP-SOURCE-005"}),
+            ("source-http", source_rules(root, "Source/ForbocAI_SDK/Private/Systems/CLI/Demo.cpp", "auto Request = FHttpModule::Get().CreateRequest();"), {"FP-SOURCE-005"}),
             ("source-mock", source_rules(root, "Source/ForbocAI_SDK/Public/Demo.h", "struct FMockRuntimeState {};"), {"FP-SOURCE-008"}),
             ("source-accumulation", source_rules(root, "Source/ForbocAI_SDK/Private/Demo.cpp", "void r(){ Items.Add(Value); Names.push(Value); }"), {"FP-SOURCE-009"}),
             ("source-nullish", source_rules(root, "Source/ForbocAI_SDK/Private/Demo.cpp", "void r(){ if (Ptr != nullptr) Step(); if (value === null) step(); }"), {"FP-SOURCE-010"}),

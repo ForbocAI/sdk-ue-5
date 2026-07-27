@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/rtk.hpp"
 #include "MicroGame/Features/Systems/Quality/QualityActions.h"
@@ -11,7 +12,7 @@ inline rtk::Slice<FQualityState> CreateQualitySlice() {
   FQualityState Initial;
   Initial.Status = qualityData().RunStatuses.Idle;
   return rtk::createSlice<FQualityState>(
-      TEXT("microgame/quality"), Initial,
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVECA306F5900F), Initial,
       [](rtk::ActionReducerMapBuilder<FQualityState> &Builder) {
         Builder.addCase(
             QualityActions::evaluationStartedActionCreator(),

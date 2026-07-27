@@ -20,6 +20,8 @@ inline FCommandRunnerData ReadCommandRunnerData() {
       DataAdapters::ReadObjectField(Source, TEXT("limits"));
   const TSharedRef<FJsonObject> Quotes =
       DataAdapters::ReadObjectField(Source, TEXT("quotes"));
+  const TSharedRef<FJsonObject> Evidence =
+      DataAdapters::ReadObjectField(Source, TEXT("evidence"));
   const TSharedRef<FJsonObject> Messages =
       DataAdapters::ReadObjectField(Source, TEXT("messages"));
   const TSharedRef<FJsonObject> TestNames =
@@ -57,6 +59,13 @@ inline FCommandRunnerData ReadCommandRunnerData() {
       DataAdapters::ReadStringField(Quotes, TEXT(#FieldName));
   FORBOCAI_COMMAND_RUNNER_QUOTE_FIELDS(FORBOCAI_READ_COMMAND_RUNNER_QUOTE)
 #undef FORBOCAI_READ_COMMAND_RUNNER_QUOTE
+
+#define FORBOCAI_READ_COMMAND_RUNNER_EVIDENCE(FieldType, FieldName)        \
+  Data.evidence.FieldName =                                                \
+      DataAdapters::ReadStringField(Evidence, TEXT(#FieldName));
+  FORBOCAI_COMMAND_RUNNER_EVIDENCE_FIELDS(
+      FORBOCAI_READ_COMMAND_RUNNER_EVIDENCE)
+#undef FORBOCAI_READ_COMMAND_RUNNER_EVIDENCE
 
 #define FORBOCAI_READ_COMMAND_RUNNER_MESSAGE(FieldType, FieldName)         \
   Data.messages.FieldName =                                                \

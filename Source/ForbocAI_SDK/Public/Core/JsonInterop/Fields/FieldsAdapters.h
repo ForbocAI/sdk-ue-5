@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/JsonInterop/Parsing/ParsingAdapters.h"
 
@@ -54,10 +55,13 @@ inline TSharedPtr<FJsonObject> ParseJsonObjectOrEmpty(const FString &Json) {
   return Object.IsValid() ? Object : MakeShared<FJsonObject>();
 }
 
-/** User Story: As a core json interop fields consumer, I need to invoke json string from field through a stable signature so the core json interop fields workflow remains explicit and composable. @fn inline FString JsonStringFromField( const TSharedPtr<FJsonObject> &Object, const FString &FieldName, const FString &DefaultValue = TEXT("{}")) */
+/**
+ * User Story: As a core json interop fields consumer, I need to invoke json string from field through a stable signature so the core json interop fields workflow remains explicit and composable.
+ * @fn inline FString JsonStringFromField( const TSharedPtr<FJsonObject> &Object, const FString &FieldName, const FString &DefaultValue = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF54CAD9838EB))
+ */
 inline FString JsonStringFromField(
     const TSharedPtr<FJsonObject> &Object, const FString &FieldName,
-    const FString &DefaultValue = TEXT("{}")) {
+    const FString &DefaultValue = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF54CAD9838EB)) {
   return !Object.IsValid() || !Object->HasField(FieldName)
              ? DefaultValue
              : [&]() {

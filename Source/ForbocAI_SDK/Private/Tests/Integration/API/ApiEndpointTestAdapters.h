@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
@@ -7,7 +8,7 @@
 struct FApiEndpointTestState {
   bool bDone = false;
   bool bSuccess = false;
-  int32 HttpCode = 0;
+  int32 HttpCode = FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA;
   FString Body;
   FString Error;
   bool bStarted = false;

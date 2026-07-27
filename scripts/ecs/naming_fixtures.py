@@ -27,17 +27,17 @@ def rid(finding) -> str | None:
 
 
 def main() -> int:
-    features = dom.SOURCE_FEATURES_ROOT
-    views = dom.SOURCE_VIEWS_ROOT
+    role_root = dom.SOURCE_ROLE_ROOTS[0] if dom.SOURCE_ROLE_ROOTS else dom.DEFAULT_SOURCE_ROLE_ROOT
+    views = dom.SOURCE_VIEWS_ROOTS[0] if dom.SOURCE_VIEWS_ROOTS else dom.SOURCE_VIEWS_ROOT
     data = dom.CONTENT_DATA_ROOT
     location = frozenset({"french_gulch"})
     failures: list[str] = []
 
     cases: list[tuple[str, str | None, str | None]] = [
-        ("domain-src-qualified", rid(dom.source_finding(features / "Demo" / "DemoActions.h")), None),
-        ("domain-src-bare", rid(dom.source_finding(features / "Demo" / "Actions.h")), "DOMAIN-SRC-001"),
-        ("domain-src-bad-prefix", rid(dom.source_finding(features / "Demo" / "FooActions.h")), "DOMAIN-SRC-001"),
-        ("domain-src-clean", rid(dom.source_finding(features / "Rendering" / "Sky" / "SkyThunks.h")), None),
+        ("domain-src-qualified", rid(dom.source_finding(role_root / "Demo" / "DemoActions.h")), None),
+        ("domain-src-bare", rid(dom.source_finding(role_root / "Demo" / "Actions.h")), "DOMAIN-SRC-001"),
+        ("domain-src-bad-prefix", rid(dom.source_finding(role_root / "Demo" / "FooActions.h")), "DOMAIN-SRC-001"),
+        ("domain-src-clean", rid(dom.source_finding(role_root / "Rendering" / "Sky" / "SkyThunks.h")), None),
         ("domain-view", rid(dom.view_finding(views / "FooBarView.cpp", set())), "DOMAIN-VIEW-001"),
         ("domain-view-qualified", rid(dom.view_finding(views / "Player" / "Controller" / "ControllerView.cpp", set())), None),
         ("domain-view-bare", rid(dom.view_finding(views / "Player" / "Controller" / "View.cpp", set())), "DOMAIN-VIEW-001"),
@@ -53,7 +53,7 @@ def main() -> int:
         if got != want:
             failures.append(f"{name}: got {got}, want {want}")
 
-    folder = dom.folder_redundancy_findings([features / "Rendering" / "Rendering" / "Slice.h"])
+    folder = dom.folder_redundancy_findings([role_root / "Rendering" / "Rendering" / "Slice.h"])
     if not (folder and folder[0].rule_id == "DOMAIN-FOLDER-001"):
         failures.append("domain-folder-redundant: expected DOMAIN-FOLDER-001")
 

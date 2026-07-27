@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Views boundary rules.
 
-Views are the presentation boundary, not an RTK feature role. They render, bind
-UE lifecycle callbacks, dispatch user/engine events through feature Actions, and
-read already-derived data through feature Selectors. They may not import Types,
+Views are the presentation boundary, not an RTK state or effect role. They render,
+bind UE lifecycle callbacks, dispatch user/engine events through Actions, and
+read already-derived data through Selectors. They may not import Types,
 Slice, Thunks, Listeners, or Adapters, touch the store directly, own async or
 reactive workflows, or subscribe to whole-state objects.
 
@@ -31,8 +31,8 @@ from features_boundaries import (
 
 ROLE = "view"
 
-ALLOWED_FEATURE_ROLES = {"actions", "selectors"}
-FEATURE_INCLUDE = re.compile(r"(?:^|/)Features/")
+ALLOWED_VIEW_IMPORT_ROLES = {"actions", "selectors"}
+ECS_ROLE_INCLUDE = re.compile(r"(?:^|/)(?:Features|Components|Entities|Systems)/")
 STORE_INCLUDE = "Store.h"
 STORE_ACCESS = re.compile(r"\bStore::GetStore\s*\(|\.dispatch\s*\(|\.getState\s*\(")
 DIRECT_ASYNC_WORKFLOW = re.compile(
@@ -59,8 +59,8 @@ VIEW_INCLUDE = register(
     Rule(
         id="RTK-VIEW-002",
         severity=Severity.HIGH,
-        summary="view imports a feature role other than Actions/Selectors",
-        guidance="Views may include only feature Actions or Selectors facades; move derivation to Selectors and effects to Thunks/Listeners.",
+        summary="view imports an ECS role other than Actions/Selectors",
+        guidance="Views may include only Actions or Selectors facades; move derivation to Selectors and effects to Thunks/Listeners.",
         skill="build-modern-redux-apps-modern-redux: keep React components on hooks/facades",
         roles=frozenset({ROLE}),
     )
@@ -71,7 +71,7 @@ VIEW_STORE_IMPORT = register(
         id="RTK-VIEW-003",
         severity=Severity.HIGH,
         summary="view imports Store.h",
-        guidance="Only the single store boundary imports Store.h; use feature Actions and Selectors.",
+        guidance="Only the single store boundary imports Store.h; use Actions and Selectors.",
         skill="build-modern-redux-apps-modern-redux: HIGH importing the store in components",
         roles=frozenset({ROLE}),
     )
@@ -140,9 +140,14 @@ def _include_findings(unit: SourceUnit) -> list[Finding]:
         line = line_number(unit.raw, match.start())
         if Path(include).name.endswith(STORE_INCLUDE):
             findings.append(Finding(unit.path, line, VIEW_STORE_IMPORT.id, VIEW_STORE_IMPORT.severity, VIEW_STORE_IMPORT.summary))
-        elif FEATURE_INCLUDE.match(include) and role_for_include(include) not in ALLOWED_FEATURE_ROLES:
+        target_role = role_for_include(include)
+        if (
+            ECS_ROLE_INCLUDE.match(include)
+            and target_role is not None
+            and target_role not in ALLOWED_VIEW_IMPORT_ROLES
+        ):
             findings.append(
-                Finding(unit.path, line, VIEW_INCLUDE.id, VIEW_INCLUDE.severity, f"disallowed feature include `{include}`")
+                Finding(unit.path, line, VIEW_INCLUDE.id, VIEW_INCLUDE.severity, f"disallowed ECS role include `{include}`")
             )
     return findings
 

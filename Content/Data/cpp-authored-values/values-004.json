@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "target": "sdk",
+  "values": [
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFD89F1603E3B", "kind": "string", "token": "\"ForbocAI.Core.FunctionalCore.Cookbook.MaybeEither\""},
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFD990999AD03", "kind": "string", "token": "\"Unable to read Soul persistence: %s\""},
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFDB6CEB63A00", "kind": "string", "token": "\"ForbocAI.Core.API.ActionContract\""},
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFEAD1CF3CDD6", "kind": "string", "token": "\"Imported timestamp is preserved\""},
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFEE14852341A", "kind": "string", "token": "\"builder.addAsyncThunk should only be called before builder.addDefaultCase\""},
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFEFFEE112DF6", "kind": "string", "token": "\"// END_NODE_CLI_COMMAND_KEYS\""},
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFF8480B053CB", "kind": "string", "token": "\"Cannot attack civilians\""},
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFFCEBD454C3E", "kind": "string", "token": "\"rule\""},
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFFDB85247065", "kind": "string", "token": "\"directive\""},
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFFFABC6923CB", "kind": "string", "token": "\"failed\""}
+  ]
+}

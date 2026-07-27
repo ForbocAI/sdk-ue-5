@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -16,14 +17,14 @@ namespace GameSoulActions {
 inline rtk::ActionCreator<FMarkSoulExportedPayload>
 markSoulExportedActionCreator() {
   static auto C = rtk::createAction<FMarkSoulExportedPayload>(
-      TEXT("microgame/soul/markSoulExported"));
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV2F73CF8DA810));
   return C;
 }
 
 /** User Story: As a features systems soul consumer, I need to invoke mark soul imported action creator through a stable signature so the features systems soul workflow remains explicit and composable. @fn inline rtk::ActionCreator<FString> markSoulImportedActionCreator() */
 inline rtk::ActionCreator<FString> markSoulImportedActionCreator() {
   static auto C =
-      rtk::createAction<FString>(TEXT("microgame/soul/markSoulImported"));
+      rtk::createAction<FString>(TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV4B2AE2A42548));
   return C;
 }
 

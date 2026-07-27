@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/ReduxLogger/Options.hpp"
 
@@ -9,7 +10,7 @@ namespace rtk::logger::detail {
 /** User Story: As a core redux logger consumer, I need to invoke has object level through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> bool hasObjectLevel(const ReduxLoggerOptions<State> &Options) */
 template <typename State>
 bool hasObjectLevel(const ReduxLoggerOptions<State> &Options) {
-  return Options.LevelByType.Num() > 0 || Options.LevelByTypeFn.Num() > 0;
+  return Options.LevelByType.Num() > FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA || Options.LevelByTypeFn.Num() > FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA;
 }
 
 /** User Story: As a core redux logger consumer, I need to invoke default level value through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline FString defaultLevelValue(const FString *FoundLevel) */
@@ -61,11 +62,11 @@ template <typename State>
 FString defaultTitleFormatter(const ReduxLoggerOptions<State> &Options,
                               const AnyAction &Action, const FString &Time,
                               double Took) {
-  return TEXT("action ") + Action.Type +
-         (Options.bTimestamp ? FString::Printf(TEXT(" @ %s"), *Time)
+  return TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD7BA0C34F0EC) + Action.Type +
+         (Options.bTimestamp ? FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV1DA127672A33), *Time)
                              : FString()) +
          (Options.bDuration
-              ? FString::Printf(TEXT(" (in %.2f ms)"), Took)
+              ? FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV8A8760C2B3F8), Took)
               : FString());
 }
 
@@ -74,7 +75,7 @@ inline void logRow(const std::function<void(const FString &)> &Logger,
                    const FString &Level, const FString &Label,
                    const FString &Value) {
   !Level.IsEmpty()
-      ? (Logger(FString::Printf(TEXT("  %s %s"), *Label, *Value)), void())
+      ? (Logger(FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVE1B1F3E7AE9B), *Label, *Value)), void())
       : void();
 }
 
@@ -82,27 +83,27 @@ inline void logRow(const std::function<void(const FString &)> &Logger,
 inline void defaultDiffLogger(
     const FString &PreviousState, const FString &NextState,
     const std::function<void(const FString &)> &Logger, bool bCollapsed) {
-  Logger(bCollapsed ? TEXT("  diff (collapsed)") : TEXT("  diff"));
+  Logger(bCollapsed ? TEXT(FORBOCAI_SDK_AUTHORED_STRINGV5CE3F491DE41) : TEXT(FORBOCAI_SDK_AUTHORED_STRINGV414EF201B87B));
   Logger(PreviousState == NextState
-             ? TEXT("    -- no diff --")
-             : TEXT("    CHANGED: <state text changed; set DiffLogger for "
-                    "field-level diff>"));
-  Logger(TEXT("  -- diff end --"));
+             ? TEXT(FORBOCAI_SDK_AUTHORED_STRINGV44E6FCD85721)
+             : TEXT(FORBOCAI_SDK_AUTHORED_STRINGV6DE9607253F8
+                    FORBOCAI_SDK_AUTHORED_STRINGVA36C3C45544C));
+  Logger(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV91F62130B097));
 }
 
 /** User Story: As a core redux logger consumer, I need to invoke next state for buffer key through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline FString nextStateForBufferKey(const std::vector<LogEntry> &Buffer, size_t Index, const LogEntry &Entry) */
 inline FString nextStateForBufferKey(const std::vector<LogEntry> &Buffer,
                                      size_t Index,
                                      const LogEntry &Entry) {
-  return Index + 1 < Buffer.size() ? Buffer[Index + 1].PrevState
+  return Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4 < Buffer.size() ? Buffer[Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4].PrevState
                                    : Entry.NextState;
 }
 
 /** User Story: As a core redux logger consumer, I need to invoke took for buffer key through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline double tookForBufferKey(const std::vector<LogEntry> &Buffer, size_t Index, const LogEntry &Entry) */
 inline double tookForBufferKey(const std::vector<LogEntry> &Buffer,
                                size_t Index, const LogEntry &Entry) {
-  return Index + 1 < Buffer.size()
-             ? Buffer[Index + 1].Started - Entry.Started
+  return Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4 < Buffer.size()
+             ? Buffer[Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4].Started - Entry.Started
              : Entry.Took;
 }
 
@@ -119,8 +120,8 @@ inline bool resolveCollapsed(
 /** User Story: As a core redux logger consumer, I need to invoke log trace when through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline void logTraceWhen(const std::function<void(const FString &)> &Logger, bool bWithTrace) */
 inline void logTraceWhen(const std::function<void(const FString &)> &Logger,
                          bool bWithTrace) {
-  bWithTrace ? (Logger(TEXT("  TRACE")),
-                Logger(TEXT("    <stack trace unavailable in UE_LOG sink>")),
+  bWithTrace ? (Logger(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV5C007CAFBA32)),
+                Logger(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV20B8F0723021)),
                 void())
              : void();
 }
@@ -129,7 +130,7 @@ inline void logTraceWhen(const std::function<void(const FString &)> &Logger,
 inline void logErrorWhen(const std::function<void(const FString &)> &Logger,
                          const FString &ErrorLevel, const LogEntry &Entry) {
   Entry.bHasError
-      ? logRow(Logger, ErrorLevel, TEXT("error     "), Entry.Error)
+      ? logRow(Logger, ErrorLevel, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV42D78FBFA467), Entry.Error)
       : void();
 }
 
@@ -174,21 +175,21 @@ void printBufferEntry(const std::vector<LogEntry> &Buffer, size_t Index,
   Logger(Title);
   logRow(Logger,
          getLogLevel(Options, FormattedAction, payloadList(Entry.PrevState),
-                     TEXT("prevState")),
-         TEXT("prev state"), Entry.PrevState);
+                     TEXT(FORBOCAI_SDK_AUTHORED_STRINGVE9C123916D77)),
+         TEXT(FORBOCAI_SDK_AUTHORED_STRINGVDF3862BC982B), Entry.PrevState);
   logRow(Logger,
          getLogLevel(Options, FormattedAction,
-                     payloadList(FormattedActionText), TEXT("action")),
-         TEXT("action    "), FormattedActionText);
+                     payloadList(FormattedActionText), TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF673571534B7)),
+         TEXT(FORBOCAI_SDK_AUTHORED_STRINGV4853A4E6FEA7), FormattedActionText);
   logErrorWhen(Logger,
                getLogLevel(Options, FormattedAction,
                            payloadList(Entry.Error, Entry.PrevState),
-                           TEXT("error")),
+                           TEXT(FORBOCAI_SDK_AUTHORED_STRINGV2851A113080D)),
                Entry);
   logRow(Logger,
          getLogLevel(Options, FormattedAction, payloadList(NextState),
-                     TEXT("nextState")),
-         TEXT("next state"), NextState);
+                     TEXT(FORBOCAI_SDK_AUTHORED_STRINGV465B0A4B2D3E)),
+         TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD9EED4E7F70D), NextState);
   logTraceWhen(Logger, Options.bWithTrace);
   logDiffWhen(Options, Logger, Entry.PrevState, NextState, bCollapsed);
 }
@@ -201,7 +202,7 @@ void printBufferRecursive(const std::vector<LogEntry> &Buffer, size_t Index,
   Index >= Buffer.size()
       ? void()
       : (printBufferEntry(Buffer, Index, Options, Logger),
-         printBufferRecursive(Buffer, Index + 1, Options, Logger));
+         printBufferRecursive(Buffer, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, Options, Logger));
 }
 
 /** User Story: As a core redux logger consumer, I need to invoke print buffer through a stable signature so the core redux logger workflow remains explicit and composable. @fn template <typename State> void printBuffer(const std::vector<LogEntry> &Buffer, const ReduxLoggerOptions<State> &Options, const std::function<void(const FString &)> &Logger) */
@@ -209,7 +210,7 @@ template <typename State>
 void printBuffer(const std::vector<LogEntry> &Buffer,
                  const ReduxLoggerOptions<State> &Options,
                  const std::function<void(const FString &)> &Logger) {
-  printBufferRecursive(Buffer, 0, Options, Logger);
+  printBufferRecursive(Buffer, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, Options, Logger);
 }
 
 } // namespace rtk::logger::detail

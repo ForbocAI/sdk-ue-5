@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -27,7 +28,7 @@ inline TArray<FString> SelectPlayerInventory(const FPlayerState &S) {
 /** User Story: As a features entities player consumer, I need to invoke create player slice through a stable signature so the features entities player workflow remains explicit and composable. @fn inline rtk::Slice<FPlayerState> CreatePlayerSlice() */
 inline rtk::Slice<FPlayerState> CreatePlayerSlice() {
   return rtk::createSlice<FPlayerState>(
-      TEXT("microgame/player"), CreatePlayerInitialState(),
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV60B68CD07FAA), CreatePlayerInitialState(),
       [](rtk::ActionReducerMapBuilder<FPlayerState> &Builder) {
         Builder.addCase(
             setPositionActionCreator(),

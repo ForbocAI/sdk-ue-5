@@ -1,6 +1,7 @@
 #include "Core/rtk.hpp"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 #include "CoreMinimal.h"
-#include "Features/Testing/RTK/ToolkitSurface/ToolkitSurfaceAdapters.h"
+#include "Systems/Testing/RTK/ToolkitSurface/ToolkitSurfaceAdapters.h"
 #include "Misc/AutomationTest.h"
 
 using namespace rtk;
@@ -21,7 +22,7 @@ bool FRtkActionAndUtilitySurfaceTest::RunTest(const FString &Parameters) {
   const ToolkitSurface::FToolkitSurfaceFixtures &Fixture =
       ToolkitSurface::ToolkitSurfaceFixtures();
   ActionCreatorWithPreparedPayload<FString, int32> PreparedCreator{
-      TEXT("surface/prepared"),
+      TEXT(FORBOCAI_SDK_AUTHORED_STRINGV186911240CEA),
       [&Fixture](int32 Value) {
         PreparedAction<FString> Prepared{
             FString::Format(*Fixture.Prepared.Format,
@@ -44,7 +45,7 @@ bool FRtkActionAndUtilitySurfaceTest::RunTest(const FString &Parameters) {
             Fixture.Prepared.bError);
 
   const ActionCreatorWithOptionalPayload<int32> OptionalCreator{
-      TEXT("surface/optional")};
+      TEXT(FORBOCAI_SDK_AUTHORED_STRINGV34A139532F1F)};
   const AnyAction Optional = OptionalCreator();
   TestFalse(Fixture.Labels.OptionalPayload,
             static_cast<bool>(Optional.PayloadWrapper));
@@ -52,7 +53,7 @@ bool FRtkActionAndUtilitySurfaceTest::RunTest(const FString &Parameters) {
 
   int32 DispatchCount = Fixture.Utility.InitialDispatchCount;
   const ActionCreator<int32> BoundAction =
-      createAction<int32>(TEXT("surface/bound"));
+      createAction<int32>(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV20BD80E707EA));
   const std::function<AnyAction(int32)> BoundCreator = bindActionCreators(
       BoundAction, [&DispatchCount](const AnyAction &ActionValue) {
         ++DispatchCount;
@@ -100,7 +101,7 @@ bool FRtkAutoBatchSurfaceTest::RunTest(const FString &Parameters) {
   const ToolkitSurface::FToolkitSurfaceFixtures &Fixture =
       ToolkitSurface::ToolkitSurfaceFixtures();
   const ActionCreator<int32> Increment =
-      createAction<int32>(TEXT("counter/increment"));
+      createAction<int32>(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV1358C03B54C1));
   const CaseReducer<int32> Reducer =
       [Increment](const int32 &State, const AnyAction &ActionValue) {
         const func::Maybe<int32> Amount = Increment.extract(ActionValue);
@@ -163,7 +164,7 @@ bool FRtkMiddlewareSurfaceTest::RunTest(const FString &Parameters) {
   const ToolkitSurface::FToolkitSurfaceFixtures &Fixture =
       ToolkitSurface::ToolkitSurfaceFixtures();
   const ActionCreatorWithoutPayload Ticked =
-      createAction(TEXT("counter/ticked"));
+      createAction(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD6245D357C0E));
   const CaseReducer<int32> Reducer =
       [Ticked, &Fixture](const int32 &State, const AnyAction &ActionValue) {
         return Ticked.match(ActionValue)

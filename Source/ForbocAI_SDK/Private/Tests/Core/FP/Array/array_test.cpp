@@ -1,9 +1,10 @@
 #include "Core/fp.hpp"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Misc/AutomationTest.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FFPArrayRangeTest, "ForbocAI.Core.FP.Array.Range",
+    FFPArrayRangeTest, FORBOCAI_SDK_AUTHORED_STRINGV234F20A7F25C,
     EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
 /**
@@ -12,15 +13,15 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  * @fn bool FFPArrayRangeTest::RunTest(const FString &Parameters)
  */
 bool FFPArrayRangeTest::RunTest(const FString &Parameters) {
-  const TArray<int32> Values{2, 4, 6, 8};
+  const TArray<int32> Values{FORBOCAI_SDK_AUTHORED_NUMBERV6AC392A47561, FORBOCAI_SDK_AUTHORED_NUMBERV17F0DE0DDF4A, FORBOCAI_SDK_AUTHORED_NUMBERVFB04E74C9EE8, FORBOCAI_SDK_AUTHORED_NUMBERVAC6FC173B700};
 
-  TestTrue(TEXT("take preserves the requested prefix"),
-           func::take_array(Values, 2) == TArray<int32>({2, 4}));
-  TestTrue(TEXT("drop preserves the requested suffix"),
-           func::drop_array(Values, 2) == TArray<int32>({6, 8}));
-  TestTrue(TEXT("slice clamps an oversized count"),
-           func::slice_array(Values, 1, 99) == TArray<int32>({4, 6, 8}));
-  TestTrue(TEXT("slice clamps a start past the end"),
-           func::slice_array(Values, 99, 1).IsEmpty());
+  TestTrue(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVC33F124E819A),
+           func::take_array(Values, FORBOCAI_SDK_AUTHORED_NUMBERV6AC392A47561) == TArray<int32>({FORBOCAI_SDK_AUTHORED_NUMBERV6AC392A47561, FORBOCAI_SDK_AUTHORED_NUMBERV17F0DE0DDF4A}));
+  TestTrue(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV494B5E1A796B),
+           func::drop_array(Values, FORBOCAI_SDK_AUTHORED_NUMBERV6AC392A47561) == TArray<int32>({FORBOCAI_SDK_AUTHORED_NUMBERVFB04E74C9EE8, FORBOCAI_SDK_AUTHORED_NUMBERVAC6FC173B700}));
+  TestTrue(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV85477BB21B9D),
+           func::slice_array(Values, FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, FORBOCAI_SDK_AUTHORED_NUMBERVC23B4C6F5E94) == TArray<int32>({FORBOCAI_SDK_AUTHORED_NUMBERV17F0DE0DDF4A, FORBOCAI_SDK_AUTHORED_NUMBERVFB04E74C9EE8, FORBOCAI_SDK_AUTHORED_NUMBERVAC6FC173B700}));
+  TestTrue(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVE67FCB8F58B0),
+           func::slice_array(Values, FORBOCAI_SDK_AUTHORED_NUMBERVC23B4C6F5E94, FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4).IsEmpty());
   return true;
 }

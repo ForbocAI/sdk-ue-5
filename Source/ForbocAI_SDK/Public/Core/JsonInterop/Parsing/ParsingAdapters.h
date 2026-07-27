@@ -1,8 +1,10 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/fp.hpp"
 #include "CoreMinimal.h"
 #include "Dom/JsonObject.h"
+#include "Policies/CondensedJsonPrintPolicy.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
@@ -67,14 +69,30 @@ inline FString StringifyObject(const TSharedPtr<FJsonObject> &Object) {
                 Writer->Close(), Json);
 }
 
-/** User Story: As a core json interop parsing consumer, I need to invoke string array values through a stable signature so the core json interop parsing workflow remains explicit and composable. @fn inline TArray<TSharedPtr<FJsonValue>> StringArrayValues(const TArray<FString> &Values, int32 Index = 0, TArray<TSharedPtr<FJsonValue>> Result = {}) */
+/** User Story: As a cross-host JSON consumer, I need objects serialized without presentation whitespace so equivalent TS and UE values share one observable wire form. @fn inline FString StringifyObjectCompact(const TSharedPtr<FJsonObject> &Object) */
+inline FString
+StringifyObjectCompact(const TSharedPtr<FJsonObject> &Object) {
+  FString Json;
+  const auto Writer =
+      TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(
+          &Json);
+  return Object.IsValid()
+             ? (FJsonSerializer::Serialize(Object.ToSharedRef(), Writer), Json)
+             : (Writer->WriteObjectStart(), Writer->WriteObjectEnd(),
+                Writer->Close(), Json);
+}
+
+/**
+ * User Story: As a core json interop parsing consumer, I need to invoke string array values through a stable signature so the core json interop parsing workflow remains explicit and composable.
+ * @fn inline TArray<TSharedPtr<FJsonValue>> StringArrayValues(const TArray<FString> &Values, int32 Index = FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, TArray<TSharedPtr<FJsonValue>> Result = {})
+ */
 inline TArray<TSharedPtr<FJsonValue>>
-StringArrayValues(const TArray<FString> &Values, int32 Index = 0,
+StringArrayValues(const TArray<FString> &Values, int32 Index = FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA,
                   TArray<TSharedPtr<FJsonValue>> Result = {}) {
   return Index >= Values.Num()
              ? Result
              : (Result.Add(MakeShared<FJsonValueString>(Values[Index])),
-                StringArrayValues(Values, Index + 1, MoveTemp(Result)));
+                StringArrayValues(Values, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, MoveTemp(Result)));
 }
 
 /** User Story: As a core json interop parsing consumer, I need to invoke set string array field through a stable signature so the core json interop parsing workflow remains explicit and composable. @fn inline void SetStringArrayField(const TSharedRef<FJsonObject> &Object, const FString &FieldName, const TArray<FString> &Values) */
@@ -96,7 +114,7 @@ inline FString StringifyArray(
 /** User Story: As a core json interop parsing consumer, I need to invoke stringify value through a stable signature so the core json interop parsing workflow remains explicit and composable. @fn inline FString StringifyValue(const TSharedPtr<FJsonValue> &Value) */
 inline FString StringifyValue(const TSharedPtr<FJsonValue> &Value) {
   return !Value.IsValid()
-             ? FString(TEXT("null"))
+             ? FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV529CBDAF6B80))
              : func::or_else(
                    func::multi_match<EJson, FString>(
                        Value->Type,
@@ -114,15 +132,15 @@ inline FString StringifyValue(const TSharedPtr<FJsonValue> &Value) {
                            func::when<EJson, FString>(
                                func::equals<EJson>(EJson::String),
                                [&Value](const EJson &) {
-                                 return FString::Printf(TEXT("\"%s\""),
+                                 return FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVA816DD577B9B),
                                                         *Value->AsString());
                                }),
                            func::when<EJson, FString>(
                                func::equals<EJson>(EJson::Boolean),
                                [&Value](const EJson &) {
                                  return Value->AsBool()
-                                            ? FString(TEXT("true"))
-                                            : FString(TEXT("false"));
+                                            ? FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVDD287442E709))
+                                            : FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVFD3116F7FE2C));
                                }),
                            func::when<EJson, FString>(
                                func::equals<EJson>(EJson::Number),
@@ -131,7 +149,7 @@ inline FString StringifyValue(const TSharedPtr<FJsonValue> &Value) {
                                      Value->AsNumber());
                                }),
                        }),
-                   FString(TEXT("null")));
+                   FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV529CBDAF6B80)));
 }
 
 } // namespace JsonInterop

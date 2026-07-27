@@ -5,7 +5,7 @@
 #include "MicroGame/Features/Systems/Harness/CommandRunner/CommandRunnerThunks.h"
 #include "MicroGame/Features/Systems/Harness/Verification/VerificationThunks.h"
 #include "MicroGame/Features/Systems/Terminal/TerminalSelectors.h"
-#include "CLI/CLIModule.h"
+#include "Systems/CLI/CLIThunks.h"
 
 namespace MicroGame::CLI {
 

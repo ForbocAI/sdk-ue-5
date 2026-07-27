@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -11,7 +12,7 @@ namespace MicroGame {
 /** User Story: As a features systems memory consumer, I need to invoke create game memory slice through a stable signature so the features systems memory workflow remains explicit and composable. @fn inline rtk::Slice<FGameMemorySliceState> CreateGameMemorySlice() */
 inline rtk::Slice<FGameMemorySliceState> CreateGameMemorySlice() {
   return rtk::createSlice<FGameMemorySliceState>(
-      TEXT("microgame/memory"), FGameMemorySliceState(),
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV98294ABF7F80), FGameMemorySliceState(),
       [](rtk::ActionReducerMapBuilder<FGameMemorySliceState> &Builder) {
         Builder.addCase(
             GameMemoryActions::storeMemoryActionCreator(),

@@ -1,14 +1,15 @@
 #include "Core/rtk.hpp"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 #include "CoreMinimal.h"
-#include "Features/Directive/DirectiveSelectors.h"
-#include "Features/Directive/DirectiveSlice.h"
-#include "Features/NPC/NPCActions.h"
+#include "Entities/Directive/DirectiveSelectors.h"
+#include "Entities/Directive/DirectiveSlice.h"
+#include "Entities/NPC/NPCActions.h"
 #include "Misc/AutomationTest.h"
 #include "Store.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FProtocolDirectiveLifecycleTest,
-    "ForbocAI.Integration.Protocol.DirectiveLifecycle",
+    FORBOCAI_SDK_AUTHORED_STRINGVC0BE17B16E6B,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
@@ -17,49 +18,49 @@ bool FProtocolDirectiveLifecycleTest::RunTest(const FString &Parameters) {
   rtk::EnhancedStore<FRuntimeState> TestStore = createRuntimeStore();
 
   FNPCInternalState Npc;
-  Npc.Id = TEXT("ag_dir_test");
-  Npc.Persona = TEXT("A directive test NPC");
+  Npc.Id = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV2604CA73BBC1);
+  Npc.Persona = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV52D6E263F0B9);
   TestStore.dispatch(NPCActions::setNPCInfo(Npc));
-  TestStore.dispatch(NPCActions::setActiveNPC(TEXT("ag_dir_test")));
+  TestStore.dispatch(NPCActions::setActiveNPC(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV2604CA73BBC1)));
   TestStore.dispatch(DirectiveSlice::Actions::directiveRunStarted(
-      TEXT("run_1"), TEXT("ag_dir_test"), TEXT("Player attacks goblin")));
+      TEXT(FORBOCAI_SDK_AUTHORED_STRINGV43E5E61159D0), TEXT(FORBOCAI_SDK_AUTHORED_STRINGV2604CA73BBC1), TEXT(FORBOCAI_SDK_AUTHORED_STRINGVA59FEC8FA667)));
 
   FRuntimeState State = TestStore.getState();
-  TestEqual("Active directive", State.Directives.ActiveDirectiveId,
-            FString(TEXT("run_1")));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV167A86D29691, State.Directives.ActiveDirectiveId,
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV43E5E61159D0)));
   func::Maybe<FDirectiveRun> Run =
-      DirectiveSlice::selectDirectiveById(State.Directives, TEXT("run_1"));
-  TestTrue("Run exists", Run.hasValue);
+      DirectiveSlice::selectDirectiveById(State.Directives, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV43E5E61159D0));
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV9E6C5C93292A, Run.hasValue);
   if (Run.hasValue) {
-    TestEqual("Run status running", static_cast<int32>(Run.value.Status),
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVE094CB23E25B, static_cast<int32>(Run.value.Status),
               static_cast<int32>(EDirectiveStatus::Running));
   }
 
   FDirectiveResponse DirResponse;
-  DirResponse.recallMemory.Query = TEXT("goblin encounter");
-  DirResponse.recallMemory.Limit = 5;
-  DirResponse.recallMemory.Threshold = 0.7f;
+  DirResponse.recallMemory.Query = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVA9225A493166);
+  DirResponse.recallMemory.Limit = FORBOCAI_SDK_AUTHORED_NUMBERV2B61CCD40B6E;
+  DirResponse.recallMemory.Threshold = FORBOCAI_SDK_AUTHORED_NUMBERVA3CBFCEBD9ED;
   TestStore.dispatch(
-      DirectiveSlice::Actions::directiveReceived(TEXT("run_1"), DirResponse));
+      DirectiveSlice::Actions::directiveReceived(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV43E5E61159D0), DirResponse));
 
   FVerdictResponse Verdict;
   Verdict.bValid = true;
-  Verdict.Dialogue = TEXT("You swing your sword at the goblin!");
+  Verdict.Dialogue = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV63DA697143A6);
   Verdict.bHasAction = true;
-  Verdict.Action.Type = TEXT("ATTACK");
-  Verdict.Action.Target = TEXT("goblin");
+  Verdict.Action.Type = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV5EF270DC93FB);
+  Verdict.Action.Target = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVCC3E8E496F2C);
   TestStore.dispatch(
-      DirectiveSlice::Actions::verdictValidated(TEXT("run_1"), Verdict));
+      DirectiveSlice::Actions::verdictValidated(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV43E5E61159D0), Verdict));
 
   State = TestStore.getState();
-  Run = DirectiveSlice::selectDirectiveById(State.Directives, TEXT("run_1"));
-  TestTrue("Run exists after verdict", Run.hasValue);
+  Run = DirectiveSlice::selectDirectiveById(State.Directives, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV43E5E61159D0));
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV07D039443FD5, Run.hasValue);
   if (Run.hasValue) {
-    TestEqual("Run completed", static_cast<int32>(Run.value.Status),
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVAB20CD634973, static_cast<int32>(Run.value.Status),
               static_cast<int32>(EDirectiveStatus::Completed));
-    TestTrue("Verdict valid", Run.value.bVerdictValid);
-    TestEqual("Verdict dialogue", Run.value.VerdictDialogue,
-              FString(TEXT("You swing your sword at the goblin!")));
+    TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVB8BAC0950C5D, Run.value.bVerdictValid);
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV553DF39E998A, Run.value.VerdictDialogue,
+              FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV63DA697143A6)));
   }
   return true;
 }

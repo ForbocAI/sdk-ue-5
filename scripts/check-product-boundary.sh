@@ -73,8 +73,13 @@ echo ""
 # ── Rule 3: No MicroGame types imported in generic headers ──
 echo "[Rule 3] No MicroGame type imports in generic headers..."
 TG_IMPORTS="MicroGame/MicroGame|FMicroGameState|FScenarioStep|FCommandSpec|ECommandGroup|FTranscriptEntry|ETranscriptStatus"
-# Check CLI, Protocol, Core, Blueprint directories
-GENERIC_DIRS=("$PUBLIC/CLI" "$PUBLIC/Protocol" "$PUBLIC/Core")
+# Check generic CLI, protocol, framework, and Unreal integration boundaries.
+GENERIC_DIRS=(
+  "$PUBLIC/Systems/CLI"
+  "$PUBLIC/Systems/Protocol"
+  "$PUBLIC/Systems/Integration"
+  "$PUBLIC/Core"
+)
 for dir in "${GENERIC_DIRS[@]}"; do
   [ -d "$dir" ] || continue
   HITS=$(rg -ci "$TG_IMPORTS" "$dir" 2>/dev/null || true)
@@ -94,7 +99,7 @@ echo "    - memory, soul/ghost, host-local execution"
 echo "  Checking for correct usage..."
 
 # Positive check: ensure key product terms exist somewhere in the generic surface
-PRODUCT_TERMS=("AgentOps" "BridgeOps" "MemoryOps" "SoulOps" "GhostOps")
+PRODUCT_TERMS=("processNpc" "validateBridgePayload" "storeMemory" "exportSoul" "startGhost")
 for term in "${PRODUCT_TERMS[@]}"; do
   if ! rg -q "$term" "${SRC_DIRS[@]}" $EXCLUDE_DIRS 2>/dev/null; then
     echo "  ⚠ Warning: Product term '$term' not found in generic headers"

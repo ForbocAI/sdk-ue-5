@@ -109,18 +109,19 @@ class PathNormalizationTests(unittest.TestCase):
         )
 
     def test_indexes_a_cpp_ancestor_qualified_role_as_the_ts_leaf(self) -> None:
-        source = "Source/Runtime/Public/Features/CLI/Ghost/CLIGhostSelectors.h"
+        source = "Source/Runtime/Public/Entities/CLI/Ghost/CLIGhostSelectors.h"
 
         index = PARITY.ue_suffix_index([source])
 
-        self.assertEqual(index["features/cli/ghost/ghostselectors"], [source])
+        self.assertEqual(index["entities/cli/ghost/ghostselectors"], [source])
 
-    def test_does_not_strip_the_immediate_feature_domain(self) -> None:
-        source = "Source/Runtime/Public/Features/Ghost/GhostSelectors.h"
+    def test_does_not_strip_the_immediate_ecs_domain(self) -> None:
+        source = "Source/Runtime/Public/Entities/Ghost/GhostSelectors.h"
 
         index = PARITY.ue_suffix_index([source])
 
-        self.assertNotIn("features/ghost/selectors", index)
+        self.assertIn("entities/ghost/ghostselectors", index)
+        self.assertNotIn("entities/ghost/selectors", index)
 
 
 class CppSymbolDiscoveryTests(unittest.TestCase):

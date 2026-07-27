@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -9,13 +10,13 @@ namespace MicroGame {
 /** User Story: As a features entities player consumer, I need to invoke set position action creator through a stable signature so the features entities player workflow remains explicit and composable. @fn inline rtk::ActionCreator<FPosition> setPositionActionCreator() */
 inline rtk::ActionCreator<FPosition> setPositionActionCreator() {
   static auto C =
-      rtk::createAction<FPosition>(TEXT("microgame/player/setPosition"));
+      rtk::createAction<FPosition>(TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVDBE007AD7D7F));
   return C;
 }
 
 /** User Story: As a features entities player consumer, I need to invoke set hidden action creator through a stable signature so the features entities player workflow remains explicit and composable. @fn inline rtk::ActionCreator<bool> setHiddenActionCreator() */
 inline rtk::ActionCreator<bool> setHiddenActionCreator() {
-  static auto C = rtk::createAction<bool>(TEXT("microgame/player/setHidden"));
+  static auto C = rtk::createAction<bool>(TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVA1451EBD3A47));
   return C;
 }
 
@@ -35,7 +36,7 @@ struct FPatchPlayerPayload {
 /** User Story: As a features entities player consumer, I need to invoke patch player action creator through a stable signature so the features entities player workflow remains explicit and composable. @fn inline rtk::ActionCreator<FPatchPlayerPayload> patchPlayerActionCreator() */
 inline rtk::ActionCreator<FPatchPlayerPayload> patchPlayerActionCreator() {
   static auto C =
-      rtk::createAction<FPatchPlayerPayload>(TEXT("microgame/player/patchPlayer"));
+      rtk::createAction<FPatchPlayerPayload>(TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV6ABBAA425DB2));
   return C;
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/JsonInterop/Parsing/ParsingAdapters.h"
 #include "Core/fp.hpp"
 #include "MicroGame/Features/Systems/Harness/CommandRunner/Configuration/ConfigurationAdapters.h"
 #include "MicroGame/Features/Systems/Harness/Verification/VerificationAdapters.h"
@@ -22,6 +23,14 @@ inline bool ResolvesNpcAlias(const FString &CommandKey) {
          CommandKey.StartsWith(Commands.memoryPrefix) ||
          (CommandKey.StartsWith(Commands.soulPrefix) &&
           CommandKey != Commands.soulImport);
+}
+
+/** User Story: As an SDK verifier, I need complete JSON command output compacted before text assertions so host presentation whitespace cannot create false failures. @fn inline FString CanonicalAssertionOutput(const FString &Output) */
+inline FString CanonicalAssertionOutput(const FString &Output) {
+  TSharedPtr<FJsonObject> Object;
+  return JsonInterop::ParseJsonObject(Output, Object)
+             ? JsonInterop::StringifyObjectCompact(Object)
+             : Output;
 }
 
 } // namespace detail
@@ -134,25 +143,26 @@ inline func::Maybe<FString> OutputAssertionFailureReason(
   Values.Add(Data.tokens.value, Assertion.Value);
   Values.Add(Data.tokens.kind, Assertion.Kind);
   Values.Add(Data.tokens.alias, Assertion.Value);
+  const FString Evidence = detail::CanonicalAssertionOutput(Result.Output);
   return !Data.outputAssertionKinds.all.Contains(Assertion.Kind)
              ? func::just(VerificationAdapters::FormatGameTemplate(
                    Data.messages.outputAssertionKindUnsupported, Values))
          : Assertion.Kind == Data.outputAssertionKinds.excludesText
-             ? (Result.Output.Contains(Assertion.Value)
+             ? (Evidence.Contains(Assertion.Value)
                     ? func::just(VerificationAdapters::FormatGameTemplate(
                           Data.messages.outputAssertionValuePresent,
                           Values))
                     : func::nothing<FString>())
          : Assertion.Kind == Data.outputAssertionKinds.includesText
-             ? (Result.Output.Contains(Assertion.Value)
+             ? (Evidence.Contains(Assertion.Value)
                     ? func::nothing<FString>()
                     : func::just(VerificationAdapters::FormatGameTemplate(
                           Data.messages.outputAssertionValueMissing,
                           Values)))
              : func::match(
                    ResolveOutputAssertionAlias(Assertion.Value, Aliases),
-                   [&Data, &Result, &Values](const FString &Expected) {
-                     return Result.Output.Contains(Expected)
+                   [&Data, &Evidence, &Values](const FString &Expected) {
+                     return Evidence.Contains(Expected)
                                 ? func::nothing<FString>()
                                 : func::just(
                                       VerificationAdapters::FormatGameTemplate(

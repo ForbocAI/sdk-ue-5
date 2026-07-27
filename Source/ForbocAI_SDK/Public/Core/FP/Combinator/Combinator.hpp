@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/FP/Composition/Composition.hpp"
 
@@ -82,9 +83,9 @@ all_pass(const std::vector<std::function<bool(const T &)>> &predicates) {
     std::function<bool(size_t)> eval = [&](size_t index) {
       return index >= predicates.size()
                  ? true
-                 : predicates[index](value) && eval(index + 1);
+                 : predicates[index](value) && eval(index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4);
     };
-    return eval(0);
+    return eval(FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA);
   };
 }
 
@@ -96,9 +97,9 @@ any_pass(const std::vector<std::function<bool(const T &)>> &predicates) {
     std::function<bool(size_t)> eval = [&](size_t index) {
       return index >= predicates.size()
                  ? false
-                 : predicates[index](value) || eval(index + 1);
+                 : predicates[index](value) || eval(index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4);
     };
-    return eval(0);
+    return eval(FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA);
   };
 }
 

@@ -1,10 +1,11 @@
 #include "Core/fp.hpp"
-#include "Features/Testing/FP/Match/MatchAdapters.h"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
+#include "Systems/Testing/FP/Match/MatchAdapters.h"
 #include "Misc/AutomationTest.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FMultiMatchPredicateTest,
-    "ForbocAI.Core.FunctionalCore.MultiMatch.Predicate",
+    FORBOCAI_SDK_AUTHORED_STRINGV7896674970EC,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /** User Story: As a core fp match consumer, I need to invoke run test through a stable signature so the core fp match workflow remains explicit and composable. @fn bool FMultiMatchPredicateTest::RunTest(const FString &Parameters) */
@@ -49,7 +50,7 @@ bool FMultiMatchPredicateTest::RunTest(const FString &Parameters) {
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FMultiMatchWildcardTest,
-    "ForbocAI.Core.FunctionalCore.MultiMatch.Wildcard",
+    FORBOCAI_SDK_AUTHORED_STRINGV7327EDDEFFF8,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /** User Story: As a core fp match consumer, I need to invoke run test through a stable signature so the core fp match workflow remains explicit and composable. @fn bool FMultiMatchWildcardTest::RunTest(const FString &Parameters) */
@@ -82,7 +83,7 @@ bool FMultiMatchWildcardTest::RunTest(const FString &Parameters) {
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FMultiMatchNoMatchTest,
-    "ForbocAI.Core.FunctionalCore.MultiMatch.NoMatch",
+    FORBOCAI_SDK_AUTHORED_STRINGV94BBBBF39F00,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /** User Story: As a core fp match consumer, I need to invoke run test through a stable signature so the core fp match workflow remains explicit and composable. @fn bool FMultiMatchNoMatchTest::RunTest(const FString &Parameters) */
@@ -103,7 +104,7 @@ bool FMultiMatchNoMatchTest::RunTest(const FString &Parameters) {
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FMultiMatchEqualsTest,
-    "ForbocAI.Core.FunctionalCore.MultiMatch.Equals",
+    FORBOCAI_SDK_AUTHORED_STRINGV705E5F24578E,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /** User Story: As a core fp match consumer, I need to invoke run test through a stable signature so the core fp match workflow remains explicit and composable. @fn bool FMultiMatchEqualsTest::RunTest(const FString &Parameters) */
@@ -141,7 +142,7 @@ bool FMultiMatchEqualsTest::RunTest(const FString &Parameters) {
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FFromNullablePtrTest,
-    "ForbocAI.Core.FunctionalCore.FromNullable.Pointer",
+    FORBOCAI_SDK_AUTHORED_STRINGVE940B876AD53,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /** User Story: As a core fp match consumer, I need to invoke run test through a stable signature so the core fp match workflow remains explicit and composable. @fn bool FFromNullablePtrTest::RunTest(const FString &Parameters) */
@@ -161,7 +162,7 @@ bool FFromNullablePtrTest::RunTest(const FString &Parameters) {
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FFromNullableValueTest,
-    "ForbocAI.Core.FunctionalCore.FromNullable.Value",
+    FORBOCAI_SDK_AUTHORED_STRINGVD21B85AD7E87,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /** User Story: As a core fp match consumer, I need to invoke run test through a stable signature so the core fp match workflow remains explicit and composable. @fn bool FFromNullableValueTest::RunTest(const FString &Parameters) */
@@ -181,7 +182,7 @@ bool FFromNullableValueTest::RunTest(const FString &Parameters) {
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FRequireJustTest, "ForbocAI.Core.FunctionalCore.RequireJust",
+    FRequireJustTest, FORBOCAI_SDK_AUTHORED_STRINGVB10CA23A1256,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /** User Story: As a core fp match consumer, I need to invoke run test through a stable signature so the core fp match workflow remains explicit and composable. @fn bool FRequireJustTest::RunTest(const FString &Parameters) */

@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/RTK/Slice/Slice.hpp"
 
@@ -61,7 +62,7 @@ static const AsyncThunkCreator asyncThunkCreator = AsyncThunkCreator();
 /** User Story: As a core rtk thunk consumer, I need to invoke unwrap result through a stable signature so the core rtk thunk workflow remains explicit and composable. @fn template <typename Error, typename Result> Result unwrapResult(const func::Either<Error, Result> &Value) */
 template <typename Error, typename Result>
 Result unwrapResult(const func::Either<Error, Result> &Value) {
-  checkf(!Value.isLeft, TEXT("unwrapResult received a rejected result"));
+  checkf(!Value.isLeft, TEXT(FORBOCAI_SDK_AUTHORED_STRINGVAE16EEC7929E));
   return Value.right;
 }
 
@@ -147,9 +148,9 @@ AsyncThunkConfig<Result, Arg, State> createAsyncThunk(
                                             const ThunkApi<State> &)>
         PayloadCreator,
     ConditionCallback<Arg, State> Condition) {
-  auto pending = createAction<Arg>(TypePrefix + TEXT("/pending"));
-  auto fulfilled = createAction<Result>(TypePrefix + TEXT("/fulfilled"));
-  auto rejected = createAction<FString>(TypePrefix + TEXT("/rejected"));
+  auto pending = createAction<Arg>(TypePrefix + TEXT(FORBOCAI_SDK_AUTHORED_STRINGV9BA570F18FC7));
+  auto fulfilled = createAction<Result>(TypePrefix + TEXT(FORBOCAI_SDK_AUTHORED_STRINGV0DFF16731112));
+  auto rejected = createAction<FString>(TypePrefix + TEXT(FORBOCAI_SDK_AUTHORED_STRINGV626EB0E3DA73));
 
   auto thunkActionCreator = [pending, fulfilled, rejected, PayloadCreator,
                              Condition](
@@ -171,7 +172,7 @@ AsyncThunkConfig<Result, Arg, State> createAsyncThunk(
                  ? func::createAsyncResult<Result>(
                        [](std::function<void(Result)>,
                           std::function<void(std::string)> Reject) {
-                         Reject("Aborted: condition returned false");
+                         Reject(FORBOCAI_SDK_AUTHORED_STRINGVDAA4BC96621E);
                        })
                  : [&]() -> func::AsyncResult<Result> {
 
@@ -246,7 +247,7 @@ ActionReducerMapBuilder<State> &ActionReducerMapBuilder<State>::addAsyncThunk(
     const AsyncThunkConfig<Returned, ThunkArg, State> &AsyncThunk,
     const AsyncThunkReducers<State, ThunkArg, Returned> &Reducers) {
   checkf(!bHasDefaultCaseReducer,
-         TEXT("builder.addAsyncThunk should only be called before builder.addDefaultCase"));
+         TEXT(FORBOCAI_SDK_AUTHORED_STRINGVFEE14852341A));
 
   return detail::addAsyncThunkSettledMatcherWhen(
       detail::addAsyncThunkCaseWhen(

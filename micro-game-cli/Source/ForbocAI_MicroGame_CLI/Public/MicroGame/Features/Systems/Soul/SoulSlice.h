@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -32,7 +33,7 @@ inline func::Maybe<FString> SelectSoulExportTxId(
 /** User Story: As a features systems soul consumer, I need to invoke create game soul slice through a stable signature so the features systems soul workflow remains explicit and composable. @fn inline rtk::Slice<FSoulTrackingState> CreateGameSoulSlice() */
 inline rtk::Slice<FSoulTrackingState> CreateGameSoulSlice() {
   return rtk::createSlice<FSoulTrackingState>(
-      TEXT("microgame/soul"), FSoulTrackingState(),
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVD51D35127DA5), FSoulTrackingState(),
       [](rtk::ActionReducerMapBuilder<FSoulTrackingState> &Builder) {
         Builder.addCase(
             GameSoulActions::markSoulExportedActionCreator(),

@@ -1,10 +1,10 @@
-#include "Features/API/Endpoints/Bridge/EndpointsBridgeAdapters.h"
-#include "Features/API/Endpoints/Ghost/EndpointsGhostAdapters.h"
-#include "Features/API/Endpoints/NPC/EndpointsNPCAdapters.h"
-#include "Features/API/Endpoints/Rules/EndpointsRulesAdapters.h"
-#include "Features/API/Endpoints/Soul/EndpointsSoulAdapters.h"
-#include "Features/API/Endpoints/System/SystemAdapters.h"
-#include "Features/Testing/API/CacheTags/CacheTagsAdapters.h"
+#include "Systems/API/Endpoints/Bridge/EndpointsBridgeAdapters.h"
+#include "Systems/API/Endpoints/Ghost/EndpointsGhostAdapters.h"
+#include "Systems/API/Endpoints/NPC/EndpointsNPCAdapters.h"
+#include "Systems/API/Endpoints/Rules/EndpointsRulesAdapters.h"
+#include "Systems/API/Endpoints/Soul/EndpointsSoulAdapters.h"
+#include "Systems/API/Endpoints/Diagnostics/DiagnosticsAdapters.h"
+#include "Systems/Testing/API/CacheTags/CacheTagsAdapters.h"
 #include "Misc/AutomationTest.h"
 
 namespace CacheTags = Testing::API::CacheTags;
@@ -58,6 +58,6 @@ bool FApiCacheTagsTest::RunTest(const FString &Parameters) {
           APISlice::Endpoints::soulListTagAdapter(),
           Fixture.Tags.SoulList);
   TestTag(*this, Fixture.Labels.System,
-          APISlice::Endpoints::systemTagAdapter(), Fixture.Tags.System);
+          APISlice::Endpoints::diagnosticsTagAdapter(), Fixture.Tags.System);
   return true;
 }

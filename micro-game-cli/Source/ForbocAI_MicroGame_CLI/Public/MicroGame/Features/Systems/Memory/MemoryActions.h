@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -10,14 +11,14 @@ namespace GameMemoryActions {
 /** User Story: As a features systems memory consumer, I need to invoke store memory action creator through a stable signature so the features systems memory workflow remains explicit and composable. @fn inline rtk::ActionCreator<FMemoryRecord> storeMemoryActionCreator() */
 inline rtk::ActionCreator<FMemoryRecord> storeMemoryActionCreator() {
   static auto C =
-      rtk::createAction<FMemoryRecord>(TEXT("microgame/memory/storeMemory"));
+      rtk::createAction<FMemoryRecord>(TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVA091263BB4DA));
   return C;
 }
 
 /** User Story: As a features systems memory consumer, I need to invoke clear memory for npc action creator through a stable signature so the features systems memory workflow remains explicit and composable. @fn inline rtk::ActionCreator<FString> clearMemoryForNpcActionCreator() */
 inline rtk::ActionCreator<FString> clearMemoryForNpcActionCreator() {
   static auto C =
-      rtk::createAction<FString>(TEXT("microgame/memory/clearMemoryForNpc"));
+      rtk::createAction<FString>(TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV129589CC9477));
   return C;
 }
 

@@ -1,9 +1,10 @@
-#include "Features/Memory/Configuration/MemoryConfigurationAdapters.h"
-#include "Features/Memory/Local/Storage/Sqlite/Connection/ConnectionAdapters.h"
-#include "Features/Memory/Local/Storage/Sqlite/Mutation/MutationAdapters.h"
-#include "Features/Memory/Local/Storage/Sqlite/Query/SqliteQueryAdapters.h"
-#include "Features/Memory/Vector/MemoryVectorAdapters.h"
-#include "Features/Testing/Memory/TestingMemoryAdapters.h"
+#include "Systems/Memory/Configuration/MemoryConfigurationAdapters.h"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
+#include "Systems/Memory/Local/Storage/Sqlite/Connection/ConnectionAdapters.h"
+#include "Systems/Memory/Local/Storage/Sqlite/Mutation/MutationAdapters.h"
+#include "Systems/Memory/Local/Storage/Sqlite/Query/SqliteQueryAdapters.h"
+#include "Systems/Memory/Vector/MemoryVectorAdapters.h"
+#include "Systems/Testing/Memory/TestingMemoryAdapters.h"
 #include "Misc/AutomationTest.h"
 #include "Misc/Guid.h"
 #include "Misc/Paths.h"
@@ -195,7 +196,7 @@ bool FMemoryContractMigrationTest::RunTest(const FString &Parameters) {
                  Items.right[Fixtures.Numbers.FirstIndex].Text ==
                      Fixtures.Record.Text);
     const float SimilarityTolerance = FMath::Pow(
-        10.0f, -static_cast<float>(Fixtures.Numbers.SimilarityPrecision));
+        FORBOCAI_SDK_AUTHORED_NUMBERV3B3FBD161C0D, -static_cast<float>(Fixtures.Numbers.SimilarityPrecision));
     TestTrue(
         Fixtures.Assertions.MigratedSimilarity,
         !Search.isLeft &&

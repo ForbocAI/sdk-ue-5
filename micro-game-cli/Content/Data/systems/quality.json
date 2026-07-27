@@ -161,7 +161,7 @@
     "latencyBudgetExceeded": "latency_budget_exceeded",
     "pairSimilarityBelowMinimum": "pair_similarity_below_minimum",
     "baselineMissing": "No compatible quality baseline is committed for this host.",
-    "baselineIncompatible": "The committed quality baseline uses a different schema, contract, or host.",
+    "baselineIncompatible": "The committed quality baseline uses a different schema, contract, host, or command workload.",
     "absoluteGateFailed": "One or more absolute quality metrics failed.",
     "regressionGateFailed": "One or more quality metrics regressed against the committed baseline.",
     "qualityPassed": "All absolute and before/after end-to-end output gates passed.",

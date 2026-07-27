@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/RTK/Slice/Builder.hpp"
 
@@ -73,7 +74,7 @@ reduceMatchersRecursive(const TArray<ActionMatcherDescription<State>> &ActionMat
   return Index >= ActionMatchers.Num()
              ? Acc
              : reduceMatchersRecursive(
-                   ActionMatchers, Action, Index + 1,
+                   ActionMatchers, Action, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
                    ActionMatchers[Index].Matcher(Action)
                        ? ReducedState<State>{
                              ActionMatchers[Index].Reducer(Acc.StateValue, Action),
@@ -105,7 +106,7 @@ Slice<State> finalizeSlice(ActionReducerMapBuilder<State> Builder) {
        bHasDefaultCaseReducer](const State &PrevState,
                                const AnyAction &Action) -> State {
     ReducedState<State> Reduced =
-        reduceMatchersRecursive(ActionMatchers, Action, 0,
+        reduceMatchersRecursive(ActionMatchers, Action, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA,
                                 reduceCase(ReducerMap, PrevState, Action));
 
     return (!Reduced.bHandled && bHasDefaultCaseReducer)
@@ -161,7 +162,7 @@ buildCreateSlice() {
 template <typename State, typename BuilderCallbackFn>
 CaseReducer<State> createReducer(State InitialState,
                                  BuilderCallbackFn BuilderCallback) {
-  return createSlice<State>(TEXT("reducer"), MoveTemp(InitialState),
+  return createSlice<State>(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV220B8224F6F8), MoveTemp(InitialState),
                             MoveTemp(BuilderCallback))
       .Reducer;
 }

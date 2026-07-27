@@ -1,6 +1,6 @@
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
-#include "Features/Testing/RTK/ToolkitSurface/ToolkitSurfaceAdapters.h"
+#include "Systems/Testing/RTK/ToolkitSurface/ToolkitSurfaceAdapters.h"
 #include "Misc/AutomationTest.h"
 #include "rtk_test_fixtures.h"
 

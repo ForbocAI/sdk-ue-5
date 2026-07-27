@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 namespace ecs {
 
@@ -72,7 +73,7 @@ inline FWorldInspection inspectWorld(const FWorld &World) {
 inline FString debugWorldSummary(const FWorld &World) {
   const FWorldInspection Inspection = inspectWorld(World);
   return FString::Printf(
-      TEXT("ECS World: entities=%d componentTypes=%d resources=%d events=%d dirty=%d domains=%d generation=%lld"),
+      TEXT(FORBOCAI_SDK_AUTHORED_STRINGV06F7FFCDA5E3),
       Inspection.Storage.EntityCount, Inspection.Storage.ComponentTypeCount,
       Inspection.Storage.ResourceCount, Inspection.Storage.EventTypeCount,
       Inspection.Runtime.DirtyEntityCount, Inspection.Runtime.DomainCount,

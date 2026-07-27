@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/RTK/Query/Request/Request.hpp"
 
@@ -36,7 +37,7 @@ inline FetchBaseQueryMeta fetchMeta(
 
 /** User Story: As an RTK Query transport, I need one canonical network failure value shared by text, JSON, and binary response handlers. @fn inline FetchBaseQueryError fetchNetworkFailureError() */
 inline FetchBaseQueryError fetchNetworkFailureError() {
-  return FetchBaseQueryError::fetchError(TEXT("Network failure"));
+  return FetchBaseQueryError::fetchError(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV5AFDDD9C0874));
 }
 
 /** User Story: As a rtk query response consumer, I need to invoke decode fetch content through a stable signature so the rtk query response workflow remains explicit and composable. @fn template <typename T> QueryReturnValue<T> decodeFetchContent( const FString &Content, int32 Code, const func::Maybe<FetchBaseQueryMeta> &Meta) */
@@ -51,7 +52,7 @@ QueryReturnValue<T> decodeFetchContent(
                    ? QueryReturnValue<T>::success(ResultPayload, Meta)
                    : QueryReturnValue<T>::failure(
                          FetchBaseQueryError::parsingError(
-                             Code, Content, TEXT("JSON deserialization failed")),
+                             Code, Content, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3C1F951AB2E8)),
                          Meta);
 }
 
@@ -61,7 +62,7 @@ void resolveFetchCompletion(
     const std::function<void(QueryReturnValue<T>)> &Resolve,
     const FetchBaseQueryRequest &RequestMeta, FHttpResponsePtr Res,
     bool bWasSuccessful) {
-  const int32 Code = Res.IsValid() ? Res->GetResponseCode() : 0;
+  const int32 Code = Res.IsValid() ? Res->GetResponseCode() : FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA;
   const FString Content = Res.IsValid() ? Res->GetContentAsString() : TEXT("");
   const func::Maybe<FetchBaseQueryResponse> ResponseMeta =
       Res.IsValid() ? func::just(fetchResponseMeta(Res, Content))
@@ -72,7 +73,7 @@ void resolveFetchCompletion(
   Resolve((!bWasSuccessful || !Res.IsValid())
               ? QueryReturnValue<T>::failure(
                     fetchNetworkFailureError(), Meta)
-              : (Code < 200 || Code >= 300)
+              : (Code < FORBOCAI_SDK_AUTHORED_NUMBERVEF1B5401B507 || Code >= FORBOCAI_SDK_AUTHORED_NUMBERV07C0796E1646)
                     ? QueryReturnValue<T>::failure(
                           FetchBaseQueryError::httpError(Code, Content), Meta)
                     : decodeFetchContent<T>(Content, Code, Meta));
@@ -84,7 +85,7 @@ inline void resolveFetchCompletion<TArray<uint8>>(
     const std::function<void(QueryReturnValue<TArray<uint8>>)> &Resolve,
     const FetchBaseQueryRequest &RequestMeta, FHttpResponsePtr Res,
     bool bWasSuccessful) {
-  const int32 Code = Res.IsValid() ? Res->GetResponseCode() : 0;
+  const int32 Code = Res.IsValid() ? Res->GetResponseCode() : FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA;
   const FString Diagnostic =
       Res.IsValid() ? Res->GetContentAsString() : FString();
   const func::Maybe<FetchBaseQueryResponse> ResponseMeta =
@@ -96,7 +97,7 @@ inline void resolveFetchCompletion<TArray<uint8>>(
       (!bWasSuccessful || !Res.IsValid())
           ? QueryReturnValue<TArray<uint8>>::failure(
                 fetchNetworkFailureError(), Meta)
-          : (Code < 200 || Code >= 300)
+          : (Code < FORBOCAI_SDK_AUTHORED_NUMBERVEF1B5401B507 || Code >= FORBOCAI_SDK_AUTHORED_NUMBERV07C0796E1646)
                 ? QueryReturnValue<TArray<uint8>>::failure(
                       FetchBaseQueryError::httpError(Code, Diagnostic), Meta)
                 : QueryReturnValue<TArray<uint8>>::success(Res->GetContent(),
@@ -109,7 +110,7 @@ template <typename T, typename Enable> struct JsonDeserializer {
   /** User Story: As a rtk query response consumer, I need to invoke deserialize through a stable signature so the rtk query response workflow remains explicit and composable. @fn static bool Deserialize(const FString &Content, T &OutValue) */
   static bool Deserialize(const FString &Content, T &OutValue) {
     return FJsonObjectConverter::JsonObjectStringToUStruct(Content, &OutValue,
-                                                           0, 0);
+                                                           FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA);
   }
 };
 
@@ -137,7 +138,7 @@ template <> struct JsonDeserializer<TArray<FString>, void> {
     return !FJsonSerializer::Deserialize(Reader, JsonValues)
                ? false
                : (OutValue.Empty(JsonValues.Num()),
-                  deserializeStringArrayRecursive(JsonValues, 0, OutValue));
+                  deserializeStringArrayRecursive(JsonValues, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, OutValue));
   }
 };
 
@@ -149,7 +150,7 @@ template <typename T> struct JsonDeserializer<TArray<T>, void> {
     return !FJsonSerializer::Deserialize(Reader, JsonValues)
                ? false
                : (OutValue.Empty(JsonValues.Num()),
-                  deserializeStructArrayRecursive<T>(JsonValues, 0, OutValue));
+                  deserializeStructArrayRecursive<T>(JsonValues, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, OutValue));
   }
 };
 

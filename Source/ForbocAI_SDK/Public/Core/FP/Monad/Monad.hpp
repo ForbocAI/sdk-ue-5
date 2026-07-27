@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/FP/Functor/Functor.hpp"
 
@@ -90,7 +91,7 @@ template <typename E, typename T, typename Func>
 auto either_map_left(const Either<E, T> &e, Func f)
     -> Either<decltype(f(e.left)), T> {
   typedef decltype(f(e.left)) NextError;
-  std::function<Either<NextError, T>()> Cases[2] = {
+  std::function<Either<NextError, T>()> Cases[FORBOCAI_SDK_AUTHORED_NUMBERV6AC392A47561] = {
       [&]() { return make_right<NextError, T>(e.right); },
       [&]() { return make_left<NextError, T>(f(e.left)); }};
   return Cases[static_cast<size_t>(e.isLeft)]();
@@ -131,7 +132,7 @@ T maybe_or_else(const Maybe<T> &m, DefaultFactory defaultFactory) {
  */
 template <typename E, typename T>
 T either_or_else(const Either<E, T> &e, const T &def) {
-  std::function<T()> Cases[2] = {[&]() { return e.right; },
+  std::function<T()> Cases[FORBOCAI_SDK_AUTHORED_NUMBERV6AC392A47561] = {[&]() { return e.right; },
                                  [&]() { return def; }};
   return Cases[static_cast<size_t>(e.isLeft)]();
 }

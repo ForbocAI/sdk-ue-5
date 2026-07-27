@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/FP/Sequence/Sequence.hpp"
 #include "Core/FP/Combinator/Combinator.hpp"
@@ -31,11 +32,14 @@ Catalog<typename std::decay<Values>::type...> catalog(Values &&...values) {
 }
 
 namespace detail {
-/** User Story: As a core fp catalog consumer, I need to invoke tail tuple impl through a stable signature so the core fp catalog workflow remains explicit and composable. @fn template <typename Tuple, size_t... Indices> auto tailTupleImpl(const Tuple &values, seq<Indices...>) -> decltype(std::make_tuple(std::get<Indices + 1>(values)...)) */
+/**
+ * User Story: As a core fp catalog consumer, I need to invoke tail tuple impl through a stable signature so the core fp catalog workflow remains explicit and composable.
+ * @fn template <typename Tuple, size_t... Indices> auto tailTupleImpl(const Tuple &values, seq<Indices...>) -> decltype(std::make_tuple(std::get<Indices + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4>(values)...))
+ */
 template <typename Tuple, size_t... Indices>
 auto tailTupleImpl(const Tuple &values, seq<Indices...>)
-    -> decltype(std::make_tuple(std::get<Indices + 1>(values)...)) {
-  return std::make_tuple(std::get<Indices + 1>(values)...);
+    -> decltype(std::make_tuple(std::get<Indices + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4>(values)...)) {
+  return std::make_tuple(std::get<Indices + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4>(values)...);
 }
 } // namespace detail
 
@@ -64,7 +68,7 @@ template <typename Head, typename... Tail, typename Acc, typename Step>
 Acc foldTupleRecursive(const std::tuple<Head, Tail...> &values, Acc acc,
                        Step step) {
   return foldTupleRecursive(tail_tuple(values),
-                            step(acc, std::get<0>(values)), step);
+                            step(acc, std::get<FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA>(values)), step);
 }
 
 /** User Story: As a core fp catalog consumer, I need to invoke zip tuple fold recursive through a stable signature so the core fp catalog workflow remains explicit and composable. @fn template <typename Acc, typename Step> Acc zipTupleFoldRecursive(const std::tuple<> &, const std::tuple<> &, Acc acc, Step) */
@@ -82,7 +86,7 @@ Acc zipTupleFoldRecursive(const std::tuple<LeftHead, LeftTail...> &left,
                           Acc acc, Step step) {
   return zipTupleFoldRecursive(
       tail_tuple(left), tail_tuple(right),
-      step(acc, std::get<0>(left), std::get<0>(right)), step);
+      step(acc, std::get<FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA>(left), std::get<FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA>(right)), step);
 }
 } // namespace detail
 
@@ -113,14 +117,14 @@ Acc zip_catalog_fold(const Catalog<LeftValues...> &left,
                      const Catalog<RightValues...> &right, Acc seed,
                      Step step) {
   static_assert(sizeof...(LeftValues) == sizeof...(RightValues),
-                "zip_catalog_fold requires equally sized catalogs");
+                FORBOCAI_SDK_AUTHORED_STRINGV8FD890DEE784);
   return detail::zipTupleFoldRecursive(left.values, right.values, seed, step);
 }
 
 /** User Story: As a core fp catalog consumer, I need to invoke example clamp channel through a stable signature so the core fp catalog workflow remains explicit and composable. @fn inline std::function<int(int)> example_clamp_channel() */
 inline std::function<int(int)> example_clamp_channel() {
-  return pipe3([](int value) { return std::max(0, value); },
-               [](int value) { return std::min(255, value); }, identity<int>);
+  return pipe3([](int value) { return std::max(FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, value); },
+               [](int value) { return std::min(FORBOCAI_SDK_AUTHORED_NUMBERV3848D424B239, value); }, identity<int>);
 }
 
 /** User Story: As a core fp catalog consumer, I need to invoke example fill ratio through a stable signature so the core fp catalog workflow remains explicit and composable. @fn inline std::function<float(const std::pair<float, float> &)> example_fill_ratio() */
@@ -128,7 +132,7 @@ inline std::function<float(const std::pair<float, float> &)>
 example_fill_ratio() {
   return converge2(
       [](float current, float maxValue) {
-        return current / std::max(maxValue, 1.192092896e-07F);
+        return current / std::max(maxValue, FORBOCAI_SDK_AUTHORED_NUMBERV1364C45C42A5);
       },
       [](const std::pair<float, float> &reading) { return reading.first; },
       [](const std::pair<float, float> &reading) { return reading.second; });

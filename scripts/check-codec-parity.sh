@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROTOCOL_ROOT="$SCRIPT_DIR/../Source/ForbocAI_SDK/Public/Features/Protocol"
+PROTOCOL_ROOT="$SCRIPT_DIR/../Source/ForbocAI_SDK/Public/Systems/Protocol"
 
 echo "Checking protocol codec parity..."
 python3 "$SCRIPT_DIR/check-codec-parity.py" "$PROTOCOL_ROOT"

@@ -1,13 +1,14 @@
 #include "CoreMinimal.h"
-#include "Features/API/Endpoints/NPC/Process/NPCProcessAdapters.h"
-#include "Features/Testing/API/Process/APIProcessAdapters.h"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
+#include "Systems/API/Endpoints/NPC/Process/NPCProcessAdapters.h"
+#include "Systems/Testing/API/Process/APIProcessAdapters.h"
 #include "Misc/AutomationTest.h"
 
 using namespace Testing::API::Process;
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FNPCProcessCompleteResponsesTest,
-    "ForbocAI.Core.API.NPCProcessCompleteResponses",
+    FORBOCAI_SDK_AUTHORED_STRINGV6DD78D03D997,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
@@ -195,7 +196,7 @@ bool FNPCProcessCompleteResponsesTest::RunTest(const FString &Parameters) {
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FNPCProcessRejectsMalformedResponsesTest,
-    "ForbocAI.Core.API.NPCProcessRejectsMalformedResponses",
+    FORBOCAI_SDK_AUTHORED_STRINGV1892F38394B2,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 

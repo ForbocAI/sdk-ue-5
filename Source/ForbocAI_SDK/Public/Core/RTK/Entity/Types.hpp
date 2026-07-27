@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/RTK/Prelude.hpp"
 
@@ -28,7 +29,7 @@ bool entityStateEqualsRecursive(const EntityState<T> &Left,
              : Left.ids[Index] == Right.ids[Index] &&
                    entityStateValueEquals(Left.entities, Right.entities,
                                           Left.ids[Index]) &&
-                   entityStateEqualsRecursive(Left, Right, Index + 1);
+                   entityStateEqualsRecursive(Left, Right, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4);
 }
 } // namespace detail
 
@@ -45,7 +46,7 @@ template <typename T>
 bool operator==(const EntityState<T> &Left, const EntityState<T> &Right) {
   return Left.ids.Num() == Right.ids.Num() &&
          Left.entities.Num() == Right.entities.Num() &&
-         detail::entityStateEqualsRecursive(Left, Right, 0);
+         detail::entityStateEqualsRecursive(Left, Right, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA);
 }
 
 /**
@@ -92,7 +93,7 @@ void setEntity(EntityState<T> &Next, const FString &Id, const T &Entity) {
 /** User Story: As a core rtk entity consumer, I need to invoke remove entity if present through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T> void removeEntityIfPresent(EntityState<T> &Next, const FString &Id) */
 template <typename T>
 void removeEntityIfPresent(EntityState<T> &Next, const FString &Id) {
-  (Next.entities.Remove(Id) > 0) && (Next.ids.Remove(Id), true);
+  (Next.entities.Remove(Id) > FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA) && (Next.ids.Remove(Id), true);
 }
 
 /** User Story: As a core rtk entity consumer, I need to invoke update entity if present through a stable signature so the core rtk entity workflow remains explicit and composable. @fn template <typename T, typename PatchFn> void updateEntityIfPresent(EntityState<T> &Next, const FString &Id, PatchFn Patch) */

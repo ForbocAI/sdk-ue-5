@@ -39,6 +39,11 @@
   X(FString, doubleQuote)                                                  \
   X(FString, singleQuote)
 
+#define FORBOCAI_COMMAND_RUNNER_EVIDENCE_FIELDS(X)                         \
+  X(FString, structuredRequired)                                           \
+  X(FString, structuredMatchingOutput)                                     \
+  X(FString, structuredMismatchingOutput)
+
 #define FORBOCAI_COMMAND_RUNNER_MESSAGE_FIELDS(X)                          \
   X(FString, unresolvedAlias)                                              \
   X(FString, capturedValuePreservesSuccess)                                \
@@ -47,6 +52,8 @@
   X(FString, missingLiteralFails)                                          \
   X(FString, absentForbiddenLiteralPreservesSuccess)                       \
   X(FString, presentForbiddenLiteralFails)                                 \
+  X(FString, structuredJsonPreservesSuccess)                               \
+  X(FString, structuredJsonMismatchFails)                                  \
   X(FString, missingAliasFails)                                            \
   X(FString, unresolvedIdentifierRejected)                                 \
   X(FString, capturedIdentifierDispatchable)
@@ -81,6 +88,11 @@ struct FCommandRunnerQuotes {
       FORBOCAI_DECLARE_COMMAND_RUNNER_FIELD)
 };
 
+struct FCommandRunnerEvidence {
+  FORBOCAI_COMMAND_RUNNER_EVIDENCE_FIELDS(
+      FORBOCAI_DECLARE_COMMAND_RUNNER_FIELD)
+};
+
 struct FCommandRunnerMessages {
   FORBOCAI_COMMAND_RUNNER_MESSAGE_FIELDS(
       FORBOCAI_DECLARE_COMMAND_RUNNER_FIELD)
@@ -98,6 +110,7 @@ struct FCommandRunnerData {
   FCommandRunnerAliases aliases;
   FCommandRunnerLimits limits;
   FCommandRunnerQuotes quotes;
+  FCommandRunnerEvidence evidence;
   FCommandRunnerMessages messages;
   FCommandRunnerTestNames testNames;
 };

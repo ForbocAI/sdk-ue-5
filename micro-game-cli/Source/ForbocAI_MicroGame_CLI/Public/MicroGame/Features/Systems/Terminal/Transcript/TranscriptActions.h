@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -21,14 +22,14 @@ struct FRecordTranscriptPayload {
 inline rtk::ActionCreator<FRecordTranscriptPayload>
 recordTranscriptActionCreator() {
   static auto C = rtk::createAction<FRecordTranscriptPayload>(
-      TEXT("microgame/transcript/recordTranscript"));
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV93C0187A3C76));
   return C;
 }
 
 /** User Story: As a systems terminal transcript consumer, I need to invoke reset transcript action creator through a stable signature so the systems terminal transcript workflow remains explicit and composable. @fn inline rtk::ActionCreatorWithoutPayload resetTranscriptActionCreator() */
 inline rtk::ActionCreatorWithoutPayload resetTranscriptActionCreator() {
   static auto C =
-      rtk::createAction(TEXT("microgame/transcript/resetTranscript"));
+      rtk::createAction(TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV12AC8BEC942C));
   return C;
 }
 

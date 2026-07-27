@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/FP/Maybe/Maybe.hpp"
 #include "Core/FP/Either/Either.hpp"
@@ -12,7 +13,7 @@ Acc foldVectorRecursive(const std::vector<T> &values, size_t index, Acc acc,
   return index == values.size()
              ? acc
              : foldVectorRecursive<T, Acc, Step>(
-                   values, index + 1, step(acc, values[index]), step);
+                   values, index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, step(acc, values[index]), step);
 }
 
 /** User Story: As a core fp vector consumer, I need to invoke filter vector recursive through a stable signature so the core fp vector workflow remains explicit and composable. @fn template <typename T, typename Predicate> std::vector<T> filterVectorRecursive(const std::vector<T> &values, size_t index, Predicate predicate, std::vector<T> result) */
@@ -24,7 +25,7 @@ std::vector<T> filterVectorRecursive(const std::vector<T> &values,
              ? result
              : (predicate(values[index]) ? result.push_back(values[index])
                                          : void(),
-                filterVectorRecursive<T, Predicate>(values, index + 1,
+                filterVectorRecursive<T, Predicate>(values, index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
                                                     predicate,
                                                     std::move(result)));
 }
@@ -37,7 +38,7 @@ Maybe<T> findVectorRecursive(const std::vector<T> &values, size_t index,
              ? nothing<T>()
              : (predicate(values[index])
                     ? just(values[index])
-                    : findVectorRecursive<T, Predicate>(values, index + 1,
+                    : findVectorRecursive<T, Predicate>(values, index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
                                                        predicate));
 }
 
@@ -48,7 +49,7 @@ bool vectorContainsKey(const std::vector<Key> &values, const Key &key,
   return index == values.size()
              ? false
              : (values[index] == key ||
-                vectorContainsKey<Key>(values, key, index + 1));
+                vectorContainsKey<Key>(values, key, index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4));
 }
 
 /** User Story: As a core fp vector consumer, I need to invoke unique by recursive through a stable signature so the core fp vector workflow remains explicit and composable. @fn template <typename T, typename Projection, typename Key> std::vector<T> uniqueByRecursive(const std::vector<T> &values, size_t index, Projection projection, std::vector<Key> seen, std::vector<T> result) */
@@ -59,14 +60,14 @@ std::vector<T> uniqueByRecursive(const std::vector<T> &values, size_t index,
                                  std::vector<T> result) {
   return index == values.size()
              ? result
-             : (vectorContainsKey<Key>(seen, projection(values[index]), 0)
+             : (vectorContainsKey<Key>(seen, projection(values[index]), FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA)
                     ? uniqueByRecursive<T, Projection, Key>(
-                          values, index + 1, projection, std::move(seen),
+                          values, index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, projection, std::move(seen),
                           std::move(result))
                     : (seen.push_back(projection(values[index])),
                        result.push_back(values[index]),
                        uniqueByRecursive<T, Projection, Key>(
-                           values, index + 1, projection, std::move(seen),
+                           values, index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, projection, std::move(seen),
                            std::move(result))));
 }
 
@@ -82,7 +83,7 @@ Maybe<std::vector<U>> traverseMaybeRecursive(const std::vector<T> &values,
                  return current.hasValue
                             ? (result.push_back(current.value),
                                traverseMaybeRecursive<T, Func, U>(
-                                   values, index + 1, fn, std::move(result)))
+                                   values, index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, fn, std::move(result)))
                             : nothing<std::vector<U>>();
                }();
 }
@@ -96,7 +97,7 @@ Either<E, Acc> foldEitherRecursive(const std::vector<T> &values, size_t index,
              : ebind(step(acc, values[index]),
                      [&](const Acc &next) -> Either<E, Acc> {
                        return foldEitherRecursive<E, T, Acc, Step>(
-                           values, index + 1, next, step);
+                           values, index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, next, step);
                      });
 }
 } // namespace detail
@@ -111,7 +112,7 @@ Either<E, Acc> foldEitherRecursive(const std::vector<T> &values, size_t index,
  */
 template <typename T, typename Acc, typename Step>
 Acc fold(const std::vector<T> &values, Acc seed, Step step) {
-  return detail::foldVectorRecursive<T, Acc, Step>(values, 0, seed, step);
+  return detail::foldVectorRecursive<T, Acc, Step>(values, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, seed, step);
 }
 
 /**
@@ -124,7 +125,7 @@ Acc fold(const std::vector<T> &values, Acc seed, Step step) {
  */
 template <typename T, typename Predicate>
 std::vector<T> filter(const std::vector<T> &values, Predicate predicate) {
-  return detail::filterVectorRecursive<T, Predicate>(values, 0, predicate,
+  return detail::filterVectorRecursive<T, Predicate>(values, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, predicate,
                                                      std::vector<T>());
 }
 
@@ -138,7 +139,7 @@ std::vector<T> filter(const std::vector<T> &values, Predicate predicate) {
  */
 template <typename T, typename Predicate>
 Maybe<T> find_vector(const std::vector<T> &values, Predicate predicate) {
-  return detail::findVectorRecursive<T, Predicate>(values, 0, predicate);
+  return detail::findVectorRecursive<T, Predicate>(values, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, predicate);
 }
 
 /**
@@ -151,7 +152,7 @@ Maybe<T> find_vector(const std::vector<T> &values, Predicate predicate) {
  */
 template <typename T>
 bool contains_value(const std::vector<T> &values, const T &expected) {
-  return detail::vectorContainsKey<T>(values, expected, 0);
+  return detail::vectorContainsKey<T>(values, expected, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA);
 }
 
 /**
@@ -167,7 +168,7 @@ std::vector<T> unique_by(const std::vector<T> &values, Projection projection) {
   typedef typename std::decay<decltype(projection(std::declval<const T &>()))>::
       type Key;
   return detail::uniqueByRecursive<T, Projection, Key>(
-      values, 0, projection, std::vector<Key>(), std::vector<T>());
+      values, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, projection, std::vector<Key>(), std::vector<T>());
 }
 
 /**
@@ -182,7 +183,7 @@ template <typename T, typename Func>
 auto traverse(const std::vector<T> &values, Func fn)
     -> Maybe<std::vector<decltype(fn(std::declval<const T &>()).value)>> {
   typedef decltype(fn(std::declval<const T &>()).value) U;
-  return detail::traverseMaybeRecursive<T, Func, U>(values, 0, fn,
+  return detail::traverseMaybeRecursive<T, Func, U>(values, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, fn,
                                                    std::vector<U>());
 }
 
@@ -209,7 +210,7 @@ Maybe<std::vector<T>> sequence_maybe(const std::vector<Maybe<T>> &values) {
  */
 template <typename E, typename T, typename Acc, typename Step>
 Either<E, Acc> fold_either(const std::vector<T> &values, Acc seed, Step step) {
-  return detail::foldEitherRecursive<E, T, Acc, Step>(values, 0, seed, step);
+  return detail::foldEitherRecursive<E, T, Acc, Step>(values, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, seed, step);
 }
 
 } // namespace func

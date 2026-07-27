@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -10,7 +11,7 @@ namespace MicroGame {
 /** User Story: As a systems terminal ui consumer, I need to invoke create uislice through a stable signature so the systems terminal ui workflow remains explicit and composable. @fn inline rtk::Slice<FUIState> CreateUISlice() */
 inline rtk::Slice<FUIState> CreateUISlice() {
   return rtk::createSlice<FUIState>(
-      TEXT("microgame/ui"), TerminalAdapters::TerminalData().initialState,
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV568BB8CE6D51), TerminalAdapters::TerminalData().initialState,
       [](rtk::ActionReducerMapBuilder<FUIState> &Builder) {
         Builder.addCase(
             UIActions::setModeActionCreator(),

@@ -16,6 +16,8 @@
 #   3. Integration tests under the SDK and UE micro-game modules must
 #      not name a function `ExecuteForbocAICommand` or shadow the
 #      canonical command surface with an alternate executor symbol.
+#   4. Micro-game ECS includes retain the nested `MicroGame/Features` root.
+#   5. The authored-data adapter resolves through its canonical include path.
 #
 # Usage:
 #   bash scripts/check-micro-game-executor-boundary.sh
@@ -115,6 +117,34 @@ if [ -n "$DIRECT_TRANSPORT" ]; then
   STATUS=1
 else
   echo "[ok] Micro-game code owns no API transport"
+fi
+
+# 6) The SDK uses direct ECS roots, but the independently runnable micro-game
+# owns one nested Features graph. A broad SDK path rewrite must not flatten it.
+FLATTENED_ECS_INCLUDES="$(rg -n '#include[[:space:]]+"MicroGame/(Components|Entities|Systems)/' \
+  "$MICRO_GAME_SRC/Public" "$MICRO_GAME_SRC/Private" 2>/dev/null | \
+  normalize_crlf || true)"
+if [ -n "$FLATTENED_ECS_INCLUDES" ]; then
+  echo "[fail] Micro-game includes bypass the nested MicroGame/Features root:" >&2
+  echo "$FLATTENED_ECS_INCLUDES" >&2
+  STATUS=1
+else
+  echo "[ok] Micro-game ECS includes retain the nested Features root"
+fi
+
+# 7) The micro-game authored-data adapter is a sibling of the ECS roots. Keep
+# callers on the real path so a broad SDK migration cannot invent a directory
+# that still passes the namespace-shape check above.
+CANONICAL_DATA_ADAPTER="$MICRO_GAME_SRC/Public/MicroGame/Features/Data/DataAdapters.h"
+INVALID_DATA_INCLUDES="$(rg -n '#include[[:space:]]+"MicroGame/Features/Systems/Data/DataAdapters\.h"' \
+  "$MICRO_GAME_SRC/Public" "$MICRO_GAME_SRC/Private" 2>/dev/null | \
+  normalize_crlf || true)"
+if [ ! -f "$CANONICAL_DATA_ADAPTER" ] || [ -n "$INVALID_DATA_INCLUDES" ]; then
+  echo "[fail] Micro-game authored-data adapter does not resolve through Features/Data:" >&2
+  echo "$INVALID_DATA_INCLUDES" >&2
+  STATUS=1
+else
+  echo "[ok] Micro-game authored-data includes resolve through Features/Data"
 fi
 
 CONTRACT_COMMAND="$ROOT/micro-game-cli/Content/Data/harness/game.json"

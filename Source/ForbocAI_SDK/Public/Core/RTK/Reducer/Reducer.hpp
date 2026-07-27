@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/RTK/Store/Store.hpp"
 
@@ -62,7 +63,7 @@ RootState combineReducerEntryStep(
   const bool bNextChanged =
       Reducers[Index](NextState, PrevState, Action) ? true : bChanged;
   return combineReducerEntriesRecursive<RootState>(
-      Reducers, Index + 1, PrevState, std::move(NextState), bNextChanged,
+      Reducers, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, PrevState, std::move(NextState), bNextChanged,
       Action);
 }
 
@@ -107,7 +108,7 @@ combineReducers(const ReducersMapObject<RootState> &ReducersMap) {
   return [Reducers](const RootState &PrevState,
                     const AnyAction &Action) -> RootState {
     return detail::combineReducerEntriesRecursive<RootState>(
-        Reducers, 0, PrevState, PrevState, false, Action);
+        Reducers, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, PrevState, PrevState, false, Action);
   };
 }
 

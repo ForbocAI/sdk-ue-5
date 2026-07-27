@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -10,7 +11,7 @@ namespace MicroGame {
 /** User Story: As a systems harness coverage consumer, I need to invoke create harness slice through a stable signature so the systems harness coverage workflow remains explicit and composable. @fn inline rtk::Slice<FHarnessState> CreateHarnessSlice() */
 inline rtk::Slice<FHarnessState> CreateHarnessSlice() {
   return rtk::createSlice<FHarnessState>(
-      TEXT("microgame/harness"), FHarnessState(),
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV839372296672), FHarnessState(),
       [](rtk::ActionReducerMapBuilder<FHarnessState> &Builder) {
         Builder.addCase(
             CoverageActions::markCoveredActionCreator(),

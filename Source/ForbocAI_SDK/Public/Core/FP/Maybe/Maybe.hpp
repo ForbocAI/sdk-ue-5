@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/FP/Prelude.hpp"
 
@@ -45,7 +46,7 @@ template <typename T> Maybe<T> just(T v) {
 template <typename T> Maybe<T> nothing() {
   static_assert(
       std::is_default_constructible<T>::value,
-      "func::nothing<T>() requires a default-constructible payload type");
+      FORBOCAI_SDK_AUTHORED_STRINGVD2D889BB8C97);
   return Maybe<T>{false, T{}};
 }
 
@@ -89,10 +90,10 @@ template <typename T> bool isNothing(const Maybe<T> &m) {
  */
 template <typename T, typename Predicate>
 Maybe<T> maybe_filter(const Maybe<T> &m, Predicate predicate) {
-  std::function<Maybe<T>()> PresenceCases[2] = {
+  std::function<Maybe<T>()> PresenceCases[FORBOCAI_SDK_AUTHORED_NUMBERV6AC392A47561] = {
       []() { return nothing<T>(); },
       [&]() {
-        std::function<Maybe<T>()> PredicateCases[2] = {
+        std::function<Maybe<T>()> PredicateCases[FORBOCAI_SDK_AUTHORED_NUMBERV6AC392A47561] = {
             []() { return nothing<T>(); }, [&]() { return m; }};
         return PredicateCases[static_cast<size_t>(predicate(m.value))]();
       }};

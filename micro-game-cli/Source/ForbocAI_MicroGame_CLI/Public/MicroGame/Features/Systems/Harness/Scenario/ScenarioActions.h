@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/rtk.hpp"
 #include "MicroGame/Features/Systems/Harness/Scenario/ScenarioTypes.h"
@@ -10,7 +11,7 @@ namespace ScenarioActions {
 inline rtk::ActionCreator<FScenarioContractPayload>
 setContractActionCreator() {
   static const auto Creator = rtk::createAction<FScenarioContractPayload>(
-      TEXT("microgame/scenario/contractReceived"));
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVD3919E45840D));
   return Creator;
 }
 

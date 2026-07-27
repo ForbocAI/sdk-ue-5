@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 namespace ecs {
 
@@ -69,15 +70,15 @@ inline FComponentValueFormatter createComponentValueFormatter(
 inline FComponentValueFormatter createComponentValueFormatter() {
   return createComponentValueFormatter(
       {{EComponentValueKind::None,
-        [](const FComponentValue &) { return createTextAtom("None"); }},
+        [](const FComponentValue &) { return createTextAtom(FORBOCAI_SDK_AUTHORED_STRINGV622C6F624A35); }},
        {EComponentValueKind::Bool,
         [](const FComponentValue &Value) {
-          return Value.BoolValue ? createTextAtom("true")
-                                 : createTextAtom("false");
+          return Value.BoolValue ? createTextAtom(FORBOCAI_SDK_AUTHORED_STRINGVDD287442E709)
+                                 : createTextAtom(FORBOCAI_SDK_AUTHORED_STRINGVFD3116F7FE2C);
        }},
        {EComponentValueKind::Int,
         [](const FComponentValue &Value) {
-          return FString::Printf(TEXT("%lld"), Value.IntValue);
+          return FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV6871E247160C), Value.IntValue);
         }},
        {EComponentValueKind::Float,
         [](const FComponentValue &Value) {
@@ -95,11 +96,11 @@ inline FComponentValueFormatter createComponentValueFormatter() {
         }},
        {EComponentValueKind::Map,
         [](const FComponentValue &Value) {
-          return FString::Printf(TEXT("Map(len=%d)"), Value.MapValue.Num());
+          return FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV1ECC478EAA65), Value.MapValue.Num());
         }},
        {EComponentValueKind::List,
         [](const FComponentValue &Value) {
-          return FString::Printf(TEXT("List(len=%d)"),
+          return FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV118FEF683D52),
                                  Value.ListValue.Num());
         }}});
 }
@@ -130,7 +131,7 @@ inline FString componentValueToString(const FComponentValue &Value) {
   const func::Maybe<FString> Formatted =
       func::arg_dispatcher_dispatch_maybe<int32, FComponentValue, FString>(
       {&Formatter, &Key, &Value});
-  checkf(Formatted.hasValue, TEXT("Unhandled ECS component value kind: %d"),
+  checkf(Formatted.hasValue, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV6F87489858E1),
          Key);
   return Formatted.value;
 }

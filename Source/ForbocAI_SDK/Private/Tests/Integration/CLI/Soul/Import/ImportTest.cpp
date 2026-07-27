@@ -1,10 +1,11 @@
-#include "CLI/CliHandlers.h"
+#include "Systems/CLI/CommandRouting/CommandRoutingThunks.h"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
-#include "Features/CLI/CLISelectors.h"
-#include "Features/CLI/NPC/NPCThunks.h"
-#include "Features/Memory/Configuration/MemoryConfigurationAdapters.h"
-#include "Features/Testing/Memory/TestingMemoryAdapters.h"
+#include "Entities/CLI/CLISelectors.h"
+#include "Systems/CLI/NPC/NPCThunks.h"
+#include "Systems/Memory/Configuration/MemoryConfigurationAdapters.h"
+#include "Systems/Testing/Memory/TestingMemoryAdapters.h"
 #include "Misc/AutomationTest.h"
 #include "Misc/Guid.h"
 #include "Store.h"
@@ -43,7 +44,7 @@ func::Maybe<FMemoryItem> FirstAuthoredMemory() {
                 Value.Steps, [](const FMemoryTestStep &Step) {
                   return !Step.Action.Items.IsEmpty();
                 }),
-            [](const FMemoryTestStep &Step) { return Step.Action.Items[0]; });
+            [](const FMemoryTestStep &Step) { return Step.Action.Items[FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA]; });
       });
 }
 
@@ -51,7 +52,7 @@ func::Maybe<FMemoryItem> FirstAuthoredMemory() {
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FOpsImportNpcSoulMemoriesTest,
-    "ForbocAI.Integration.Ops.ImportNpcSoulMemories",
+    FORBOCAI_SDK_AUTHORED_STRINGV00A880FCD4FB,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
@@ -63,7 +64,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
  */
 bool FOpsImportNpcSoulMemoriesTest::RunTest(const FString &Parameters) {
   const func::Maybe<FMemoryItem> Authored = FirstAuthoredMemory();
-  TestTrue("An authored memory fixture is available", Authored.hasValue);
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV40F4B70FDC5F, Authored.hasValue);
   if (!Authored.hasValue) {
     return false;
   }
@@ -77,32 +78,32 @@ bool FOpsImportNpcSoulMemoriesTest::RunTest(const FString &Parameters) {
       Store.dispatch(rtk::listNodeMemoryThunk(Memories.Num(), int32{},
                                                DatabaseName)));
 
-  TestEqual("One imported memory is persisted", Persisted.Num(),
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV64213D03B5AD, Persisted.Num(),
             Memories.Num());
   if (Persisted.Num() == Memories.Num()) {
-    TestEqual("Imported identity is preserved", Persisted[0].Id,
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV621BD5DDB684, Persisted[FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA].Id,
               Authored.value.Id);
-    TestEqual("Imported content is preserved", Persisted[0].Text,
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV822B1EE27B96, Persisted[FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA].Text,
               Authored.value.Text);
-    TestEqual("Imported type is preserved", Persisted[0].Type,
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVF074ADDFA1AD, Persisted[FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA].Type,
               Authored.value.Type);
-    TestEqual("Imported timestamp is preserved", Persisted[0].Timestamp,
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVFEAD1CF3CDD6, Persisted[FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA].Timestamp,
               Authored.value.Timestamp);
-    TestEqual("Imported importance is preserved", Persisted[0].Importance,
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVFCD3E4B045D2, Persisted[FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA].Importance,
               Authored.value.Importance);
   }
 
   const ForbocAI::CLI::FCLICommandRoles &Roles =
       ForbocAI::CLI::selectCliCommandRoles(Store.getState().CLI);
-  const CLIOps::Handlers::HandlerResult Listed =
-      CLIOps::Handlers::HandleMemory(Store, Roles.MemoryList,
+  const CLIOps::CommandRouting::RouteResult Listed =
+      CLIOps::CommandRouting::RouteMemoryCommand(Store, Roles.MemoryList,
                                     TArray<FString>{DatabaseName});
-  TestTrue("Memory list command handles the authored operation",
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVF931362EE3F8,
            Listed.hasValue);
   if (Listed.hasValue) {
-    TestTrue("Memory list command reports success", Listed.value.bSuccess);
+    TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVC3C9320E666D, Listed.value.bSuccess);
     TestTrue(
-        "Memory list command result contains restored content",
+        FORBOCAI_SDK_AUTHORED_STRINGV248AEBD18682,
         FString(UTF8_TO_TCHAR(Listed.value.message.c_str()))
             .Contains(Authored.value.Text.Left(
                 ForbocAI::CLI::Memory::selectCliMemory(Store.getState().CLI)
@@ -115,10 +116,10 @@ bool FOpsImportNpcSoulMemoriesTest::RunTest(const FString &Parameters) {
       Store.dispatch(rtk::recallNodeMemoryThunk(
           Authored.value.Text, Memories.Num(),
           MemoryData.Defaults.RecallThreshold, DatabaseName)));
-  TestEqual("Imported memory is retrievable through sqlite-vec", Recalled.Num(),
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV6389CE9A50E3, Recalled.Num(),
             Memories.Num());
   if (Recalled.Num() == Memories.Num()) {
-    TestEqual("Vector recall preserves imported identity", Recalled[0].Id,
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV4B9FE78A4576, Recalled[FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA].Id,
               Authored.value.Id);
   }
 

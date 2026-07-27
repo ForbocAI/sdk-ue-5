@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/RTK/Payload/Payload.hpp"
 
@@ -65,16 +66,16 @@ struct AnyAction {
    * containers and return paths can be initialized before payload assignment.
    * @fn AnyAction()
    */
-  AnyAction() : PayloadDebugText(TEXT("<none>")) {}
+  AnyAction() : PayloadDebugText(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV781ACD34ECFB)) {}
 
   /**
    * Constructs a type-erased action envelope from a type tag and payload wrapper.
    * User Story: As root dispatch infrastructure, I need a type-erased action
    * constructor so heterogeneous payloads can move through one dispatch channel.
-   * @fn AnyAction(const FString &InType, std::shared_ptr<void> InPayloadWrapper, const FString &InPayloadDebugText = TEXT("<opaque>"))
+   * @fn AnyAction(const FString &InType, std::shared_ptr<void> InPayloadWrapper, const FString &InPayloadDebugText = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV566262C145F8))
    */
   AnyAction(const FString &InType, std::shared_ptr<void> InPayloadWrapper,
-            const FString &InPayloadDebugText = TEXT("<opaque>"))
+            const FString &InPayloadDebugText = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV566262C145F8))
       : Type(InType),
         PayloadWrapper(std::move(InPayloadWrapper)),
         PayloadDebugText(InPayloadDebugText) {}
@@ -95,7 +96,7 @@ struct AnyAction {
 
   /** User Story: As a core rtk action consumer, I need to invoke describe payload through a stable signature so the core rtk action workflow remains explicit and composable. @fn FString describePayload() const */
   FString describePayload() const {
-    return PayloadDebugText.IsEmpty() ? TEXT("<none>") : PayloadDebugText;
+    return PayloadDebugText.IsEmpty() ? TEXT(FORBOCAI_SDK_AUTHORED_STRINGV781ACD34ECFB) : PayloadDebugText;
   }
 };
 

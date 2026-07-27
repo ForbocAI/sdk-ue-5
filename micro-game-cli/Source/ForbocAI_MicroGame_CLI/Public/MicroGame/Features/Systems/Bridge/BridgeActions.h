@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -19,14 +20,14 @@ struct FSetBridgeRulesPayload {
 /** User Story: As a features systems bridge consumer, I need to invoke set bridge rules action creator through a stable signature so the features systems bridge workflow remains explicit and composable. @fn inline rtk::ActionCreator<FSetBridgeRulesPayload> setBridgeRulesActionCreator() */
 inline rtk::ActionCreator<FSetBridgeRulesPayload> setBridgeRulesActionCreator() {
   static auto C = rtk::createAction<FSetBridgeRulesPayload>(
-      TEXT("microgame/bridge/setBridgeRules"));
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVB7860EFB315B));
   return C;
 }
 
 /** User Story: As a features systems bridge consumer, I need to invoke load bridge preset action creator through a stable signature so the features systems bridge workflow remains explicit and composable. @fn inline rtk::ActionCreator<FString> loadBridgePresetActionCreator() */
 inline rtk::ActionCreator<FString> loadBridgePresetActionCreator() {
   static auto C =
-      rtk::createAction<FString>(TEXT("microgame/bridge/loadBridgePreset"));
+      rtk::createAction<FString>(TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVFA7BC3E6207C));
   return C;
 }
 

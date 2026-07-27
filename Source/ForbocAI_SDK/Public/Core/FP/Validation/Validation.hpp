@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/FP/Either/Either.hpp"
 
@@ -80,7 +81,7 @@ runValidationStep(const std::vector<std::function<Either<E, T>(T)>> &Steps,
                   size_t Index, T Current) {
   Either<E, T> Result = Steps[Index](Current);
   return Result.isLeft ? Result
-                       : runValidationRecursive<T, E>(Steps, Index + 1,
+                       : runValidationRecursive<T, E>(Steps, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
                                                       Result.right);
 }
 
@@ -107,7 +108,7 @@ runValidationRecursive(const std::vector<std::function<Either<E, T>(T)>> &Steps,
  */
 template <typename T, typename E>
 Either<E, T> runValidation(const ValidationPipeline<T, E> &Pipeline, T Value) {
-  return detail::runValidationRecursive<T, E>(Pipeline.Validators, 0,
+  return detail::runValidationRecursive<T, E>(Pipeline.Validators, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA,
                                               std::move(Value));
 }
 

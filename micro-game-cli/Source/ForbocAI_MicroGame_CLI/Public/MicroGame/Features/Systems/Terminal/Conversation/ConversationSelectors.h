@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Features/API/Endpoints/NPC/Conversation/ConversationAdapters.h"
+#include "Systems/API/Endpoints/NPC/Conversation/ConversationAdapters.h"
 #include "MicroGame/Features/Systems/Harness/Verification/VerificationAdapters.h"
 #include "MicroGame/Features/Systems/Terminal/TerminalTypes.h"
 

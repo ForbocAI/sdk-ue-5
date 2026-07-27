@@ -1,15 +1,19 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/FP/Array/Array.hpp"
 
 namespace func {
-/** User Story: As a core fp range consumer, I need to invoke fold index range through a stable signature so the core fp range workflow remains explicit and composable. @fn template <typename Acc, typename Step> Acc fold_index_range(int32 count, Acc seed, Step step, int32 index = 0) */
+/**
+ * User Story: As a core fp range consumer, I need to invoke fold index range through a stable signature so the core fp range workflow remains explicit and composable.
+ * @fn template <typename Acc, typename Step> Acc fold_index_range(int32 count, Acc seed, Step step, int32 index = FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA)
+ */
 template <typename Acc, typename Step>
-Acc fold_index_range(int32 count, Acc seed, Step step, int32 index = 0) {
+Acc fold_index_range(int32 count, Acc seed, Step step, int32 index = FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA) {
   return index >= count
              ? seed
              : fold_index_range<Acc, Step>(count, step(seed, index), step,
-                                           index + 1);
+                                           index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4);
 }
 
 /** User Story: As a core fp range consumer, I need to invoke index range through a stable signature so the core fp range workflow remains explicit and composable. @fn inline TArray<int32> index_range(int32 count) */

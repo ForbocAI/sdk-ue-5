@@ -25,13 +25,33 @@ import sys
 
 from ue_targets import ue_targets
 
+try:
+    from generate_authored_values import (
+        generated_output_paths,
+        validate_contracts,
+    )
+except ModuleNotFoundError:
+    from scripts.generate_authored_values import (
+        generated_output_paths,
+        validate_contracts,
+    )
+
 
 SOURCE_SUFFIXES = {".h", ".hpp", ".cpp"}
 SCRIPT_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_ROOT.parent
 
 STRING_LITERAL = re.compile(r'"(?:[^"\\]|\\.)*"')
-NUMERIC_LITERAL = re.compile(r"(?<![A-Za-z0-9_.])\d[0-9.]*")
+NUMERIC_LITERAL = re.compile(
+    r"(?<![A-Za-z0-9_.])"
+    r"(?:"
+    r"0[xX][0-9A-Fa-f]+|"
+    r"0[bB][01]+|"
+    r"(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?"
+    r")"
+    r"(?:[fF]|[uU](?:ll|LL|l|L)?|(?:ll|LL|l|L)[uU]?)?"
+    r"(?![A-Za-z0-9_])"
+)
 UNREAL_REFLECTION_MACROS = {
     "UCLASS",
     "UDELEGATE",
@@ -359,36 +379,43 @@ def line_column(text: str, offset: int) -> tuple[int, int]:
     return text.count("\n", 0, offset) + 1, offset - line_start + 1
 
 
-def collect_metadata_strings(scannables: list[str]) -> set[str]:
-    """Discover action/slice/thunk metadata string values from real RTK usage."""
-    metadata_strings: set[str] = set()
-    for scannable in scannables:
-        for match in STRING_LITERAL.finditer(scannable):
-            preceding = scannable[max(0, match.start() - 200): match.start()]
-            if METADATA_CONTEXT.search(preceding):
-                metadata_strings.add(match.group(0)[1:-1])
-    return metadata_strings
+def is_metadata_literal(scannable: str, match: re.Match[str]) -> bool:
+    """Return whether this exact string occurrence defines RTK metadata."""
+    preceding = scannable[max(0, match.start() - 200): match.start()]
+    return METADATA_CONTEXT.search(preceding) is not None
+
+
+def literal_matches(
+    scannable: str, include_metadata: bool = False
+) -> list[tuple[int, int, str, str]]:
+    """Return source spans for semantic strings and complete C++ numbers."""
+    matches: list[tuple[int, int, str, str]] = []
+    code_without_strings = list(scannable)
+    for match in STRING_LITERAL.finditer(scannable):
+        for index in range(match.start(), match.end()):
+            code_without_strings[index] = " "
+        value = match.group(0)[1:-1]
+        if value == "" or (not include_metadata and is_metadata_literal(scannable, match)):
+            continue
+        matches.append(
+            (match.start(), match.end(), "string", match.group(0))
+        )
+
+    for match in NUMERIC_LITERAL.finditer("".join(code_without_strings)):
+        matches.append(
+            (match.start(), match.end(), "number", match.group(0))
+        )
+    return sorted(matches)
 
 
 def scan_file(
-    path: Path, scannable: str, metadata_strings: set[str]
+    path: Path, scannable: str
 ) -> list[tuple[Path, int, int, str, str]]:
     violations: list[tuple[Path, int, int, str, str]] = []
 
-    code_without_strings = list(scannable)
-    for match in STRING_LITERAL.finditer(scannable):
-        value = match.group(0)[1:-1]
-        for index in range(match.start(), match.end()):
-            code_without_strings[index] = " "
-        if value == "" or value in metadata_strings:
-            continue
-        line, column = line_column(scannable, match.start())
-        violations.append((path, line, column, "string", match.group(0)))
-
-    code_only = "".join(code_without_strings)
-    for match in NUMERIC_LITERAL.finditer(code_only):
-        line, column = line_column(code_only, match.start())
-        violations.append((path, line, column, "number", match.group(0)))
+    for start, _end, kind, token in literal_matches(scannable):
+        line, column = line_column(scannable, start)
+        violations.append((path, line, column, kind, token))
 
     return violations
 
@@ -406,11 +433,14 @@ def missing_target_data_roots() -> list[Path]:
 
 
 def iter_source_paths() -> list[Path]:
+    generated = generated_output_paths()
     return [
         source
         for source_root in target_source_roots()
         for source in sorted(source_root.rglob("*"))
-        if source.is_file() and source.suffix in SOURCE_SUFFIXES
+        if source.is_file()
+        and source.suffix in SOURCE_SUFFIXES
+        and source not in generated
     ]
 
 
@@ -427,11 +457,10 @@ def scan_paths() -> list[tuple[Path, int, int, str, str]]:
             )
         )
         scannables[path] = scannable
-    metadata_strings = collect_metadata_strings(list(scannables.values()))
     return [
         violation
         for path, scannable in scannables.items()
-        for violation in scan_file(path, scannable, metadata_strings)
+        for violation in scan_file(path, scannable)
     ]
 
 
@@ -466,15 +495,25 @@ def main() -> int:
             parser.print_help()
         return 1
 
+    generated_failures = validate_contracts()
     violations = scan_paths()
-    if not violations:
+    if not generated_failures and not violations:
         if args.help:
             parser.print_help()
             return 0
-        print("Hard-coded value guard passed.")
+        print(
+            "Hard-coded value guard passed: canonical JSON, generated C++ "
+            "adapters, and source usage are synchronized."
+        )
         return 0
 
-    print(f"Hard-coded value guard failed: {len(violations)} value(s).")
+    print(
+        "Hard-coded value guard failed: "
+        f"{len(generated_failures)} generation issue(s), "
+        f"{len(violations)} value(s)."
+    )
+    for failure in generated_failures:
+        print(f"generated: {failure}")
     for path, line, column, kind, token in violations:
         print(
             f"{path}:{line}:{column}: {VIOLATION_PREFIX}"

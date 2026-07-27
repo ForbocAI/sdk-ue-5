@@ -1,22 +1,23 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/rtk.hpp"
 #include "CoreMinimal.h"
 #include "Core/fp.hpp"
-#include "Features/Bridge/BridgeSlice.h"
-#include "Features/CLI/CLISlice.h"
-#include "Features/CLI/Presentation/PresentationSlice.h"
-#include "Features/Config/ConfigSlice.h"
-#include "Features/Dependencies/DependenciesSlice.h"
-#include "Features/Directive/DirectiveSlice.h"
-#include "Features/Ghost/GhostSlice.h"
-#include "Features/Memory/MemorySlice.h"
-#include "Features/NPC/NPCSlice.h"
-#include "Features/Protocol/Logger/LoggerListeners.h"
-#include "Features/NPC/NPCListeners.h"
-#include "Features/State/StateTypes.h"
-#include "Features/Soul/SoulSlice.h"
-#include "Features/Vector/VectorSlice.h"
+#include "Entities/Bridge/BridgeSlice.h"
+#include "Entities/CLI/CLISlice.h"
+#include "Entities/CLI/Presentation/PresentationSlice.h"
+#include "Entities/Config/ConfigSlice.h"
+#include "Entities/Dependencies/DependenciesSlice.h"
+#include "Entities/Directive/DirectiveSlice.h"
+#include "Entities/Ghost/GhostSlice.h"
+#include "Entities/Memory/MemorySlice.h"
+#include "Entities/NPC/NPCSlice.h"
+#include "Systems/Protocol/Logger/LoggerListeners.h"
+#include "Systems/NPC/NPCListeners.h"
+#include "Components/State/StateTypes.h"
+#include "Entities/Soul/SoulSlice.h"
+#include "Entities/Vector/VectorSlice.h"
 
 namespace StoreInternal {
 
@@ -215,11 +216,11 @@ inline FRuntimeState StoreReducer(const FRuntimeState &State,
                                const std::vector<ExtraReducerFn> &Rs,
                                size_t Index) {
         return Index >= Rs.size() ? S
-                                 : apply(Rs[Index](S, A), A, Rs, Index + 1);
+                                 : apply(Rs[Index](S, A), A, Rs, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4);
       }
     };
     return ApplyReducers::apply(Next, Action, StoreInternal::ExtraReducers(),
-                                0);
+                                FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA);
   }();
 }
 
@@ -274,11 +275,11 @@ createRuntimeStore(func::Maybe<FRuntimeState> PreloadedState =
                       size_t Index) {
       Index < Source.size()
           ? (Target.push_back(Source[Index]),
-             apply(Target, Source, Index + 1), void())
+             apply(Target, Source, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4), void())
           : void();
     }
   };
-  AppendMiddlewares::apply(Middlewares, ExtraMiddlewares, 0);
+  AppendMiddlewares::apply(Middlewares, ExtraMiddlewares, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA);
 
   return rtk::configureStore<FRuntimeState>(
       &StoreReducer,

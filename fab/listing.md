@@ -1,43 +1,38 @@
 # ForbocAI NPC SDK
 
-Persistent, rules-aware NPC intelligence for Unreal Engine 5.8
+Generic NPC interaction for Unreal Engine 5.8
 
 ## Description
 
-ForbocAI NPC SDK gives Unreal Engine teams a production-oriented C++ and Blueprint surface for game-defined NPCs that can respond to players and world events without baking a genre, setting, role, or personality into the model.
+ForbocAI NPC SDK gives Unreal Engine teams C++ and Blueprint APIs for NPCs that
+respond to players and world events without fixing a genre, setting, identity,
+role, or personality in the language model.
 
-Your game owns identity and context. The SDK owns local vector memory, immutable runtime state, rules-aware action validation, portable soul data, and the integration boundary to the hosted ForbocAI NPC model.
-
-The plugin includes source, Blueprint-callable APIs, a thin CLI for diagnostics, and authored configuration. The public SDK repository maintains a full end-to-end quality harness that exercises the CLI, SDK, production API, and model together.
+Your game supplies NPC identity, structured persona, world context, and action
+execution. The ForbocAI API owns NPC reasoning, dialogue, policy, and action
+validation. The SDK wraps that API and performs local vector-memory and portable
+Soul operations next to the game.
 
 ## Features
 
-- Game-defined NPC identity and context
-- Genre-agnostic hosted NPC inference
+- Game-defined NPC identity, persona, and context
+- Generic hosted ForbocAI NPC inference
 - Persistent local SQLite vector memory
-- Rules-aware action validation bridge
-- Portable soul import and export
-- C++ and Blueprint-callable APIs
-- RTK-style single-store state ownership
-- Functional immutable operations
+- API-validated NPC actions
+- Portable Soul import, export, and verification
+- C++ and Blueprint APIs
 - CLI diagnostics and API health checks
-- Source included
+- Plugin source included
 
 ## Technical Details
 
 - Engine version: Unreal Engine 5.8
-- Code modules: 1 (Runtime)
-- Tested platforms: Win64
-- Network: HTTPS access to api.forboc.ai is required for NPC inference
-- Account: A ForbocAI account and API key are required for hosted inference
-- Local storage: SQLite-backed vector memory is included in the plugin
-- Dependencies: Uses Unreal Engine HTTP, JSON, JsonUtilities, Projects, and OpenSSL modules
-
-## Pricing
-
-- License: Fab Standard License
-- Personal: $49.99
-- Professional: $149.99
+- Code modules: 1 Runtime module
+- Platform: Win64
+- Network: HTTPS access to `api.forboc.ai` for hosted NPC interactions
+- Account: ForbocAI account and API key
+- Local storage: SQLite-backed vector memory included
+- Unreal modules: HTTP, JSON, JsonUtilities, Projects, and OpenSSL
 
 ## Support
 
@@ -50,20 +45,20 @@ The plugin includes source, Blueprint-callable APIs, a thin CLI for diagnostics,
 
 ### Does the plugin ship a language model?
 
-No. ForbocAI NPC inference is hosted by the ForbocAI API. The SDK keeps game integration and vector memory local.
+No. NPC inference runs in the ForbocAI API. The plugin keeps game integration
+and vector memory local.
 
 ### Does ForbocAI decide who an NPC is?
 
-No. Your game supplies the NPC identity, state, rules, memories, and current context for each interaction.
+No. Your game supplies each NPC's identity, structured persona, state, and
+current context at runtime.
 
 ### Can I use it from Blueprints?
 
-Yes. Runtime status, NPC processing, memory, soul, bridge, and configuration operations have Blueprint-callable entry points.
+Yes. NPC processing, memory, Soul, action validation, and configuration have
+Blueprint-callable entry points.
 
 ### Is an internet connection required?
 
-Yes for hosted NPC inference. Local memory and immutable state operations remain in the plugin.
-
-### Can I evaluate hosted inference before choosing a paid plan?
-
-Yes. New ForbocAI accounts begin on the free Initiate tier. Higher-volume plans are managed through the ForbocAI account portal.
+Hosted NPC interactions require network access. Local memory operations remain
+inside the plugin.

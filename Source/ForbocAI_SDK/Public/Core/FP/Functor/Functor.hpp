@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/FP/Maybe/Maybe.hpp"
 #include "Core/FP/Either/Either.hpp"
@@ -89,7 +90,7 @@ std::vector<U> fmapVectorRecursive(const std::vector<T> &vec, Func f,
   return index == vec.size()
              ? result
              : (result.push_back(f(vec[index])),
-                fmapVectorRecursive<T, Func, U>(vec, f, index + 1,
+                fmapVectorRecursive<T, Func, U>(vec, f, index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
                                                 std::move(result)));
 }
 } // namespace detail
@@ -101,7 +102,7 @@ auto fmap(const std::vector<T> &vec, Func f)
   typedef decltype(f(std::declval<const T &>())) U;
   std::vector<U> result;
   result.reserve(vec.size());
-  return detail::fmapVectorRecursive<T, Func, U>(vec, f, 0, std::move(result));
+  return detail::fmapVectorRecursive<T, Func, U>(vec, f, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, std::move(result));
 }
 
 } // namespace func

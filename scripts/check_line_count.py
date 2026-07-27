@@ -18,6 +18,7 @@ from pathlib import Path
 import sys
 
 from ue_targets import ue_targets
+from generate_authored_values import generated_output_paths
 
 
 DEFAULT_PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -79,6 +80,7 @@ def line_count(path: Path) -> int | None:
 
 def iter_files(project_root: Path) -> list[Path]:
     scan_roots = [project_root / name for name in SCAN_ROOT_NAMES]
+    generated = generated_output_paths()
     return sorted(
         path
         for root in scan_roots
@@ -87,6 +89,7 @@ def iter_files(project_root: Path) -> list[Path]:
         if path.is_file()
         and path.suffix in TEXT_SUFFIXES
         and not has_excluded_part(path)
+        and path not in generated
     )
 
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/rtk.hpp"
-#include "Features/Protocol/ProtocolTypes.h"
+#include "Components/Protocol/ProtocolTypes.h"
 #include "Store.h"
 
 struct FProcessNPCTestState {

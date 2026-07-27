@@ -86,6 +86,31 @@ bool FMicroGameCommandRunnerOutputAssertionsTest::RunTest(
                                               Aliases)
           .Status,
       Runtime.statuses.error);
+  FCommandSpec StructuredCommand;
+  StructuredCommand.Group = Runtime.commandGroups.npc_conversation;
+  StructuredCommand.Command = Data.commands.npcPrefix;
+  FOutputAssertion StructuredAssertion;
+  StructuredAssertion.Kind = Runtime.outputAssertionKinds.includesText;
+  StructuredAssertion.Value = Data.evidence.structuredRequired;
+  StructuredCommand.OutputAssertions.Add(StructuredAssertion);
+  const CommandRunner::FCommandOutput StructuredMatch{
+      Runtime.statuses.ok, Data.evidence.structuredMatchingOutput,
+      Data.commands.npcPrefix, CommandRunner::FCommandAliasUpdate()};
+  const CommandRunner::FCommandOutput StructuredMismatch{
+      Runtime.statuses.ok, Data.evidence.structuredMismatchingOutput,
+      Data.commands.npcPrefix, CommandRunner::FCommandAliasUpdate()};
+  TestEqual(
+      Data.messages.structuredJsonPreservesSuccess,
+      CommandRunner::ValidateOutputAssertions(StructuredCommand,
+                                              StructuredMatch, Aliases)
+          .Status,
+      Runtime.statuses.ok);
+  TestEqual(
+      Data.messages.structuredJsonMismatchFails,
+      CommandRunner::ValidateOutputAssertions(StructuredCommand,
+                                              StructuredMismatch, Aliases)
+          .Status,
+      Runtime.statuses.error);
   TestEqual(
       Data.messages.missingAliasFails,
       CommandRunner::ValidateOutputAssertions(

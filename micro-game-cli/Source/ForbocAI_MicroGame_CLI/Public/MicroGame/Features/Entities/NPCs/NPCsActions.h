@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -9,21 +10,21 @@ namespace NPCsActions {
 
 /** User Story: As a features entities npcs consumer, I need to invoke upsert npcaction creator through a stable signature so the features entities npcs workflow remains explicit and composable. @fn inline rtk::ActionCreator<FGameNPC> UpsertNPCActionCreator() */
 inline rtk::ActionCreator<FGameNPC> UpsertNPCActionCreator() {
-  static auto C = rtk::createAction<FGameNPC>(TEXT("microgame/npcs/upsertNPC"));
+  static auto C = rtk::createAction<FGameNPC>(TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVAF8BED6F07F0));
   return C;
 }
 
 /** User Story: As a features entities npcs consumer, I need to invoke move npcaction creator through a stable signature so the features entities npcs workflow remains explicit and composable. @fn inline rtk::ActionCreator<FMoveNPCPayload> MoveNPCActionCreator() */
 inline rtk::ActionCreator<FMoveNPCPayload> MoveNPCActionCreator() {
   static auto C =
-      rtk::createAction<FMoveNPCPayload>(TEXT("microgame/npcs/moveNPC"));
+      rtk::createAction<FMoveNPCPayload>(TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVC0774FA232F0));
   return C;
 }
 
 /** User Story: As a features entities npcs consumer, I need to invoke patch npcaction creator through a stable signature so the features entities npcs workflow remains explicit and composable. @fn inline rtk::ActionCreator<FPatchNPCPayload> PatchNPCActionCreator() */
 inline rtk::ActionCreator<FPatchNPCPayload> PatchNPCActionCreator() {
   static auto C =
-      rtk::createAction<FPatchNPCPayload>(TEXT("microgame/npcs/patchNPC"));
+      rtk::createAction<FPatchNPCPayload>(TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV902B0095B874));
   return C;
 }
 
@@ -31,7 +32,7 @@ inline rtk::ActionCreator<FPatchNPCPayload> PatchNPCActionCreator() {
 inline rtk::ActionCreator<FApplyNpcVerdictPayload>
 ApplyNpcVerdictActionCreator() {
   static auto C = rtk::createAction<FApplyNpcVerdictPayload>(
-      TEXT("microgame/npcs/applyNpcVerdict"));
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV7164DE03C993));
   return C;
 }
 

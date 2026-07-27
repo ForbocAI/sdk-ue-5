@@ -1,0 +1,206 @@
+#pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
+
+#include "Core/rtk.hpp"
+#include "Core/fp.hpp"
+
+#include "CoreMinimal.h"
+#include "Components/Memory/MemoryTypes.h"
+#include "AgentTypes.generated.h"
+
+namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
+typedef func::Maybe<FString>
+    FForbocAISDKPublicComponentsNPCAgentAgentTypesHOptionalDomainId;
+} } }
+
+
+/**
+ * NPC State — Immutable JSON data snapshot.
+ * User Story: As NPC state transport, I need a simple immutable wrapper so
+ * arbitrary serialized state can move through SDK flows unchanged.
+ *
+ * NOTE: Struct names retain the FAgent* prefix for Blueprint continuity.
+ * Components/NPC/Agent/AgentTypes.h is the canonical include for these
+ * transport types.
+ */
+USTRUCT(BlueprintType)
+struct FAgentState {
+  GENERATED_BODY()
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString JsonData;
+
+  /** User Story: As a npc consumer, I need to invoke fagent state through a stable signature so the npc workflow remains explicit and composable. @fn FAgentState() */
+  FAgentState() : JsonData(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF54CAD9838EB)) {}
+};
+
+/**
+ * NPC Action — Immutable action directive.
+ * User Story: As action orchestration, I need a typed action payload so
+ * validated instructions can move through reducers and bridge checks.
+ */
+USTRUCT(BlueprintType)
+struct FAgentAction {
+  GENERATED_BODY()
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString Type;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString Target;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString Reason;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  float Confidence;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString Signature;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString PayloadJson;
+
+  /** User Story: As a npc consumer, I need to invoke fagent action through a stable signature so the npc workflow remains explicit and composable. @fn FAgentAction() */
+  FAgentAction() : Confidence(FORBOCAI_SDK_AUTHORED_NUMBERV8B65CDBB20CA) {}
+};
+
+/**
+ * NPC Entity — Pure immutable data.
+ * User Story: As NPC runtime state, I need one immutable entity shape so
+ * reducers, thunks, and exports can share the same NPC contract.
+ */
+USTRUCT(BlueprintType)
+struct FAgent {
+  GENERATED_BODY()
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString Id;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString Persona;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FAgentState State;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  TArray<FMemoryItem> Memories;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString ApiUrl;
+
+  /** User Story: As a npc consumer, I need to invoke fagent through a stable signature so the npc workflow remains explicit and composable. @fn FAgent() */
+  FAgent() {}
+};
+
+/**
+ * NPC Configuration — Plain data.
+ * User Story: As NPC creation flows, I need a dedicated config payload so new
+ * NPCs can be constructed from explicit initialization inputs.
+ */
+USTRUCT(BlueprintType)
+struct FAgentConfig {
+  GENERATED_BODY()
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString Id;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString Persona;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString ApiUrl;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FAgentState InitialState;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString ApiKey;
+};
+
+/**
+ * NPC Response — Plain data.
+ * User Story: As NPC processing flows, I need a typed response payload so
+ * dialogue, actions, and state deltas can be handled consistently.
+ */
+USTRUCT(BlueprintType)
+struct FAgentResponse {
+  GENERATED_BODY()
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString Dialogue;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FAgentAction Action;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString Thought;
+};
+
+/**
+ * Imported NPC — Deserialized soul data.
+ * User Story: As soul import flows, I need a lightweight imported-NPC shape so
+ * recovered persona and serialized data can be rehydrated into runtime state.
+ */
+USTRUCT(BlueprintType)
+struct FImportedNpc {
+  GENERATED_BODY()
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString NpcId;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString Persona;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString DataJson;
+
+  /** User Story: As a npc consumer, I need to invoke fimported npc through a stable signature so the npc workflow remains explicit and composable. @fn FImportedNpc() */
+  FImportedNpc() {}
+};
+
+namespace TypeFactory {
+
+/**
+ * Builds an agent state value from serialized JSON.
+ * User Story: As NPC state hydration, I need a simple factory so JSON payloads
+ * can be wrapped into the SDK state type consistently.
+ * @fn inline FAgentState AgentState(FString JsonData)
+ */
+inline FAgentState AgentState(FString JsonData) {
+  FAgentState S;
+  S.JsonData = MoveTemp(JsonData);
+  return S;
+}
+
+/**
+ * Builds an agent action value from type, target, and reason.
+ * User Story: As action construction, I need a factory so runtime and protocol
+ * code can create normalized action payloads without manual field wiring.
+ * @fn inline FAgentAction Action(FString Type, FString Target, FString Reason = TEXT(""))
+ */
+inline FAgentAction Action(FString Type, FString Target,
+                           FString Reason = TEXT("")) {
+  FAgentAction A;
+  A.Type = MoveTemp(Type);
+  A.Target = MoveTemp(Target);
+  A.Reason = MoveTemp(Reason);
+  return A;
+}
+
+/**
+ * Builds an imported NPC payload from core soul metadata.
+ * User Story: As soul import flows, I need a factory so imported NPC metadata
+ * can be packaged into one transferable structure.
+ * @fn inline FImportedNpc ImportedNpc(FString NpcId, FString Persona, FString DataJson = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF54CAD9838EB))
+ */
+inline FImportedNpc ImportedNpc(FString NpcId, FString Persona,
+                                FString DataJson = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF54CAD9838EB)) {
+  FImportedNpc N;
+  N.NpcId = MoveTemp(NpcId);
+  N.Persona = MoveTemp(Persona);
+  N.DataJson = MoveTemp(DataJson);
+  return N;
+}
+
+} // namespace TypeFactory

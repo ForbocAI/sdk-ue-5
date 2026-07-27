@@ -1,8 +1,9 @@
 #include "Core/rtk.hpp"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 #include "CoreMinimal.h"
-#include "Features/NPC/NPCActions.h"
-#include "Features/NPC/NPCSelectors.h"
-#include "Features/NPC/NPCSlice.h"
+#include "Entities/NPC/NPCActions.h"
+#include "Entities/NPC/NPCSelectors.h"
+#include "Entities/NPC/NPCSlice.h"
 #include "Misc/AutomationTest.h"
 #include "Store.h"
 
@@ -46,7 +47,7 @@
 // @covers:coreThunk:verifySoulThunk
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FProtocolStoreWiringTest,
-                                 "ForbocAI.Integration.Protocol.StoreWiring",
+                                 FORBOCAI_SDK_AUTHORED_STRINGV5DE872FB1DD2,
                                  EAutomationTestFlags_ApplicationContextMask |
                                      EAutomationTestFlags::EngineFilter)
 
@@ -55,84 +56,84 @@ bool FProtocolStoreWiringTest::RunTest(const FString &Parameters) {
   rtk::EnhancedStore<FRuntimeState> TestStore = createRuntimeStore();
 
   FNPCInternalState Npc;
-  Npc.Id = TEXT("ag_test1");
-  Npc.Persona = TEXT("A test knight");
+  Npc.Id = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV76610D91B2F1);
+  Npc.Persona = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF4A147CAA98E);
   TestStore.dispatch(NPCActions::setNPCInfo(Npc));
-  TestStore.dispatch(NPCActions::setActiveNPC(TEXT("ag_test1")));
+  TestStore.dispatch(NPCActions::setActiveNPC(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV76610D91B2F1)));
 
   FRuntimeState State = TestStore.getState();
   func::Maybe<FNPCInternalState> Found =
-      NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_test1"));
-  TestTrue("NPC found in store", Found.hasValue);
+      NPCSelectors::selectNPCById(State.NPCs, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV76610D91B2F1));
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV6C712DA7EDD2, Found.hasValue);
   if (Found.hasValue) {
-    TestEqual("NPC persona", Found.value.Persona,
-              FString(TEXT("A test knight")));
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVBFAD8D9A2DC6, Found.value.Persona,
+              FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF4A147CAA98E)));
   }
-  TestEqual("Active NPC set", NPCSelectors::selectActiveNpcId(State.NPCs),
-            FString(TEXT("ag_test1")));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVCC9C3960FFC3, NPCSelectors::selectActiveNpcId(State.NPCs),
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV76610D91B2F1)));
 
   FAgentState NewState;
-  NewState.JsonData = FString(TEXT("{") TEXT("\"health\":100}"));
-  TestStore.dispatch(NPCActions::updateNPCState(TEXT("ag_test1"), NewState));
+  NewState.JsonData = FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF0320EEDEC6F) TEXT(FORBOCAI_SDK_AUTHORED_STRINGV1BDCBA3FA2CB));
+  TestStore.dispatch(NPCActions::updateNPCState(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV76610D91B2F1), NewState));
   State = TestStore.getState();
-  Found = NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_test1"));
-  TestTrue("NPC still found", Found.hasValue);
+  Found = NPCSelectors::selectNPCById(State.NPCs, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV76610D91B2F1));
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV05D2C81007CB, Found.hasValue);
   if (Found.hasValue) {
-    TestTrue("State updated",
-             Found.value.State.JsonData.Contains(TEXT("health")));
+    TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV6F4BC07F0E77,
+             Found.value.State.JsonData.Contains(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV5E9D79A19FC5)));
   }
 
   TestStore.dispatch(NPCActions::addToHistory(
-      TEXT("ag_test1"), TEXT("player"), TEXT("Hello")));
+      TEXT(FORBOCAI_SDK_AUTHORED_STRINGV76610D91B2F1), TEXT(FORBOCAI_SDK_AUTHORED_STRINGVC326CBA6C049), TEXT(FORBOCAI_SDK_AUTHORED_STRINGV0670E86F8BEC)));
   TestStore.dispatch(NPCActions::addToHistory(
-      TEXT("ag_test1"), TEXT("npc"), TEXT("Greetings")));
+      TEXT(FORBOCAI_SDK_AUTHORED_STRINGV76610D91B2F1), TEXT(FORBOCAI_SDK_AUTHORED_STRINGV62BC7243C9C2), TEXT(FORBOCAI_SDK_AUTHORED_STRINGV65D099044655)));
   State = TestStore.getState();
-  Found = NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_test1"));
-  TestTrue("NPC found after history", Found.hasValue);
+  Found = NPCSelectors::selectNPCById(State.NPCs, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV76610D91B2F1));
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV3A32D9186272, Found.hasValue);
   if (Found.hasValue) {
-    TestEqual("Two history entries", Found.value.History.Num(), 2);
-    TestEqual("First history role", Found.value.History[0].Role,
-              FString(TEXT("player")));
-    TestEqual("First history content", Found.value.History[0].Content,
-              FString(TEXT("Hello")));
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV3CDA55432FB2, Found.value.History.Num(), FORBOCAI_SDK_AUTHORED_NUMBERV6AC392A47561);
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVAA04986FD1D3, Found.value.History[FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA].Role,
+              FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVC326CBA6C049)));
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVD4393345B952, Found.value.History[FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA].Content,
+              FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV0670E86F8BEC)));
   }
 
   FAgentAction Attack;
-  Attack.Type = TEXT("ATTACK");
-  Attack.Target = TEXT("goblin");
-  Attack.Reason = TEXT("In combat");
+  Attack.Type = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV5EF270DC93FB);
+  Attack.Target = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVCC3E8E496F2C);
+  Attack.Reason = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV33D6A3AC0736);
   const rtk::AnyAction ActionReceived =
-      NPCActions::actionReceived(TEXT("ag_test1"), Attack);
-  TestTrue("Action event matches",
+      NPCActions::actionReceived(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV76610D91B2F1), Attack);
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV1BBED6B02745,
            NPCActions::actionReceivedActionCreator().match(ActionReceived));
   const auto ActionPayload =
       NPCActions::actionReceivedActionCreator().extract(ActionReceived);
-  TestTrue("Action event has payload", ActionPayload.hasValue);
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV8A4630130879, ActionPayload.hasValue);
   if (ActionPayload.hasValue) {
-    TestEqual("Action event type", ActionPayload.value.Action.Type,
-              FString(TEXT("ATTACK")));
-    TestEqual("Action event target", ActionPayload.value.Action.Target,
-              FString(TEXT("goblin")));
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV7F2A2B26AFD5, ActionPayload.value.Action.Type,
+              FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV5EF270DC93FB)));
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVAF3A82394FEC, ActionPayload.value.Action.Target,
+              FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVCC3E8E496F2C)));
   }
   TestStore.dispatch(ActionReceived);
 
   TestStore.dispatch(NPCActions::blockAction(
-      TEXT("ag_test1"), TEXT("Cannot attack civilians")));
+      TEXT(FORBOCAI_SDK_AUTHORED_STRINGV76610D91B2F1), TEXT(FORBOCAI_SDK_AUTHORED_STRINGVFF8480B053CB)));
   State = TestStore.getState();
-  Found = NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_test1"));
-  TestTrue("NPC found after block", Found.hasValue);
+  Found = NPCSelectors::selectNPCById(State.NPCs, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV76610D91B2F1));
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVABDCADF912CF, Found.hasValue);
   if (Found.hasValue) {
-    TestTrue("NPC is blocked", Found.value.bIsBlocked);
-    TestEqual("Block reason", Found.value.BlockReason,
-              FString(TEXT("Cannot attack civilians")));
+    TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV8E9E63EAA083, Found.value.bIsBlocked);
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV60B7DE8A653F, Found.value.BlockReason,
+              FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVFF8480B053CB)));
   }
 
-  TestStore.dispatch(NPCActions::clearBlock(TEXT("ag_test1")));
+  TestStore.dispatch(NPCActions::clearBlock(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV76610D91B2F1)));
   State = TestStore.getState();
-  Found = NPCSelectors::selectNPCById(State.NPCs, TEXT("ag_test1"));
-  TestTrue("NPC found after unblock", Found.hasValue);
+  Found = NPCSelectors::selectNPCById(State.NPCs, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV76610D91B2F1));
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV305EAC4982DB, Found.hasValue);
   if (Found.hasValue) {
-    TestFalse("NPC is unblocked", Found.value.bIsBlocked);
+    TestFalse(FORBOCAI_SDK_AUTHORED_STRINGV57187E3F02EA, Found.value.bIsBlocked);
   }
   return true;
 }

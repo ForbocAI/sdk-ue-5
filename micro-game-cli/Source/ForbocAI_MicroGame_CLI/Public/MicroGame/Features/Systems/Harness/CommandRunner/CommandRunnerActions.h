@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/rtk.hpp"
 #include "MicroGame/Features/Systems/Harness/CommandRunner/CommandRunnerTypes.h"
@@ -11,14 +12,14 @@ inline rtk::ActionCreator<CommandRunner::FCommandAliasUpdate>
 aliasesCapturedActionCreator() {
   static const auto Creator =
       rtk::createAction<CommandRunner::FCommandAliasUpdate>(
-          TEXT("microgame/commandRunner/aliasesCaptured"));
+          TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV7BF438CAEE1B));
   return Creator;
 }
 
 /** User Story: As a systems harness command runner consumer, I need to invoke aliases reset action creator through a stable signature so the systems harness command runner workflow remains explicit and composable. @fn inline rtk::ActionCreatorWithoutPayload aliasesResetActionCreator() */
 inline rtk::ActionCreatorWithoutPayload aliasesResetActionCreator() {
   static const auto Creator =
-      rtk::createAction(TEXT("microgame/commandRunner/aliasesReset"));
+      rtk::createAction(TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVCD9B9402FE96));
   return Creator;
 }
 

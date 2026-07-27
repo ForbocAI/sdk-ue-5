@@ -4,19 +4,20 @@
  */
 
 #include "CoreMinimal.h"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 #include "Misc/AutomationTest.h"
-#include "Features/API/Serialization/APISerializationAdapters.h"
-#include "Features/Testing/API/Codec/APICodecAdapters.h"
-#include "Features/Protocol/ProtocolThunks.h"
-#include "Features/Protocol/Requests/RequestsTypes.h"
-#include "Features/API/APIAdapters.h"
+#include "Systems/API/Serialization/APISerializationAdapters.h"
+#include "Systems/Testing/API/Codec/APICodecAdapters.h"
+#include "Systems/Protocol/ProtocolThunks.h"
+#include "Components/Protocol/Requests/RequestsTypes.h"
+#include "Systems/API/APIAdapters.h"
 
 using namespace rtk;
 using namespace Testing::API::Codec;
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FSerializeIdentifyActorPayloadTest,
-    "ForbocAI.Core.Protocol.SerializeIdentifyActorPayload",
+    FORBOCAI_SDK_AUTHORED_STRINGVB67052AFCE5C,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
@@ -67,7 +68,7 @@ bool FSerializeIdentifyActorPayloadTest::RunTest(const FString &Parameters) {
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FSerializeDecisionPayloadTest,
-    "ForbocAI.Core.Protocol.SerializeDecisionPayload",
+    FORBOCAI_SDK_AUTHORED_STRINGV10387C1784E8,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
@@ -110,7 +111,7 @@ bool FSerializeDecisionPayloadTest::RunTest(const FString &Parameters) {
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FSerializeReasoningPayloadTest,
-    "ForbocAI.Core.Protocol.SerializeReasoningPayload",
+    FORBOCAI_SDK_AUTHORED_STRINGV646CDFE05999,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
@@ -149,7 +150,7 @@ bool FSerializeReasoningPayloadTest::RunTest(const FString &Parameters) {
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FEncodeProcessTapePayloadTest,
-    "ForbocAI.Core.Protocol.EncodeProcessTapePayload",
+    FORBOCAI_SDK_AUTHORED_STRINGV425E87BC6BAA,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**

@@ -5,14 +5,15 @@
  */
 
 #include "Core/rtk.hpp"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 #include "CoreMinimal.h"
-#include "Features/Directive/DirectiveSlice.h"
-#include "Features/Directive/DirectiveSelectors.h"
+#include "Entities/Directive/DirectiveSlice.h"
+#include "Entities/Directive/DirectiveSelectors.h"
 #include "HAL/PlatformProcess.h"
 #include "Misc/AutomationTest.h"
-#include "Features/NPC/NPCSelectors.h"
-#include "Features/NPC/NPCSlice.h"
-#include "Features/Protocol/ProtocolThunks.h"
+#include "Entities/NPC/NPCSelectors.h"
+#include "Entities/NPC/NPCSlice.h"
+#include "Systems/Protocol/ProtocolThunks.h"
 #include "Protocol/NPC/ProcessNPCTestAdapters.h"
 #include "Store.h"
 
@@ -23,10 +24,10 @@ namespace {
 /** User Story: As a tests integration consumer, I need to invoke configure live api through a stable signature so the tests integration workflow remains explicit and composable. @fn bool ConfigureLiveApi(FAutomationTestBase &Test) */
 bool ConfigureLiveApi(FAutomationTestBase &Test) {
   const FString ApiKey =
-      FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_API_KEY"));
+      FPlatformMisc::GetEnvironmentVariable(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV5F0C966E7042));
   if (ApiKey.IsEmpty()) {
     Test.AddError(
-        TEXT("FORBOCAI_API_KEY is required for processNPC integration"));
+        TEXT(FORBOCAI_SDK_AUTHORED_STRINGV0D87130FB9D1));
     return false;
   }
 
@@ -47,7 +48,7 @@ DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
  * @fn bool FProcessNPCWaitComplete::Update()
  */
 bool FProcessNPCWaitComplete::Update() {
-  const int32 MaxPolls = 300;  // ~15s at 50ms
+  const int32 MaxPolls = FORBOCAI_SDK_AUTHORED_NUMBERV07C0796E1646;  // ~15s at 50ms
 
   if (!State->Store.IsValid()) {
     ProcessNPCTestAdapters::Start(State, Params);
@@ -58,10 +59,10 @@ bool FProcessNPCWaitComplete::Update() {
   if (++PollCount >= MaxPolls) {
     State->bCompleted = true;
     State->bSuccess = false;
-    State->Error = TEXT("Timeout waiting for processNPC");
+    State->Error = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV9FD0ADD5A4E1);
     return true;
   }
-  FPlatformProcess::Sleep(0.05f);
+  FPlatformProcess::Sleep(FORBOCAI_SDK_AUTHORED_NUMBERV4B582E8E76C5);
   return false;
 }
 
@@ -74,7 +75,7 @@ bool FProcessNPCWaitComplete::Update() {
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FProcessNPCLiveFinalizeValidTest,
-    "ForbocAI.Integration.Protocol.ProcessNPCLiveFinalizeValid",
+    FORBOCAI_SDK_AUTHORED_STRINGV227D4975A4CA,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
@@ -88,18 +89,18 @@ bool FProcessNPCLiveFinalizeValidTest::RunTest(const FString &Parameters) {
 
   auto State = MakeShared<FProcessNPCTestState>();
   ADD_LATENT_AUTOMATION_COMMAND(FProcessNPCWaitComplete(
-      State, FProcessNPCTestParams{TEXT("npc_valid_1"), TEXT("Hello!"),
-                                   TEXT("A friendly merchant")},
-      0));
+      State, FProcessNPCTestParams{TEXT(FORBOCAI_SDK_AUTHORED_STRINGV251D3D537563), TEXT(FORBOCAI_SDK_AUTHORED_STRINGV239645F4AA52),
+                                   TEXT(FORBOCAI_SDK_AUTHORED_STRINGVBF3D0FCA4463)},
+      FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA));
 
   ADD_LATENT_AUTOMATION_COMMAND(FDelayedFunctionLatentCommand(
       [this, State]() {
-        TestTrue("processNPC completed", State->bCompleted);
+        TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV2F43F93A97CA, State->bCompleted);
         if (!State->bCompleted)
           return;
-        TestTrue("processNPC succeeded", State->bSuccess);
+        TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVCDFE558FA72E, State->bSuccess);
         if (!State->bSuccess) {
-          AddError(FString::Printf(TEXT("API error: %s"), *State->Error));
+          AddError(FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV704EDECC7A37), *State->Error));
           return;
         }
 
@@ -107,29 +108,29 @@ bool FProcessNPCLiveFinalizeValidTest::RunTest(const FString &Parameters) {
         auto Run = DirectiveSlice::selectDirectiveById(
             StoreState.Directives,
             DirectiveSlice::selectActiveDirectiveId(StoreState.Directives));
-        TestTrue("Directive run exists", Run.hasValue);
+        TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVD6FCFD23D50F, Run.hasValue);
         if (Run.hasValue) {
-          TestEqual("Run completed",
+          TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVAB20CD634973,
                     static_cast<int32>(Run.value.Status),
                     static_cast<int32>(
                         EDirectiveStatus::Completed));
         }
 
         auto Npc =
-            NPCSelectors::selectNPCById(StoreState.NPCs, TEXT("npc_valid_1"));
-        TestTrue("NPC exists", Npc.hasValue);
+            NPCSelectors::selectNPCById(StoreState.NPCs, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV251D3D537563));
+        TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV28F2157B6D54, Npc.hasValue);
         if (Npc.hasValue) {
-          TestTrue("History has entries", Npc.value.History.Num() >= 1);
-          TestFalse("NPC not blocked", Npc.value.bIsBlocked);
+          TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV9F0FCD2C8ECA, Npc.value.History.Num() >= FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4);
+          TestFalse(FORBOCAI_SDK_AUTHORED_STRINGV869E1DF1D971, Npc.value.bIsBlocked);
         }
 
         // Wire-payload assertions on the live FAgentResponse — the API
         // must drive every field the test relies on (no fabricated response
         // object short-circuits the loop).
-        TestTrue("Response has dialogue from the API",
+        TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV79C7194E2C52,
                  !State->Response.Dialogue.IsEmpty());
       },
-      0.01f));
+      FORBOCAI_SDK_AUTHORED_NUMBERVEC53E6A2E194));
 
   return true;
 }
@@ -144,7 +145,7 @@ bool FProcessNPCLiveFinalizeValidTest::RunTest(const FString &Parameters) {
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FProcessNPCLiveFinalizeInvalidTest,
-    "ForbocAI.Integration.Protocol.ProcessNPCLiveFinalizeInvalid",
+    FORBOCAI_SDK_AUTHORED_STRINGV528051BE6582,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
@@ -158,31 +159,31 @@ bool FProcessNPCLiveFinalizeInvalidTest::RunTest(const FString &Parameters) {
 
   auto State = MakeShared<FProcessNPCTestState>();
   ADD_LATENT_AUTOMATION_COMMAND(FProcessNPCWaitComplete(
-      State, FProcessNPCTestParams{TEXT("npc_block_1"),
-                                   TEXT("I murder the innocent villager."),
-                                   TEXT("A village guard")},
-      0));
+      State, FProcessNPCTestParams{TEXT(FORBOCAI_SDK_AUTHORED_STRINGV11A26479761C),
+                                   TEXT(FORBOCAI_SDK_AUTHORED_STRINGVA4A5CE69EBCB),
+                                   TEXT(FORBOCAI_SDK_AUTHORED_STRINGVACC7FD24FAD2)},
+      FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA));
 
   ADD_LATENT_AUTOMATION_COMMAND(FDelayedFunctionLatentCommand(
       [this, State]() {
-        TestTrue("processNPC completed", State->bCompleted);
+        TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV2F43F93A97CA, State->bCompleted);
         if (!State->bCompleted)
           return;
         if (!State->bSuccess) {
-          AddError(FString::Printf(TEXT("API error: %s"), *State->Error));
+          AddError(FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV704EDECC7A37), *State->Error));
           return;
         }
 
         FRuntimeState StoreState = State->Store->getState();
         auto Npc =
-            NPCSelectors::selectNPCById(StoreState.NPCs, TEXT("npc_block_1"));
-        TestTrue("NPC exists", Npc.hasValue);
+            NPCSelectors::selectNPCById(StoreState.NPCs, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV11A26479761C));
+        TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV28F2157B6D54, Npc.hasValue);
         if (Npc.hasValue && Npc.value.bIsBlocked) {
-          TestTrue("Block reason set when blocked",
+          TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV6DB68031A750,
                    !Npc.value.BlockReason.IsEmpty());
         }
       },
-      0.01f));
+      FORBOCAI_SDK_AUTHORED_NUMBERVEC53E6A2E194));
 
   return true;
 }
@@ -193,7 +194,7 @@ bool FProcessNPCLiveFinalizeInvalidTest::RunTest(const FString &Parameters) {
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FProcessNPCDirectiveLifecycleTest,
-    "ForbocAI.Integration.Protocol.ProcessNPCDirectiveLifecycle",
+    FORBOCAI_SDK_AUTHORED_STRINGV3238821DCB8C,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
@@ -207,37 +208,37 @@ bool FProcessNPCDirectiveLifecycleTest::RunTest(const FString &Parameters) {
 
   auto State = MakeShared<FProcessNPCTestState>();
   ADD_LATENT_AUTOMATION_COMMAND(FProcessNPCWaitComplete(
-      State, FProcessNPCTestParams{TEXT("npc_lc_1"),
-                                   TEXT("What do you sell?"),
-                                   TEXT("Test merchant")},
-      0));
+      State, FProcessNPCTestParams{TEXT(FORBOCAI_SDK_AUTHORED_STRINGV107C7B91D193),
+                                   TEXT(FORBOCAI_SDK_AUTHORED_STRINGV0B665CF47A61),
+                                   TEXT(FORBOCAI_SDK_AUTHORED_STRINGV1781C1774899)},
+      FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA));
 
   ADD_LATENT_AUTOMATION_COMMAND(FDelayedFunctionLatentCommand(
       [this, State]() {
-        TestTrue("Completed", State->bCompleted);
+        TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV964F9B262B38, State->bCompleted);
         if (!State->bCompleted)
           return;
         if (!State->bSuccess) {
-          AddError(FString::Printf(TEXT("API error: %s"), *State->Error));
+          AddError(FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV704EDECC7A37), *State->Error));
           return;
         }
 
         FRuntimeState StoreState = State->Store->getState();
         FString ActiveId =
             DirectiveSlice::selectActiveDirectiveId(StoreState.Directives);
-        TestFalse("Active directive set", ActiveId.IsEmpty());
+        TestFalse(FORBOCAI_SDK_AUTHORED_STRINGVC34FF3450068, ActiveId.IsEmpty());
 
         auto Run =
             DirectiveSlice::selectDirectiveById(StoreState.Directives, ActiveId);
-        TestTrue("Run exists", Run.hasValue);
+        TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV9E6C5C93292A, Run.hasValue);
         if (Run.hasValue) {
-          TestEqual("Status completed",
+          TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV6156B21C6DA5,
                     static_cast<int32>(Run.value.Status),
                     static_cast<int32>(
                         EDirectiveStatus::Completed));
         }
       },
-      0.01f));
+      FORBOCAI_SDK_AUTHORED_NUMBERVEC53E6A2E194));
 
   return true;
 }

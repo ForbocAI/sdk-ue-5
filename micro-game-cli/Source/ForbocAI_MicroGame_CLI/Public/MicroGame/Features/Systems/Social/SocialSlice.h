@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -22,7 +23,7 @@ inline func::Maybe<FTradeOffer> SelectSocialActiveTrade(const FSocialState &S) {
 /** User Story: As a features systems social consumer, I need to invoke create social slice through a stable signature so the features systems social workflow remains explicit and composable. @fn inline rtk::Slice<FSocialState> CreateSocialSlice() */
 inline rtk::Slice<FSocialState> CreateSocialSlice() {
   return rtk::createSlice<FSocialState>(
-      TEXT("microgame/social"), FSocialState(),
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV1E59E95DD845), FSocialState(),
       [](rtk::ActionReducerMapBuilder<FSocialState> &Builder) {
         Builder.addCase(
             SocialActions::setDialogueActionCreator(),

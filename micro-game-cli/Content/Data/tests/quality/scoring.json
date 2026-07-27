@@ -1,6 +1,9 @@
 {
   "automationName": "ForbocAI.Slices.MicroGame.QualityRejectsContradictions",
   "story": "User Story: As an end-to-end evaluator, Given contradictory answers with high lexical overlap, When the production scorer runs, Then every adversarial answer is rejected",
+  "acceptanceStory": "User Story: As an end-to-end evaluator, Given a semantically equivalent cautious-analysis answer, When the production scorer runs, Then the valid answer is accepted",
+  "workloadMismatchStory": "User Story: As a release reviewer, Given a baseline with different CLI probe input, When reports are compared, Then the workload is incompatible instead of producing a false regression",
+  "workloadMismatchCommand": "forbocai npc chat careful --text \"Reply with exactly these two words: red triangle\"",
   "host": "unreal-cli",
   "durationMs": 125,
   "cases": [
@@ -27,6 +30,16 @@
     {
       "probeId": "speaker-boundary",
       "output": "> NPC: I cannot choose for you. You dance."
+    },
+    {
+      "probeId": "grounded-memory-recall",
+      "output": "> NPC: No brass key was found beneath the fountain."
+    }
+  ],
+  "acceptedCases": [
+    {
+      "probeId": "runtime-trait-consistency",
+      "output": "> NPC: I will apply critical analysis to the report."
     }
   ]
 }

@@ -10,7 +10,7 @@ This module is the whole engine the per-role guards build on:
 * ``Rule``/``register``/``RULES`` make each rule a first-class object with a
   stable id, a severity aligned to the redux/rtk skills, and a skill citation --
   which powers ``--explain`` and the JSON/SARIF emitters.
-* Content-based role fingerprinting and the feature import graph let the guards
+* Content-based role fingerprinting and the ECS-role import graph let the guards
   reason about a file's *observed* role and cross-file structure, not just its
   name.
 
@@ -29,6 +29,8 @@ from typing import Callable, Iterable
 
 SOURCE_EXTENSIONS = {".h", ".hpp", ".cpp"}
 IMPORT_RE = re.compile(r'^\s*#\s*include\s+"([^"]+)"', re.MULTILINE)
+ECS_ROLE_MARKERS = ("Features", "Components", "Entities", "Systems")
+SOURCE_ROLE_MARKERS = (*ECS_ROLE_MARKERS, "Views")
 
 
 # --- Roles -----------------------------------------------------------------
@@ -259,7 +261,7 @@ def _sibling_raw(path: Path) -> str:
         role_stem = ROLE_STEM_BY_ROLE[role]
         qualifiers = {
             qualifier
-            for marker in ("Features", "Views")
+            for marker in SOURCE_ROLE_MARKERS
             for qualifier in _folder_suffix_qualifiers(path, marker)
             if qualifier
         }
@@ -335,10 +337,9 @@ def _folder_suffix_qualifiers(path: Path, marker: str) -> tuple[str, ...]:
 
 def _qualified_role_for_path(path: Path) -> str | None:
     stem = path.stem
-    markers = ("Features", "Views")
     qualifiers = {
         qualifier
-        for marker in markers
+        for marker in SOURCE_ROLE_MARKERS
         for qualifier in _folder_suffix_qualifiers(path, marker)
         if qualifier
     }
@@ -349,23 +350,34 @@ def _qualified_role_for_path(path: Path) -> str | None:
 
 
 def role_for_path(path: Path) -> str | None:
-    if _is_under_marker(path, "Features") or _is_under_marker(path, "Views"):
+    if any(_is_under_marker(path, marker) for marker in SOURCE_ROLE_MARKERS):
         return _qualified_role_for_path(path) or role_for_stem_suffix(path.stem)
     return role_for_stem(path.stem)
 
 
+def _first_marker(parts: tuple[str, ...], markers: tuple[str, ...]) -> str | None:
+    indexed = tuple(
+        (index, part)
+        for index, part in enumerate(parts)
+        if part in markers
+    )
+    return min(indexed)[1] if indexed else None
+
+
 def role_for_include(include: str) -> str | None:
     parts = Path(include).parts
-    if "Features" not in parts:
+    marker = _first_marker(parts, ECS_ROLE_MARKERS)
+    if marker is None:
         return None
-    return role_for_path(Path(*parts[parts.index("Features") :]))
+    return role_for_path(Path(*parts[parts.index(marker) :]))
 
 
-def feature_relative_include(include: str) -> Path | None:
+def role_relative_include(include: str) -> Path | None:
     parts = Path(include).parts
-    if "Features" not in parts:
+    marker = _first_marker(parts, ECS_ROLE_MARKERS)
+    if marker is None:
         return None
-    return Path(*parts[parts.index("Features") + 1 :])
+    return Path(*parts[parts.index(marker) + 1 :])
 
 
 def iter_source_files(roots: Iterable[Path]) -> Iterable[Path]:
@@ -479,10 +491,10 @@ def role_edges(units: list[SourceUnit]) -> list[tuple[Path, str, Path]]:
 
 
 def find_import_cycles(units: list[SourceUnit]) -> list[list[str]]:
-    """Detect include cycles among feature role files (by include target)."""
+    """Detect include cycles among ECS role files (by include target)."""
     graph: dict[str, set[str]] = {}
     for unit in units:
-        rel_include = _feature_include_key(unit)
+        rel_include = _role_include_key(unit)
         if rel_include is None:
             continue
         targets = {
@@ -525,16 +537,18 @@ def find_import_cycles(units: list[SourceUnit]) -> list[list[str]]:
 
 def _include_key(include: str) -> str | None:
     parts = Path(include).parts
-    if "Features" not in parts:
+    marker = _first_marker(parts, ECS_ROLE_MARKERS)
+    if marker is None or role_for_include(include) is None:
         return None
-    return Path(*parts[parts.index("Features") :]).as_posix()
+    return Path(*parts[parts.index(marker) :]).as_posix()
 
 
-def _feature_include_key(unit: SourceUnit) -> str | None:
+def _role_include_key(unit: SourceUnit) -> str | None:
     parts = unit.path.parts
-    if "Features" not in parts:
+    marker = _first_marker(parts, ECS_ROLE_MARKERS)
+    if marker is None:
         return None
-    return Path(*parts[parts.index("Features") :]).as_posix()
+    return Path(*parts[parts.index(marker) :]).as_posix()
 
 
 # --- Output formatters -----------------------------------------------------

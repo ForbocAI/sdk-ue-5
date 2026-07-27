@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/FP/Maybe/Maybe.hpp"
 #include "Core/FP/Combinator/Combinator.hpp"
@@ -25,7 +26,7 @@ Acc foldIndexedRecursive(const IndexedCollection &values, size_t count,
   return index >= count
              ? acc
              : foldIndexedRecursive<IndexedCollection, Acc, Step>(
-                   values, count, index + 1, step(acc, values[index]), step);
+                   values, count, index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, step(acc, values[index]), step);
 }
 
 /** User Story: As a core fp indexed consumer, I need to invoke find indexed recursive through a stable signature so the core fp indexed workflow remains explicit and composable. @fn template <typename IndexedCollection, typename Predicate, typename Value> Maybe<Value> findIndexedRecursive(const IndexedCollection &values, size_t count, size_t index, Predicate predicate) */
@@ -37,7 +38,7 @@ Maybe<Value> findIndexedRecursive(const IndexedCollection &values, size_t count,
              : (predicate(values[index])
                     ? just<Value>(values[index])
                     : findIndexedRecursive<IndexedCollection, Predicate, Value>(
-                          values, count, index + 1, predicate));
+                          values, count, index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, predicate));
 }
 
 /** User Story: As a core fp indexed consumer, I need to invoke map grid recursive through a stable signature so the core fp indexed workflow remains explicit and composable. @fn template <typename Output, typename Map> std::vector<Output> mapGridRecursive(size_t rows, size_t columns, size_t index, Map map, std::vector<Output> result) */
@@ -48,7 +49,7 @@ std::vector<Output> mapGridRecursive(size_t rows, size_t columns, size_t index,
              ? result
              : (result.push_back(
                     map(GridIndex{index / columns, index % columns})),
-                mapGridRecursive<Output, Map>(rows, columns, index + 1, map,
+                mapGridRecursive<Output, Map>(rows, columns, index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, map,
                                               std::move(result)));
 }
 } // namespace detail
@@ -65,7 +66,7 @@ template <typename IndexedCollection, typename Acc, typename Step>
 Acc fold_indexed(const IndexedCollection &values, size_t count, Acc seed,
                  Step step) {
   return detail::foldIndexedRecursive<IndexedCollection, Acc, Step>(
-      values, count, 0, seed, step);
+      values, count, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, seed, step);
 }
 
 /**
@@ -80,18 +81,18 @@ template <typename IndexedCollection, typename Effect>
 void for_each_indexed(const IndexedCollection &values, size_t count,
                       Effect effect) {
   fold_indexed<IndexedCollection, int>(
-      values, count, 0,
+      values, count, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA,
       [effect](const int &visited, const typename std::decay<
                                       decltype(std::declval<
                                                    const IndexedCollection &>()
-                                                   [0])>::type &value) {
+                                                   [FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA])>::type &value) {
         effect(value);
-        return visited + 1;
+        return visited + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4;
       });
 }
 
 /**
- * @fn template <typename IndexedCollection, typename Predicate> auto find_indexed(const IndexedCollection &values, size_t count, Predicate predicate) -> Maybe<typename std::decay<decltype(std::declval< const IndexedCollection &>()[0])>:: type>
+ * @fn template <typename IndexedCollection, typename Predicate> auto find_indexed(const IndexedCollection &values, size_t count, Predicate predicate) -> Maybe<typename std::decay<decltype(std::declval< const IndexedCollection &>()[FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA])>:: type>
  * @brief Finds the first indexed collection value that satisfies a predicate.
  *
  *
@@ -102,13 +103,13 @@ template <typename IndexedCollection, typename Predicate>
 auto find_indexed(const IndexedCollection &values, size_t count,
                   Predicate predicate)
     -> Maybe<typename std::decay<decltype(std::declval<
-                                           const IndexedCollection &>()[0])>::
+                                           const IndexedCollection &>()[FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA])>::
                  type> {
   typedef typename std::decay<decltype(std::declval<
-                                       const IndexedCollection &>()[0])>::type
+                                       const IndexedCollection &>()[FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA])>::type
       Value;
   return detail::findIndexedRecursive<IndexedCollection, Predicate, Value>(
-      values, count, 0, predicate);
+      values, count, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, predicate);
 }
 
 /**
@@ -152,7 +153,7 @@ template <typename Output, typename Map>
 std::vector<Output> map_grid(size_t rows, size_t columns, Map map) {
   std::vector<Output> result;
   result.reserve(rows * columns);
-  return detail::mapGridRecursive<Output, Map>(rows, columns, 0, map,
+  return detail::mapGridRecursive<Output, Map>(rows, columns, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, map,
                                                std::move(result));
 }
 

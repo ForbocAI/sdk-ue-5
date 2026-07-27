@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/RTK/Action/Action.hpp"
 
@@ -12,7 +13,7 @@ template <typename State> struct Store {
     std::function<void()> Callback;
   };
   std::vector<Subscriber> Subscribers;
-  int64_t NextId = 1;
+  int64_t NextId = FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4;
 
   /**
    * Returns the current store state snapshot.
@@ -59,7 +60,7 @@ void notifySubscribersRecursive(
   Index == Subscribers.size()
       ? void()
       : (Subscribers[Index].Callback(),
-         notifySubscribersRecursive<State>(Subscribers, Index + 1));
+         notifySubscribersRecursive<State>(Subscribers, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4));
 }
 
 /**
@@ -93,7 +94,7 @@ void eraseSubscriberRecursive(
       ? void()
       : (Subscribers[Index].Id == Id
              ? eraseSubscriberAt<State>(Subscribers, Index)
-             : eraseSubscriberRecursive<State>(Subscribers, Index + 1, Id),
+             : eraseSubscriberRecursive<State>(Subscribers, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, Id),
          void());
 }
 
@@ -181,7 +182,7 @@ std::function<void()> subscribe(Store<State> &StoreValue,
   StoreValue.Subscribers.push_back(
       typename Store<State>::Subscriber{Id, std::move(Callback)});
   return [&StoreValue, Id]() {
-    detail::eraseSubscriberRecursive<State>(StoreValue.Subscribers, 0, Id);
+    detail::eraseSubscriberRecursive<State>(StoreValue.Subscribers, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, Id);
   };
 }
 

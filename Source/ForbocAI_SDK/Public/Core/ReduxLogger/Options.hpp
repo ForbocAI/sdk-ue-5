@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -14,9 +15,9 @@ namespace helpers {
 /** User Story: As a core redux logger consumer, I need to invoke repeat recursive through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline FString repeatRecursive(const FString &Value, int32 Times, FString Result) */
 inline FString repeatRecursive(const FString &Value, int32 Times,
                                FString Result) {
-  return Times <= 0
+  return Times <= FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA
              ? Result
-             : repeatRecursive(Value, Times - 1, Result + Value);
+             : repeatRecursive(Value, Times - FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, Result + Value);
 }
 
 /** User Story: As a core redux logger consumer, I need to invoke repeat through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline FString repeat(const FString &Value, int32 Times) */
@@ -27,14 +28,14 @@ inline FString repeat(const FString &Value, int32 Times) {
 /** User Story: As a core redux logger consumer, I need to invoke pad through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline FString pad(int32 Number, int32 MaxLength) */
 inline FString pad(int32 Number, int32 MaxLength) {
   const FString NumberText = FString::FromInt(Number);
-  return repeat(TEXT("0"), MaxLength - NumberText.Len()) + NumberText;
+  return repeat(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV5B8FFF652898), MaxLength - NumberText.Len()) + NumberText;
 }
 
 /** User Story: As a core redux logger consumer, I need to invoke format time through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline FString formatTime(const FDateTime &Time) */
 inline FString formatTime(const FDateTime &Time) {
-  return pad(Time.GetHour(), 2) + TEXT(":") + pad(Time.GetMinute(), 2) +
-         TEXT(":") + pad(Time.GetSecond(), 2) + TEXT(".") +
-         pad(Time.GetMillisecond(), 3);
+  return pad(Time.GetHour(), FORBOCAI_SDK_AUTHORED_NUMBERV6AC392A47561) + TEXT(FORBOCAI_SDK_AUTHORED_STRINGVE512A1A85234) + pad(Time.GetMinute(), FORBOCAI_SDK_AUTHORED_NUMBERV6AC392A47561) +
+         TEXT(FORBOCAI_SDK_AUTHORED_STRINGVE512A1A85234) + pad(Time.GetSecond(), FORBOCAI_SDK_AUTHORED_NUMBERV6AC392A47561) + TEXT(FORBOCAI_SDK_AUTHORED_STRINGVB7A0F54EEC20) +
+         pad(Time.GetMillisecond(), FORBOCAI_SDK_AUTHORED_NUMBERV32732DCF7787);
 }
 
 /** User Story: As a core redux logger consumer, I need to invoke timer now through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline double timerNow() */
@@ -47,13 +48,13 @@ inline double timerNow() {
 } // namespace helpers
 
 struct LogEntry {
-  double Started = 0.0;
+  double Started = FORBOCAI_SDK_AUTHORED_NUMBERV3FC4AA7B1C98;
   FDateTime StartedTime;
   FString PrevState;
   AnyAction Action;
   bool bHasError = false;
   FString Error;
-  double Took = 0.0;
+  double Took = FORBOCAI_SDK_AUTHORED_NUMBERV3FC4AA7B1C98;
   FString NextState;
 };
 
@@ -62,9 +63,9 @@ namespace detail {
 /** User Story: As a core redux logger consumer, I need to invoke format action through a stable signature so the core redux logger workflow remains explicit and composable. @fn inline FString formatAction(const AnyAction &Action) */
 inline FString formatAction(const AnyAction &Action) {
   const FString Payload = Action.describePayload();
-  return Payload == TEXT("<none>")
-             ? FString::Printf(TEXT("{ type: \"%s\" }"), *Action.Type)
-             : FString::Printf(TEXT("{ type: \"%s\", payload: %s }"),
+  return Payload == TEXT(FORBOCAI_SDK_AUTHORED_STRINGV781ACD34ECFB)
+             ? FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVEBF9C9DCA5D8), *Action.Type)
+             : FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVBCB213452A1B),
                                *Action.Type, *Payload);
 }
 
@@ -88,16 +89,16 @@ inline TArray<FString> payloadList(const FString &First,
 
 template <typename State> struct LoggerColors {
   std::function<FString(const FString &)> Title =
-      [](const FString &) { return FString(TEXT("inherit")); };
+      [](const FString &) { return FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVBC23221DF1DF)); };
   std::function<FString(const FString &)> PrevState =
-      [](const FString &) { return FString(TEXT("#9E9E9E")); };
+      [](const FString &) { return FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV0EE03F792D10)); };
   std::function<FString(const FString &)> Action =
-      [](const FString &) { return FString(TEXT("#03A9F4")); };
+      [](const FString &) { return FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV15E67DA6D5C3)); };
   std::function<FString(const FString &)> NextState =
-      [](const FString &) { return FString(TEXT("#4CAF50")); };
+      [](const FString &) { return FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV1DCA25FCE771)); };
   std::function<FString(const FString &, const FString &)> Error =
       [](const FString &, const FString &) {
-        return FString(TEXT("#F20404"));
+        return FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV910A319F788E));
       };
 };
 
@@ -105,7 +106,7 @@ using LevelCallback =
     std::function<FString(const AnyAction &, const TArray<FString> &)>;
 
 template <typename State> struct ReduxLoggerOptions {
-  FString Level = TEXT("log");
+  FString Level = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV7225C889C54C);
   TMap<FString, FString> LevelByType;
   TMap<FString, LevelCallback> LevelByTypeFn;
   std::function<FString(const AnyAction &)> LevelFn;

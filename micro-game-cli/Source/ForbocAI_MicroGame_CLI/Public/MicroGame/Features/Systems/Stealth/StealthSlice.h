@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -22,7 +23,7 @@ inline int32 SelectStealthAlertLevel(const FStealthState &S) {
 /** User Story: As a features systems stealth consumer, I need to invoke create stealth slice through a stable signature so the features systems stealth workflow remains explicit and composable. @fn inline rtk::Slice<FStealthState> CreateStealthSlice() */
 inline rtk::Slice<FStealthState> CreateStealthSlice() {
   return rtk::createSlice<FStealthState>(
-      TEXT("microgame/stealth"), CreateStealthInitialState(),
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVECFF7C96AFD2), CreateStealthInitialState(),
       [](rtk::ActionReducerMapBuilder<FStealthState> &Builder) {
         Builder.addCase(
             StealthActions::setDoorOpenActionCreator(),

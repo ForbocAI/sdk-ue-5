@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -10,14 +11,14 @@ namespace CoverageActions {
 /** User Story: As a systems harness coverage consumer, I need to invoke mark covered action creator through a stable signature so the systems harness coverage workflow remains explicit and composable. @fn inline rtk::ActionCreator<FString> markCoveredActionCreator() */
 inline rtk::ActionCreator<FString> markCoveredActionCreator() {
   static auto C =
-      rtk::createAction<FString>(TEXT("microgame/harness/markCovered"));
+      rtk::createAction<FString>(TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV200980D58A20));
   return C;
 }
 
 /** User Story: As a systems harness coverage consumer, I need to invoke reset coverage action creator through a stable signature so the systems harness coverage workflow remains explicit and composable. @fn inline rtk::ActionCreatorWithoutPayload resetCoverageActionCreator() */
 inline rtk::ActionCreatorWithoutPayload resetCoverageActionCreator() {
   static auto C =
-      rtk::createAction(TEXT("microgame/harness/resetCoverage"));
+      rtk::createAction(TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVFC99E39F09D5));
   return C;
 }
 

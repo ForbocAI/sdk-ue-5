@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/RTK/Action/Action.hpp"
 
@@ -28,7 +29,7 @@ Dispatcher applyMiddlewareRecursive(
     const MiddlewareApi<State> &Api, Dispatcher CurrentDispatch) {
   return It == End
              ? CurrentDispatch
-             : applyMiddlewareRecursive<State>(It + 1, End, Api,
+             : applyMiddlewareRecursive<State>(It + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, End, Api,
                                                (*It)(Api)(CurrentDispatch));
 }
 } // namespace detail

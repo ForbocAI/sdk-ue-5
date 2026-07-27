@@ -1,4 +1,5 @@
 #include "Core/rtk.hpp"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 #include "CoreMinimal.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
@@ -6,15 +7,17 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Guid.h"
 #include "Misc/Paths.h"
-#include "Features/Config/ConfigAdapters.h"
+#include "Systems/Config/ConfigAdapters.h"
 #include "Store.h"
-#include "Features/CLI/Config/ConfigThunks.h"
-#include "Features/CLI/NPC/NPCThunks.h"
-#include "Features/NPC/NPCActions.h"
+#include "Systems/CLI/Config/ConfigThunks.h"
+#include "Systems/CLI/Diagnostics/DiagnosticsThunks.h"
+#include "Systems/CLI/NPC/NPCThunks.h"
+#include "Entities/NPC/NPCActions.h"
 
 // @covers:cliOp:loadBridgePreset
 // @covers:cliOp:getBridgeRules
 // @covers:cliOp:checkApiStatus
+// @covers:cliOp:getMicroGameContract
 // @covers:cliOp:clearNodeMemory
 // @covers:cliOp:getConfigValue
 // @covers:cliOp:setConfigValue
@@ -36,6 +39,7 @@
 // @covers:cliOp:recallMemory
 // @covers:cliOp:storeMemory
 // @covers:cliOp:processNpc
+// @covers:cliOp:converseNpcs
 // @covers:cliOp:recallNodeMemory
 // @covers:cliOp:listRulesets
 // @covers:cliOp:listRulePresets
@@ -80,11 +84,39 @@
 using namespace rtk;
 
 /**
+ * Test: The thin CLI transport operations construct lazy SDK RTK thunks.
+ * User Story: As a CLI maintainer, I need transport commands verified without
+ * executing production HTTP so coverage proves delegation and remains stable.
+ */
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FOpsTransportThunkConstructionTest,
+    FORBOCAI_SDK_AUTHORED_STRINGV93B17AC46DEB,
+    EAutomationTestFlags_ApplicationContextMask |
+        EAutomationTestFlags::EngineFilter)
+/** User Story: As a CLI maintainer, I need both API-backed CLI operations to return executable lazy thunks. @fn bool FOpsTransportThunkConstructionTest::RunTest(const FString &Parameters) */
+bool FOpsTransportThunkConstructionTest::RunTest(const FString &Parameters) {
+  const auto &Names = APISlice::Endpoints::Configuration::endpointData().Names;
+  EnhancedStore<FRuntimeState> Store = createRuntimeStore();
+  const func::AsyncResult<FString> ContractRequest =
+      Ops::getMicroGameContract(Store);
+  const func::AsyncResult<FNPCConversationResponse> ConversationRequest =
+      Ops::converseNpcs(Store);
+
+  TestTrue(Names.GetMicroGameContract,
+           ContractRequest.state &&
+               static_cast<bool>(ContractRequest.state->executor));
+  TestTrue(Names.PostNpcConversation,
+           ConversationRequest.state &&
+               static_cast<bool>(ConversationRequest.state->executor));
+  return true;
+}
+
+/**
  * Test: Ops::createNpc creates NPC and updates store
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsCreateNpcTest,
-                                 "ForbocAI.Integration.Ops.createNpc",
+                                 FORBOCAI_SDK_AUTHORED_STRINGV85503B6D9702,
                                  EAutomationTestFlags_ApplicationContextMask |
                                      EAutomationTestFlags::EngineFilter)
 /**
@@ -94,20 +126,20 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsCreateNpcTest,
 bool FOpsCreateNpcTest::RunTest(const FString &Parameters) {
   EnhancedStore<FRuntimeState> Store = createRuntimeStore();
 
-  FNPCInternalState Result = Ops::createNpc(Store, TEXT("A loyal guard"));
+  FNPCInternalState Result = Ops::createNpc(Store, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV9A1B5EE17ABE));
 
-  TestFalse("NPC Id not empty", Result.Id.IsEmpty());
-  TestEqual("Persona matches", Result.Persona,
-            FString(TEXT("A loyal guard")));
+  TestFalse(FORBOCAI_SDK_AUTHORED_STRINGV780670144C40, Result.Id.IsEmpty());
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVF1105C1EEC33, Result.Persona,
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV9A1B5EE17ABE)));
 
   func::Maybe<FNPCInternalState> Active = Ops::getActiveNpc(Store);
-  TestTrue("Active NPC exists", Active.hasValue);
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVB8C170481088, Active.hasValue);
   const func::Maybe<FNPCInternalState> Found = Ops::getNpc(Store, Result.Id);
-  TestTrue("Created NPC is addressable by id", Found.hasValue);
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVDCDB670D3C97, Found.hasValue);
   if (Active.hasValue) {
-    TestEqual("Active NPC Id matches created", Active.value.Id, Result.Id);
-    TestEqual("Active NPC Persona", Active.value.Persona,
-              FString(TEXT("A loyal guard")));
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV7897FA35B5D1, Active.value.Id, Result.Id);
+    TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVF8C2A1167532, Active.value.Persona,
+              FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV9A1B5EE17ABE)));
   }
 
   return true;
@@ -118,7 +150,7 @@ bool FOpsCreateNpcTest::RunTest(const FString &Parameters) {
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsGetActiveEmptyTest,
-                                 "ForbocAI.Integration.Ops.GetActiveEmpty",
+                                 FORBOCAI_SDK_AUTHORED_STRINGV48324DD7F576,
                                  EAutomationTestFlags_ApplicationContextMask |
                                      EAutomationTestFlags::EngineFilter)
 /**
@@ -129,7 +161,7 @@ bool FOpsGetActiveEmptyTest::RunTest(const FString &Parameters) {
   EnhancedStore<FRuntimeState> Store = createRuntimeStore();
 
   func::Maybe<FNPCInternalState> Active = Ops::getActiveNpc(Store);
-  TestFalse("No active NPC on fresh store", Active.hasValue);
+  TestFalse(FORBOCAI_SDK_AUTHORED_STRINGV3611B86B5240, Active.hasValue);
 
   return true;
 }
@@ -139,7 +171,7 @@ bool FOpsGetActiveEmptyTest::RunTest(const FString &Parameters) {
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsConfigTest,
-                                 "ForbocAI.Integration.Ops.Config",
+                                 FORBOCAI_SDK_AUTHORED_STRINGV943194C915CE,
                                  EAutomationTestFlags_ApplicationContextMask |
                                      EAutomationTestFlags::EngineFilter)
 /**
@@ -149,7 +181,7 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FOpsConfigTest,
 bool FOpsConfigTest::RunTest(const FString &Parameters) {
   const FString TempConfigPath = FPaths::Combine(
       FPaths::ProjectSavedDir(),
-      FString::Printf(TEXT("forbocai-sdkops-%s.json"),
+      FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3FFBF6F40234),
                       *FGuid::NewGuid().ToString(EGuidFormats::Digits)));
 
   IFileManager::Get().Delete(*TempConfigPath, false, true);
@@ -157,41 +189,41 @@ bool FOpsConfigTest::RunTest(const FString &Parameters) {
   Ops::hydrateRuntimeConfig(Store, {}, TempConfigPath);
 
   const FString EnvApiUrl =
-      FPlatformMisc::GetEnvironmentVariable(TEXT("FORBOCAI_API_URL"));
+      FPlatformMisc::GetEnvironmentVariable(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3649BFEE691E));
   const FString ExpectedApiUrl =
       !EnvApiUrl.IsEmpty() ? EnvApiUrl
                            : ConfigSlice::configRuntimeData().Defaults.ApiUrl;
-  TestEqual("Resolved runtime API URL honors env or production default",
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV51C70174CD80,
             ConfigSelectors::selectApiUrl(Store.getState()), ExpectedApiUrl);
-  TestTrue("Unset persisted apiUrl is empty",
-           Ops::getConfigValue(Store.getState(), TEXT("apiUrl")).IsEmpty());
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV259F92F577D6,
+           Ops::getConfigValue(Store.getState(), TEXT(FORBOCAI_SDK_AUTHORED_STRINGV71B25C5AC191)).IsEmpty());
 
-  FString Version = Ops::getConfigValue(Store.getState(), TEXT("version"));
-  TestFalse("Version not empty", Version.IsEmpty());
+  FString Version = Ops::getConfigValue(Store.getState(), TEXT(FORBOCAI_SDK_AUTHORED_STRINGVA919E63BC8C9));
+  TestFalse(FORBOCAI_SDK_AUTHORED_STRINGV25347A7AB9DC, Version.IsEmpty());
 
-  Ops::setConfigValue(Store, TEXT("apiUrl"), TEXT("https://test.forboc.ai"));
-  FString Url = Ops::getConfigValue(Store.getState(), TEXT("apiUrl"));
-  TestEqual("ApiUrl roundtrip", Url,
-            FString(TEXT("https://test.forboc.ai")));
+  Ops::setConfigValue(Store, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV71B25C5AC191), TEXT(FORBOCAI_SDK_AUTHORED_STRINGV60DC195E2454));
+  FString Url = Ops::getConfigValue(Store.getState(), TEXT(FORBOCAI_SDK_AUTHORED_STRINGV71B25C5AC191));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVBE8842B8C0C7, Url,
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV60DC195E2454)));
 
-  Ops::setConfigValue(Store, TEXT("apiKey"), TEXT("sk_test_roundtrip"));
-  FString Key = Ops::getConfigValue(Store.getState(), TEXT("apiKey"));
-  TestEqual("ApiKey roundtrip", Key, FString(TEXT("sk_test_roundtrip")));
+  Ops::setConfigValue(Store, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV592526EDC540), TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD13F51B00183));
+  FString Key = Ops::getConfigValue(Store.getState(), TEXT(FORBOCAI_SDK_AUTHORED_STRINGV592526EDC540));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVFAFA64DD5BB1, Key, FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD13F51B00183)));
 
-  FString Unknown = Ops::getConfigValue(Store.getState(), TEXT("nonexistent"));
-  TestTrue("Unknown key returns empty", Unknown.IsEmpty());
+  FString Unknown = Ops::getConfigValue(Store.getState(), TEXT(FORBOCAI_SDK_AUTHORED_STRINGV68E0A7B4436F));
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVEE37AA078C06, Unknown.IsEmpty());
 
   FString PersistedConfig;
-  TestTrue("Config file saved",
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVD897978E01AA,
            FFileHelper::LoadFileToString(PersistedConfig, *TempConfigPath));
-  TestTrue("Persisted config includes apiUrl",
-           PersistedConfig.Contains(TEXT("\"apiUrl\":\"https://test.forboc.ai\"")) ||
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV482503BD85F8,
+           PersistedConfig.Contains(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVB0E25AD4ED71)) ||
                PersistedConfig.Contains(
-                   TEXT("\"apiUrl\": \"https://test.forboc.ai\"")));
-  TestTrue("Persisted config includes apiKey",
-           PersistedConfig.Contains(TEXT("\"apiKey\":\"sk_test_roundtrip\"")) ||
+                   TEXT(FORBOCAI_SDK_AUTHORED_STRINGV2C55BBAB243A)));
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV9FE70FE51361,
+           PersistedConfig.Contains(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD412036FBE76)) ||
                PersistedConfig.Contains(
-                   TEXT("\"apiKey\": \"sk_test_roundtrip\"")));
+                   TEXT(FORBOCAI_SDK_AUTHORED_STRINGVA0781DFB36DD)));
 
   IFileManager::Get().Delete(*TempConfigPath, false, true);
 
@@ -204,7 +236,7 @@ bool FOpsConfigTest::RunTest(const FString &Parameters) {
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FOpsCreateAndRemoveTest,
-    "ForbocAI.Integration.Ops.CreateAndRemove",
+    FORBOCAI_SDK_AUTHORED_STRINGV0A7C03F522B1,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
@@ -214,17 +246,17 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 bool FOpsCreateAndRemoveTest::RunTest(const FString &Parameters) {
   EnhancedStore<FRuntimeState> Store = createRuntimeStore();
 
-  FNPCInternalState Npc = Ops::createNpc(Store, TEXT("Ephemeral"));
+  FNPCInternalState Npc = Ops::createNpc(Store, TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF61844AE5265));
   FString NpcId = Npc.Id;
 
-  TestTrue("Created NPC exists", Ops::getNpc(Store, NpcId).hasValue);
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV09AC2DF78E30, Ops::getNpc(Store, NpcId).hasValue);
 
   Store.dispatch(NPCActions::removeNPC(NpcId));
 
-  TestFalse("Removed NPC no longer exists", Ops::getNpc(Store, NpcId).hasValue);
+  TestFalse(FORBOCAI_SDK_AUTHORED_STRINGV12551713EF7E, Ops::getNpc(Store, NpcId).hasValue);
 
   func::Maybe<FNPCInternalState> Active = Ops::getActiveNpc(Store);
-  TestFalse("No active NPC after removal", Active.hasValue);
+  TestFalse(FORBOCAI_SDK_AUTHORED_STRINGVE18B6329F767, Active.hasValue);
 
   return true;
 }

@@ -1,7 +1,8 @@
 #include "Core/fp.hpp"
-#include "Features/NPC/NPCSelectors.h"
-#include "Features/NPC/NPCSlice.h"
-#include "Features/Testing/NPC/TestingNPCAdapters.h"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
+#include "Entities/NPC/NPCSelectors.h"
+#include "Entities/NPC/NPCSlice.h"
+#include "Systems/Testing/NPC/TestingNPCAdapters.h"
 #include "Misc/AutomationTest.h"
 
 using namespace Testing::NPC;
@@ -166,7 +167,7 @@ void TestNPCExpected(FAutomationTestBase &Test, const FString &Label,
 } // namespace
 
 IMPLEMENT_COMPLEX_AUTOMATION_TEST(
-    FNPCTest, "ForbocAI.Slices.NPC",
+    FNPCTest, FORBOCAI_SDK_AUTHORED_STRINGVC3527C8743CC,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 

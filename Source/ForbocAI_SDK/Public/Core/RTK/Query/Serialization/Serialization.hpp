@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/RTK/Query/Prelude.hpp"
 #include "Core/RTK/Query/Types/Types.hpp"
@@ -40,7 +41,7 @@ bool deserializeStringArrayRecursive(
              : !JsonValues[Index].IsValid()
                    ? false
                    : (OutValue.Add(JsonValues[Index]->AsString()),
-                      deserializeStringArrayRecursive(JsonValues, Index + 1,
+                      deserializeStringArrayRecursive(JsonValues, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
                                                       OutValue));
 }
 
@@ -63,11 +64,11 @@ bool deserializeStructArrayRecursive(
                          ? false
                          : !FJsonObjectConverter::JsonObjectToUStruct(
                                JsonObject.ToSharedRef(), T::StaticStruct(),
-                               &Item, 0, 0)
+                               &Item, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA)
                                ? false
                                : (OutValue.Add(Item),
                                   deserializeStructArrayRecursive<T>(
-                                      JsonValues, Index + 1, OutValue));
+                                      JsonValues, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, OutValue));
 }
 } // namespace detail
 } // namespace rtk

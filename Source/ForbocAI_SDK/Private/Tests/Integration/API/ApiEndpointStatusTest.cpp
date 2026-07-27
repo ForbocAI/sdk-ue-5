@@ -1,8 +1,10 @@
 #include "ApiEndpointTestAdapters.h"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
-#include "Features/API/APIApi.h"
-#include "Features/CLI/Config/ConfigThunks.h"
-#include "Features/Config/ConfigSelectors.h"
+#include "Systems/API/APIApi.h"
+#include "Systems/API/APIThunks.h"
+#include "Systems/CLI/Config/ConfigThunks.h"
+#include "Entities/Config/ConfigSelectors.h"
 #include "Store.h"
 
 // @covers:api:getApiStatus
@@ -31,6 +33,8 @@
 // @covers:api:getSoulStorageCatalog
 // @covers:api:getSoulStorageEntry
 // @covers:coreThunk:MakePostQueryWithCodec
+// @covers:coreThunk:MakePostNoBodyWithCodec
+// @covers:coreThunk:getMicroGameContractThunk
 // @covers:cliOp:commitApiConfiguration
 
 namespace {
@@ -45,7 +49,7 @@ template <typename EndpointThunk>
 void TestEndpointConstructed(FAutomationTestBase &Test,
                              const FString &EndpointName,
                              const EndpointThunk &Thunk) {
-  Test.TestTrue(EndpointName + TEXT(" constructs an RTK Query thunk"),
+  Test.TestTrue(EndpointName + TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD44F9D90D1ED),
                 static_cast<bool>(Thunk));
 }
 
@@ -53,7 +57,7 @@ void TestEndpointConstructed(FAutomationTestBase &Test,
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FApiEndpointConstructionTest,
-    "ForbocAI.Integration.API.Endpoint.Construction",
+    FORBOCAI_SDK_AUTHORED_STRINGV68306F30B4F8,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
@@ -73,6 +77,8 @@ bool FApiEndpointConstructionTest::RunTest(const FString &Parameters) {
   TestEndpointConstructed(*this, Data.Names.GetApiStatus, getApiStatus());
   TestEndpointConstructed(*this, Data.Names.GetMicroGameContract,
                           getMicroGameContract());
+  TestEndpointConstructed(*this, Data.Names.GetMicroGameContract,
+                          rtk::getMicroGameContractThunk());
   TestEndpointConstructed(*this, Data.Names.PostNpcProcess,
                           postNpcProcess(Empty, FNPCProcessRequest{}));
   TestEndpointConstructed(*this, Data.Names.PostNpcConversation,
@@ -141,7 +147,7 @@ bool FApiEndpointConstructionTest::RunTest(const FString &Parameters) {
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FApiEndpointStatusNoAuthTest,
-    "ForbocAI.Integration.API.Endpoint.StatusNoAuth",
+    FORBOCAI_SDK_AUTHORED_STRINGV6C51C1676B84,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
@@ -152,25 +158,25 @@ bool FApiEndpointStatusNoAuthTest::RunTest(const FString &Parameters) {
 
   auto State = MakeShared<FApiEndpointTestState>();
   ADD_LATENT_AUTOMATION_COMMAND(FHttpGetWaitComplete(
-      ApiEndpointTests::BaseUrl() + TEXT("/status"), TEXT(""), State));
+      ApiEndpointTests::BaseUrl() + TEXT(FORBOCAI_SDK_AUTHORED_STRINGV640F4A43A4A8), TEXT(""), State));
   ADD_LATENT_AUTOMATION_COMMAND(FDelayedFunctionLatentCommand(
       [this, State]() {
-        TestTrue("Request completed", State->bDone);
+        TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV1068614E082D, State->bDone);
         if (!State->bDone) {
           return;
         }
-        TestTrue("Status endpoint succeeded", State->bSuccess);
-        TestEqual("Status returns 200", State->HttpCode, 200);
+        TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV60FF726E854A, State->bSuccess);
+        TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVD96BA6A6D90C, State->HttpCode, FORBOCAI_SDK_AUTHORED_NUMBERVEF1B5401B507);
         if (State->bSuccess) {
-          TestTrue("Response body non-empty", State->Body.Len() > 0);
+          TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV6F50C396470E, State->Body.Len() > FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA);
         }
       },
-      0.01f));
+      FORBOCAI_SDK_AUTHORED_NUMBERVEC53E6A2E194));
   return true;
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FApiEndpointNotFoundTest, "ForbocAI.Integration.API.Endpoint.NotFound",
+    FApiEndpointNotFoundTest, FORBOCAI_SDK_AUTHORED_STRINGVFC39450631A0,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
@@ -185,17 +191,17 @@ bool FApiEndpointNotFoundTest::RunTest(const FString &Parameters) {
 
   auto State = MakeShared<FApiEndpointTestState>();
   ADD_LATENT_AUTOMATION_COMMAND(FHttpGetWaitComplete(
-      ApiEndpointTests::BaseUrl() + TEXT("/nonexistent-path-404"), Key,
+      ApiEndpointTests::BaseUrl() + TEXT(FORBOCAI_SDK_AUTHORED_STRINGV5D25F69A2458), Key,
       State));
   ADD_LATENT_AUTOMATION_COMMAND(FDelayedFunctionLatentCommand(
       [this, State]() {
-        TestTrue("Request completed", State->bDone);
+        TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV1068614E082D, State->bDone);
         if (!State->bDone) {
           return;
         }
-        TestFalse("404 path fails", State->bSuccess);
-        TestEqual("Returns 404", State->HttpCode, 404);
+        TestFalse(FORBOCAI_SDK_AUTHORED_STRINGVCF6FAA867FC9, State->bSuccess);
+        TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV7BC91F71337B, State->HttpCode, FORBOCAI_SDK_AUTHORED_NUMBERV2D91EE8B369D);
       },
-      0.01f));
+      FORBOCAI_SDK_AUTHORED_NUMBERVEC53E6A2E194));
   return true;
 }

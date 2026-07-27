@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/RTK/Action/Action.hpp"
 
@@ -102,7 +103,7 @@ inline bool actionTypeEndsWith(const AnyAction &Action, const FString &Suffix) {
 /** User Story: As a core rtk matcher consumer, I need to invoke matches thunk lifecycle through a stable signature so the core rtk matcher workflow remains explicit and composable. @fn inline bool matchesThunkLifecycle(const AnyAction &Action, const FString &Suffix, const TArray<FString> &TypePrefixes) */
 inline bool matchesThunkLifecycle(const AnyAction &Action, const FString &Suffix,
                                   const TArray<FString> &TypePrefixes) {
-  return TypePrefixes.Num() == 0
+  return TypePrefixes.Num() == FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA
              ? actionTypeEndsWith(Action, Suffix)
              : TypePrefixes.ContainsByPredicate(
                    [&Action, &Suffix](const FString &TypePrefix) {
@@ -145,7 +146,7 @@ inline Matcher isAllOf(const TArray<Matcher> &Matchers) {
  */
 inline Matcher isPending(const TArray<FString> &TypePrefixes = TArray<FString>()) {
   return [TypePrefixes](const AnyAction &Action) {
-    return matchesThunkLifecycle(Action, TEXT("/pending"), TypePrefixes);
+    return matchesThunkLifecycle(Action, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV9BA570F18FC7), TypePrefixes);
   };
 }
 
@@ -156,7 +157,7 @@ inline Matcher isPending(const TArray<FString> &TypePrefixes = TArray<FString>()
  */
 inline Matcher isFulfilled(const TArray<FString> &TypePrefixes = TArray<FString>()) {
   return [TypePrefixes](const AnyAction &Action) {
-    return matchesThunkLifecycle(Action, TEXT("/fulfilled"), TypePrefixes);
+    return matchesThunkLifecycle(Action, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV0DFF16731112), TypePrefixes);
   };
 }
 
@@ -167,7 +168,7 @@ inline Matcher isFulfilled(const TArray<FString> &TypePrefixes = TArray<FString>
  */
 inline Matcher isRejected(const TArray<FString> &TypePrefixes = TArray<FString>()) {
   return [TypePrefixes](const AnyAction &Action) {
-    return matchesThunkLifecycle(Action, TEXT("/rejected"), TypePrefixes);
+    return matchesThunkLifecycle(Action, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV626EB0E3DA73), TypePrefixes);
   };
 }
 
@@ -176,7 +177,7 @@ inline Matcher
 isRejectedWithValue(const TArray<FString> &TypePrefixes = TArray<FString>()) {
   return [TypePrefixes](const AnyAction &Action) {
     return Action.bRejectedWithValue &&
-           matchesThunkLifecycle(Action, TEXT("/rejected"), TypePrefixes);
+           matchesThunkLifecycle(Action, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV626EB0E3DA73), TypePrefixes);
   };
 }
 

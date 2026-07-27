@@ -23,7 +23,8 @@
   "exclude": [
     "Content/Data/tests/**",
     "Source/ForbocAI_SDK/Private/Tests/**",
-    "Source/ForbocAI_SDK/Public/Features/Testing/**"
+    "Source/ForbocAI_SDK/Public/Components/Testing/**",
+    "Source/ForbocAI_SDK/Public/Systems/Testing/**"
   ],
   "required": [
     "ForbocAI_SDK.uplugin",

@@ -3,7 +3,7 @@
 
 Boundaries are derived from the repository shape, not a managed list:
 
-* source files put broad domain tokens in folders and keep the shortest needed
+* role-owned source files put broad domain tokens in folders and keep the shortest needed
   folder-qualified role leaf;
 * view files put broad subject tokens in folders and keep the shortest needed
   folder-qualified View leaf;
@@ -19,7 +19,7 @@ Boundaries are derived from the repository shape, not a managed list:
 This guard is report-only. It computes the constructive target path for every
 violation and tells the developer the move to make -- it never renames files or
 rewrites references itself. The production CLI scans the configured project
-root's Source/Features, Source/Views, and Content/Data; path arguments are
+root's ECS role roots, Source/Views, and Content/Data; path arguments are
 intentionally unsupported.
 """
 
@@ -57,7 +57,7 @@ from check_ecs import (
 from ue_targets import ue_targets
 
 
-SOURCE_FEATURES_ROOT = PROJECT_ROOT / "Source" / "Features"
+DEFAULT_SOURCE_ROLE_ROOT = PROJECT_ROOT / "Source" / "Features"
 SOURCE_VIEWS_ROOT = PROJECT_ROOT / "Source" / "Views"
 CONTENT_DATA_ROOT = PROJECT_ROOT / "Content" / "Data"
 
@@ -66,21 +66,24 @@ def _existing(paths: list[Path]) -> tuple[Path, ...]:
     return tuple(path for path in paths if path.exists())
 
 
-def _target_feature_roots() -> tuple[Path, ...]:
+def _target_role_roots() -> tuple[Path, ...]:
     roots: list[Path] = []
     for target in ue_targets():
         if target.kind == "sdk":
-            roots.extend(
-                [
-                    target.root / "Source" / "ForbocAI_SDK" / "Public" / "Features",
-                    target.root / "Source" / "ForbocAI_SDK" / "Private" / "Features",
-                ]
-            )
+            for visibility in ("Public", "Private"):
+                roots.extend(
+                    target.root
+                    / "Source"
+                    / "ForbocAI_SDK"
+                    / visibility
+                    / role
+                    for role in ("Components", "Entities", "Systems")
+                )
         elif target.kind == "sdk-cli":
             roots.append(target.root / "Source" / "ForbocAI_MicroGame_CLI" / "Public" / "MicroGame" / "Features")
         else:
             roots.append(target.root / "Source" / "Features")
-    return _existing(roots) or _existing([SOURCE_FEATURES_ROOT])
+    return _existing(roots) or _existing([DEFAULT_SOURCE_ROLE_ROOT])
 
 
 def _target_view_roots() -> tuple[Path, ...]:
@@ -97,7 +100,7 @@ def _target_data_roots() -> tuple[Path, ...]:
     return _existing([target.root / "Content" / "Data" for target in ue_targets()]) or _existing([CONTENT_DATA_ROOT])
 
 
-SOURCE_FEATURES_ROOTS = _target_feature_roots()
+SOURCE_ROLE_ROOTS = _target_role_roots()
 SOURCE_VIEWS_ROOTS = _target_view_roots()
 CONTENT_DATA_ROOTS = _target_data_roots()
 
@@ -299,7 +302,7 @@ def _split_source_role(tokens: list[str]) -> tuple[list[str], list[str]]:
 
 
 def _source_ancestor_tokens(path: Path) -> set[str]:
-    root = _root_for(path, SOURCE_FEATURES_ROOTS)
+    root = _root_for(path, SOURCE_ROLE_ROOTS)
     if root is None:
         return set()
     tokens: list[str] = []
@@ -309,7 +312,7 @@ def _source_ancestor_tokens(path: Path) -> set[str]:
 
 
 def _source_stems(path: Path, role_tokens: list[str]) -> list[str]:
-    root = _root_for(path, SOURCE_FEATURES_ROOTS)
+    root = _root_for(path, SOURCE_ROLE_ROOTS)
     if root is None:
         return []
     parts = path.relative_to(root).parent.parts
@@ -367,7 +370,7 @@ def _role_name_context(
 def source_role_context(paths: list[Path]) -> RoleNameContext:
     contexts = [
         _role_name_context(paths, root, CANONICAL_SOURCE_ROLES, _source_stems)
-        for root in SOURCE_FEATURES_ROOTS
+        for root in SOURCE_ROLE_ROOTS
     ]
     merged: dict[Path, str] = {}
     for context in contexts:
@@ -376,7 +379,7 @@ def source_role_context(paths: list[Path]) -> RoleNameContext:
 
 
 def source_finding(path: Path, context: RoleNameContext | None = None) -> Finding | None:
-    if path.suffix not in SOURCE_SUFFIXES or _root_for(path, SOURCE_FEATURES_ROOTS) is None:
+    if path.suffix not in SOURCE_SUFFIXES or _root_for(path, SOURCE_ROLE_ROOTS) is None:
         return None
     tokens = camel_tokens(path.stem)
     prefix_tokens, role_tokens = _split_source_role(tokens)
@@ -616,7 +619,7 @@ def folder_redundancy_findings(paths: list[Path]) -> list[Finding]:
 
 
 def _source_or_view_root(path: Path) -> Path | None:
-    return _root_for(path, SOURCE_FEATURES_ROOTS) or _root_for(path, SOURCE_VIEWS_ROOTS)
+    return _root_for(path, SOURCE_ROLE_ROOTS) or _root_for(path, SOURCE_VIEWS_ROOTS)
 
 
 def _source_or_view_folder_parts(path: Path) -> tuple[Path, tuple[str, ...]] | None:
@@ -709,7 +712,7 @@ def folder_domain_findings(paths: list[Path]) -> list[Finding]:
 # --- Runner ----------------------------------------------------------------
 
 def find_findings() -> list[Finding]:
-    candidates = iter_files([*SOURCE_FEATURES_ROOTS, *SOURCE_VIEWS_ROOTS, *CONTENT_DATA_ROOTS])
+    candidates = iter_files([*SOURCE_ROLE_ROOTS, *SOURCE_VIEWS_ROOTS, *CONTENT_DATA_ROOTS])
     source_context = source_role_context(candidates)
     view_context = view_role_context(candidates)
     qualifiers = view_qualifier_tokens(candidates)

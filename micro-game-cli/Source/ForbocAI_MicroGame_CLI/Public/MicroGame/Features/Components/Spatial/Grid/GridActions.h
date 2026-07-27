@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -16,14 +17,14 @@ namespace GridActions {
 /** User Story: As a components spatial grid consumer, I need to invoke set grid size action creator through a stable signature so the components spatial grid workflow remains explicit and composable. @fn inline rtk::ActionCreator<FSetGridSizePayload> setGridSizeActionCreator() */
 inline rtk::ActionCreator<FSetGridSizePayload> setGridSizeActionCreator() {
   static auto C =
-      rtk::createAction<FSetGridSizePayload>(TEXT("microgame/grid/setGridSize"));
+      rtk::createAction<FSetGridSizePayload>(TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVD610225525C8));
   return C;
 }
 
 /** User Story: As a components spatial grid consumer, I need to invoke set blocked action creator through a stable signature so the components spatial grid workflow remains explicit and composable. @fn inline rtk::ActionCreator<TArray<FPosition>> setBlockedActionCreator() */
 inline rtk::ActionCreator<TArray<FPosition>> setBlockedActionCreator() {
   static auto C = rtk::createAction<TArray<FPosition>>(
-      TEXT("microgame/grid/setBlocked"));
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVA2EDD9AD9AC6));
   return C;
 }
 

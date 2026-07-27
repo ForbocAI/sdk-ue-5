@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/RTK/Middleware/Middleware.hpp"
 
@@ -19,7 +20,7 @@ void invokeListenerEffectsRecursive(
   Index >= Effects.Num()
       ? void()
       : (Effects[Index](Action, Api),
-         invokeListenerEffectsRecursive<State>(Effects, Index + 1, Action,
+         invokeListenerEffectsRecursive<State>(Effects, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, Action,
                                                Api));
 }
 
@@ -32,7 +33,7 @@ void runListenerEffects(
   const TArray<typename ListenerMiddleware<State>::EffectCallback>
       *ActiveListeners = Listeners.Find(Action.Type);
   ActiveListeners
-      ? invokeListenerEffectsRecursive<State>(*ActiveListeners, 0, Action, Api)
+      ? invokeListenerEffectsRecursive<State>(*ActiveListeners, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, Action, Api)
       : void();
 }
 } // namespace detail

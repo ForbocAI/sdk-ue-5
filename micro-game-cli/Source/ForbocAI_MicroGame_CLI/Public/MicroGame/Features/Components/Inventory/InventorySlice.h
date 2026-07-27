@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -11,7 +12,7 @@ namespace MicroGame {
 /** User Story: As a features components inventory consumer, I need to invoke create inventory slice through a stable signature so the features components inventory workflow remains explicit and composable. @fn inline rtk::Slice<FInventoryState> CreateInventorySlice() */
 inline rtk::Slice<FInventoryState> CreateInventorySlice() {
   return rtk::createSlice<FInventoryState>(
-      TEXT("microgame/inventory"), InventoryAdapters::InitialInventoryState(),
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV0352D4599844), InventoryAdapters::InitialInventoryState(),
       [](rtk::ActionReducerMapBuilder<FInventoryState> &Builder) {
         Builder.addCase(
             InventoryActions::setOwnerInventoryActionCreator(),

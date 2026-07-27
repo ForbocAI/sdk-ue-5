@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/RTK/Types/Types.hpp"
 
@@ -7,16 +8,16 @@
 
 namespace rtk {
 
-static const FString SHOULD_AUTOBATCH = TEXT("RTK_autoBatch");
+static const FString SHOULD_AUTOBATCH = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVCA08964C09D3);
 
 struct __DO_NOT_USE__ActionTypes {
   /** User Story: As a core rtk utility consumer, I need to invoke init through a stable signature so the core rtk utility workflow remains explicit and composable. @fn static FString Init() */
-  static FString Init() { return TEXT("@@redux/INIT"); }
+  static FString Init() { return TEXT(FORBOCAI_SDK_AUTHORED_STRINGVB82AE1318AFC); }
   /** User Story: As a core rtk utility consumer, I need to invoke replace through a stable signature so the core rtk utility workflow remains explicit and composable. @fn static FString Replace() */
-  static FString Replace() { return TEXT("@@redux/REPLACE"); }
+  static FString Replace() { return TEXT(FORBOCAI_SDK_AUTHORED_STRINGV75287A4D67F2); }
   /** User Story: As a core rtk utility consumer, I need to invoke probe unknown action through a stable signature so the core rtk utility workflow remains explicit and composable. @fn static FString ProbeUnknownAction() */
   static FString ProbeUnknownAction() {
-    return TEXT("@@redux/PROBE_UNKNOWN_ACTION_") + FGuid::NewGuid().ToString();
+    return TEXT(FORBOCAI_SDK_AUTHORED_STRINGV60DDE4B0E6FE) + FGuid::NewGuid().ToString();
   }
 };
 
@@ -31,32 +32,35 @@ namespace detail {
 /** User Story: As a core rtk utility consumer, I need to invoke append nanoid characters through a stable signature so the core rtk utility workflow remains explicit and composable. @fn inline FString appendNanoidCharacters(int32 Remaining, FString Value) */
 inline FString appendNanoidCharacters(int32 Remaining, FString Value) {
   static const FString Alphabet =
-      TEXT("useandom-26T198340PX75pxJACKVERYMINDBLOWING");
-  return Remaining <= 0
+      TEXT(FORBOCAI_SDK_AUTHORED_STRINGVC84E1733C8A1);
+  return Remaining <= FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA
              ? Value
              : appendNanoidCharacters(
-                   Remaining - 1,
+                   Remaining - FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
                    Value + Alphabet.Mid(
-                               FMath::RandRange(0, Alphabet.Len() - 1), 1));
+                               FMath::RandRange(FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, Alphabet.Len() - FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4), FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4));
 }
 } // namespace detail
 
-/** User Story: As a core rtk utility consumer, I need to invoke nanoid through a stable signature so the core rtk utility workflow remains explicit and composable. @fn inline FString nanoid(int32 Size = 21) */
-inline FString nanoid(int32 Size = 21) {
-  return detail::appendNanoidCharacters(FMath::Max(Size, 0), FString());
+/**
+ * User Story: As a core rtk utility consumer, I need to invoke nanoid through a stable signature so the core rtk utility workflow remains explicit and composable.
+ * @fn inline FString nanoid(int32 Size = FORBOCAI_SDK_AUTHORED_NUMBERVC30F92CF51F9)
+ */
+inline FString nanoid(int32 Size = FORBOCAI_SDK_AUTHORED_NUMBERVC30F92CF51F9) {
+  return detail::appendNanoidCharacters(FMath::Max(Size, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA), FString());
 }
 
 /** User Story: As a core rtk utility consumer, I need to invoke format prod error message through a stable signature so the core rtk utility workflow remains explicit and composable. @fn inline FString formatProdErrorMessage(int32 Code) */
 inline FString formatProdErrorMessage(int32 Code) {
   return FString::Printf(
-      TEXT("Minified Redux Toolkit error #%d; visit https://redux-toolkit.js.org/Errors?code=%d for the full message."),
+      TEXT(FORBOCAI_SDK_AUTHORED_STRINGVC2E6C04E21FC),
       Code, Code);
 }
 
 /** User Story: As a core rtk utility consumer, I need to invoke mini serialize error through a stable signature so the core rtk utility workflow remains explicit and composable. @fn inline SerializedError miniSerializeError(const FString &Message) */
 inline SerializedError miniSerializeError(const FString &Message) {
   SerializedError Result;
-  Result.Name = TEXT("Error");
+  Result.Name = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV287FE60F0291);
   Result.Message = Message;
   return Result;
 }

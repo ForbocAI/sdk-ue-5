@@ -1,9 +1,10 @@
 #include "Core/rtk.hpp"
-#include "Features/Soul/SoulSelectors.h"
-#include "Features/Soul/SoulSlice.h"
-#include "Features/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
-#include "Features/Soul/Storage/Provider/StorageProviderAdapters.h"
-#include "Features/Testing/Soul/TestingSoulAdapters.h"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
+#include "Entities/Soul/SoulSelectors.h"
+#include "Entities/Soul/SoulSlice.h"
+#include "Systems/Soul/Storage/Configuration/StorageConfigurationAdapters.h"
+#include "Systems/Soul/Storage/Provider/StorageProviderAdapters.h"
+#include "Systems/Testing/Soul/TestingSoulAdapters.h"
 #include "Misc/AutomationTest.h"
 
 using namespace Testing::Soul;
@@ -149,7 +150,7 @@ inline FSoulSliceState ApplySoulTestAction(
 } // namespace
 
 IMPLEMENT_COMPLEX_AUTOMATION_TEST(
-    FSoulTest, "ForbocAI.Slices.Soul",
+    FSoulTest, FORBOCAI_SDK_AUTHORED_STRINGVD267C50F1D37,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 

@@ -14,7 +14,7 @@ UE_PROTOCOL_ROOT = (
     / "Source"
     / "ForbocAI_SDK"
     / "Public"
-    / "Features"
+    / "Systems"
     / "Protocol"
 )
 UE_DATA_ROOT = ROOT_DIR / "Content" / "Data"

@@ -1,10 +1,11 @@
 #include "Core/rtk.hpp"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 #include "CoreMinimal.h"
-#include "Features/Bridge/BridgeSelectors.h"
-#include "Features/Memory/MemorySelectors.h"
-#include "Features/NPC/NPCActions.h"
-#include "Features/NPC/NPCSelectors.h"
-#include "Features/Protocol/Logger/LoggerSelectors.h"
+#include "Entities/Bridge/BridgeSelectors.h"
+#include "Entities/Memory/MemorySelectors.h"
+#include "Entities/NPC/NPCActions.h"
+#include "Entities/NPC/NPCSelectors.h"
+#include "Entities/Protocol/Logger/LoggerSelectors.h"
 #include "Misc/AutomationTest.h"
 #include "Store.h"
 
@@ -15,7 +16,7 @@ using namespace rtk;
  * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FStoreNPCCreationTest,
-                                 "ForbocAI.Integration.Store.NPCCreation",
+                                 FORBOCAI_SDK_AUTHORED_STRINGVA2D472BE3E9D,
                                  EAutomationTestFlags_ApplicationContextMask |
                                      EAutomationTestFlags::EngineFilter)
 /**
@@ -26,26 +27,26 @@ bool FStoreNPCCreationTest::RunTest(const FString &Parameters) {
   FRuntimeState State = StoreInternal::createRuntimeInitialState();
 
   FNPCInternalState Info;
-  Info.Id = TEXT("int_npc_1");
-  Info.Persona = TEXT("Test NPC");
+  Info.Id = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV38F7A6ADE050);
+  Info.Persona = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV8FF4092C7217);
 
   State = StoreReducer(State, NPCActions::setNPCInfo(Info));
 
-  TestEqual("NPC active", State.NPCs.ActiveNpcId,
-            FString(TEXT("int_npc_1")));
-  TestTrue("NPC in entities",
-           NPCSelectors::selectNPCById(State.NPCs, TEXT("int_npc_1")).hasValue);
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV1A6AA8C8B59A, State.NPCs.ActiveNpcId,
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV38F7A6ADE050)));
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVE4D4A3BCDD66,
+           NPCSelectors::selectNPCById(State.NPCs, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV38F7A6ADE050)).hasValue);
 
   /**
    * Other slices remain at initial state
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  TestEqual("Memory idle", State.Memory.StorageStatus,
-            FString(TEXT("idle")));
-  TestEqual("Ghost idle", State.Ghost.Status, FString(TEXT("idle")));
-  TestEqual("Bridge idle", State.Bridge.Status, FString(TEXT("idle")));
-  TestEqual("Soul export idle", State.Soul.ExportStatus,
-            FString(TEXT("idle")));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV647DD6D80B34, State.Memory.StorageStatus,
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3E32DA346F92)));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVF0FC8AA1DE8F, State.Ghost.Status, FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3E32DA346F92)));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVAD4BF2CD96ED, State.Bridge.Status, FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3E32DA346F92)));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV7AF9B1C63133, State.Soul.ExportStatus,
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3E32DA346F92)));
 
   return true;
 }
@@ -56,7 +57,7 @@ bool FStoreNPCCreationTest::RunTest(const FString &Parameters) {
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FStoreRemovalCascadeTest,
-    "ForbocAI.Integration.Store.RemovalCascade",
+    FORBOCAI_SDK_AUTHORED_STRINGVCA0473A14182,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
@@ -71,47 +72,47 @@ bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
   FNPCInternalState Info;
-  Info.Id = TEXT("cascade_npc");
-  Info.Persona = TEXT("Cascade test");
+  Info.Id = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV63C79CD9F0E2);
+  Info.Persona = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD82F4DE3E20E);
   Store.dispatch(NPCActions::setNPCInfo(Info));
 
-  TestEqual("NPC active before removal", Store.getState().NPCs.ActiveNpcId,
-            FString(TEXT("cascade_npc")));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVF16429000669, Store.getState().NPCs.ActiveNpcId,
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV63C79CD9F0E2)));
 
   /**
    * Add some memory
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
   FMemoryItem MemItem;
-  MemItem.Id = TEXT("cascade_mem");
-  MemItem.Text = TEXT("Important memory");
-  MemItem.Importance = 0.9f;
+  MemItem.Id = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV381D1959A3E2);
+  MemItem.Text = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV4B005DBA5938);
+  MemItem.Importance = FORBOCAI_SDK_AUTHORED_NUMBERVA03A0A41C51F;
   Store.dispatch(MemorySlice::Actions::memoryStoreSuccess(MemItem));
-  TestEqual("Memory exists", MemorySelectors::selectAllMemories(
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV303DC226738C, MemorySelectors::selectAllMemories(
                                   Store.getState().Memory)
                                   .Num(),
-            1);
+            FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4);
 
   /**
    * Add bridge validation
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
   Store.dispatch(BridgeSlice::Actions::validationRequested());
-  TestEqual("Bridge validating", Store.getState().Bridge.Status,
-            FString(TEXT("validating")));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVDA6107BBCAF3, Store.getState().Bridge.Status,
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV9474FED15011)));
 
   FDirectiveRuleSet Preset;
-  Preset.RulesetId = TEXT("preset_keep");
+  Preset.RulesetId = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV26067698B6B4);
   Store.dispatch(BridgeSlice::Actions::activePresetAdded(Preset));
 
   TArray<FDirectiveRuleSet> Rulesets;
   FDirectiveRuleSet Ruleset;
-  Ruleset.RulesetId = TEXT("ruleset_keep");
+  Ruleset.RulesetId = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVCDE018B89DE3);
   Rulesets.Add(Ruleset);
   Store.dispatch(BridgeSlice::Actions::rulesetsReceived(Rulesets));
 
   TArray<FString> PresetIds;
-  PresetIds.Add(TEXT("preset_keep"));
+  PresetIds.Add(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV26067698B6B4));
   Store.dispatch(BridgeSlice::Actions::presetIdsReceived(PresetIds));
 
   /**
@@ -119,53 +120,53 @@ bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
   Store.dispatch(
-      GhostSlice::Actions::ghostSessionStarted(TEXT("gs_1"), TEXT("running")));
-  TestEqual("Ghost running", Store.getState().Ghost.Status,
-            FString(TEXT("running")));
+      GhostSlice::Actions::ghostSessionStarted(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV1D6E1452B2F0), TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3E2678FEDB3E)));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV6308A15BBE34, Store.getState().Ghost.Status,
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3E2678FEDB3E)));
 
   /**
    * Add a directive
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
   Store.dispatch(DirectiveSlice::Actions::directiveRunStarted(
-      TEXT("dir_1"), TEXT("cascade_npc"), TEXT("observe")));
+      TEXT(FORBOCAI_SDK_AUTHORED_STRINGV65A10EB122F7), TEXT(FORBOCAI_SDK_AUTHORED_STRINGV63C79CD9F0E2), TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD1CCE25A3B47)));
 
   /**
    * Remove NPC — should cascade clear
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  Store.dispatch(NPCActions::removeNPC(TEXT("cascade_npc")));
+  Store.dispatch(NPCActions::removeNPC(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV63C79CD9F0E2)));
 
-  TestTrue("NPC removed",
-           !NPCSelectors::selectNPCById(Store.getState().NPCs, TEXT("cascade_npc"))
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVD794830A5AF2,
+           !NPCSelectors::selectNPCById(Store.getState().NPCs, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV63C79CD9F0E2))
                 .hasValue);
-  TestTrue("ActiveNpcId cleared",
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVA3CEC75A37E6,
            Store.getState().NPCs.ActiveNpcId.IsEmpty());
 
   /**
    * Cascade effects
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  TestEqual("Memory cleared after active NPC removal",
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVFCAE70C55CED,
             MemorySelectors::selectAllMemories(Store.getState().Memory).Num(),
-            0);
-  TestEqual("Bridge reset", Store.getState().Bridge.Status,
-            FString(TEXT("idle")));
-  TestEqual("Bridge active presets preserved",
+            FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA);
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVA1447EDD1491, Store.getState().Bridge.Status,
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3E32DA346F92)));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVD62FAAAACE1C,
             BridgeSelectors::selectActivePresets(Store.getState().Bridge).Num(),
-            1);
-  TestEqual("Bridge rulesets preserved",
+            FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4);
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVE695C68674BC,
             BridgeSelectors::selectAvailableRulesets(Store.getState().Bridge)
                 .Num(),
-            1);
-  TestEqual("Bridge preset ids preserved",
-            Store.getState().Bridge.AvailablePresetIds.Num(), 1);
-  TestEqual("Ghost reset", Store.getState().Ghost.Status,
-            FString(TEXT("idle")));
-  TestTrue("Directive cleared",
+            FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4);
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV643E6FF9CB81,
+            Store.getState().Bridge.AvailablePresetIds.Num(), FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4);
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGVEED094E72E7D, Store.getState().Ghost.Status,
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3E32DA346F92)));
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV837AB03F2703,
            Store.getState().Directives.ActiveDirectiveId.IsEmpty());
-  TestEqual("Soul reset", Store.getState().Soul.ExportStatus,
-            FString(TEXT("idle")));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV75B2E664BED9, Store.getState().Soul.ExportStatus,
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3E32DA346F92)));
 
   return true;
 }
@@ -176,7 +177,7 @@ bool FStoreRemovalCascadeTest::RunTest(const FString &Parameters) {
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FStoreRemoveNonActiveTest,
-    "ForbocAI.Integration.Store.RemoveNonActive",
+    FORBOCAI_SDK_AUTHORED_STRINGV4584204201A0,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
@@ -191,46 +192,46 @@ bool FStoreRemoveNonActiveTest::RunTest(const FString &Parameters) {
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
   FNPCInternalState A;
-  A.Id = TEXT("npc_a");
-  A.Persona = TEXT("Alpha");
+  A.Id = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV83A033E59251);
+  A.Persona = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV64140FC9EA63);
   Store.dispatch(NPCActions::setNPCInfo(A));
 
   FNPCInternalState B;
-  B.Id = TEXT("npc_b");
-  B.Persona = TEXT("Beta");
+  B.Id = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVC03F7465F012);
+  B.Persona = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVBD44A23A4D4D);
   Store.dispatch(NPCActions::setNPCInfo(B));
 
   /**
    * Active is now B
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
-  TestEqual("Active is B", Store.getState().NPCs.ActiveNpcId,
-            FString(TEXT("npc_b")));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV9B1944C64D17, Store.getState().NPCs.ActiveNpcId,
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVC03F7465F012)));
 
   /**
    * Store memory
    * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
    */
   FMemoryItem Mem;
-  Mem.Id = TEXT("keep_mem");
-  Mem.Text = TEXT("Should survive");
-  Mem.Importance = 0.5f;
+  Mem.Id = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV8F9E67C3219C);
+  Mem.Text = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3C808DE3889C);
+  Mem.Importance = FORBOCAI_SDK_AUTHORED_NUMBERVD72733281456;
   Store.dispatch(MemorySlice::Actions::memoryStoreSuccess(Mem));
 
   /**
    * Remove A (not active) — memory should NOT be cleared
    * User Story: As a maintainer, I need this step note so I can follow the scenario progression and reason about the expected state changes.
    */
-  Store.dispatch(NPCActions::removeNPC(TEXT("npc_a")));
+  Store.dispatch(NPCActions::removeNPC(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV83A033E59251)));
 
-  TestFalse("A removed",
-            NPCSelectors::selectNPCById(Store.getState().NPCs, TEXT("npc_a"))
+  TestFalse(FORBOCAI_SDK_AUTHORED_STRINGV402A28457064,
+            NPCSelectors::selectNPCById(Store.getState().NPCs, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV83A033E59251))
                 .hasValue);
-  TestEqual("Active still B", Store.getState().NPCs.ActiveNpcId,
-            FString(TEXT("npc_b")));
-  TestEqual("Memory preserved",
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV180E7F45FDBC, Store.getState().NPCs.ActiveNpcId,
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVC03F7465F012)));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV97646A8CC932,
             MemorySelectors::selectAllMemories(Store.getState().Memory).Num(),
-            1);
+            FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4);
 
   return true;
 }
@@ -241,7 +242,7 @@ bool FStoreRemoveNonActiveTest::RunTest(const FString &Parameters) {
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FRuntimeProtocolLoggerSummaryTest,
-    "ForbocAI.Integration.Store.ProtocolLoggerSummary",
+    FORBOCAI_SDK_AUTHORED_STRINGVF7BEB26EA5F3,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
@@ -252,29 +253,44 @@ bool FRuntimeProtocolLoggerSummaryTest::RunTest(const FString &Parameters) {
   (void)Parameters;
 
   const rtk::AnyAction SetActiveAction =
-      NPCActions::setActiveNPC(TEXT("logger_npc"));
-  TestEqual("String payloads are preserved for logger output",
-            SetActiveAction.describePayload(), FString(TEXT("logger_npc")));
+      NPCActions::setActiveNPC(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD7812F8CA949));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV6896CCDD12B2,
+            SetActiveAction.describePayload(), FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD7812F8CA949)));
+  TestEqual(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD4D03B87C276),
+            LoggerAdapters::describeProtocolPayloadAdapter(),
+            LoggerConfiguration::loggerData().Text.OpaquePayload);
 
   FRuntimeState Before = StoreInternal::createRuntimeInitialState();
   FRuntimeState After = StoreReducer(Before, SetActiveAction);
+  FRuntimeState ErrorAfter = After;
+  ErrorAfter.Dependencies.Error =
+      TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD7812F8CA949);
+  const FString ErrorDelta =
+      LoggerSelectors::describeStateDelta(After, ErrorAfter);
+  TestTrue(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD7F4EA429631),
+           ErrorDelta.Contains(
+               LoggerConfiguration::loggerData().Text.OpaquePayload));
+  TestFalse(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV001D686FB3B6),
+            ErrorDelta.Contains(
+                TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD7812F8CA949)));
+
   const FString Delta =
       LoggerSelectors::describeStateDelta(Before, After);
 
-  TestTrue("Delta includes NPC slice summary", Delta.Contains(TEXT("NPCs{")));
-  TestTrue("Delta includes active npc id",
-           Delta.Contains(TEXT("logger_npc")));
-  TestEqual("No-change deltas collapse to <none>",
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVE07AA534CD9C, Delta.Contains(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV6191C2903AAE)));
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV7D04F36B6BCF,
+           Delta.Contains(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVD7812F8CA949)));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV5764B8E19025,
             LoggerSelectors::describeStateDelta(After, After),
-            FString(TEXT("<none>")));
+            FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV781ACD34ECFB)));
 
   rtk::AnyAction ProtocolAction;
-  ProtocolAction.Type = TEXT("protocol/test");
+  ProtocolAction.Type = TEXT(FORBOCAI_SDK_AUTHORED_STRINGVB4193769DADF);
   rtk::AnyAction UnrelatedAction;
-  UnrelatedAction.Type = TEXT("counter/test");
-  TestTrue("Default selector includes protocol actions",
+  UnrelatedAction.Type = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV7E05F3C19671);
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVCB51572DBE91,
            LoggerSelectors::selectIsProtocolAction(ProtocolAction));
-  TestFalse("Default selector excludes unrelated actions",
+  TestFalse(FORBOCAI_SDK_AUTHORED_STRINGV80CA71FFF3DE,
             LoggerSelectors::selectIsProtocolAction(UnrelatedAction));
 
   return true;

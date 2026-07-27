@@ -3,10 +3,12 @@
   "values": {
     "immediate": 19,
     "late": 23,
+    "rejection": "transport rejected",
     "timeoutSeconds": 0.001
   },
   "assertions": {
     "immediate": "Unbounded waits return resolved values",
+    "rejection": "Rejected waits return an explicit error value",
     "timeout": "Explicit deadlines surface timeout failure",
     "callback": "Pending transport retains its completion callback",
     "late": "Late completion is ignored without caller memory access"

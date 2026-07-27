@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/ReduxLogger/Formatting.hpp"
 
@@ -41,7 +42,7 @@ dispatchWithErrorCapture(const ReduxLoggerOptions<State> &Options,
     return loggedFailure(Options.ErrorTransformer(
         FString(UTF8_TO_TCHAR(Exception.what()))));
   } catch (...) {
-    return loggedFailure(Options.ErrorTransformer(TEXT("<unknown error>")));
+    return loggedFailure(Options.ErrorTransformer(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV2133402480A5)));
   }
 #endif
 }
@@ -162,7 +163,7 @@ std::function<void(const FString &)>
 resolveLogger(const ReduxLoggerOptions<State> &Options) {
   return Options.Logger ? Options.Logger
                         : [](const FString &Message) {
-                            UE_LOG(LogTemp, Log, TEXT("%s"), *Message);
+                            UE_LOG(LogTemp, Log, TEXT(FORBOCAI_SDK_AUTHORED_STRINGV03A110C67C3C), *Message);
                           };
 }
 

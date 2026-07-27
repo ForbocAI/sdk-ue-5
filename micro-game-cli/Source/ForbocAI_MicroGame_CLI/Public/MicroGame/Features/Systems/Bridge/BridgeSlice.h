@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
@@ -25,7 +26,7 @@ inline FString SelectBridgeActivePreset(const FBridgeRulesState &S) {
 /** User Story: As a features systems bridge consumer, I need to invoke create game bridge slice through a stable signature so the features systems bridge workflow remains explicit and composable. @fn inline rtk::Slice<FBridgeRulesState> CreateGameBridgeSlice() */
 inline rtk::Slice<FBridgeRulesState> CreateGameBridgeSlice() {
   return rtk::createSlice<FBridgeRulesState>(
-      TEXT("microgame/bridge"), CreateBridgeInitialState(),
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVB634863565F1), CreateBridgeInitialState(),
       [](rtk::ActionReducerMapBuilder<FBridgeRulesState> &Builder) {
         Builder.addCase(
             GameBridgeActions::setBridgeRulesActionCreator(),

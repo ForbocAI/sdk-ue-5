@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/fp.hpp"
 #include "Core/rtk.hpp"
@@ -31,7 +32,7 @@ MergeAliasMaps(const TMap<FString, FString> &State,
 inline rtk::Slice<CommandRunner::FCommandAliasState>
 CreateCommandRunnerSlice() {
   return rtk::createSlice<CommandRunner::FCommandAliasState>(
-      TEXT("microgame/commandRunner"),
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV92194D11A0D5),
       CommandRunner::FCommandAliasState(),
       [](rtk::ActionReducerMapBuilder<CommandRunner::FCommandAliasState>
              &Builder) {

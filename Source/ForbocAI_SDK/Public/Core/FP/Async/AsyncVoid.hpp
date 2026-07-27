@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/FP/Async/AsyncResult.hpp"
 
@@ -90,7 +91,7 @@ void invokeSuccessHandlersRecursive(
   Index == Handlers.size()
       ? void()
       : (Handlers[Index](Value),
-         invokeSuccessHandlersRecursive<T>(Handlers, Index + 1, Value));
+         invokeSuccessHandlersRecursive<T>(Handlers, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, Value));
 }
 
 /** User Story: As a core fp async consumer, I need to invoke invoke void handlers recursive through a stable signature so the core fp async workflow remains explicit and composable. @fn inline void invokeVoidHandlersRecursive(const std::vector<std::function<void()>> &Handlers, size_t Index) */
@@ -99,7 +100,7 @@ invokeVoidHandlersRecursive(const std::vector<std::function<void()>> &Handlers,
                             size_t Index) {
   Index == Handlers.size()
       ? void()
-      : (Handlers[Index](), invokeVoidHandlersRecursive(Handlers, Index + 1));
+      : (Handlers[Index](), invokeVoidHandlersRecursive(Handlers, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4));
 }
 
 /** User Story: As a core fp async consumer, I need to invoke invoke error handlers recursive through a stable signature so the core fp async workflow remains explicit and composable. @fn inline void invokeErrorHandlersRecursive( const std::vector<std::function<void(std::string)>> &Handlers, size_t Index, const std::string &Error) */
@@ -109,7 +110,7 @@ inline void invokeErrorHandlersRecursive(
   Index == Handlers.size()
       ? void()
       : (Handlers[Index](Error),
-         invokeErrorHandlersRecursive(Handlers, Index + 1, Error));
+         invokeErrorHandlersRecursive(Handlers, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, Error));
 }
 
 /** User Story: As a core fp async consumer, I need to invoke run async executor through a stable signature so the core fp async workflow remains explicit and composable. @fn template <typename T> void runAsyncExecutor( const std::shared_ptr<typename AsyncResult<T>::State> &CapturedState) */
@@ -118,11 +119,11 @@ void runAsyncExecutor(
     const std::shared_ptr<typename AsyncResult<T>::State> &CapturedState) {
   CapturedState->executor(
       [CapturedState](T Value) {
-        invokeSuccessHandlersRecursive<T>(CapturedState->successHandlers, 0,
+        invokeSuccessHandlersRecursive<T>(CapturedState->successHandlers, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA,
                                           Value);
       },
       [CapturedState](std::string Error) {
-        invokeErrorHandlersRecursive(CapturedState->errorHandlers, 0, Error);
+        invokeErrorHandlersRecursive(CapturedState->errorHandlers, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, Error);
       });
 }
 
@@ -131,10 +132,10 @@ inline void runAsyncExecutor(
     const std::shared_ptr<typename AsyncResult<void>::State> &CapturedState) {
   CapturedState->executor(
       [CapturedState]() {
-        invokeVoidHandlersRecursive(CapturedState->successHandlers, 0);
+        invokeVoidHandlersRecursive(CapturedState->successHandlers, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA);
       },
       [CapturedState](std::string Error) {
-        invokeErrorHandlersRecursive(CapturedState->errorHandlers, 0, Error);
+        invokeErrorHandlersRecursive(CapturedState->errorHandlers, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, Error);
       });
 }
 } // namespace detail

@@ -44,12 +44,36 @@
     "reference": "I will examine it carefully before responding.",
     "exactResponse": "",
     "requiredTokenGroups": [
-      ["careful", "carefully", "cautious", "cautiously"],
-      ["examine", "examination", "check", "verify", "review"]
+      [
+        "careful",
+        "carefully",
+        "cautious",
+        "cautiously",
+        "critical",
+        "critically",
+        "rigorous",
+        "rigorously",
+        "skeptical",
+        "skeptically",
+        "thorough",
+        "thoroughly"
+      ],
+      [
+        "examine",
+        "examination",
+        "check",
+        "verify",
+        "review",
+        "analyze",
+        "analysis",
+        "assess",
+        "evaluate",
+        "investigate"
+      ]
     ],
     "requiredPatterns": [],
     "forbiddenPatterns": [
-      "\\b(?:will not|won't|cannot|can't|do not|don't|never)\\b[^.\\n]{0,32}\\b(?:examine|check|verify|review|carefully|cautiously)\\b"
+      "\\b(?:will not|won't|cannot|can't|do not|don't|never)\\b[^.\\n]{0,32}\\b(?:examine|examination|check|verify|review|analyze|analysis|assess|evaluate|investigate|careful|carefully|cautious|cautiously|critical|critically|rigorous|rigorously|skeptical|skeptically|thorough|thoroughly)\\b"
     ],
     "minimumReferenceF1": 0.25,
     "maximumWords": 20,
@@ -173,7 +197,7 @@
     "exactResponse": "",
     "requiredTokenGroups": [["brass"], ["key"], ["fountain"]],
     "requiredPatterns": ["\\bbrass\\s+key\\b"],
-    "forbiddenPatterns": ["\\b(?:do not|don't) know\\b", "\\bno memory\\b"],
+    "forbiddenPatterns": ["\\b(?:do not|don't) know\\b", "\\bno memory\\b", "\\bno\\s+(?:brass\\s+)?key\\b"],
     "minimumReferenceF1": 0.4,
     "maximumWords": 24,
     "coherenceUsesExpectations": true,

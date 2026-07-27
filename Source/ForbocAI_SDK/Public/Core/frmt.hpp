@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
 #include "Core/fp.hpp"
@@ -36,7 +37,7 @@ inline FString Arg(const TCHAR *Value) { return FString(Value); }
  * User Story: As speech and UI formatting code, I need character values to
  * remain explicit data before they are rendered or logged.
  */
-inline FString Arg(TCHAR Value) { return FString::Printf(TEXT("%c"), Value); }
+inline FString Arg(TCHAR Value) { return FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV456F9BF4FBC4), Value); }
 
 /**
  * @fn inline FString Arg(int32 Value)
@@ -115,12 +116,12 @@ inline int32 EarlierTokenIndex(int32 Left, int32 Right) {
  */
 inline int32 FirstRuntimeFormatTokenIndex(const FString &Pattern) {
   return EarlierTokenIndex(
-      EarlierTokenIndex(Pattern.Find(TEXT("%s")), Pattern.Find(TEXT("%d"))),
-      EarlierTokenIndex(Pattern.Find(TEXT("%f")), Pattern.Find(TEXT("%c"))));
+      EarlierTokenIndex(Pattern.Find(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV03A110C67C3C)), Pattern.Find(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV192C0D925942))),
+      EarlierTokenIndex(Pattern.Find(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV23AB5F8CE679)), Pattern.Find(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV456F9BF4FBC4))));
 }
 
 /** User Story: As a core consumer, I need to invoke runtime format token width through a stable signature so the core workflow remains explicit and composable. @fn inline int32 RuntimeFormatTokenWidth() */
-inline int32 RuntimeFormatTokenWidth() { return FString(TEXT("%s")).Len(); }
+inline int32 RuntimeFormatTokenWidth() { return FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV03A110C67C3C)).Len(); }
 
 /**
  * @fn inline FString ReplaceRuntimeFormatToken(const FString &Pattern, const FString &Value)

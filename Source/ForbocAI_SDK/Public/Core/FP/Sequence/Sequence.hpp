@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/FP/Prelude.hpp"
 
@@ -17,9 +18,9 @@ namespace func {
 template <size_t... Is> struct seq {};
 
 template <size_t N, size_t... Is>
-struct gen_seq : gen_seq<N - 1, N - 1, Is...> {};
+struct gen_seq : gen_seq<N - FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, N - FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, Is...> {};
 
-template <size_t... Is> struct gen_seq<0, Is...> : seq<Is...> {};
+template <size_t... Is> struct gen_seq<FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, Is...> : seq<Is...> {};
 
 /**
  * @fn template <typename F, typename Tuple, size_t... Is> auto apply_impl(F &&f, Tuple &&t, seq<Is...>) -> decltype(std::forward<F>(f)(std::get<Is>(std::forward<Tuple>(t))...))

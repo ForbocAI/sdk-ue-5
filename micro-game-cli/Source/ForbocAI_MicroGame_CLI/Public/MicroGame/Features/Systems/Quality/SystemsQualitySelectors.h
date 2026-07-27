@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MicroGame/Features/Systems/Quality/Baseline/BaselineAdapters.h"
 #include "MicroGame/Features/Systems/Quality/QualityAdapters.h"
 #include "MicroGame/Features/Systems/Quality/Scoring/ScoringAdapters.h"
 
@@ -135,8 +136,9 @@ inline double percentileLatency(const TArray<double> &Values) {
              : roundQualityNumber(Values[Index]);
 }
 
-/** User Story: As a before/after evaluator, I need incompatible reports rejected rather than silently compared. @fn inline FString baselineStatus(const FQualityState &State) */
-inline FString baselineStatus(const FQualityState &State) {
+/** User Story: As a before/after evaluator, I need incompatible reports and changed workloads rejected rather than silently compared. @fn inline FString baselineStatus(const FQualityState &State, const TArray<FQualitySample> &Samples) */
+inline FString baselineStatus(const FQualityState &State,
+                              const TArray<FQualitySample> &Samples) {
   return !State.Baseline.hasValue
              ? qualityData().BaselineStatuses.Missing
          : !State.Host.IsEmpty() &&
@@ -146,7 +148,8 @@ inline FString baselineStatus(const FQualityState &State) {
                        qualityData().ContractVersion &&
                    State.Baseline.value.EvaluationScope ==
                        qualityData().EvaluationScope &&
-                   State.Baseline.value.Host == State.Host
+                   State.Baseline.value.Host == State.Host &&
+                   qualityWorkloadMatches(Samples, State.Baseline.value)
              ? qualityData().BaselineStatuses.Compatible
              : qualityData().BaselineStatuses.Incompatible;
 }
@@ -226,7 +229,7 @@ selectQualityReportSummary(const FQualityState &State) {
           });
   const TArray<double> Latencies = latencyValues(Samples);
   const double MeanLatencyMs = meanLatency(Latencies);
-  const FString BaselineStatus = baselineStatus(State);
+  const FString BaselineStatus = baselineStatus(State, Samples);
   const TArray<FQualityRegression> Regressions =
       func::concat_arrays<FQualityRegression>({
           metricRegressions(Metrics, State, BaselineStatus),

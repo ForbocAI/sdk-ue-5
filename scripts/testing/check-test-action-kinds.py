@@ -105,7 +105,7 @@ def main() -> int:
         / "Source"
         / "ForbocAI_SDK"
         / "Public"
-        / "Features"
+        / "Components"
         / "Testing"
     )
     headers = tuple(sorted(testing_root.glob("*/Testing*Types.h")))

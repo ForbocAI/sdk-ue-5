@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 namespace ecs {
 
@@ -140,7 +141,7 @@ inline std::function<func::Either<FString, bool>(const DomainPathKey &)>
 requireDomain(const FGraph &Registry) {
   return func::require_map_key<DomainPathKey, FNode>(
       Registry.Nodes, [](const DomainPathKey &Domain) {
-        return FString::Printf(TEXT("Missing ECS domain: %s"), *Domain);
+        return FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV41C5683C9669), *Domain);
       });
 }
 
@@ -155,7 +156,7 @@ inline std::function<func::Either<FString, bool>(const ComponentType &)>
 requireComponentSchema(const FGraph &Registry) {
   return func::require_map_key<ComponentType, FComponentSchema>(
       Registry.ComponentSchemas, [](const ComponentType &Type) {
-        return FString::Printf(TEXT("Missing ECS component schema: %s"),
+        return FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV92006BD5179E),
                                *Type);
       });
 }
@@ -185,7 +186,7 @@ validateEntityDomain(const FValidateEntityDomainRequest &Request) {
   return isEntityInDomain({Request.World, Request.Entity, Request.Domain})
              ? func::make_right<FString, bool>(true)
              : func::make_left<FString, bool>(FString::Printf(
-                   TEXT("Entity %s is not in ECS domain %s"), *Request.Entity,
+                   TEXT(FORBOCAI_SDK_AUTHORED_STRINGVC45D95512FAE), *Request.Entity,
                    *Request.Domain));
 }
 

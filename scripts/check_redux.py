@@ -5,12 +5,12 @@ Role rules live in auto-discovered ``*_boundaries.py`` plugins (Actions,
 Adapters, Listeners, Selectors, Slice, Thunks, Types, View). This runner owns
 the cross-role structure: valid role leaves, import direction, the single store
 boundary, dispatch/getState placement, pure-role purity, RTK Query lifecycle,
-and the feature import graph. Every finding carries a stable rule id and a
+and the ECS-role import graph. Every finding carries a stable rule id and a
 severity aligned to the redux/rtk skills.
 
     check_redux.py [--format text|json|sarif] [--explain [RULE-ID]]
 
-The production CLI scans the configured project root's feature/view roots.
+The production CLI scans the configured project's ECS-role and view roots.
 FORBOCAI_REDUX_PROJECT_ROOT and FORBOCAI_REDUX_SCAN_ROOTS let the UE demo use
 this SDK-owned checker without copying the rules back into the demo.
 """
@@ -32,12 +32,35 @@ PROJECT_ROOT = Path(os.environ.get("FORBOCAI_REDUX_PROJECT_ROOT", Path(__file__)
 from ue_targets import ue_targets
 
 
+DIRECT_ECS_ROLES = ("Components", "Entities", "Systems")
+SOURCE_ROLE_MARKERS = ("Features", *DIRECT_ECS_ROLES, "Views")
+ECS_ROOT_BY_RTK_ROLE = {
+    "types": "Components",
+    "actions": "Entities",
+    "selectors": "Entities",
+    "slice": "Entities",
+    "adapters": "Systems",
+    "api": "Systems",
+    "listeners": "Systems",
+    "thunks": "Systems",
+}
+
+
+def sdk_ecs_role_roots(project_root: Path) -> list[Path]:
+    source = project_root / "Source" / "ForbocAI_SDK"
+    return [
+        source / visibility / role
+        for visibility in ("Public", "Private")
+        for role in DIRECT_ECS_ROLES
+    ]
+
+
 def default_scan_roots(project_root: Path) -> list[Path]:
     return [
         project_root / "Source" / "Features",
+        *(project_root / "Source" / role for role in DIRECT_ECS_ROLES),
         project_root / "Source" / "Views",
-        project_root / "Source" / "ForbocAI_SDK" / "Public" / "Features",
-        project_root / "Source" / "ForbocAI_SDK" / "Private" / "Features",
+        *sdk_ecs_role_roots(project_root),
         project_root / "micro-game-cli" / "Source" / "ForbocAI_MicroGame_CLI" / "Public" / "MicroGame" / "Features",
         project_root / "micro-game-cli" / "Source" / "ForbocAI_MicroGame_CLI" / "Public" / "MicroGame" / "Views",
     ]
@@ -47,10 +70,7 @@ def discovered_target_scan_roots(project_root: Path) -> list[tuple[str, Path, li
     targets: list[tuple[str, Path, list[Path]]] = []
     for target in ue_targets():
         if target.kind == "sdk":
-            roots = [
-                target.root / "Source" / "ForbocAI_SDK" / "Public" / "Features",
-                target.root / "Source" / "ForbocAI_SDK" / "Private" / "Features",
-            ]
+            roots = sdk_ecs_role_roots(target.root)
         elif target.kind == "sdk-cli":
             roots = [
                 target.root / "Source" / "ForbocAI_MicroGame_CLI" / "Public" / "MicroGame" / "Features",
@@ -59,6 +79,7 @@ def discovered_target_scan_roots(project_root: Path) -> list[tuple[str, Path, li
         else:
             roots = [
                 target.root / "Source" / "Features",
+                *(target.root / "Source" / role for role in DIRECT_ECS_ROLES),
                 target.root / "Source" / "Views",
             ]
         existing = [root for root in roots if root.exists()]
@@ -114,7 +135,7 @@ STRUCT_LEAF = register(
     Rule(
         id="RTK-STRUCT-001",
         severity=Severity.HIGH,
-        summary="feature leaf is not a folder-qualified RTK role name",
+        summary="ECS-role leaf is not a folder-qualified RTK role name",
         guidance=(
             "Feature leaves must be the nearest unambiguous real domain atom "
             "plus the role, such as SkyThunks or TextureAdapters; keep broader "
@@ -147,6 +168,36 @@ ROOT_ROLE = register(
     )
 )
 
+ECS_ROLE_OWNERSHIP = register(
+    Rule(
+        id="RTK-STRUCT-003",
+        severity=Severity.HIGH,
+        summary="RTK role is stored under the wrong direct ECS root",
+        guidance=(
+            "Store inert Types in Components; state authority Actions, Selectors, "
+            "and Slice in Entities; and boundary/effect Adapters, Api, Listeners, "
+            "and Thunks in Systems. Keep domain folders beneath those roots."
+        ),
+        skill="model-redux-state-design-state-ownership: make state authority and effect ownership explicit",
+    )
+)
+
+ECS_TOPOLOGY = register(
+    Rule(
+        id="RTK-STRUCT-004",
+        severity=Severity.CRITICAL,
+        summary="SDK ECS source topology is incomplete or has a legacy root",
+        guidance=(
+            "Keep Components, Entities, and Systems directly under both "
+            "ForbocAI_SDK/Public and ForbocAI_SDK/Private. Do not reintroduce "
+            "top-level Features, Handlers, CLI, Ghost, Integration, Native, or "
+            "NPC roots. Public/Core remains an "
+            "independent framework boundary."
+        ),
+        skill="model-redux-state-design-state-ownership: encode explicit ownership boundaries",
+    )
+)
+
 IMPORT_DIRECTION = register(
     Rule(
         id="RTK-IMPORT-001",
@@ -171,8 +222,8 @@ IMPORT_VIEW = register(
     Rule(
         id="RTK-IMPORT-003",
         severity=Severity.HIGH,
-        summary="feature imports Views",
-        guidance="Features never import Views; presentation depends on features, not the reverse.",
+        summary="ECS role imports Views",
+        guidance="ECS roles never import Views; presentation depends on state and effects, not the reverse.",
         skill="build-modern-redux-apps-modern-redux: keep app wiring and feature logic separate",
     )
 )
@@ -298,8 +349,8 @@ GRAPH_CYCLE = register(
     Rule(
         id="RTK-GRAPH-001",
         severity=Severity.HIGH,
-        summary="feature role import cycle",
-        guidance="Break the include cycle; the feature import graph must stay a DAG in the action -> slice -> selector -> view direction.",
+        summary="ECS-role import cycle",
+        guidance="Break the include cycle; the ECS-role import graph must stay a DAG in the action -> slice -> selector -> view direction.",
         skill="model-redux-state-design-state-ownership: re-size slices as access patterns change",
     )
 )
@@ -349,6 +400,7 @@ STORE_BOUNDARY_RELS = {
     "Features/Systems/SystemsListeners.cpp",
     "Features/Systems/SystemsSelectors.cpp",
     "Features/Systems/SystemsThunks.cpp",
+    "Systems/Store/StoreAdapters.h",
 }
 
 RAW_DISPATCH_ALLOW_ROLES = {"actions", "thunks", "listeners"}
@@ -400,10 +452,29 @@ def discover_role_plugins() -> dict[str, object]:
 
 # --- Per-file checks -------------------------------------------------------
 
+def _source_parts(path: Path) -> tuple[str, ...]:
+    parts = path.parts
+    if "Source" not in parts:
+        return parts
+    return tuple(parts[parts.index("Source") + 1 :])
+
+
+def _ownership_marker(path: Path) -> str | None:
+    indexed = tuple(
+        (index, part)
+        for index, part in enumerate(_source_parts(path))
+        if part in SOURCE_ROLE_MARKERS
+    )
+    return min(indexed)[1] if indexed else None
+
+
 def _rel_key(path: Path) -> str | None:
-    marker = "Source/Features/"
-    text = path.as_posix()
-    return "Features/" + text.split(marker, 1)[1] if marker in text else None
+    marker = _ownership_marker(path)
+    if marker is None:
+        return None
+    parts = path.parts
+    index = parts.index(marker, parts.index("Source") + 1) if "Source" in parts else parts.index(marker)
+    return Path(*parts[index:]).as_posix()
 
 
 def leaf_guidance(stem: str) -> str:
@@ -430,7 +501,8 @@ def _parts_after_marker(path: Path, marker: str) -> tuple[str, ...]:
 
 
 def _domain_parts(unit: SourceUnit) -> tuple[str, ...]:
-    return _parts_after_marker(unit.path, "Features") or _parts_after_marker(unit.path, "Views")
+    marker = _ownership_marker(unit.path)
+    return _parts_after_marker(unit.path, marker) if marker else ()
 
 
 def _domain_qualifiers(unit: SourceUnit) -> tuple[str, ...]:
@@ -459,10 +531,10 @@ def _layered_leaf_stems(unit: SourceUnit) -> tuple[str, ...]:
     )
 
 
-def check_feature_leaf_names(units: list[SourceUnit]) -> list[Finding]:
+def check_role_leaf_names(units: list[SourceUnit]) -> list[Finding]:
     role_units = [
         unit for unit in units
-        if (_parts_after_marker(unit.path, "Features") or _parts_after_marker(unit.path, "Views"))
+        if _domain_parts(unit)
         and unit.declared_role is not None
     ]
     nearest_counts: dict[tuple[str, str], int] = {}
@@ -487,10 +559,28 @@ def check_feature_leaf_names(units: list[SourceUnit]) -> list[Finding]:
                 1,
                 STRUCT_LEAF.id,
                 STRUCT_LEAF.severity,
-                f"feature leaf `{unit.stem}` must be `{nearest}`; only layer parent domains when `{nearest}` conflicts",
+                f"ECS-role leaf `{unit.stem}` must be `{nearest}`; only layer parent domains when `{nearest}` conflicts",
             )
         )
     return findings
+
+
+def check_ecs_role_ownership(unit: SourceUnit, role: str) -> list[Finding]:
+    actual_root = _ownership_marker(unit.path)
+    if actual_root not in DIRECT_ECS_ROLES:
+        return []
+    expected_root = ECS_ROOT_BY_RTK_ROLE.get(role)
+    if expected_root == actual_root:
+        return []
+    return [
+        Finding(
+            unit.path,
+            1,
+            ECS_ROLE_OWNERSHIP.id,
+            ECS_ROLE_OWNERSHIP.severity,
+            f"{role} belongs in {expected_root or 'a supported ECS role root'}, not {actual_root}",
+        )
+    ]
 
 
 def check_imports(unit: SourceUnit, role: str) -> list[Finding]:
@@ -500,7 +590,7 @@ def check_imports(unit: SourceUnit, role: str) -> list[Finding]:
         include = match.group(1)
         line = line_number(unit.raw, match.start())
         if include.startswith("Views/") or "/Views/" in include:
-            findings.append(Finding(unit.path, line, IMPORT_VIEW.id, IMPORT_VIEW.severity, f"feature imports Views: `{include}`"))
+            findings.append(Finding(unit.path, line, IMPORT_VIEW.id, IMPORT_VIEW.severity, f"ECS role imports Views: `{include}`"))
         target = role_for_include(include)
         if target and target in FORBIDDEN_TARGET_ROLES.get(role, set()):
             findings.append(Finding(unit.path, line, IMPORT_DIRECTION.id, IMPORT_DIRECTION.severity, f"{role} must not import {target}: `{include}`"))
@@ -561,6 +651,7 @@ def check_unit(unit: SourceUnit, plugins: dict[str, object]) -> list[Finding]:
         return findings + [Finding(unit.path, 1, STRUCT_LEAF.id, STRUCT_LEAF.severity, leaf_guidance(unit.stem))]
 
     findings += fingerprint_findings(unit)
+    findings += check_ecs_role_ownership(unit, role)
     plugin = plugins.get(role)
 
     if role == "view":
@@ -578,7 +669,7 @@ def check_unit(unit: SourceUnit, plugins: dict[str, object]) -> list[Finding]:
 # --- Global checks ---------------------------------------------------------
 
 SOURCE_SUFFIXES = {".c", ".cc", ".cpp", ".cxx", ".h", ".hh", ".hpp", ".hxx"}
-NON_PROGRAM_STORE_DIRS = {"Core", "Features", "Views", "Tests", "Intermediate"}
+NON_PROGRAM_STORE_DIRS = {"Core", "Features", *DIRECT_ECS_ROLES, "Views", "Tests", "Intermediate"}
 
 
 def discover_store_paths(project_root: Path) -> list[Path]:
@@ -638,7 +729,7 @@ def check_root_role_boundaries(project_root: Path) -> list[Finding]:
                     1,
                     ROOT_ROLE.id,
                     ROOT_ROLE.severity,
-                    f"root source file {detail}; move behavior under Features or presentation under Views",
+                    f"root source file {detail}; move behavior under an ECS role root or presentation under Views",
                 )
             )
     return findings
@@ -714,10 +805,52 @@ def check_multiple_api_roots(units: list[SourceUnit]) -> list[Finding]:
     ]
 
 
+def check_sdk_ecs_topology(project_root: Path) -> list[Finding]:
+    source = project_root / "Source" / "ForbocAI_SDK"
+    if not source.is_dir():
+        return []
+    findings: list[Finding] = []
+    for visibility in ("Public", "Private"):
+        boundary = source / visibility
+        for role in DIRECT_ECS_ROLES:
+            required = boundary / role
+            if not required.is_dir():
+                findings.append(
+                    Finding(
+                        required,
+                        1,
+                        ECS_TOPOLOGY.id,
+                        ECS_TOPOLOGY.severity,
+                        f"missing required {visibility}/{role} root",
+                    )
+                )
+        for legacy in (
+            "Features",
+            "Handlers",
+            "CLI",
+            "Ghost",
+            "Integration",
+            "Native",
+            "NPC",
+        ):
+            stale = boundary / legacy
+            if stale.exists():
+                findings.append(
+                    Finding(
+                        stale,
+                        1,
+                        ECS_TOPOLOGY.id,
+                        ECS_TOPOLOGY.severity,
+                        f"legacy {visibility}/{legacy} root must be migrated into direct ECS ownership",
+                    )
+                )
+    return findings
+
+
 def check_import_graph(units: list[SourceUnit]) -> list[Finding]:
     cycles = find_import_cycles(units)
     return [
-        Finding(units[0].path if units else Path("Source/Features"), 1, GRAPH_CYCLE.id, GRAPH_CYCLE.severity, "import cycle: " + " -> ".join(cycle))
+        Finding(units[0].path if units else Path("Source"), 1, GRAPH_CYCLE.id, GRAPH_CYCLE.severity, "import cycle: " + " -> ".join(cycle))
         for cycle in cycles
     ]
 
@@ -733,7 +866,8 @@ def collect_findings(project_root: Path, scan_roots: list[Path]) -> list[Finding
     for unit in units:
         findings += check_unit(unit, plugins)
 
-    findings += check_feature_leaf_names(units)
+    findings += check_role_leaf_names(units)
+    findings += check_sdk_ecs_topology(project_root)
     findings += check_root_role_boundaries(project_root)
     findings += check_store_boundary(project_root)
     findings += check_multiple_api_roots(units)

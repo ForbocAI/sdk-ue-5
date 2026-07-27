@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/RTK/Action/ActionCreator.hpp"
 #include "Core/RTK/Batch/AutoBatchTypes.hpp"
@@ -48,7 +49,7 @@ template <typename State> struct CreateSliceOptions {
 struct DevToolsEnhancerOptions {
   FString Name;
   bool bTrace = false;
-  int32 TraceLimit = 75;
+  int32 TraceLimit = FORBOCAI_SDK_AUTHORED_NUMBERV02F0ED27296D;
 };
 
 template <typename Value> using Draft = Value;
@@ -70,12 +71,12 @@ template <typename Entity> struct Update {
 template <typename State>
 struct ImmutableStateInvariantMiddlewareOptions {
   std::function<bool(const State &)> IsImmutable;
-  float WarnAfterSeconds = 0.032f;
+  float WarnAfterSeconds = FORBOCAI_SDK_AUTHORED_NUMBERV81ABE77C5E5B;
   TArray<FString> IgnoredPaths;
 };
 
 struct SerializableStateInvariantMiddlewareOptions {
-  float WarnAfterSeconds = 0.032f;
+  float WarnAfterSeconds = FORBOCAI_SDK_AUTHORED_NUMBERV81ABE77C5E5B;
   TArray<FString> IgnoredActions;
   TArray<FString> IgnoredActionPaths;
   TArray<FString> IgnoredPaths;

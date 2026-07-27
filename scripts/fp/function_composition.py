@@ -179,9 +179,15 @@ def atom_domain_parts(path: Path) -> tuple[str, ...]:
     except ValueError:
         return path.parent.parts
     parts = rel_path.parent.parts
-    for marker in ("Features", "Views", "Tests"):
-        if marker in parts:
-            return tuple(parts[parts.index(marker) + 1:])
+    domain_markers = {
+        "Components", "Entities", "Systems", "Features", "Views", "Tests"
+    }
+    marker_index = next(
+        (index for index, part in enumerate(parts) if part in domain_markers),
+        None,
+    )
+    if marker_index is not None:
+        return tuple(parts[marker_index + 1:])
     return tuple(parts)
 
 

@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/FP/Maybe/Maybe.hpp"
 #include "Core/FP/Either/Either.hpp"
@@ -15,10 +16,26 @@ namespace func {
  */
 
 template <typename Key, typename Result> struct Dispatcher {
-  std::unordered_map<Key, std::function<Result()>> table;
+  std::vector<std::pair<Key, std::function<Result()>>> entries;
 };
 
 namespace detail {
+/**
+ * User Story: As a core FP dispatcher consumer, I need duplicate keys replaced through equality so every comparable key type has deterministic dispatch behavior.
+ * @fn template <typename Key, typename Result> Dispatcher<Key, Result> upsertDispatcherEntry( Dispatcher<Key, Result> Current, const std::pair<Key, std::function<Result()>> &Entry, size_t Index)
+ */
+template <typename Key, typename Result>
+Dispatcher<Key, Result> upsertDispatcherEntry(
+    Dispatcher<Key, Result> Current,
+    const std::pair<Key, std::function<Result()>> &Entry, size_t Index) {
+  return Index >= Current.entries.size()
+             ? (Current.entries.push_back(Entry), std::move(Current))
+         : Current.entries[Index].first == Entry.first
+             ? (Current.entries[Index] = Entry, std::move(Current))
+             : upsertDispatcherEntry<Key, Result>(std::move(Current), Entry,
+                                                  Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4);
+}
+
 /** User Story: As a core fp dispatcher consumer, I need to invoke create dispatcher recursive through a stable signature so the core fp dispatcher workflow remains explicit and composable. @fn template <typename Key, typename Result> Dispatcher<Key, Result> createDispatcherRecursive( const std::vector<std::pair<Key, std::function<Result()>>> &Entries, size_t Index, Dispatcher<Key, Result> Current) */
 template <typename Key, typename Result>
 Dispatcher<Key, Result>
@@ -27,22 +44,42 @@ createDispatcherRecursive(
     size_t Index, Dispatcher<Key, Result> Current) {
   return Index == Entries.size()
              ? Current
-             : (Current.table[Entries[Index].first] = Entries[Index].second,
-                createDispatcherRecursive<Key, Result>(Entries, Index + 1,
-                                                       std::move(Current)));
+             : createDispatcherRecursive<Key, Result>(
+                   Entries, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
+                   upsertDispatcherEntry<Key, Result>(
+                       std::move(Current), Entries[Index], FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA));
 }
 
-/** User Story: As a core fp dispatcher consumer, I need to invoke dispatcher keys recursive through a stable signature so the core fp dispatcher workflow remains explicit and composable. @fn template <typename Key, typename Result> std::vector<Key> dispatcherKeysRecursive( typename std::unordered_map<Key, std::function<Result()>>::const_iterator It, typename std::unordered_map<Key, std::function<Result()>>::const_iterator End, std::vector<Key> Current) */
+/** User Story: As a core FP dispatcher consumer, I need equality-based recursive lookup so engine-native keys do not require a standard-library hash specialization. @fn template <typename Key, typename Result> Maybe<Result> dispatchRecursive(const Dispatcher<Key, Result> &Value, const Key &KeyValue, size_t Index) */
 template <typename Key, typename Result>
-std::vector<Key> dispatcherKeysRecursive(
-    typename std::unordered_map<Key, std::function<Result()>>::const_iterator It,
-    typename std::unordered_map<Key, std::function<Result()>>::const_iterator End,
-    std::vector<Key> Current) {
-  return It == End
+Maybe<Result> dispatchRecursive(const Dispatcher<Key, Result> &Value,
+                                const Key &KeyValue, size_t Index) {
+  return Index >= Value.entries.size()
+             ? nothing<Result>()
+         : Value.entries[Index].first == KeyValue
+             ? just(Value.entries[Index].second())
+             : dispatchRecursive<Key, Result>(Value, KeyValue, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4);
+}
+
+/** User Story: As a core FP dispatcher consumer, I need presence checks to use the same equality semantics as dispatch. @fn template <typename Key, typename Result> bool dispatcherHasRecursive(const Dispatcher<Key, Result> &Value, const Key &KeyValue, size_t Index) */
+template <typename Key, typename Result>
+bool dispatcherHasRecursive(const Dispatcher<Key, Result> &Value,
+                            const Key &KeyValue, size_t Index) {
+  return Index < Value.entries.size() &&
+         (Value.entries[Index].first == KeyValue ||
+          dispatcherHasRecursive<Key, Result>(Value, KeyValue, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4));
+}
+
+/** User Story: As a core FP dispatcher consumer, I need registered keys projected without exposing mutable storage. @fn template <typename Key, typename Result> std::vector<Key> dispatcherKeysRecursive(const Dispatcher<Key, Result> &Value, size_t Index, std::vector<Key> Current) */
+template <typename Key, typename Result>
+std::vector<Key> dispatcherKeysRecursive(const Dispatcher<Key, Result> &Value,
+                                         size_t Index,
+                                         std::vector<Key> Current) {
+  return Index >= Value.entries.size()
              ? Current
-             : (Current.push_back(It->first),
-                dispatcherKeysRecursive<Key, Result>(++It, End,
-                                                     std::move(Current)));
+             : (Current.push_back(Value.entries[Index].first),
+                dispatcherKeysRecursive<Key, Result>(
+                    Value, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, std::move(Current)));
 }
 } // namespace detail
 
@@ -59,7 +96,7 @@ std::vector<Key> dispatcherKeysRecursive(
 template <typename Key, typename Result>
 Dispatcher<Key, Result> createDispatcher(
     std::vector<std::pair<Key, std::function<Result()>>> entries) {
-  return detail::createDispatcherRecursive<Key, Result>(entries, 0,
+  return detail::createDispatcherRecursive<Key, Result>(entries, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA,
                                                         Dispatcher<Key, Result>{});
 }
 
@@ -75,9 +112,7 @@ Dispatcher<Key, Result> createDispatcher(
  */
 template <typename Key, typename Result>
 Maybe<Result> dispatch(const Dispatcher<Key, Result> &d, const Key &key) {
-  typename std::unordered_map<Key, std::function<Result()>>::const_iterator it =
-      d.table.find(key);
-  return it != d.table.end() ? just(it->second()) : nothing<Result>();
+  return detail::dispatchRecursive<Key, Result>(d, key, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA);
 }
 
 /**
@@ -108,7 +143,7 @@ Either<E, Result> dispatch_either(const Dispatcher<Key, Result> &d,
  */
 template <typename Key, typename Result>
 bool has(const Dispatcher<Key, Result> &d, const Key &key) {
-  return d.table.find(key) != d.table.end();
+  return detail::dispatcherHasRecursive<Key, Result>(d, key, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA);
 }
 
 /**
@@ -123,8 +158,7 @@ bool has(const Dispatcher<Key, Result> &d, const Key &key) {
  */
 template <typename Key, typename Result>
 std::vector<Key> keys(const Dispatcher<Key, Result> &d) {
-  return detail::dispatcherKeysRecursive<Key, Result>(d.table.begin(),
-                                                      d.table.end(),
+  return detail::dispatcherKeysRecursive<Key, Result>(d, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA,
                                                       std::vector<Key>());
 }
 

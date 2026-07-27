@@ -303,7 +303,16 @@ def documented_signature(documentation: str) -> str | None:
 
 def documentation_domain(path: Path) -> str:
     parts = path.parts[:-1]
-    anchors = ("Features", "Core", "Views", "Tests", "CLI")
+    anchors = (
+        "Components",
+        "Entities",
+        "Systems",
+        "Features",
+        "Core",
+        "Views",
+        "Tests",
+        "CLI",
+    )
     anchor_index = next(
         (index for index, part in enumerate(parts) if part in anchors),
         len(parts) - 1,

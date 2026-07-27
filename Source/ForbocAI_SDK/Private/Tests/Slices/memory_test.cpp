@@ -1,6 +1,7 @@
 #include "Core/fp.hpp"
-#include "Features/Memory/MemorySelectors.h"
-#include "Features/Testing/Memory/TestingMemoryAdapters.h"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
+#include "Entities/Memory/MemorySelectors.h"
+#include "Systems/Testing/Memory/TestingMemoryAdapters.h"
 #include "Misc/AutomationTest.h"
 
 using namespace Testing::Memory;
@@ -149,7 +150,7 @@ FirstMemoryId(const TArray<FMemoryItem> &Items) {
 } // namespace
 
 IMPLEMENT_COMPLEX_AUTOMATION_TEST(
-    FMemoryTest, "ForbocAI.Slices.Memory",
+    FMemoryTest, FORBOCAI_SDK_AUTHORED_STRINGV5AC8D37F29E1,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 

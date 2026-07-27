@@ -1,6 +1,7 @@
 #include "Core/fp.hpp"
-#include "Features/Bridge/BridgeSelectors.h"
-#include "Features/Testing/Bridge/TestingBridgeAdapters.h"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
+#include "Entities/Bridge/BridgeSelectors.h"
+#include "Systems/Testing/Bridge/TestingBridgeAdapters.h"
 #include "Misc/AutomationTest.h"
 
 using namespace Testing::Bridge;
@@ -159,7 +160,7 @@ FirstBridgeRulesetId(const TArray<FDirectiveRuleSet> &Rulesets) {
 } // namespace
 
 IMPLEMENT_COMPLEX_AUTOMATION_TEST(
-    FBridgeTest, "ForbocAI.Slices.Bridge",
+    FBridgeTest, FORBOCAI_SDK_AUTHORED_STRINGV8651408824A3,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "HAL/PlatformTime.h"
-#include "CLI/CLIModule.h"
+#include "Systems/CLI/CLIThunks.h"
 #include "Core/fp.hpp"
 #include "MicroGame/Features/Systems/Harness/CommandRunner/Alias/AliasAdapters.h"
 #include "MicroGame/Features/Systems/Harness/CommandRunner/CommandRunnerAdapters.h"

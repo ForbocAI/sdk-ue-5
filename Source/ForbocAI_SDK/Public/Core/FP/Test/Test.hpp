@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/FP/Error/Error.hpp"
 
@@ -99,7 +100,7 @@ template <typename T> struct TestResult {
   T getValue() const {
     return bSuccess ? value
                     : detail::failWithMessage<T>(
-                          "TestResult: Cannot get value from failure");
+                          FORBOCAI_SDK_AUTHORED_STRINGVC137338FE4EF);
   }
 };
 

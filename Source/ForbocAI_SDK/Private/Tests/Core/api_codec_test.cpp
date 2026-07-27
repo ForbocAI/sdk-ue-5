@@ -1,10 +1,11 @@
-#include "Features/API/APIApi.h"
-#include "Features/API/Serialization/APISerializationAdapters.h"
-#include "Features/Testing/API/Codec/APICodecAdapters.h"
+#include "Systems/API/APIApi.h"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
+#include "Systems/API/Serialization/APISerializationAdapters.h"
+#include "Systems/Testing/API/Codec/APICodecAdapters.h"
 #include "Misc/AutomationTest.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FApiCodecSoulVerifyContractTest, "ForbocAI.Core.API.SoulVerifyContract",
+    FApiCodecSoulVerifyContractTest, FORBOCAI_SDK_AUTHORED_STRINGVA2FFE711DFD0,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
@@ -25,7 +26,7 @@ bool FApiCodecSoulVerifyContractTest::RunTest(const FString &Parameters) {
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FApiCodecBridgeRulesContractTest, "ForbocAI.Core.API.BridgeRulesContract",
+    FApiCodecBridgeRulesContractTest, FORBOCAI_SDK_AUTHORED_STRINGV4D2B33E1119A,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
@@ -53,7 +54,7 @@ bool FApiCodecBridgeRulesContractTest::RunTest(const FString &Parameters) {
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FApiCodecRulesetContractTest, "ForbocAI.Core.API.RulesetContract",
+    FApiCodecRulesetContractTest, FORBOCAI_SDK_AUTHORED_STRINGV776EDAC3DEE8,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
@@ -104,7 +105,7 @@ bool FApiCodecRulesetContractTest::RunTest(const FString &Parameters) {
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FApiCodecNullableProtocolFieldsTest,
-    "ForbocAI.Core.API.NullableProtocolFields",
+    FORBOCAI_SDK_AUTHORED_STRINGV9F9B5F6B9E6D,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
@@ -139,7 +140,7 @@ bool FApiCodecNullableProtocolFieldsTest::RunTest(const FString &Parameters) {
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FApiCodecBridgeValidationContractTest,
-    "ForbocAI.Core.API.BridgeValidationContract",
+    FORBOCAI_SDK_AUTHORED_STRINGV4995039F524F,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
@@ -164,7 +165,7 @@ bool FApiCodecBridgeValidationContractTest::RunTest(const FString &Parameters) {
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FApiCodecActionContractTest, "ForbocAI.Core.API.ActionContract",
+    FApiCodecActionContractTest, FORBOCAI_SDK_AUTHORED_STRINGVFDB6CEB63A00,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**

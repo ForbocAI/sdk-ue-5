@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/RTK/Matcher/Matcher.hpp"
 
@@ -51,13 +52,13 @@ template <typename State> struct ActionReducerMapBuilder {
   ActionReducerMapBuilder<State> &
   addCase(const ActionCreator<Payload> &Creator, ReducerFn ReducerFunc) {
     checkf(!bMatcherAdded,
-           TEXT("builder.addCase should only be called before builder.addMatcher"));
+           TEXT(FORBOCAI_SDK_AUTHORED_STRINGVA515F0094D83));
     checkf(!bHasDefaultCaseReducer,
-           TEXT("builder.addCase should only be called before builder.addDefaultCase"));
+           TEXT(FORBOCAI_SDK_AUTHORED_STRINGV4A58257F5025));
     checkf(!Creator.Type.IsEmpty(),
-           TEXT("builder.addCase cannot be called with an empty action type"));
+           TEXT(FORBOCAI_SDK_AUTHORED_STRINGV92D2253C96F7));
     checkf(!Reducers.Contains(Creator.Type),
-           TEXT("builder.addCase cannot be called with two reducers for the same action type"));
+           TEXT(FORBOCAI_SDK_AUTHORED_STRINGV001A69F96B39));
     std::function<State(const State &, const PayloadAction<Payload> &)>
         WrappedReducer = ReducerFunc;
     Reducers.Add(
@@ -85,13 +86,13 @@ template <typename State> struct ActionReducerMapBuilder {
   ActionReducerMapBuilder<State> &
   addCase(const ActionCreatorWithoutPayload &Creator, ReducerFn ReducerFunc) {
     checkf(!bMatcherAdded,
-           TEXT("builder.addCase should only be called before builder.addMatcher"));
+           TEXT(FORBOCAI_SDK_AUTHORED_STRINGVA515F0094D83));
     checkf(!bHasDefaultCaseReducer,
-           TEXT("builder.addCase should only be called before builder.addDefaultCase"));
+           TEXT(FORBOCAI_SDK_AUTHORED_STRINGV4A58257F5025));
     checkf(!Creator.Type.IsEmpty(),
-           TEXT("builder.addCase cannot be called with an empty action type"));
+           TEXT(FORBOCAI_SDK_AUTHORED_STRINGV92D2253C96F7));
     checkf(!Reducers.Contains(Creator.Type),
-           TEXT("builder.addCase cannot be called with two reducers for the same action type"));
+           TEXT(FORBOCAI_SDK_AUTHORED_STRINGV001A69F96B39));
     std::function<State(const State &, const PayloadAction<FEmptyPayload> &)>
         WrappedReducer = ReducerFunc;
     Reducers.Add(
@@ -116,7 +117,7 @@ template <typename State> struct ActionReducerMapBuilder {
   addMatcher(std::function<bool(const AnyAction &)> Matcher,
              CaseReducer<State> ReducerFunc) {
     checkf(!bHasDefaultCaseReducer,
-           TEXT("builder.addMatcher should only be called before builder.addDefaultCase"));
+           TEXT(FORBOCAI_SDK_AUTHORED_STRINGVEE0FAA62B4D0));
     bMatcherAdded = true;
     ActionMatchers.Add(ActionMatcherDescription<State>{
         std::move(Matcher), std::move(ReducerFunc)});
@@ -132,7 +133,7 @@ template <typename State> struct ActionReducerMapBuilder {
    */
   ActionReducerMapBuilder<State> &addDefaultCase(CaseReducer<State> ReducerFunc) {
     checkf(!bHasDefaultCaseReducer,
-           TEXT("builder.addDefaultCase can only be called once"));
+           TEXT(FORBOCAI_SDK_AUTHORED_STRINGVEE3821C535BD));
     bHasDefaultCaseReducer = true;
     DefaultCaseReducer = std::move(ReducerFunc);
     return *this;

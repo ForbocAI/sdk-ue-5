@@ -1,12 +1,12 @@
-#include "CLI/CliHandlers.h"
+#include "Systems/CLI/CLIThunks.h"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 #include "CoreMinimal.h"
-#include "Features/Async/AsyncAdapters.h"
-#include "Features/Testing/Dependencies/Command/CommandAdapters.h"
-#include "Features/Testing/CLI/Invocation/InvocationAdapters.h"
-#include "Features/CLI/CLISelectors.h"
-#include "Features/CLI/Invocation/InvocationAdapters.h"
+#include "Systems/Async/AsyncAdapters.h"
+#include "Systems/Testing/Dependencies/Command/CommandAdapters.h"
+#include "Systems/Testing/CLI/Invocation/InvocationAdapters.h"
+#include "Entities/CLI/CLISelectors.h"
+#include "Systems/CLI/Invocation/InvocationAdapters.h"
 #include "Misc/AutomationTest.h"
-#include "CLI/RuntimeCommandlet.h"
 #include "Store.h"
 
 // @covers:cli:setup
@@ -22,18 +22,16 @@ struct FCommandOutcome {
   FString Error;
 };
 
-/** User Story: As a tests integration consumer, I need to invoke run command through a stable signature so the tests integration workflow remains explicit and composable. @fn FCommandOutcome RunCommand(UForbocAICommandlet &Commandlet, const FString &Command, const TArray<FString> &Arguments) */
-FCommandOutcome RunCommand(UForbocAICommandlet &Commandlet,
-                           const FString &Command,
+/** User Story: As a tests integration consumer, I need to invoke run command through a stable signature so the tests integration workflow remains explicit and composable. @fn FCommandOutcome RunCommand(const FString &Command, const TArray<FString> &Arguments) */
+FCommandOutcome RunCommand(const FString &Command,
                            const TArray<FString> &Arguments) {
-  FCommandOutcome Outcome;
-  Commandlet.createCommandPipeline(Command, Arguments)
-      .then([&Outcome]() { Outcome.bCompleted = true; })
-      .catch_([&Outcome](std::string Message) {
-        Outcome.Error = UTF8_TO_TCHAR(Message.c_str());
-      })
-      .execute();
-  return Outcome;
+  const func::TestResult<void> Result =
+      CLIOps::DispatchCommand(Command, Arguments);
+  return FCommandOutcome{
+      Result.isSuccessful(),
+      Result.isSuccessful() || Result.message.empty()
+          ? FString()
+          : FString(UTF8_TO_TCHAR(Result.message.c_str()))};
 }
 
 /** User Story: As a tests integration consumer, I need to invoke test successful outcome through a stable signature so the tests integration workflow remains explicit and composable. @fn void TestSuccessfulOutcome(FAutomationTestBase &Test, const FString &Command, const FCommandOutcome &Outcome) */
@@ -47,28 +45,27 @@ void TestSuccessfulOutcome(FAutomationTestBase &Test,
 } // namespace
 
 /**
- * Test: setup_check passes commandlet validation and executes.
+ * Test: setup_check passes CLI validation and executes.
  * User Story: As CLI automation, I need setup commands accepted by the
- * commandlet validation layer so the supported entrypoint can run them.
+ * SDK CLI layer so the supported entrypoint can run them.
  */
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FSetupCommandletValidationTest,
-    "ForbocAI.Integration.Setup.CommandletValidation",
+    FSetupCliDispatchTest,
+    FORBOCAI_SDK_AUTHORED_STRINGVD8297A1D4847,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
  * User Story: As a developer, I need RunTest to fulfill its role in the module.
- * @fn bool FSetupCommandletValidationTest::RunTest(const FString &Parameters)
+ * @fn bool FSetupCliDispatchTest::RunTest(const FString &Parameters)
  */
-bool FSetupCommandletValidationTest::RunTest(const FString &Parameters) {
-  UForbocAICommandlet *Commandlet = NewObject<UForbocAICommandlet>();
+bool FSetupCliDispatchTest::RunTest(const FString &Parameters) {
   func::for_each_array<Testing::Dependencies::Command::FSetupTestCommand>(
       Testing::Dependencies::Command::SetupTestFixtures().Commands,
-      [this, Commandlet](
+      [this](
           const Testing::Dependencies::Command::FSetupTestCommand &Command) {
         TestSuccessfulOutcome(
             *this, Command.Label,
-            RunCommand(*Commandlet, Command.Key, Command.Arguments));
+            RunCommand(Command.Key, Command.Arguments));
       });
   const auto &Fixtures =
       Testing::CLI::Invocation::InvocationTestFixtures();
@@ -103,7 +100,7 @@ bool FSetupCommandletValidationTest::RunTest(const FString &Parameters) {
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FDependenciesStoreLifecycleTest,
-    "ForbocAI.Integration.Dependencies.StoreLifecycle",
+    FORBOCAI_SDK_AUTHORED_STRINGVC34A2D3191EC,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
@@ -112,7 +109,7 @@ bool FDependenciesStoreLifecycleTest::RunTest(const FString &Parameters) {
   rtk::EnhancedStore<FRuntimeState> Store = createRuntimeStore();
   Store.dispatch(rtk::checkNativeDependenciesThunk().pending(rtk::FEmptyPayload{}));
 
-  TestTrue("Dependencies selector reports active dependency check",
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV9AEBFA414047,
            DependenciesSelectors::selectDependenciesBusy(Store.getState()));
 
   FNativeDependenciesReport Report;
@@ -120,19 +117,19 @@ bool FDependenciesStoreLifecycleTest::RunTest(const FString &Parameters) {
   Report.VectorDb.bAvailable = true;
   Store.dispatch(rtk::checkNativeDependenciesThunk().fulfilled(Report));
 
-  TestTrue("Dependencies selector derives native dependency readiness",
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV74A7AA577E1E,
            DependenciesSelectors::selectNativeDependenciesReady(
                Store.getState().Dependencies));
-  TestFalse("Dependencies selector clears busy state after fulfillment",
+  TestFalse(FORBOCAI_SDK_AUTHORED_STRINGVC6AAC7A44366,
             DependenciesSelectors::selectDependenciesBusy(Store.getState()));
-  TestEqual("Vector state remains independently idle",
-            Store.getState().Vector.Status, FString(TEXT("idle")));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV673BC90CA300,
+            Store.getState().Vector.Status, FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3E32DA346F92)));
   return true;
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FVectorStoreLifecycleTest,
-    "ForbocAI.Integration.Vector.StoreLifecycle",
+    FORBOCAI_SDK_AUTHORED_STRINGV97E593F410B5,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 
@@ -141,20 +138,20 @@ bool FVectorStoreLifecycleTest::RunTest(const FString &Parameters) {
   rtk::EnhancedStore<FRuntimeState> Store = createRuntimeStore();
   Store.dispatch(rtk::initVectorThunk().pending(rtk::FEmptyPayload{}));
 
-  TestTrue("Vector selector reports initialization in progress",
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV64ADE3E4EF5F,
            VectorSelectors::selectVectorBusy(Store.getState()));
   Store.dispatch(rtk::initVectorThunk().fulfilled(rtk::FEmptyPayload{}));
 
-  TestTrue("Vector selector derives readiness after fulfillment",
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGV6EFD34CC6C83,
            VectorSelectors::selectVectorReady(Store.getState().Vector));
-  TestFalse("Vector selector clears busy state after fulfillment",
+  TestFalse(FORBOCAI_SDK_AUTHORED_STRINGVEEE151CEC773,
             VectorSelectors::selectVectorBusy(Store.getState()));
-  TestTrue("Vector root state is mounted in the canonical store",
+  TestTrue(FORBOCAI_SDK_AUTHORED_STRINGVDB8D998D0EF3,
            Store.getState().Vector.bIsReady);
 
   const TArray<float> Embedding = AsyncAdapters::waitForResult(
-      Store.dispatch(rtk::generateEmbeddingThunk()(TEXT("vector parity"))));
-  TestEqual("Embedding thunk returns the canonical vector dimension",
-            Embedding.Num(), 384);
+      Store.dispatch(rtk::generateEmbeddingThunk()(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV8195ED9A46FF))));
+  TestEqual(FORBOCAI_SDK_AUTHORED_STRINGV4FA8419F8B9B,
+            Embedding.Num(), FORBOCAI_SDK_AUTHORED_NUMBERVBD585E4075C4);
   return true;
 }

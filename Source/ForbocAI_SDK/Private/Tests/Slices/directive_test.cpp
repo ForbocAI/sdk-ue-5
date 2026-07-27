@@ -1,7 +1,8 @@
 #include "Core/rtk.hpp"
-#include "Features/Directive/DirectiveSelectors.h"
-#include "Features/Directive/DirectiveSlice.h"
-#include "Features/Testing/Directive/TestingDirectiveAdapters.h"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
+#include "Entities/Directive/DirectiveSelectors.h"
+#include "Entities/Directive/DirectiveSlice.h"
+#include "Systems/Testing/Directive/TestingDirectiveAdapters.h"
 #include "Misc/AutomationTest.h"
 
 using namespace DirectiveSlice;
@@ -161,7 +162,7 @@ ApplyDirectiveTestAction(const FDirectiveSliceState &State,
 } // namespace
 
 IMPLEMENT_COMPLEX_AUTOMATION_TEST(
-    FDirectiveTest, "ForbocAI.Slices.Directive",
+    FDirectiveTest, FORBOCAI_SDK_AUTHORED_STRINGVDA5D5AC2BA13,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 

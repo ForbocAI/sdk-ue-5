@@ -1,4 +1,5 @@
 #pragma once
+#include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/rtk.hpp"
 #include "MicroGame/Features/Systems/Quality/QualityTypes.h"
@@ -9,7 +10,7 @@ namespace MicroGame::QualityActions {
 inline rtk::ActionCreator<FQualityEvaluationStartedPayload>
 evaluationStartedActionCreator() {
   static auto Creator = rtk::createAction<FQualityEvaluationStartedPayload>(
-      TEXT("microgame/quality/evaluationStarted"));
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGVE65216999858));
   return Creator;
 }
 
@@ -17,14 +18,14 @@ evaluationStartedActionCreator() {
 inline rtk::ActionCreator<FQualityModelMetadata>
 metadataCapturedActionCreator() {
   static auto Creator = rtk::createAction<FQualityModelMetadata>(
-      TEXT("microgame/quality/metadataCaptured"));
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV9F60B93E3466));
   return Creator;
 }
 
 /** User Story: As a quality evaluator, I need normalized evidence upserted by deterministic probe identity. @fn inline rtk::ActionCreator<FQualitySample> sampleRecordedActionCreator() */
 inline rtk::ActionCreator<FQualitySample> sampleRecordedActionCreator() {
   static auto Creator = rtk::createAction<FQualitySample>(
-      TEXT("microgame/quality/sampleRecorded"));
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV80EA3F996158));
   return Creator;
 }
 
@@ -32,7 +33,7 @@ inline rtk::ActionCreator<FQualitySample> sampleRecordedActionCreator() {
 inline rtk::ActionCreator<FQualityEvaluationCompletedPayload>
 evaluationCompletedActionCreator() {
   static auto Creator = rtk::createAction<FQualityEvaluationCompletedPayload>(
-      TEXT("microgame/quality/evaluationCompleted"));
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV9DC1E105A503));
   return Creator;
 }
 
@@ -40,7 +41,7 @@ evaluationCompletedActionCreator() {
 inline rtk::ActionCreator<FQualityEvaluationFailedPayload>
 evaluationFailedActionCreator() {
   static auto Creator = rtk::createAction<FQualityEvaluationFailedPayload>(
-      TEXT("microgame/quality/evaluationFailed"));
+      TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV6F4DEFEEC29E));
   return Creator;
 }
 

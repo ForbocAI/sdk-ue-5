@@ -1,7 +1,7 @@
 #include "Core/fp.hpp"
-#include "Features/Memory/Configuration/MemoryConfigurationAdapters.h"
-#include "Features/Memory/Vector/MemoryVectorAdapters.h"
-#include "Features/Testing/Memory/TestingMemoryAdapters.h"
+#include "Systems/Memory/Configuration/MemoryConfigurationAdapters.h"
+#include "Systems/Memory/Vector/MemoryVectorAdapters.h"
+#include "Systems/Testing/Memory/TestingMemoryAdapters.h"
 #include "Misc/AutomationTest.h"
 
 using namespace Testing::Memory;

@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/RTK/Query/StructuralSharing/StructuralSharing.hpp"
 
@@ -76,7 +77,7 @@ void retryBaseQueryAttempt(
         Value.error.hasValue && Attempt < MaxRetries
             ? retryBaseQueryAttempt<Args, Result, Error,
                                     DefinitionExtraOptions, Meta>(
-                  BaseQuery, ArgsValue, Api, ExtraOptions, Attempt + 1,
+                  BaseQuery, ArgsValue, Api, ExtraOptions, Attempt + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
                   MaxRetries, Resolve, Reject)
             : Resolve(Value);
       })
@@ -85,7 +86,7 @@ void retryBaseQueryAttempt(
         Attempt < MaxRetries
             ? retryBaseQueryAttempt<Args, Result, Error,
                                     DefinitionExtraOptions, Meta>(
-                  BaseQuery, ArgsValue, Api, ExtraOptions, Attempt + 1,
+                  BaseQuery, ArgsValue, Api, ExtraOptions, Attempt + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
                   MaxRetries, Resolve, Reject)
             : Reject(ErrorText);
       })
@@ -112,8 +113,8 @@ retry(const BaseQueryFn<Args, Result, Error, DefinitionExtraOptions, Meta>
             std::function<void(std::string)> Reject) {
           detail::retryBaseQueryAttempt<Args, Result, Error,
                                         DefinitionExtraOptions, Meta>(
-              BaseQuery, ArgsValue, Api, ExtraOptions, 0,
-              FMath::Max(0, Options.maxRetries), Resolve, Reject);
+              BaseQuery, ArgsValue, Api, ExtraOptions, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA,
+              FMath::Max(FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, Options.maxRetries), Resolve, Reject);
         });
   };
 }

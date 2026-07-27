@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/FP/Maybe/Maybe.hpp"
 
@@ -34,7 +35,7 @@ Maybe<R> multiMatchRecursive(const T &Value,
              ? nothing<R>()
              : (Cases[Index].predicate(Value)
                     ? just(Cases[Index].handler(Value))
-                    : multiMatchRecursive<T, R>(Value, Cases, Index + 1));
+                    : multiMatchRecursive<T, R>(Value, Cases, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4));
 }
 } // namespace detail
 
@@ -125,7 +126,7 @@ Maybe<R> testCase(const T &value, WildcardSentinel,
  */
 template <typename T, typename R>
 Maybe<R> multi_match(const T &value, const std::vector<MatchCase<T, R>> &cases) {
-  return detail::multiMatchRecursive<T, R>(value, cases, 0);
+  return detail::multiMatchRecursive<T, R>(value, cases, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA);
 }
 
 /** User Story: As a core fp match consumer, I need to invoke multi match through a stable signature so the core fp match workflow remains explicit and composable. @fn template <typename T, typename R, typename FWildcard> R multi_match(const T &value, const std::vector<MatchCase<T, R>> &cases, FWildcard wildcard) */

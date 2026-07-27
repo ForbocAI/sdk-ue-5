@@ -1,10 +1,11 @@
 #include "Core/fp.hpp"
-#include "Features/Testing/FP/Composition/CompositionAdapters.h"
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
+#include "Systems/Testing/FP/Composition/CompositionAdapters.h"
 #include "Misc/AutomationTest.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FFunctionalCookbookCollectionsTest,
-    "ForbocAI.Core.FunctionalCore.Cookbook.Collections",
+    FORBOCAI_SDK_AUTHORED_STRINGVD97D574878A2,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /** User Story: As a core fp composition consumer, I need to invoke run test through a stable signature so the core fp composition workflow remains explicit and composable. @fn bool FFunctionalCookbookCollectionsTest::RunTest(const FString &Parameters) */
@@ -45,7 +46,7 @@ bool FFunctionalCookbookCollectionsTest::RunTest(const FString &Parameters) {
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FFunctionalCookbookMaybeEitherTest,
-    "ForbocAI.Core.FunctionalCore.Cookbook.MaybeEither",
+    FORBOCAI_SDK_AUTHORED_STRINGVFD89F1603E3B,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /** User Story: As a core fp composition consumer, I need to invoke run test through a stable signature so the core fp composition workflow remains explicit and composable. @fn bool FFunctionalCookbookMaybeEitherTest::RunTest(const FString &Parameters) */
@@ -143,7 +144,7 @@ bool FFunctionalCookbookMaybeEitherTest::RunTest(const FString &Parameters) {
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FFunctionalCoreTsNameParityTest,
-    "ForbocAI.Core.FunctionalCore.TSNameParity",
+    FORBOCAI_SDK_AUTHORED_STRINGV1D51F8B2C210,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /** User Story: As a core fp composition consumer, I need to invoke run test through a stable signature so the core fp composition workflow remains explicit and composable. @fn bool FFunctionalCoreTsNameParityTest::RunTest(const FString &Parameters) */

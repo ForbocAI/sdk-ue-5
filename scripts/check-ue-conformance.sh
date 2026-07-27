@@ -102,15 +102,15 @@ fi
 # 3) No direct FHttpModule::Get().CreateRequest() outside approved adapter layer.
 #    Approved locations (Public + Private):
 #      Core/RTK/Query/   — canonical Redux Toolkit / RTK Query fetchBaseQuery implementation
-#      Feature Thunks    — non-Forboc external transport (binary payloads, retries, custom timeouts)
+#      System Thunks     — non-Forboc external transport (binary payloads, retries, custom timeouts)
 #      BridgeModule.cpp  — lazy HTTP wrapper for bridge rules
 #      Memory/Local/**/Adapters.cpp — binary download for native dependencies
 DIRECT_HTTP="$(rg -n 'FHttpModule::Get\(\)\.CreateRequest\(\)' \
   "${FIRST_PARTY_ROOTS[@]}" \
   --glob '!**/Core/RTK/Query/**' \
-  --glob '!**/Features/Soul/SoulThunks.h' \
+  --glob '!**/Systems/Soul/SoulThunks.h' \
   --glob '!**/Bridge/BridgeModule.cpp' \
-  --glob '!**/Features/Memory/Local/**/*Adapters.cpp' \
+  --glob '!**/Systems/Memory/Local/**/*Adapters.cpp' \
   --glob '!**/Tests/**' \
   2>/dev/null | normalize_crlf || true)"
 if [ -n "$DIRECT_HTTP" ]; then
@@ -149,13 +149,13 @@ fi
 # 5) No FPlatformProcess::CreateProc outside approved CLI/setup code.
 #    Approved locations (Public + Private):
 #      CLI/                         — CLI command handlers (build, host tools)
-#      Features/Dependencies/**/Adapters   — portable native dependency processes
+#      Systems/Dependencies/**/Adapters   — portable native dependency processes
 #    The retired MicroGame/MicroGameLib.h scenario command runner was removed
 #    in favor of MicroGame::CommandSurface — no micro-game exemption remains.
 DIRECT_PROC="$(rg -n 'FPlatformProcess::CreateProc' \
   "${FIRST_PARTY_ROOTS[@]}" \
   --glob '!**/CLI/**' \
-  --glob '!**/Features/Dependencies/**/*Adapters.cpp' \
+  --glob '!**/Systems/Dependencies/**/*Adapters.cpp' \
   --glob '!**/Tests/**' \
   2>/dev/null | normalize_crlf || true)"
 if [ -n "$DIRECT_PROC" ]; then

@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Core/FP/Prelude.hpp"
 
@@ -104,14 +105,14 @@ Config applyConfigSettersRecursive(
   return Index == Setters.size()
              ? ConfigValue
              : (Setters[Index](ConfigValue),
-                applyConfigSettersRecursive(Setters, Index + 1,
+                applyConfigSettersRecursive(Setters, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
                                             std::move(ConfigValue)));
 }
 } // namespace detail
 
 /** User Story: As a core fp config consumer, I need to invoke build config through a stable signature so the core fp config workflow remains explicit and composable. @fn template <typename Config> Config buildConfig(const ConfigBuilder<Config> &Builder) */
 template <typename Config> Config buildConfig(const ConfigBuilder<Config> &Builder) {
-  return detail::applyConfigSettersRecursive(Builder.Setters, 0, Config{});
+  return detail::applyConfigSettersRecursive(Builder.Setters, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, Config{});
 }
 
 } // namespace func

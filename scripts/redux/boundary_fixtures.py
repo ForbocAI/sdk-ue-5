@@ -81,6 +81,8 @@ CASES: list[Case] = [
          "void f(){ Store::GetStore().dispatch(a); }", {"RTK-VIEW-004"}, {"RTK-STRUCT-001", "RTK-VIEW-001"}),
     Case("view-whole-state", "Source/Views/Demo/DemoView.cpp",
          "void f(){ auto s = SelectRuntimeState(); }", {"RTK-VIEW-007"}),
+    Case("view-engine-component", "Source/Views/Demo/DemoView.cpp",
+         '#include "Components/Border.h"\nvoid Render();', set(), {"RTK-VIEW-002"}),
     Case("bare-role-leaf", "Source/Features/Demo/Actions.h",
          "int x;", {"RTK-STRUCT-001"}),
     Case("root-role-leaf", "Source/DemoTypes.h",
@@ -93,8 +95,14 @@ CASES: list[Case] = [
          "int x;", {"RTK-STRUCT-001"}),
     Case("wrong-domain-types", "Source/Features/API/SystemTypes.h",
          "struct FApiStatusResponse { FString Status; };", {"RTK-STRUCT-001"}),
-    Case("clean-nearest-domain-types", "Source/Features/API/APITypes.h",
+    Case("clean-nearest-domain-types", "Source/Components/API/APITypes.h",
          "struct FApiStatusResponse { FString Status; };", set(), {"RTK-STRUCT-001"}),
+    Case("types-in-systems", "Source/Systems/Demo/DemoTypes.h",
+         "struct FDemo { int Health; };", {"RTK-STRUCT-003"}),
+    Case("slice-in-components", "Source/Components/Demo/DemoSlice.h",
+         "struct FDemoSlice {};", {"RTK-STRUCT-003"}),
+    Case("thunks-in-entities", "Source/Entities/Demo/DemoThunks.h",
+         "struct FDemoThunks {};", {"RTK-STRUCT-003"}),
     Case("clean-types", "Source/Features/Demo/State/StateTypes.h",
          "struct FDemo { int Health; FString Name; };", set(),
          {"RTK-TYPES-001", "RTK-TYPES-002", "RTK-TYPES-004"}),
@@ -110,7 +118,7 @@ def run_case(root: Path, plugins: dict, case: Case) -> list[str]:
         finding.rule_id
         for finding in check_redux.collect_findings(
             case_root,
-            [case_root / "Source" / "Features", case_root / "Source" / "Views"],
+            [root for root in check_redux.default_scan_roots(case_root) if root.exists()],
         )
     ]
 
@@ -178,6 +186,24 @@ def run_store_discovery_cases(root: Path) -> list[str]:
     return failures
 
 
+def run_sdk_topology_cases(root: Path) -> list[str]:
+    project = root / "sdk_ecs_topology"
+    source = project / "Source" / "ForbocAI_SDK"
+    for visibility in ("Public", "Private"):
+        for role in check_redux.DIRECT_ECS_ROLES:
+            (source / visibility / role).mkdir(parents=True, exist_ok=True)
+    if check_redux.check_sdk_ecs_topology(project):
+        return ["sdk-ecs-topology: complete direct ECS roots produced a finding"]
+
+    (source / "Public" / "Features").mkdir()
+    rules = {
+        finding.rule_id for finding in check_redux.check_sdk_ecs_topology(project)
+    }
+    if "RTK-STRUCT-004" not in rules:
+        return ["sdk-ecs-topology: legacy Public/Features root was not rejected"]
+    return []
+
+
 def main() -> int:
     plugins = check_redux.discover_role_plugins()
     failures: list[str] = []
@@ -192,6 +218,7 @@ def main() -> int:
             if unexpected:
                 failures.append(f"{case.name}: {sorted(unexpected)} fired but is forbidden")
         failures += run_store_discovery_cases(root)
+        failures += run_sdk_topology_cases(root)
 
     if failures:
         print(f"Boundary fixtures FAILED: {len(failures)} case(s).")
