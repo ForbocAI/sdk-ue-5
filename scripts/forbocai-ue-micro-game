@@ -77,7 +77,7 @@ done
 
 SUCCESS_MARKER="CLI coverage complete."
 case "${1:-}" in
-  contract|--help|-h) SUCCESS_MARKER="" ;;
+  --help|-h) SUCCESS_MARKER="" ;;
 esac
 
 forbocai_run_commandlet "$SUCCESS_MARKER" \

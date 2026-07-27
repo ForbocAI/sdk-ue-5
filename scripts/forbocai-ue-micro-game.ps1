@@ -53,7 +53,7 @@ for ($Index = 0; $Index -lt $CliArgs.Count; $Index++) {
     $CommandletArgs += "-CliArg$Index=$($CliArgs[$Index])"
 }
 
-$SuccessMarker = if ($CliArgs.Count -gt 0 -and $CliArgs[0] -in @("contract", "--help", "-h")) {
+$SuccessMarker = if ($CliArgs.Count -gt 0 -and $CliArgs[0] -in @("--help", "-h")) {
     ""
 } else {
     "CLI coverage complete."
