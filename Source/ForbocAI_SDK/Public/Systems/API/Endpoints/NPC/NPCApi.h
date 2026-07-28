@@ -2,20 +2,26 @@
 
 #include "Systems/API/APIAdapters.h"
 #include "Components/API/Endpoints/EndpointsTypes.h"
+#include "Components/NPC/Generate/GenerateTypes.h"
+#include "Systems/API/Endpoints/NPC/Generate/GenerateAdapters.h"
 
 namespace APISlice {
 namespace Endpoints {
 
-/** User Story: As an NPC API consumer, I need the API-owned random conversation exposed through the existing RTK API root. @fn inline Thunk<FNPCConversationResponse> postNpcConversation() */
-inline Thunk<FNPCConversationResponse> postNpcConversation() {
+/** User Story: As an NPC API consumer, I need one attribute generated per round trip, conditioned on the prior attributes I supply as context, so personas compose granularly one round trip at a time. @fn inline Thunk<FNpcAttributeGenerateResponse> postNpcGenerateAttribute(const FString &Attribute, const FNpcAttributeGenerateRequest &Request) */
+inline Thunk<FNpcAttributeGenerateResponse>
+postNpcGenerateAttribute(const FString &Attribute,
+                         const FNpcAttributeGenerateRequest &Request) {
   const Configuration::FEndpointConfigurationData &Data =
       Configuration::endpointData();
-  return Detail::MakePostNoBodyWithCodec<FNPCConversationResponse>(
-      Data.Names.PostNpcConversation,
+  return Detail::MakePostWithCodec<FNpcAttributeGenerateRequest,
+                                   FNpcAttributeGenerateResponse>(
+      Data.Names.PostNpcGenerateAttribute,
       Configuration::endpointPath(
-          {Data.Segments.Npcs, Data.Segments.Conversation}),
-      Detail::DecodeNpcConversationResponse, TArray<rtk::FApiEndpointTag>(),
-      Data.Timeouts.NpcConversationMs);
+          {Data.Segments.Npcs, Data.Segments.Generate, Attribute}),
+      Request, Detail::EncodeNpcAttributeGenerateRequest,
+      Detail::DecodeNpcAttributeGenerateResponse,
+      TArray<rtk::FApiEndpointTag>(), Data.Timeouts.NpcGenerateMs);
 }
 
 /** User Story: As a api endpoints npc consumer, I need to invoke post npc process through a stable signature so the api endpoints npc workflow remains explicit and composable. @fn inline Thunk<FNPCProcessResponse> postNpcProcess(const FString &NpcId, const FNPCProcessRequest &Request) */

@@ -1,0 +1,9 @@
+{
+  "fields": {
+    "attribute": "attribute",
+    "value": "value"
+  },
+  "errors": {
+    "invalidResponse": "ForbocAI NPC attribute generation returned a malformed response."
+  }
+}

@@ -4,6 +4,7 @@
 #include "MicroGame/Features/Systems/Contract/Parsing/ContractParsingAdapters.h"
 #include "MicroGame/Features/Systems/Contract/ContractSelectors.h"
 #include "MicroGame/Features/Systems/Harness/Verification/Command/CommandThunks.h"
+#include "MicroGame/Features/Systems/Harness/TwoNpcChat/TwoNpcChatThunks.h"
 #include "MicroGame/Features/Systems/Harness/Verification/VerificationSelectors.h"
 #include "MicroGame/Features/Systems/Harness/Verification/Progress/ProgressThunks.h"
 #include "MicroGame/Features/Systems/Harness/Verification/Scenario/ScenarioThunks.h"
@@ -145,6 +146,9 @@ inline FGameRunResult RunGame(FMicroGameStore &Store, FString Mode,
   VerificationThunksDetail::ProcessFinalCommands(Data.finalCommands,
                                         Runtime.numbers.emptyCount, Store,
                                         ProgressSink);
+
+  const TArray<FString> ChatLines = TwoNpcChat::RunTwoNpcChat(Store);
+  UE_LOG(LogTemp, Display, TEXT("%s"), *FString::Join(ChatLines, TEXT("\n")));
 
   FGameRunResult Result =
       VerificationSelectors::SelectGameRunResult(Store.getState());

@@ -10,7 +10,7 @@
 // @covers:api:getApiStatus
 // @covers:api:getMicroGameContract
 // @covers:api:postNpcProcess
-// @covers:api:postNpcConversation
+// @covers:api:postNpcGenerateAttribute
 // @covers:api:getBridgeValidation
 // @covers:api:getBridgeRules
 // @covers:api:postGhostRun
@@ -81,13 +81,15 @@ bool FApiEndpointConstructionTest::RunTest(const FString &Parameters) {
                           rtk::getMicroGameContractThunk());
   TestEndpointConstructed(*this, Data.Names.PostNpcProcess,
                           postNpcProcess(Empty, FNPCProcessRequest{}));
-  TestEndpointConstructed(*this, Data.Names.PostNpcConversation,
-                          postNpcConversation());
+  TestEndpointConstructed(*this, Data.Names.PostNpcGenerateAttribute,
+                          postNpcGenerateAttribute(TEXT("role"),
+                                                   FNpcAttributeGenerateRequest{}));
   TestTrue(Data.Names.PostNpcProcess,
            Data.Timeouts.NpcProcessMs >
                APISlice::Transport::transportQueryData().Timeouts.Disabled);
-  TestTrue(Data.Names.PostNpcConversation,
-           Data.Timeouts.NpcConversationMs >= Data.Timeouts.NpcProcessMs);
+  TestTrue(Data.Names.PostNpcGenerateAttribute,
+           Data.Timeouts.NpcGenerateMs >
+               APISlice::Transport::transportQueryData().Timeouts.Disabled);
   TestEndpointConstructed(*this, Data.Names.GetBridgeValidation,
                           getBridgeValidation(Empty,
                                               FBridgeValidateRequest{}));

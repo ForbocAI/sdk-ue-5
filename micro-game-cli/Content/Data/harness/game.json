@@ -9,17 +9,42 @@
     "expectedRoutes": ["GET /micro-game/contract"],
     "outputAssertions": []
   },
-  "finalCommands": [
-    {
-      "group": "npc_conversation",
-      "command": "forbocai npc converse",
-      "expectedRoutes": ["POST /npcs/conversation"],
-      "outputAssertions": [
-        { "kind": "includesText", "value": "\"valid\":true" },
-        { "kind": "includesText", "value": "ForbocAI Two NPC Chat" }
-      ]
-    }
-  ],
+  "finalCommands": [],
+  "twoNpcChat": {
+    "group": "npc_conversation",
+    "header": "=== ForbocAI Two NPC Chat ===",
+    "footer": "=== End ForbocAI Two NPC Chat ===",
+    "turnCount": 4,
+    "participantCount": 2,
+    "nameAttribute": "name",
+    "personaAttributes": ["role", "trait", "goal", "mood"],
+    "seedAttribute": "goal",
+    "generateCommand": "forbocai npc generate {attribute} {context}",
+    "createCommand": "forbocai npc create \"{persona}\"",
+    "decideCommand": "forbocai npc decide {id} \"{line}\"",
+    "memoryStoreCommand": "forbocai memory store {id} \"{memory}\"",
+    "valueField": "value",
+    "personaSeparator": ". ",
+    "contextSeparator": " | ",
+    "emptyContext": "",
+    "idPattern": "ag_[0-9a-fA-F-]+",
+    "lineFormat": "{name}: {dialogue}",
+    "dialogueFallback": "...",
+    "contextQuote": "\"",
+    "tokens": {
+      "attribute": "{attribute}",
+      "context": "{context}",
+      "persona": "{persona}",
+      "id": "{id}",
+      "line": "{line}",
+      "name": "{name}",
+      "dialogue": "{dialogue}",
+      "memory": "{memory}"
+    },
+    "outputAssertions": [
+      { "kind": "includesText", "value": "=== ForbocAI Two NPC Chat ===" }
+    ]
+  },
   "environment": {
     "runtimeUrlKey": "FORBOCAI_API_URL",
     "commandDelayKey": "FORBOCAI_MICRO_GAME_COMMAND_DELAY_MS",

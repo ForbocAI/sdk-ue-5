@@ -38,6 +38,10 @@ struct FCLINPCMessages {
   FString UpdateUsage;
   FString Updated;
   FString ProcessUsage;
+  FString GenerateUsage;
+  FString DecideUsage;
+  FString RecallUsage;
+  FString Recalled;
   FString DialogueFallback;
   FString Dialogue;
   FString Action;

@@ -1,4 +1,5 @@
 #include "Systems/CLI/NpcCommands/NpcCommandsThunks.h"
+#include "Core/JsonInterop.h"
 #include "Entities/CLI/CLISelectors.h"
 #include "Systems/CLI/CommandRouting/CommandRoutingAdapters.h"
 #include "Systems/CLI/NPC/CLINPCAdapters.h"
@@ -66,11 +67,56 @@ NpcResult ProcessNpc(rtk::EnhancedStore<FRuntimeState> &Store,
       [&]() { return NpcFailure(State.Messages.ProcessUsage); });
 }
 
-/** User Story: As a CLI command-routing npc consumer, I need to invoke converse npcs through a stable signature so the CLI command-routing npc workflow remains explicit and composable. @fn NpcResult ConverseNpcs(rtk::EnhancedStore<FRuntimeState> &Store) */
-NpcResult ConverseNpcs(rtk::EnhancedStore<FRuntimeState> &Store) {
-  return NpcSuccess(AsyncAdapters::waitForResult(
-                        Ops::converseNpcs(Store))
-                        .RawJson);
+/** User Story: As a CLI command-routing npc consumer, I need one SLM-generated NPC attribute emitted as structured JSON so personas compose one round trip at a time. @fn NpcResult GenerateNpcAttribute(rtk::EnhancedStore<FRuntimeState> &Store, const TArray<FString> &Args, const ForbocAI::CLI::NPC::FCLINPCState &State, int32 First, int32 Second) */
+NpcResult GenerateNpcAttribute(rtk::EnhancedStore<FRuntimeState> &Store,
+                               const TArray<FString> &Args,
+                               const ForbocAI::CLI::NPC::FCLINPCState &State,
+                               int32 First, int32 Second) {
+  return CLIOps::CommandRouting::matchCondition<NpcResult>(
+      Args.Num() > First,
+      [&]() {
+        const FString Attribute = Args[First];
+        const FString Context =
+            Args.Num() > Second
+                ? ForbocAI::CLI::NPC::joinNpcArguments(
+                      Args, Second, State.Syntax.MessageSeparator)
+                : FString();
+        const FNpcAttributeGenerateResponse Response =
+            AsyncAdapters::waitForResult(
+                Ops::generateNpcAttribute(Store, Attribute, Context));
+        const TSharedRef<FJsonObject> Root = MakeShared<FJsonObject>();
+        Root->SetStringField(TEXT("attribute"), Response.Attribute);
+        Root->SetStringField(TEXT("value"), Response.Value);
+        ForbocAI::CLI::Presentation::logCliMessage(
+            JsonInterop::ToJsonString(Root));
+        return NpcSuccess(Response.Value);
+      },
+      [&]() { return NpcFailure(State.Messages.GenerateUsage); });
+}
+
+/** User Story: As a CLI command-routing npc consumer, I need the decide-only npc turn routed so the micro-game composes memory recall and store around it as separate commands. @fn NpcResult DecideNpc(rtk::EnhancedStore<FRuntimeState> &Store, const TArray<FString> &Args, const ForbocAI::CLI::NPC::FCLINPCState &State, int32 First, int32 Second) */
+NpcResult DecideNpc(rtk::EnhancedStore<FRuntimeState> &Store,
+                    const TArray<FString> &Args,
+                    const ForbocAI::CLI::NPC::FCLINPCState &State,
+                    int32 First, int32 Second) {
+  using ForbocAI::CLI::Presentation::formatCliMessage;
+  return CLIOps::CommandRouting::matchCondition<NpcResult>(
+      Args.Num() >= State.Limits.DoubleArgumentCount,
+      [&]() {
+        const FString Observation = ForbocAI::CLI::NPC::joinNpcArguments(
+            Args, Second, State.Syntax.MessageSeparator);
+        const FAgentResponse Response =
+            Ops::decideNpc(Store, Args[First], Observation);
+        const FString Dialogue =
+            ForbocAI::CLI::NPC::selectDialogue(Response, State);
+        ForbocAI::CLI::Presentation::logCliMessage(
+            formatCliMessage(State.Messages.Dialogue, Dialogue));
+        ForbocAI::CLI::Presentation::logCliMessageWhen(
+            !Response.Action.Type.IsEmpty(),
+            formatCliMessage(State.Messages.Action, Response.Action.Type));
+        return NpcSuccess(Dialogue);
+      },
+      [&]() { return NpcFailure(State.Messages.DecideUsage); });
 }
 
 /** User Story: As a CLI command-routing npc consumer, I need to invoke print npc state through a stable signature so the CLI command-routing npc workflow remains explicit and composable. @fn NpcResult PrintNpcState(rtk::EnhancedStore<FRuntimeState> &Store, const TArray<FString> &Args, const ForbocAI::CLI::NPC::FCLINPCState &State, int32 First) */
@@ -201,7 +247,10 @@ CreateNpcDispatcher(rtk::EnhancedStore<FRuntimeState> &Store,
       {Roles.NpcCreate, [&]() { return CreateNpc(Store, Args, State, First); }},
       {Roles.NpcProcess,
        [&]() { return ProcessNpc(Store, Args, State, First, Second); }},
-      {Roles.NpcConverse, [&]() { return ConverseNpcs(Store); }},
+      {Roles.NpcGenerate,
+       [&]() { return GenerateNpcAttribute(Store, Args, State, First, Second); }},
+      {Roles.NpcDecide,
+       [&]() { return DecideNpc(Store, Args, State, First, Second); }},
       {Roles.NpcState,
        [&]() { return PrintNpcState(Store, Args, State, First); }},
       {Roles.NpcUpdate, [&]() { return UpdateNpc(Store, Args, State); }},

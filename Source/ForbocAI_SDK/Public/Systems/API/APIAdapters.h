@@ -4,7 +4,7 @@
 #include "Systems/API/Transport/Query/TransportQueryAdapters.h"
 #include "Systems/API/Endpoints/Configuration/EndpointsConfigurationAdapters.h"
 #include "Systems/API/Endpoints/NPC/Process/NPCProcessAdapters.h"
-#include "Systems/API/Endpoints/NPC/Conversation/ConversationAdapters.h"
+#include "Systems/API/Endpoints/NPC/Generate/GenerateAdapters.h"
 #include "Systems/API/Endpoints/NPC/Directive/NPCDirectiveAdapters.h"
 #include "Systems/API/Endpoints/NPC/EndpointsNPCAdapters.h"
 #include "Systems/API/Endpoints/Bridge/EndpointsBridgeAdapters.h"

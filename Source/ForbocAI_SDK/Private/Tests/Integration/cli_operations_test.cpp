@@ -39,7 +39,7 @@
 // @covers:cliOp:recallMemory
 // @covers:cliOp:storeMemory
 // @covers:cliOp:processNpc
-// @covers:cliOp:converseNpcs
+// @covers:cliOp:generateNpcAttribute
 // @covers:cliOp:recallNodeMemory
 // @covers:cliOp:listRulesets
 // @covers:cliOp:listRulePresets
@@ -99,15 +99,15 @@ bool FOpsTransportThunkConstructionTest::RunTest(const FString &Parameters) {
   EnhancedStore<FRuntimeState> Store = createRuntimeStore();
   const func::AsyncResult<FString> ContractRequest =
       Ops::getMicroGameContract(Store);
-  const func::AsyncResult<FNPCConversationResponse> ConversationRequest =
-      Ops::converseNpcs(Store);
+  const func::AsyncResult<FNpcAttributeGenerateResponse> GenerateRequest =
+      Ops::generateNpcAttribute(Store, TEXT("role"), TEXT(""));
 
   TestTrue(Names.GetMicroGameContract,
            ContractRequest.state &&
                static_cast<bool>(ContractRequest.state->executor));
-  TestTrue(Names.PostNpcConversation,
-           ConversationRequest.state &&
-               static_cast<bool>(ConversationRequest.state->executor));
+  TestTrue(Names.PostNpcGenerateAttribute,
+           GenerateRequest.state &&
+               static_cast<bool>(GenerateRequest.state->executor));
   return true;
 }
 

@@ -55,7 +55,7 @@ inline FEndpointConfigurationData readEndpointConfigurationData() {
        DataAdapters::ReadStringField(Segments, TEXT("history")),
        DataAdapters::ReadStringField(Segments, TEXT("npcs")),
        DataAdapters::ReadStringField(Segments, TEXT("process")),
-       DataAdapters::ReadStringField(Segments, TEXT("conversation")),
+       DataAdapters::ReadStringField(Segments, TEXT("generate")),
        DataAdapters::ReadStringField(Segments, TEXT("presets")),
        DataAdapters::ReadStringField(Segments, TEXT("soul")),
        DataAdapters::ReadStringField(Segments, TEXT("export")),
@@ -67,7 +67,7 @@ inline FEndpointConfigurationData readEndpointConfigurationData() {
       {DataAdapters::ReadStringField(QueryKeys, TEXT("limit"))},
       {DataAdapters::ReadStringField(Names, TEXT("getApiStatus")),
        DataAdapters::ReadStringField(Names, TEXT("postNpcProcess")),
-       DataAdapters::ReadStringField(Names, TEXT("postNpcConversation")),
+       DataAdapters::ReadStringField(Names, TEXT("postNpcGenerateAttribute")),
        DataAdapters::ReadStringField(Names, TEXT("getBridgeValidation")),
        DataAdapters::ReadStringField(Names, TEXT("getBridgeRules")),
        DataAdapters::ReadStringField(Names, TEXT("postGhostRun")),
@@ -137,7 +137,7 @@ inline FEndpointConfigurationData readEndpointConfigurationData() {
       {DataAdapters::ReadNumberField(Timeouts, TEXT("statusMs")),
        DataAdapters::ReadNumberField(Timeouts, TEXT("contractMs")),
        DataAdapters::ReadNumberField(Timeouts, TEXT("npcProcessMs")),
-       DataAdapters::ReadNumberField(Timeouts, TEXT("npcConversationMs"))}};
+       DataAdapters::ReadNumberField(Timeouts, TEXT("npcGenerateMs"))}};
 }
 
 /**
@@ -157,7 +157,7 @@ inline const FEndpointConfigurationData &endpointData() {
 inline TArray<FString> endpointNames(const FEndpointNameData &Names) {
   return {Names.GetApiStatus,
           Names.PostNpcProcess,
-          Names.PostNpcConversation,
+          Names.PostNpcGenerateAttribute,
           Names.GetBridgeValidation,
           Names.GetBridgeRules,
           Names.PostGhostRun,

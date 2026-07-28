@@ -16,7 +16,7 @@
     "history": "history",
     "npcs": "npcs",
     "process": "process",
-    "conversation": "conversation",
+    "generate": "generate",
     "presets": "presets",
     "soul": "soul",
     "export": "export",
@@ -32,7 +32,7 @@
   "names": {
     "getApiStatus": "getApiStatus",
     "postNpcProcess": "postNpcProcess",
-    "postNpcConversation": "postNpcConversation",
+    "postNpcGenerateAttribute": "postNpcGenerateAttribute",
     "getBridgeValidation": "getBridgeValidation",
     "getBridgeRules": "getBridgeRules",
     "postGhostRun": "postGhostRun",
@@ -113,6 +113,6 @@
     "statusMs": 1500,
     "contractMs": 5000,
     "npcProcessMs": 90000,
-    "npcConversationMs": 300000
+    "npcGenerateMs": 90000
   }
 }

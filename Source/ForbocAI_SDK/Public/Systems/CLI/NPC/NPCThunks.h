@@ -80,11 +80,25 @@ inline FAgentResponse processNpc(rtk::EnhancedStore<RuntimeState> &Store,
                                      rtk::LocalProtocolHandlerContext(NpcId))));
 }
 
-/** User Story: As the thin UE CLI boundary, I need the API-owned random NPC conversation dispatched through the package root store while remaining lazy until the command edge awaits it. @fn template <typename RuntimeState = FRuntimeState> inline func::AsyncResult<FNPCConversationResponse> converseNpcs(rtk::EnhancedStore<RuntimeState> &Store) */
+/** User Story: As a features cli npc consumer, I need the decide-only npc turn — the decision engine run without bound memory — so the micro-game composes memory recall and store around it as separate granular commands. @fn template <typename RuntimeState = FRuntimeState> inline FAgentResponse decideNpc(rtk::EnhancedStore<RuntimeState> &Store, const FString &NpcId, const FString &Text) */
 template <typename RuntimeState = FRuntimeState>
-inline func::AsyncResult<FNPCConversationResponse>
-converseNpcs(rtk::EnhancedStore<RuntimeState> &Store) {
-  return Store.dispatch(APISlice::Endpoints::postNpcConversation());
+inline FAgentResponse decideNpc(rtk::EnhancedStore<RuntimeState> &Store,
+                                const FString &NpcId, const FString &Text) {
+  return AsyncAdapters::waitForResult(
+      Store.dispatch(rtk::processNPC(NpcId, Text, TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF54CAD9838EB), TEXT(""),
+                                     FAgentState(),
+                                     rtk::EphemeralProtocolHandlerContext())));
+}
+
+/** User Story: As the thin UE CLI boundary, I need one SLM-generated NPC attribute returned per call, conditioned on the prior attributes supplied as context, so personas compose granularly one round trip at a time. @fn template <typename RuntimeState = FRuntimeState> inline func::AsyncResult<FNpcAttributeGenerateResponse> generateNpcAttribute(rtk::EnhancedStore<RuntimeState> &Store, const FString &Attribute, const FString &Context) */
+template <typename RuntimeState = FRuntimeState>
+inline func::AsyncResult<FNpcAttributeGenerateResponse>
+generateNpcAttribute(rtk::EnhancedStore<RuntimeState> &Store,
+                     const FString &Attribute, const FString &Context) {
+  FNpcAttributeGenerateRequest Request;
+  Request.Context = Context;
+  return Store.dispatch(
+      APISlice::Endpoints::postNpcGenerateAttribute(Attribute, Request));
 }
 
 /** User Story: As a features cli npc consumer, I need to invoke import npc from soul through a stable signature so the features cli npc workflow remains explicit and composable. @fn template <typename RuntimeState = FRuntimeState> inline FImportedNpc importNpcFromSoul(rtk::EnhancedStore<RuntimeState> &Store, const FString &TxId) */

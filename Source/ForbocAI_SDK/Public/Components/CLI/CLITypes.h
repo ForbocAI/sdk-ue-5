@@ -48,7 +48,9 @@ struct FCLICommandRoles {
   FString NpcState;
   FString NpcUpdate;
   FString NpcProcess;
-  FString NpcConverse;
+  FString NpcGenerate;
+  FString NpcDecide;
+  FString NpcRecall;
   FString NpcChat;
   FString NpcImport;
   FString SoulExport;
