@@ -13,7 +13,8 @@
   "modes": {
     "manual": true,
     "autoplay": true,
-    "chat": true
+    "autoplay-with-two-npc-chat": true,
+    "two-npc-chat": true
   },
   "scenarioEventTypes": {
     "stealth": true,

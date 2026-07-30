@@ -62,6 +62,7 @@ HANDLER_CLASSIFICATION_STATUS="skipped"
 TEST_QUALITY_STATUS="skipped"
 CODEC_PARITY_STATUS="skipped"
 RUNTIME_READINESS_STATUS="skipped"
+HARNESS_VOCAB_STATUS="skipped"
 while [[ $# -gt 0 ]]; do
   case $1 in
     --quick)
@@ -192,6 +193,10 @@ run_check "Thin-Wrapper Guardrails (command surface rules)" \
 run_check "SDK Parity (core/node/micro-game inventory and CLI keys)" \
   "$SCRIPT_DIR/check-sdk-parity.py" SDK_PARITY_STATUS
 
+# ── Phase 3b2: Harness vocabulary parity (authored runtime.json token sets) ──
+run_check "Harness Vocabulary Parity (modes/groups/statuses token sets identical)" \
+  "$SCRIPT_DIR/check-harness-vocabulary-parity.py" HARNESS_VOCAB_STATUS
+
 # ── Phase 3c: Source-derived parity generator regressions ──
 run_check "Parity generator regressions (portable generated contracts)" \
   "$SCRIPT_DIR/parity/check_generators.py" PARITY_GENERATOR_TEST_STATUS
@@ -316,6 +321,7 @@ echo "  [$(mark_for_status "$UE_CONFORMANCE_STATUS")] UE conformance (structural
 echo "  [$(mark_for_status "$FP_CONFORMANCE_STATUS")] FP conformance (immutability)"
 echo "  [$(mark_for_status "$THIN_WRAPPER_STATUS")] Thin-wrapper guardrails"
 echo "  [$(mark_for_status "$SDK_PARITY_STATUS")] SDK parity inventory and CLI keys"
+echo "  [$(mark_for_status "$HARNESS_VOCAB_STATUS")] Harness vocabulary parity (token sets)"
 echo "  [$(mark_for_status "$PARITY_GENERATOR_TEST_STATUS")] Parity generator regressions"
 echo "  [$(mark_for_status "$RTK_SURFACE_STATUS")] Redux Toolkit public-surface parity"
 echo "  [$(mark_for_status "$REDUX_RTK_STATUS")] Redux/RTK guidance"

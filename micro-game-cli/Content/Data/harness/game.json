@@ -14,7 +14,7 @@
     "group": "npc_conversation",
     "header": "=== ForbocAI Two NPC Chat ===",
     "footer": "=== End ForbocAI Two NPC Chat ===",
-    "turnCount": 4,
+    "turnCount": 10,
     "participantCount": 2,
     "nameAttribute": "name",
     "personaAttributes": ["role", "trait", "goal", "mood"],

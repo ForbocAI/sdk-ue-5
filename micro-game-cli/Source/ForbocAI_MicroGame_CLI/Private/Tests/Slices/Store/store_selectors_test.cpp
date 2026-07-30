@@ -74,7 +74,7 @@ bool FMicroGameStoreDomainSelectorsTest::RunTest(const FString &Parameters) {
       VerificationVocabularyAdapters::GameRuntimeData().commandGroups.status};
   Store.dispatch(ScenarioActions::setContract(MoveTemp(ChatContract)));
   Store.dispatch(UIActions::setMode(
-      VerificationVocabularyAdapters::GameRuntimeData().modes.chat));
+      VerificationVocabularyAdapters::GameRuntimeData().modes.autoplayWithTwoNpcChat));
   const FGameRunResult MissingConversationResult =
       VerificationSelectors::SelectGameRunResult(Store.getState());
   TestEqual(Data.stories.store,

@@ -18,8 +18,7 @@
 
 #define FORBOCAI_GAME_MODE_FIELDS(X)                                      \
   X(manual)                                                               \
-  X(autoplay)                                                             \
-  X(chat)
+  X(autoplay)
 
 #define FORBOCAI_GAME_SCENARIO_EVENT_TYPE_FIELDS(X)                       \
   X(stealth)                                                              \
@@ -116,6 +115,10 @@ struct FGameRuntimeNumbers {
 
 struct FGameModes {
   FORBOCAI_GAME_MODE_FIELDS(FORBOCAI_DECLARE_GAME_NAME_FIELD)
+  // Hyphenated mode tokens cannot be X-macro identifiers, so they are read from
+  // their exact JSON keys into these fields (see VerificationVocabularyAdapters).
+  FString autoplayWithTwoNpcChat{};
+  FString twoNpcChat{};
   TSet<FString> all;
 };
 

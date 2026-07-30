@@ -15,7 +15,7 @@ inline FGameRunResult SelectGameRunResult(const FMicroGameState &State) {
   FGameRunResult Result;
   const bool bChatOnly =
       UISelectors::SelectUiMode(State.UI) ==
-      VerificationVocabularyAdapters::GameRuntimeData().modes.chat;
+      VerificationVocabularyAdapters::GameRuntimeData().modes.autoplayWithTwoNpcChat;
   const TArray<FString> RequiredGroups =
       bChatOnly
           ? TArray<FString>{VerificationVocabularyAdapters::GameRuntimeData()

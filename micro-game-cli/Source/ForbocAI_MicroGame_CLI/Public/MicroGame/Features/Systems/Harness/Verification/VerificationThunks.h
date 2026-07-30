@@ -69,6 +69,20 @@ inline void RecordContractDrift(
                       Failure, Store, Sink);
 }
 
+/** User Story: As a systems harness game consumer, I need the client-orchestrated two-NPC chat run and its transcript logged through one adapter so both the append and chat-only paths share it. @fn inline void AppendTwoNpcChat(FMicroGameStore &Store) */
+inline void AppendTwoNpcChat(FMicroGameStore &Store) {
+  const TArray<FString> Lines = TwoNpcChat::RunTwoNpcChat(Store);
+  UE_LOG(LogTemp, Display, TEXT("%s"), *FString::Join(Lines, TEXT("\n")));
+}
+
+/** User Story: As a systems harness game consumer, I need the two-npc-chat mode to run ONLY the two-NPC chat and report a complete run so it mirrors the TS runGame early return. @fn inline FGameRunResult RunTwoNpcChatOnly(FMicroGameStore &Store) */
+inline FGameRunResult RunTwoNpcChatOnly(FMicroGameStore &Store) {
+  AppendTwoNpcChat(Store);
+  FGameRunResult Result;
+  Result.bComplete = true;
+  return Result;
+}
+
 } // namespace VerificationThunksDetail
 
 /** User Story: As a systems harness game consumer, I need one scenario run whose operations all cross the SDK CLI boundary. @fn inline FGameRunResult RunGame(FMicroGameStore &Store, FString Mode, const FGameProgressSink &ProgressSink = {}) */
@@ -76,6 +90,13 @@ inline FGameRunResult RunGame(FMicroGameStore &Store, FString Mode,
                               const FGameProgressSink &ProgressSink = {}) {
   Store.dispatch(CommandRunnerActions::aliasesReset());
   Store.dispatch(UIActions::setMode(Mode));
+
+  // two-npc-chat runs ONLY the client-orchestrated two-NPC chat, skipping the
+  // contract/scenario/quality harness (mirrors the TS runGame early return);
+  // every other mode runs the full harness in the lambda below.
+  return Mode == VerificationVocabularyAdapters::GameRuntimeData().modes.twoNpcChat
+      ? VerificationThunksDetail::RunTwoNpcChatOnly(Store)
+      : [&]() -> FGameRunResult {
 
   FGameProgress Started;
   Started.Type =
@@ -119,7 +140,7 @@ inline FGameRunResult RunGame(FMicroGameStore &Store, FString Mode,
   const TArray<FScenarioStep> Steps =
       ScenarioSelectors::SelectScenarioSteps(Store.getState().Scenario);
   const TArray<FScenarioStep> ActiveSteps =
-      Mode == Runtime.modes.chat
+      Mode == Runtime.modes.autoplayWithTwoNpcChat
           ? ScenarioSelectors::SelectScenarioStepsByCommandGroup(
                 Store.getState().Scenario,
                 Runtime.commandGroups.npc_conversation)
@@ -147,8 +168,11 @@ inline FGameRunResult RunGame(FMicroGameStore &Store, FString Mode,
                                         Runtime.numbers.emptyCount, Store,
                                         ProgressSink);
 
-  const TArray<FString> ChatLines = TwoNpcChat::RunTwoNpcChat(Store);
-  UE_LOG(LogTemp, Display, TEXT("%s"), *FString::Join(ChatLines, TEXT("\n")));
+  // The two-NPC chat is appended only for autoplay-with-two-npc-chat, matching
+  // the TS runGame (autoplay alone must not run it).
+  Mode == Runtime.modes.autoplayWithTwoNpcChat
+      ? (VerificationThunksDetail::AppendTwoNpcChat(Store), void())
+      : void();
 
   FGameRunResult Result =
       VerificationSelectors::SelectGameRunResult(Store.getState());
@@ -163,6 +187,7 @@ inline FGameRunResult RunGame(FMicroGameStore &Store, FString Mode,
   Completed.RunResult = Result;
   VerificationThunksDetail::Emit(ProgressSink, MoveTemp(Completed));
   return Result;
+  }();
 }
 
 } // namespace MicroGame

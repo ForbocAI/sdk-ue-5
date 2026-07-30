@@ -113,6 +113,13 @@ inline FGameRuntimeData ReadGameRuntimeData() {
   FORBOCAI_READ_GAME_NAME(modes, Modes, Name)
   FORBOCAI_GAME_MODE_FIELDS(FORBOCAI_READ_GAME_MODE)
 #undef FORBOCAI_READ_GAME_MODE
+  // Hyphenated mode tokens are read from their exact JSON keys (the X-macro
+  // stringifies C++ identifiers and cannot express a hyphen).
+  Data.modes.autoplayWithTwoNpcChat =
+      detail::ReadEnabledName(Modes, TEXT("autoplay-with-two-npc-chat"));
+  Data.modes.all.Add(Data.modes.autoplayWithTwoNpcChat);
+  Data.modes.twoNpcChat = detail::ReadEnabledName(Modes, TEXT("two-npc-chat"));
+  Data.modes.all.Add(Data.modes.twoNpcChat);
 
 #define FORBOCAI_READ_SCENARIO_EVENT_TYPE(Name)                           \
   FORBOCAI_READ_GAME_NAME(scenarioEventTypes, ScenarioEventTypes, Name)
