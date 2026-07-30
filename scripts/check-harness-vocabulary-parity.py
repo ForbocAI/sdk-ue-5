@@ -39,6 +39,15 @@ SHARED_VOCABULARY_FIELDS = (
     "statuses",
 )
 
+# runtime.json ordered-list fields that data-drive shared behavior. These encode
+# the two-NPC-chat mode gating (which modes append the chat / run it exclusively).
+# Both hosts read them and branch on them, so a divergence here is a behavioral
+# divergence — exactly the control-flow gap name/inventory parity cannot see.
+SHARED_LIST_FIELDS = (
+    "twoNpcChatRunsInModes",
+    "twoNpcChatExclusiveModes",
+)
+
 UE_RUNTIME_RELPATH = Path("micro-game-cli/Content/Data/harness/runtime.json")
 TS_RUNTIME_RELPATH = Path("packages/micro-game-core/data/harness/runtime.json")
 
@@ -100,6 +109,20 @@ def main() -> int:
             print(f"       present in TS, missing in UE: {ts_only}")
         if ue_only:
             print(f"       present in UE, missing in TS: {ue_only}")
+
+    mode_tokens = set(ts_runtime.get("modes", {}).keys())
+    for field in SHARED_LIST_FIELDS:
+        ts_list = ts_runtime.get(field, [])
+        ue_list = ue_runtime.get(field, [])
+        unknown = [token for token in ts_list if token not in mode_tokens]
+        if unknown:
+            divergences.append(field)
+            print(f"[FAIL] {field}: references unknown mode tokens {unknown}")
+        elif ts_list == ue_list:
+            print(f"[ok] {field}: {ts_list}")
+        else:
+            divergences.append(field)
+            print(f"[FAIL] {field}: gating diverges — TS {ts_list} != UE {ue_list}")
 
     if divergences:
         print(

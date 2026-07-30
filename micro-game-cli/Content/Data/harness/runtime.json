@@ -16,6 +16,8 @@
     "autoplay-with-two-npc-chat": true,
     "two-npc-chat": true
   },
+  "twoNpcChatRunsInModes": ["autoplay-with-two-npc-chat", "two-npc-chat"],
+  "twoNpcChatExclusiveModes": ["two-npc-chat"],
   "scenarioEventTypes": {
     "stealth": true,
     "social": true,

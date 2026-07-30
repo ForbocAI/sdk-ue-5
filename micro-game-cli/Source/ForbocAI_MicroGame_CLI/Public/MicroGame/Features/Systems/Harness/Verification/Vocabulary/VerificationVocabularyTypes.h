@@ -225,6 +225,11 @@ struct FGameRuntimeData {
   FGameRuntimeTypes runtimeTypes;
   FGameRuntimeNumbers numbers;
   FGameModes modes;
+  // Data-driven two-NPC-chat gating (mirrors TS): which modes append the chat
+  // and which run it exclusively. Both hosts read these from runtime.json so the
+  // gating cannot diverge (enforced by check-harness-vocabulary-parity.py).
+  TSet<FString> twoNpcChatRunsInModes;
+  TSet<FString> twoNpcChatExclusiveModes;
   FGameScenarioEventTypes scenarioEventTypes;
   FGameCommandGroups commandGroups;
   FGameStatuses statuses;

@@ -120,6 +120,10 @@ inline FGameRuntimeData ReadGameRuntimeData() {
   Data.modes.all.Add(Data.modes.autoplayWithTwoNpcChat);
   Data.modes.twoNpcChat = detail::ReadEnabledName(Modes, TEXT("two-npc-chat"));
   Data.modes.all.Add(Data.modes.twoNpcChat);
+  Data.twoNpcChatRunsInModes = TSet<FString>(
+      DataAdapters::ReadStringArrayField(Source.Root, TEXT("twoNpcChatRunsInModes")));
+  Data.twoNpcChatExclusiveModes = TSet<FString>(
+      DataAdapters::ReadStringArrayField(Source.Root, TEXT("twoNpcChatExclusiveModes")));
 
 #define FORBOCAI_READ_SCENARIO_EVENT_TYPE(Name)                           \
   FORBOCAI_READ_GAME_NAME(scenarioEventTypes, ScenarioEventTypes, Name)

@@ -94,7 +94,8 @@ inline FGameRunResult RunGame(FMicroGameStore &Store, FString Mode,
   // two-npc-chat runs ONLY the client-orchestrated two-NPC chat, skipping the
   // contract/scenario/quality harness (mirrors the TS runGame early return);
   // every other mode runs the full harness in the lambda below.
-  return Mode == VerificationVocabularyAdapters::GameRuntimeData().modes.twoNpcChat
+  return VerificationVocabularyAdapters::GameRuntimeData()
+                 .twoNpcChatExclusiveModes.Contains(Mode)
       ? VerificationThunksDetail::RunTwoNpcChatOnly(Store)
       : [&]() -> FGameRunResult {
 
@@ -137,14 +138,8 @@ inline FGameRunResult RunGame(FMicroGameStore &Store, FString Mode,
   Ready.Type = Runtime.lifecycleEvents.sessionReady;
   VerificationThunksDetail::Emit(ProgressSink, MoveTemp(Ready));
 
-  const TArray<FScenarioStep> Steps =
-      ScenarioSelectors::SelectScenarioSteps(Store.getState().Scenario);
   const TArray<FScenarioStep> ActiveSteps =
-      Mode == Runtime.modes.autoplayWithTwoNpcChat
-          ? ScenarioSelectors::SelectScenarioStepsByCommandGroup(
-                Store.getState().Scenario,
-                Runtime.commandGroups.npc_conversation)
-          : Steps;
+      ScenarioSelectors::SelectScenarioSteps(Store.getState().Scenario);
   VerificationThunksDetail::ProcessSteps(ActiveSteps, Runtime.numbers.emptyCount, Store,
                                 ProgressSink);
 
@@ -168,9 +163,9 @@ inline FGameRunResult RunGame(FMicroGameStore &Store, FString Mode,
                                         Runtime.numbers.emptyCount, Store,
                                         ProgressSink);
 
-  // The two-NPC chat is appended only for autoplay-with-two-npc-chat, matching
-  // the TS runGame (autoplay alone must not run it).
-  Mode == Runtime.modes.autoplayWithTwoNpcChat
+  // The two-NPC chat is appended for the modes authored in twoNpcChatRunsInModes
+  // (data-driven, mirrors TS runGame; autoplay alone must not run it).
+  Runtime.twoNpcChatRunsInModes.Contains(Mode)
       ? (VerificationThunksDetail::AppendTwoNpcChat(Store), void())
       : void();
 

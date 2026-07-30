@@ -13,14 +13,8 @@ namespace MicroGame::VerificationSelectors {
 /** User Story: As a harness maintainer, I need run completeness derived from root-store coverage, transcript, and active API contract state so no duplicated completion flag can drift. @fn inline FGameRunResult SelectGameRunResult(const FMicroGameState &State) */
 inline FGameRunResult SelectGameRunResult(const FMicroGameState &State) {
   FGameRunResult Result;
-  const bool bChatOnly =
-      UISelectors::SelectUiMode(State.UI) ==
-      VerificationVocabularyAdapters::GameRuntimeData().modes.autoplayWithTwoNpcChat;
   const TArray<FString> RequiredGroups =
-      bChatOnly
-          ? TArray<FString>{VerificationVocabularyAdapters::GameRuntimeData()
-                                .commandGroups.npc_conversation}
-          : ScenarioSelectors::SelectRequiredCommandGroups(State.Scenario);
+      ScenarioSelectors::SelectRequiredCommandGroups(State.Scenario);
   Result.MissingGroups = CoverageSelectors::SelectHarnessMissingGroups(
       State.Harness, RequiredGroups);
   Result.Transcript =

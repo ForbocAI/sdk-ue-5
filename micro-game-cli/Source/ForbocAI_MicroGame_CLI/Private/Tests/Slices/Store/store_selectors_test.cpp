@@ -69,27 +69,5 @@ bool FMicroGameStoreDomainSelectorsTest::RunTest(const FString &Parameters) {
                 .Num(),
             Data.store.soul.expectedImportedCount);
 
-  FScenarioContractPayload ChatContract;
-  ChatContract.RequiredCommandGroups = {
-      VerificationVocabularyAdapters::GameRuntimeData().commandGroups.status};
-  Store.dispatch(ScenarioActions::setContract(MoveTemp(ChatContract)));
-  Store.dispatch(UIActions::setMode(
-      VerificationVocabularyAdapters::GameRuntimeData().modes.autoplayWithTwoNpcChat));
-  const FGameRunResult MissingConversationResult =
-      VerificationSelectors::SelectGameRunResult(Store.getState());
-  TestEqual(Data.stories.store,
-            MissingConversationResult.MissingGroups.Num(),
-            VerificationVocabularyAdapters::GameRuntimeData().numbers.nextIndex);
-  TestEqual(Data.stories.store,
-            MissingConversationResult.MissingGroups[
-                VerificationVocabularyAdapters::GameRuntimeData().numbers.emptyCount],
-            VerificationVocabularyAdapters::GameRuntimeData().commandGroups.npc_conversation);
-  Store.dispatch(CoverageActions::markCovered(
-      VerificationVocabularyAdapters::GameRuntimeData().commandGroups.npc_conversation));
-  const FGameRunResult ChatResult =
-      VerificationSelectors::SelectGameRunResult(Store.getState());
-  TestEqual(Data.stories.store, ChatResult.MissingGroups.Num(),
-            VerificationVocabularyAdapters::GameRuntimeData().numbers.emptyCount);
-
   return true;
 }
