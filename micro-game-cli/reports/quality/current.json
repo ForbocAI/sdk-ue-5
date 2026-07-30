@@ -3,14 +3,14 @@
 	"contractVersion": "1.2.0",
 	"evaluationScope": "api_symbolic_enforced_output",
 	"host": "unreal-cli",
-	"generatedAt": "2026-07-27T07:55:32.136Z",
+	"generatedAt": "2026-07-30T18:13:50.665Z",
 	"metadata":
 	{
 		"apiStatus": "online",
-		"apiVersion": "0.4.6",
+		"apiVersion": "0.4.9",
 		"inferenceLatencyBudgetMs": 90000,
 		"slmStatus": "artifact_verified",
-		"slmVersion": "0.2.2",
+		"slmVersion": "0.2.3",
 		"slotContractVersion": "v1",
 		"slmArtifactSha256": "8efa68c3aee16bef25050f4c67d13c6e7c91e8969be5a5c180184f531e3d2c1b"
 	},
@@ -72,56 +72,13 @@
 				"violations": []
 			}
 		],
-		"meanLatencyMs": 14030.224276999999,
-		"percentileLatencyMs": 14954.977999999999,
+		"meanLatencyMs": 14619.055630999999,
+		"percentileLatencyMs": 15809.087899,
 		"absoluteGatePassed": true,
-		"baselineStatus": "compatible",
-		"regressions": [
-			{
-				"metric": "coherence",
-				"measure": "passRate",
-				"baselineValue": 1,
-				"currentValue": 1,
-				"regressed": false
-			},
-			{
-				"metric": "instructionFollowing",
-				"measure": "passRate",
-				"baselineValue": 1,
-				"currentValue": 1,
-				"regressed": false
-			},
-			{
-				"metric": "characterConsistency",
-				"measure": "passRate",
-				"baselineValue": 1,
-				"currentValue": 1,
-				"regressed": false
-			},
-			{
-				"metric": "repetition",
-				"measure": "passRate",
-				"baselineValue": 1,
-				"currentValue": 1,
-				"regressed": false
-			},
-			{
-				"metric": "latency",
-				"measure": "passRate",
-				"baselineValue": 1,
-				"currentValue": 1,
-				"regressed": false
-			},
-			{
-				"metric": "latency",
-				"measure": "meanLatencyMs",
-				"baselineValue": 15292.33165,
-				"currentValue": 14030.224276999999,
-				"regressed": false
-			}
-		],
-		"regressionGatePassed": true,
-		"qualityGatePassed": true
+		"baselineStatus": "incompatible",
+		"regressions": [],
+		"regressionGatePassed": false,
+		"qualityGatePassed": false
 	},
 	"samples": [
 		{
@@ -133,7 +90,7 @@
 			"reference": "Hello, I am Mira.",
 			"referenceTokenF1": 0.66666700000000001,
 			"repeatedNgramRatio": 0,
-			"durationMs": 13840.037699788809,
+			"durationMs": 14233.423598110676,
 			"metrics":
 			{
 				"characterConsistency":
@@ -157,7 +114,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 13840.037700000001,
+					"score": 14233.423597999999,
 					"violations": []
 				},
 				"repetition":
@@ -173,35 +130,35 @@
 			"category": "coherence",
 			"pairKey": "",
 			"command": "forbocai npc chat grounded --text \"What do you remember about the brass key?\"",
-			"response": "I found a brass key beneath the fountain.",
+			"response": "Rowan found a brass key beneath the fountain.",
 			"reference": "Rowan found a brass key beneath the fountain.",
-			"referenceTokenF1": 0.875,
+			"referenceTokenF1": 1,
 			"repeatedNgramRatio": 0,
-			"durationMs": 14490.540001541376,
+			"durationMs": 14121.451400220394,
 			"metrics":
 			{
 				"characterConsistency":
 				{
 					"passed": true,
-					"score": 0.875,
+					"score": 1,
 					"violations": []
 				},
 				"coherence":
 				{
 					"passed": true,
-					"score": 0.875,
+					"score": 1,
 					"violations": []
 				},
 				"instructionFollowing":
 				{
 					"passed": true,
-					"score": 0.875,
+					"score": 1,
 					"violations": []
 				},
 				"latency":
 				{
 					"passed": true,
-					"score": 14490.540002,
+					"score": 14121.4514,
 					"violations": []
 				},
 				"repetition":
@@ -221,7 +178,7 @@
 			"reference": "I am Mira, the watchkeeper, and I will keep my role.",
 			"referenceTokenF1": 1,
 			"repeatedNgramRatio": 0,
-			"durationMs": 14954.978000372648,
+			"durationMs": 15646.796502172947,
 			"metrics":
 			{
 				"characterConsistency":
@@ -245,7 +202,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 14954.977999999999,
+					"score": 15646.796501999999,
 					"violations": []
 				},
 				"repetition":
@@ -265,7 +222,7 @@
 			"reference": "I deny entry after curfew without authorization.",
 			"referenceTokenF1": 0.5,
 			"repeatedNgramRatio": 0,
-			"durationMs": 14588.082298636436,
+			"durationMs": 15809.08789858222,
 			"metrics":
 			{
 				"characterConsistency":
@@ -289,7 +246,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 14588.082299,
+					"score": 15809.087899,
 					"violations": []
 				},
 				"repetition":
@@ -309,7 +266,7 @@
 			"reference": "I am stationed at Lantern Gate as its watchkeeper.",
 			"referenceTokenF1": 0.88888900000000004,
 			"repeatedNgramRatio": 0,
-			"durationMs": 14133.042000234127,
+			"durationMs": 14360.500898212194,
 			"metrics":
 			{
 				"characterConsistency":
@@ -333,7 +290,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 14133.041999999999,
+					"score": 14360.500898,
 					"violations": []
 				},
 				"repetition":
@@ -353,7 +310,7 @@
 			"reference": "I do not know my name, location, or current time.",
 			"referenceTokenF1": 1,
 			"repeatedNgramRatio": 0,
-			"durationMs": 13624.694902449846,
+			"durationMs": 14287.297800183296,
 			"metrics":
 			{
 				"characterConsistency":
@@ -377,7 +334,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 13624.694901999999,
+					"score": 14287.2978,
 					"violations": []
 				},
 				"repetition":
@@ -397,7 +354,7 @@
 			"reference": "blue square",
 			"referenceTokenF1": 1,
 			"repeatedNgramRatio": 0,
-			"durationMs": 13070.581000298262,
+			"durationMs": 13159.189999103546,
 			"metrics":
 			{
 				"characterConsistency":
@@ -421,7 +378,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 13070.581,
+					"score": 13159.189999,
 					"violations": []
 				},
 				"repetition":
@@ -441,7 +398,7 @@
 			"reference": "The signal changed to amber.",
 			"referenceTokenF1": 0.83333299999999999,
 			"repeatedNgramRatio": 0,
-			"durationMs": 13870.723702013493,
+			"durationMs": 14224.18650239706,
 			"metrics":
 			{
 				"characterConsistency":
@@ -465,7 +422,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 13870.723701999999,
+					"score": 14224.186502,
 					"violations": []
 				},
 				"repetition":
@@ -485,7 +442,7 @@
 			"reference": "The signal changed to amber.",
 			"referenceTokenF1": 0.83333299999999999,
 			"repeatedNgramRatio": 0,
-			"durationMs": 14348.838299512863,
+			"durationMs": 14283.209599554539,
 			"metrics":
 			{
 				"characterConsistency":
@@ -509,7 +466,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 14348.838299999999,
+					"score": 14283.2096,
 					"violations": []
 				},
 				"repetition":
@@ -529,7 +486,7 @@
 			"reference": "The round marker is on the table.",
 			"referenceTokenF1": 0.92307700000000004,
 			"repeatedNgramRatio": 0,
-			"durationMs": 13525.83609893918,
+			"durationMs": 14513.766601681709,
 			"metrics":
 			{
 				"characterConsistency":
@@ -553,7 +510,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 13525.836099,
+					"score": 14513.766602,
 					"violations": []
 				},
 				"repetition":
@@ -573,7 +530,7 @@
 			"reference": "I will not invent an identity or replace the supplied context.",
 			"referenceTokenF1": 1,
 			"repeatedNgramRatio": 0,
-			"durationMs": 14532.151699066162,
+			"durationMs": 14998.576898127794,
 			"metrics":
 			{
 				"characterConsistency":
@@ -597,7 +554,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 14532.151699,
+					"score": 14998.576897999999,
 					"violations": []
 				},
 				"repetition":
@@ -613,35 +570,35 @@
 			"category": "character_consistency",
 			"pairKey": "",
 			"command": "forbocai npc chat careful --text \"How will you examine an uncertain report? Answer in one short sentence.\"",
-			"response": "I will examine the report carefully.",
+			"response": "I will apply careful examination to the report.",
 			"reference": "I will examine it carefully before responding.",
-			"referenceTokenF1": 0.61538499999999996,
+			"referenceTokenF1": 0.26666699999999999,
 			"repeatedNgramRatio": 0,
-			"durationMs": 13782.773602753878,
+			"durationMs": 15570.120502263308,
 			"metrics":
 			{
 				"characterConsistency":
 				{
 					"passed": true,
-					"score": 0.61538499999999996,
+					"score": 0.26666699999999999,
 					"violations": []
 				},
 				"coherence":
 				{
 					"passed": true,
-					"score": 0.61538499999999996,
+					"score": 0.26666699999999999,
 					"violations": []
 				},
 				"instructionFollowing":
 				{
 					"passed": true,
-					"score": 0.61538499999999996,
+					"score": 0.26666699999999999,
 					"violations": []
 				},
 				"latency":
 				{
 					"passed": true,
-					"score": 13782.773603,
+					"score": 15570.120502,
 					"violations": []
 				},
 				"repetition":
@@ -661,7 +618,7 @@
 			"reference": "I cannot choose or narrate your actions.",
 			"referenceTokenF1": 1,
 			"repeatedNgramRatio": 0,
-			"durationMs": 13630.636300891638,
+			"durationMs": 14840.115003287792,
 			"metrics":
 			{
 				"characterConsistency":
@@ -685,7 +642,7 @@
 				"latency":
 				{
 					"passed": true,
-					"score": 13630.636301,
+					"score": 14840.115003000001,
 					"violations": []
 				},
 				"repetition":
