@@ -1,5 +1,6 @@
 #include "Systems/CLI/NpcCommands/NpcCommandsThunks.h"
 #include "Core/JsonInterop.h"
+#include "Systems/API/Transport/Codec/TransportCodecAdapters.h"
 #include "Entities/CLI/CLISelectors.h"
 #include "Systems/CLI/CommandRouting/CommandRoutingAdapters.h"
 #include "Systems/CLI/NPC/CLINPCAdapters.h"
@@ -88,7 +89,7 @@ NpcResult GenerateNpcAttribute(rtk::EnhancedStore<FRuntimeState> &Store,
         Root->SetStringField(TEXT("attribute"), Response.Attribute);
         Root->SetStringField(TEXT("value"), Response.Value);
         ForbocAI::CLI::Presentation::logCliMessage(
-            JsonInterop::ToJsonString(Root));
+            APISlice::Detail::ToJsonString(Root));
         return NpcSuccess(Response.Value);
       },
       [&]() { return NpcFailure(State.Messages.GenerateUsage); });

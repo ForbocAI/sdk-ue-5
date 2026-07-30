@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/JsonInterop.h"
+#include "Systems/API/Transport/Codec/TransportCodecAdapters.h"
 #include "Systems/API/Endpoints/NPC/Generate/Configuration/GenerateConfigurationAdapters.h"
 #include "Components/NPC/Generate/GenerateTypes.h"
 
@@ -11,7 +12,7 @@ inline FString EncodeNpcAttributeGenerateRequest(
     const FNpcAttributeGenerateRequest &Request) {
   const TSharedRef<FJsonObject> Root = MakeShared<FJsonObject>();
   Root->SetStringField(TEXT("context"), Request.Context);
-  return JsonInterop::ToJsonString(Root);
+  return ToJsonString(Root);
 }
 
 /** User Story: As the SDK cache owner, I need a malformed generated-attribute response rejected before cache insertion so callers only ever compose valid attribute values. @fn inline bool DecodeNpcAttributeGenerateResponse(const FString &Json, FNpcAttributeGenerateResponse &Response) */
