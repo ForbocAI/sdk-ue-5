@@ -153,7 +153,10 @@ inline FString ReadDialogue(const FTwoNpcChatConfig &Config,
   return Spoken.IsEmpty() ? Config.DialogueFallback : Spoken;
 }
 
-/** User Story: As the two-NPC chat game orchestrator, I need each generated command run through the real forbocai CLI so game state reflects the exercised SDK primitive. @fn inline CommandRunner::FCommandOutput RunChatCommand(FMicroGameStore &Store, const FTwoNpcChatConfig &Config, const FString &Command) */
+/**
+ * User Story: As the two-NPC chat game orchestrator, I need each generated command run through the real forbocai CLI so game state reflects the exercised SDK primitive.
+ * @fn inline CommandRunner::FCommandOutput RunChatCommand( FMicroGameStore &Store, const FTwoNpcChatConfig &Config, const FString &Command)
+ */
 inline CommandRunner::FCommandOutput RunChatCommand(
     FMicroGameStore &Store, const FTwoNpcChatConfig &Config,
     const FString &Command) {

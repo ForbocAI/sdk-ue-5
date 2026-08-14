@@ -7,7 +7,10 @@
 
 namespace APISlice::Detail {
 
-/** User Story: As NPC generate endpoint callers, I need the granular attribute request encoded so the prior attributes supplied as context reach the API contract. @fn inline FString EncodeNpcAttributeGenerateRequest(const FNpcAttributeGenerateRequest &Request) */
+/**
+ * User Story: As NPC generate endpoint callers, I need the granular attribute request encoded so the prior attributes supplied as context reach the API contract.
+ * @fn inline FString EncodeNpcAttributeGenerateRequest( const FNpcAttributeGenerateRequest &Request)
+ */
 inline FString EncodeNpcAttributeGenerateRequest(
     const FNpcAttributeGenerateRequest &Request) {
   const TSharedRef<FJsonObject> Root = MakeShared<FJsonObject>();
@@ -15,7 +18,10 @@ inline FString EncodeNpcAttributeGenerateRequest(
   return ToJsonString(Root);
 }
 
-/** User Story: As the SDK cache owner, I need a malformed generated-attribute response rejected before cache insertion so callers only ever compose valid attribute values. @fn inline bool DecodeNpcAttributeGenerateResponse(const FString &Json, FNpcAttributeGenerateResponse &Response) */
+/**
+ * User Story: As the SDK cache owner, I need a malformed generated-attribute response rejected before cache insertion so callers only ever compose valid attribute values.
+ * @fn inline bool DecodeNpcAttributeGenerateResponse( const FString &Json, FNpcAttributeGenerateResponse &Response)
+ */
 inline bool DecodeNpcAttributeGenerateResponse(
     const FString &Json, FNpcAttributeGenerateResponse &Response) {
   using namespace APISlice::Endpoints::NPCGenerateConfiguration;
