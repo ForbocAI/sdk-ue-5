@@ -16,6 +16,8 @@ inline FGenerateConfigurationData readGenerateConfigurationData() {
   FGenerateConfigurationData Data;
   Data.Fields.Attribute =
       DataAdapters::ReadStringField(Fields, TEXT("attribute"));
+  Data.Fields.Context =
+      DataAdapters::ReadStringField(Fields, TEXT("context"));
   Data.Fields.Value = DataAdapters::ReadStringField(Fields, TEXT("value"));
   Data.Errors.InvalidResponse =
       DataAdapters::ReadStringField(Errors, TEXT("invalidResponse"));

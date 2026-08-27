@@ -1,0 +1,39 @@
+{
+  "group": "npc_conversation",
+  "header": "=== ForbocAI Two NPC Chat ===",
+  "footer": "=== End ForbocAI Two NPC Chat ===",
+  "turnCount": 10,
+  "participantCount": 2,
+  "nameAttribute": "name",
+  "personaAttributes": ["role", "trait", "goal", "mood"],
+  "seedAttribute": "goal",
+  "generateCommand": "forbocai npc generate {attribute} {context}",
+  "createCommand": "forbocai npc create \"{persona}\"",
+  "decideCommand": "forbocai npc decide {id} \"{line}\"",
+  "memoryStoreCommand": "forbocai memory store {id} \"{memory}\"",
+  "valueField": "value",
+  "personaSeparator": ". ",
+  "contextSeparator": " | ",
+  "emptyContext": "",
+  "idPattern": "ag_[0-9a-fA-F-]+",
+  "lineFormat": "{name}: {dialogue}",
+  "dialogueFallback": "...",
+  "contextQuote": "\"",
+  "tokens": {
+    "attribute": "{attribute}",
+    "context": "{context}",
+    "persona": "{persona}",
+    "id": "{id}",
+    "line": "{line}",
+    "name": "{name}",
+    "dialogue": "{dialogue}",
+    "memory": "{memory}"
+  },
+  "numbers": {
+    "initialIndex": 0,
+    "nextIndex": 1
+  },
+  "outputAssertions": [
+    { "kind": "includesText", "value": "=== ForbocAI Two NPC Chat ===" }
+  ]
+}

@@ -12,6 +12,7 @@
 #include "Systems/Config/ConfigThunks.h"
 #include "Systems/CLI/Diagnostics/DiagnosticsThunks.h"
 #include "Systems/CLI/NPC/NPCThunks.h"
+#include "Systems/API/Endpoints/NPC/Generate/Configuration/GenerateConfigurationAdapters.h"
 #include "Entities/NPC/NPCActions.h"
 
 // @covers:cliOp:loadBridgePreset
@@ -100,7 +101,11 @@ bool FOpsTransportThunkConstructionTest::RunTest(const FString &Parameters) {
   const func::AsyncResult<FString> ContractRequest =
       Ops::getMicroGameContract(Store);
   const func::AsyncResult<FNpcAttributeGenerateResponse> GenerateRequest =
-      Ops::generateNpcAttribute(Store, TEXT("role"), TEXT(""));
+      Ops::generateNpcAttribute(
+          Store,
+          APISlice::Endpoints::NPCGenerateConfiguration::
+              generateConfigurationData().Fields.Attribute,
+          FString());
 
   TestTrue(Names.GetMicroGameContract,
            ContractRequest.state &&

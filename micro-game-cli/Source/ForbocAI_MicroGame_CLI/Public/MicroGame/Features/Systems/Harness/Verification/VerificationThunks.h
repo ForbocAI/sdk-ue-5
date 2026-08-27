@@ -72,7 +72,9 @@ inline void RecordContractDrift(
 /** User Story: As a systems harness game consumer, I need the client-orchestrated two-NPC chat run and its transcript logged through one adapter so both the append and chat-only paths share it. @fn inline void AppendTwoNpcChat(FMicroGameStore &Store) */
 inline void AppendTwoNpcChat(FMicroGameStore &Store) {
   const TArray<FString> Lines = TwoNpcChat::RunTwoNpcChat(Store);
-  UE_LOG(LogTemp, Display, TEXT("%s"), *FString::Join(Lines, TEXT("\n")));
+  const FString Transcript = FString::Join(
+      Lines, *VerificationAdapters::GameData().output.lineBreak);
+  GLog != nullptr ? GLog->Log(*Transcript) : void();
 }
 
 /** User Story: As a systems harness game consumer, I need the two-npc-chat mode to run ONLY the two-NPC chat and report a complete run so it mirrors the TS runGame early return. @fn inline FGameRunResult RunTwoNpcChatOnly(FMicroGameStore &Store) */

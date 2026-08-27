@@ -9,6 +9,7 @@ namespace APISlice::Endpoints::NPCGenerateConfiguration {
 
 struct FGenerateFields {
   FString Attribute;
+  FString Context;
   FString Value;
 };
 

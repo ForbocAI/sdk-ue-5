@@ -1,0 +1,14 @@
+{
+  "automationName": "ForbocAI.MicroGame.TwoNpcChat.AuthoredComposition",
+  "labels": {
+    "configuration": "two-NPC configuration loads from its authored subdomain",
+    "numbers": "two-NPC indices advance from the authored origin",
+    "generateValues": "generate command receives authored attribute and context values",
+    "generateTokens": "generate command consumes its authored tokens",
+    "createToken": "create command consumes its authored persona token",
+    "decideTokens": "decide command consumes its authored identity and line tokens",
+    "memoryTokens": "memory command consumes its authored identity and memory tokens",
+    "lineTokens": "transcript line consumes its authored name and dialogue tokens",
+    "context": "context composition uses the authored separator"
+  }
+}

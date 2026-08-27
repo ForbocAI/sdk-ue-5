@@ -13,8 +13,10 @@ namespace APISlice::Detail {
  */
 inline FString EncodeNpcAttributeGenerateRequest(
     const FNpcAttributeGenerateRequest &Request) {
+  using namespace APISlice::Endpoints::NPCGenerateConfiguration;
+  const FGenerateFields &Fields = generateConfigurationData().Fields;
   const TSharedRef<FJsonObject> Root = MakeShared<FJsonObject>();
-  Root->SetStringField(TEXT("context"), Request.Context);
+  Root->SetStringField(Fields.Context, Request.Context);
   return ToJsonString(Root);
 }
 

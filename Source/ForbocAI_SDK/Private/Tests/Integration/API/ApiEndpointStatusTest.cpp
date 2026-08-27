@@ -3,6 +3,7 @@
 
 #include "Systems/API/APIApi.h"
 #include "Systems/API/APIThunks.h"
+#include "Systems/API/Endpoints/NPC/Generate/Configuration/GenerateConfigurationAdapters.h"
 #include "Systems/Config/ConfigThunks.h"
 #include "Entities/Config/ConfigSelectors.h"
 #include "Store.h"
@@ -82,7 +83,9 @@ bool FApiEndpointConstructionTest::RunTest(const FString &Parameters) {
   TestEndpointConstructed(*this, Data.Names.PostNpcProcess,
                           postNpcProcess(Empty, FNPCProcessRequest{}));
   TestEndpointConstructed(*this, Data.Names.PostNpcGenerateAttribute,
-                          postNpcGenerateAttribute(TEXT("role"),
+                          postNpcGenerateAttribute(
+                              NPCGenerateConfiguration::
+                                  generateConfigurationData().Fields.Attribute,
                                                    FNpcAttributeGenerateRequest{}));
   TestTrue(Data.Names.PostNpcProcess,
            Data.Timeouts.NpcProcessMs >

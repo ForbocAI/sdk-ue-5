@@ -1,6 +1,7 @@
 #include "Systems/CLI/NpcCommands/NpcCommandsThunks.h"
 #include "Core/JsonInterop.h"
 #include "Systems/API/Transport/Codec/TransportCodecAdapters.h"
+#include "Systems/API/Endpoints/NPC/Generate/Configuration/GenerateConfigurationAdapters.h"
 #include "Entities/CLI/CLISelectors.h"
 #include "Systems/CLI/CommandRouting/CommandRoutingAdapters.h"
 #include "Systems/CLI/NPC/CLINPCAdapters.h"
@@ -85,9 +86,11 @@ NpcResult GenerateNpcAttribute(rtk::EnhancedStore<FRuntimeState> &Store,
         const FNpcAttributeGenerateResponse Response =
             AsyncAdapters::waitForResult(
                 Ops::generateNpcAttribute(Store, Attribute, Context));
+        const auto &Fields = APISlice::Endpoints::NPCGenerateConfiguration::
+            generateConfigurationData().Fields;
         const TSharedRef<FJsonObject> Root = MakeShared<FJsonObject>();
-        Root->SetStringField(TEXT("attribute"), Response.Attribute);
-        Root->SetStringField(TEXT("value"), Response.Value);
+        Root->SetStringField(Fields.Attribute, Response.Attribute);
+        Root->SetStringField(Fields.Value, Response.Value);
         ForbocAI::CLI::Presentation::logCliMessage(
             APISlice::Detail::ToJsonString(Root));
         return NpcSuccess(Response.Value);

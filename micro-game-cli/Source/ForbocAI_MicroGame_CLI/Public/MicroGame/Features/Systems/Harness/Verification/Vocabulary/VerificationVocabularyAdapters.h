@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/fp.hpp"
 #include "MicroGame/Features/Data/DataAdapters.h"
 #include "MicroGame/Features/Systems/Harness/Verification/Vocabulary/VerificationVocabularyTypes.h"
 
@@ -113,13 +114,13 @@ inline FGameRuntimeData ReadGameRuntimeData() {
   FORBOCAI_READ_GAME_NAME(modes, Modes, Name)
   FORBOCAI_GAME_MODE_FIELDS(FORBOCAI_READ_GAME_MODE)
 #undef FORBOCAI_READ_GAME_MODE
-  // Hyphenated mode tokens are read from their exact JSON keys (the X-macro
-  // stringifies C++ identifiers and cannot express a hyphen).
-  Data.modes.autoplayWithTwoNpcChat =
-      detail::ReadEnabledName(Modes, TEXT("autoplay-with-two-npc-chat"));
-  Data.modes.all.Add(Data.modes.autoplayWithTwoNpcChat);
-  Data.modes.twoNpcChat = detail::ReadEnabledName(Modes, TEXT("two-npc-chat"));
-  Data.modes.all.Add(Data.modes.twoNpcChat);
+  TArray<FJsonObject::FStringType> SharedModeNames;
+  Modes->Values.GenerateKeyArray(SharedModeNames);
+  Data.modes.all = TSet<FString>(
+      func::map_array<FJsonObject::FStringType, FString>(
+          SharedModeNames, [](const FJsonObject::FStringType &Name) {
+            return FString(Name.ToView());
+          }));
   Data.twoNpcChatRunsInModes = TSet<FString>(
       DataAdapters::ReadStringArrayField(Source.Root, TEXT("twoNpcChatRunsInModes")));
   Data.twoNpcChatExclusiveModes = TSet<FString>(
