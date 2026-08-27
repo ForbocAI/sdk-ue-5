@@ -1,0 +1,7 @@
+{
+  "soul_export": {"group": "soul", "subcommand": "export", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "soul_import": {"group": "soul", "subcommand": "import", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "soul_list": {"group": "soul", "subcommand": "list", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "soul_chat": {"group": "soul", "subcommand": "chat", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "soul_verify": {"group": "soul", "subcommand": "verify", "surfaces": ["node", "browser"], "browserBehavior": null}
+}

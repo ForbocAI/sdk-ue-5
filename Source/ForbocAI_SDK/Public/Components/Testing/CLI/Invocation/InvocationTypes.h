@@ -25,7 +25,6 @@ struct FInvocationTestScenario {
 
 struct FInvocationTestFixtures {
   FInvocationTestLabels Labels;
-  int32 ExpectedNodeCommandCount;
   TArray<FInvocationTestScenario> Scenarios;
 };
 

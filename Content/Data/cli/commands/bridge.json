@@ -1,0 +1,5 @@
+{
+  "bridge_validate": {"group": "bridge", "subcommand": "validate", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "bridge_rules": {"group": "bridge", "subcommand": "rules", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "bridge_preset": {"group": "bridge", "subcommand": "preset", "surfaces": ["node", "browser"], "browserBehavior": null}
+}

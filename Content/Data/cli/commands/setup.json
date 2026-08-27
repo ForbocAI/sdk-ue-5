@@ -1,0 +1,4 @@
+{
+  "setup": {"group": "setup", "subcommand": null, "surfaces": ["node", "browser"], "browserBehavior": "unsupported"},
+  "setup_check": {"group": "setup", "subcommand": "check", "surfaces": ["node"], "browserBehavior": null}
+}

@@ -1,0 +1,6 @@
+{
+  "version": {"group": "version", "subcommand": null, "surfaces": ["node", "browser"], "browserBehavior": null},
+  "doctor": {"group": "doctor", "subcommand": null, "surfaces": ["node", "browser"], "browserBehavior": null},
+  "status": {"group": "status", "subcommand": null, "surfaces": ["node", "browser"], "browserBehavior": null},
+  "contract": {"group": "contract", "subcommand": null, "surfaces": ["node", "browser"], "browserBehavior": null}
+}

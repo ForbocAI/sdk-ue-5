@@ -1,0 +1,4 @@
+{
+  "rules_list": {"group": "rules", "subcommand": "list", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "rules_presets": {"group": "rules", "subcommand": "presets", "surfaces": ["node", "browser"], "browserBehavior": null}
+}

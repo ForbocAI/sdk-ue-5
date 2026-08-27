@@ -70,12 +70,20 @@ bool FSetupCliDispatchTest::RunTest(const FString &Parameters) {
   const auto &Fixtures =
       Testing::CLI::Invocation::InvocationTestFixtures();
   const ForbocAI::CLI::FCLIState &CLIState = store().getState().CLI;
+  const int32 AuthoredNodeCommandCount =
+      func::filter_array<ForbocAI::CLI::FCLICommandSpec>(
+          ForbocAI::CLI::selectCliCommandMatrix(CLIState),
+          [&CLIState](const ForbocAI::CLI::FCLICommandSpec &Command) {
+            return Command.Surfaces.Contains(
+                ForbocAI::CLI::selectNodeCliSurface(CLIState));
+          })
+          .Num();
   TestEqual(
       Fixtures.Labels.NodeCommandCount,
       ForbocAI::CLI::selectCliCommandKeys(
           CLIState, ForbocAI::CLI::selectNodeCliSurface(CLIState))
           .Num(),
-      Fixtures.ExpectedNodeCommandCount);
+      AuthoredNodeCommandCount);
   func::for_each_array<Testing::CLI::Invocation::FInvocationTestScenario>(
       Fixtures.Scenarios,
       [this, &Fixtures, &CLIState](

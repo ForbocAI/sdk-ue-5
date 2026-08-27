@@ -1,0 +1,5 @@
+{
+  "config_set": {"group": "config", "subcommand": "set", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "config_get": {"group": "config", "subcommand": "get", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "config_list": {"group": "config", "subcommand": "list", "surfaces": ["node", "browser"], "browserBehavior": null}
+}

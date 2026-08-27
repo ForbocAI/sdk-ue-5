@@ -61,6 +61,12 @@ struct FCLICommandRoles {
   FString RulesList;
   FString RulesPresets;
   FString GhostRun;
+  FString GhostGenerate;
+  FString GhostCreate;
+  FString GhostUpdate;
+  FString GhostRecall;
+  FString GhostDecide;
+  FString GhostMemoryStore;
   FString GhostStatus;
   FString GhostResults;
   FString GhostStop;

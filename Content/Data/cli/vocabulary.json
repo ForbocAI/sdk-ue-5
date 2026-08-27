@@ -1,0 +1,47 @@
+{
+  "surfaces": {
+    "node": true,
+    "browser": true
+  },
+  "surfaceRoles": {
+    "node": "node",
+    "browser": "browser"
+  },
+  "groups": {
+    "version": true,
+    "doctor": true,
+    "status": true,
+    "contract": true,
+    "setup": true,
+    "config": true,
+    "npc": true,
+    "soul": true,
+    "rules": true,
+    "ghost": true,
+    "memory": true,
+    "bridge": true
+  },
+  "browserBehaviors": {
+    "supported": true,
+    "unsupported": true
+  },
+  "consumerExamples": [
+    "npc_create",
+    "npc_chat",
+    "ghost_run"
+  ],
+  "parsing": {
+    "firstTokenIndex": 0,
+    "secondTokenIndex": 1,
+    "nextIndexOffset": 1,
+    "directDropCount": 1,
+    "subcommandDropCount": 2,
+    "minimumTokenCount": 0
+  },
+  "invocation": {
+    "apiUrlOptions": ["--api-url", "--apiUrl"],
+    "apiKeyOptions": ["--api-key", "--apiKey"],
+    "assignmentSeparator": "=",
+    "optionValueOffset": 1
+  }
+}

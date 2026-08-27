@@ -1,0 +1,7 @@
+{
+  "memory_list": {"group": "memory", "subcommand": "list", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "memory_recall": {"group": "memory", "subcommand": "recall", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "memory_store": {"group": "memory", "subcommand": "store", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "memory_clear": {"group": "memory", "subcommand": "clear", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "memory_export": {"group": "memory", "subcommand": "export", "surfaces": ["node", "browser"], "browserBehavior": null}
+}

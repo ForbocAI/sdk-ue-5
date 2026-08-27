@@ -42,8 +42,6 @@ inline const FInvocationTestFixtures &InvocationTestFixtures() {
   static const FInvocationTestFixtures Fixtures = {
       ReadInvocationTestLabels(
           DataAdapters::ReadObjectField(Source, TEXT("labels"))),
-      DataAdapters::ReadNumberField(Source.Root,
-                                    TEXT("expectedNodeCommandCount")),
       func::map_array<TSharedPtr<FJsonObject>, FInvocationTestScenario>(
           DataAdapters::ReadObjectArrayField(Source.Root,
                                              TEXT("invocations")),

@@ -1,0 +1,13 @@
+{
+  "ghost_run": {"group": "ghost", "subcommand": "run", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "ghost_generate": {"group": "ghost", "subcommand": "generate", "surfaces": ["node"], "browserBehavior": null},
+  "ghost_create": {"group": "ghost", "subcommand": "create", "surfaces": ["node"], "browserBehavior": null},
+  "ghost_update": {"group": "ghost", "subcommand": "update", "surfaces": ["node"], "browserBehavior": null},
+  "ghost_recall": {"group": "ghost", "subcommand": "recall", "surfaces": ["node"], "browserBehavior": null},
+  "ghost_decide": {"group": "ghost", "subcommand": "decide", "surfaces": ["node"], "browserBehavior": null},
+  "ghost_memory_store": {"group": "ghost", "subcommand": "memory-store", "surfaces": ["node"], "browserBehavior": null},
+  "ghost_status": {"group": "ghost", "subcommand": "status", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "ghost_results": {"group": "ghost", "subcommand": "results", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "ghost_stop": {"group": "ghost", "subcommand": "stop", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "ghost_history": {"group": "ghost", "subcommand": "history", "surfaces": ["node", "browser"], "browserBehavior": null}
+}

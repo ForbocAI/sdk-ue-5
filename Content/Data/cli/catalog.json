@@ -1,0 +1,15 @@
+{
+  "vocabulary": "Data/cli/vocabulary.json",
+  "roles": "Data/cli/roles.json",
+  "commands": [
+    "Data/cli/commands/diagnostics.json",
+    "Data/cli/commands/setup.json",
+    "Data/cli/commands/config.json",
+    "Data/cli/commands/npc.json",
+    "Data/cli/commands/soul.json",
+    "Data/cli/commands/rules.json",
+    "Data/cli/commands/ghost.json",
+    "Data/cli/commands/memory.json",
+    "Data/cli/commands/bridge.json"
+  ]
+}

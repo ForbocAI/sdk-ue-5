@@ -1,0 +1,11 @@
+{
+  "npc_create": {"group": "npc", "subcommand": "create", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "npc_state": {"group": "npc", "subcommand": "state", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "npc_update": {"group": "npc", "subcommand": "update", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "npc_process": {"group": "npc", "subcommand": "process", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "npc_generate": {"group": "npc", "subcommand": "generate", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "npc_recall": {"group": "npc", "subcommand": "recall", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "npc_decide": {"group": "npc", "subcommand": "decide", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "npc_chat": {"group": "npc", "subcommand": "chat", "surfaces": ["node", "browser"], "browserBehavior": null},
+  "npc_import": {"group": "npc", "subcommand": "import", "surfaces": ["node", "browser"], "browserBehavior": null}
+}
