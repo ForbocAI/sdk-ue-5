@@ -1,8 +1,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MicroGame/Features/Components/Harness/TwoNpcChat/Participant/ParticipantTypes.h"
 #include "MicroGame/Features/Systems/Harness/Command/CommandTypes.h"
-#include "MicroGame/Features/Systems/Harness/TwoNpcChat/TwoNpcChatAdapters.h"
+#include "MicroGame/Features/Systems/Harness/TwoNpcChat/Definition/DefinitionAdapters.h"
+#include "MicroGame/Features/Systems/Harness/TwoNpcChat/Invocation/InvocationAdapters.h"
+#include "MicroGame/Features/Systems/Harness/TwoNpcChat/Persona/PersonaAdapters.h"
+#include "MicroGame/Features/Systems/Harness/TwoNpcChat/Response/ResponseAdapters.h"
+#include "MicroGame/Features/Systems/Harness/TwoNpcChat/Transcript/TranscriptAdapters.h"
 #include "MicroGame/Features/Systems/Harness/Verification/Command/CommandThunks.h"
 // The two-NPC chat is the GAME's own orchestration (it lives in the game, not
 // the SDK core). It composes the granular CLI commands, each of which executes

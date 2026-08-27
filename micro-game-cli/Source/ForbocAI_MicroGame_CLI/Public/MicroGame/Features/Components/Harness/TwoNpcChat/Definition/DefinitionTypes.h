@@ -45,10 +45,4 @@ struct FTwoNpcChatConfig {
   FTwoNpcChatNumbers Numbers;
 };
 
-struct FChatNpc {
-  FString Id;
-  FString Name;
-  FString Seed;
-};
-
 } // namespace MicroGame::TwoNpcChat

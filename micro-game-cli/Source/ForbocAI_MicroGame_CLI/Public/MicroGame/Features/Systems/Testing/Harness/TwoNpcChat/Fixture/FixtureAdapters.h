@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MicroGame/Features/Components/Testing/Harness/TwoNpcChat/TwoNpcChatTypes.h"
+#include "MicroGame/Features/Components/Testing/Harness/TwoNpcChat/Fixture/FixtureTypes.h"
 #include "MicroGame/Features/Data/DataAdapters.h"
 
 namespace MicroGame::Testing::TwoNpcChat {

@@ -1,6 +1,9 @@
 #include "Misc/AutomationTest.h"
-#include "MicroGame/Features/Systems/Harness/TwoNpcChat/TwoNpcChatAdapters.h"
-#include "MicroGame/Features/Systems/Testing/Harness/TwoNpcChat/TwoNpcChatAdapters.h"
+#include "MicroGame/Features/Systems/Harness/TwoNpcChat/Definition/DefinitionAdapters.h"
+#include "MicroGame/Features/Systems/Harness/TwoNpcChat/Invocation/InvocationAdapters.h"
+#include "MicroGame/Features/Systems/Harness/TwoNpcChat/Persona/PersonaAdapters.h"
+#include "MicroGame/Features/Systems/Harness/TwoNpcChat/Transcript/TranscriptAdapters.h"
+#include "MicroGame/Features/Systems/Testing/Harness/TwoNpcChat/Fixture/FixtureAdapters.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FTwoNpcChatAuthoredCompositionTest,

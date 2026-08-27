@@ -21,6 +21,20 @@ inline FString EncodeNpcAttributeGenerateRequest(
 }
 
 /**
+ * User Story: As NPC generate endpoint consumers, I need one canonical response encoder so structured output never leaks into CLI command routing.
+ * @fn inline FString EncodeNpcAttributeGenerateResponse( const FNpcAttributeGenerateResponse &Response)
+ */
+inline FString EncodeNpcAttributeGenerateResponse(
+    const FNpcAttributeGenerateResponse &Response) {
+  using namespace APISlice::Endpoints::NPCGenerateConfiguration;
+  const FGenerateFields &Fields = generateConfigurationData().Fields;
+  const TSharedRef<FJsonObject> Root = MakeShared<FJsonObject>();
+  Root->SetStringField(Fields.Attribute, Response.Attribute);
+  Root->SetStringField(Fields.Value, Response.Value);
+  return ToJsonString(Root);
+}
+
+/**
  * User Story: As the SDK cache owner, I need a malformed generated-attribute response rejected before cache insertion so callers only ever compose valid attribute values.
  * @fn inline bool DecodeNpcAttributeGenerateResponse( const FString &Json, FNpcAttributeGenerateResponse &Response)
  */
