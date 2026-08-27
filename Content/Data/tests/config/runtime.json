@@ -1,0 +1,32 @@
+{
+  "automationName": "ForbocAI.Config.RuntimeEndpointAuthority",
+  "values": {
+    "empty": "",
+    "explicitApiUrl": "https://configured.forboc.test/",
+    "normalizedExplicitApiUrl": "https://configured.forboc.test",
+    "apiKey": "test-runtime-key",
+    "missingConfigPath": "Saved/ForbocAI-tests/missing-runtime-config.json",
+    "localAvailable": true,
+    "localUnavailable": false
+  },
+  "counts": {
+    "none": 0,
+    "increment": 1,
+    "once": 1
+  },
+  "assertions": {
+    "explicitUrl": "Explicit URL wins and is normalized",
+    "explicitSource": "Explicit URL source is recorded",
+    "explicitProbe": "Explicit URL skips availability probing",
+    "localUrl": "Available local API is selected",
+    "localSource": "Local source is recorded",
+    "localProbe": "Automatic selection probes once",
+    "productionUrl": "Unavailable local API selects production",
+    "productionSource": "Production source is recorded",
+    "timeoutProbe": "Unavailable probe settles once",
+    "productionKey": "Production without a key returns guidance",
+    "localKey": "Local without a key needs no production guidance",
+    "redactedUrl": "Endpoint diagnostics exclude credential text",
+    "redactedKey": "Credential diagnostics use the authored mask"
+  }
+}

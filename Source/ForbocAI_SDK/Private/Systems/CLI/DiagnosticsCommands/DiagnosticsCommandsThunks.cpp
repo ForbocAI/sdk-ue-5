@@ -9,6 +9,22 @@ namespace {
 using DiagnosticsResult = CLIOps::CommandRouting::Result;
 
 /**
+ * User Story: As CLI diagnostics, I need the root-owned endpoint and its selection source emitted together without reading credentials.
+ * @fn void PrintApiSelection( const FRuntimeState &State, const ForbocAI::CLI::Presentation::FCLIPresentationState &PresentationState)
+ */
+void PrintApiSelection(
+    const FRuntimeState &State,
+    const ForbocAI::CLI::Presentation::FCLIPresentationState
+        &PresentationState) {
+  ForbocAI::CLI::Presentation::logCliMessage(
+      ForbocAI::CLI::Presentation::selectCliApiUrlLine(
+          PresentationState, ConfigSelectors::selectApiUrl(State)));
+  ForbocAI::CLI::Presentation::logCliMessage(
+      ForbocAI::CLI::Presentation::selectCliApiUrlSourceLine(
+          PresentationState, ConfigSelectors::selectApiUrlSource(State)));
+}
+
+/**
  * User Story: As a CLI diagnostics consumer, I need the SDK version presented through a stable command result.
  * @fn DiagnosticsResult PrintVersion( const FRuntimeState &State, const ForbocAI::CLI::Presentation::FCLIPresentationState &PresentationState)
  */
@@ -31,6 +47,7 @@ DiagnosticsResult PrintStatus(
     rtk::EnhancedStore<FRuntimeState> &Store,
     const ForbocAI::CLI::Presentation::FCLIPresentationState
         &PresentationState) {
+  PrintApiSelection(Store.getState(), PresentationState);
   const FApiStatusResponse Status = Ops::checkApiStatus(Store);
   ForbocAI::CLI::Presentation::logCliMessage(
       ForbocAI::CLI::Presentation::selectCliStatusLine(PresentationState,
@@ -61,9 +78,7 @@ DiagnosticsResult RunDoctor(
   ForbocAI::CLI::Presentation::logCliMessage(
       ForbocAI::CLI::Presentation::selectCliVersionLine(
           PresentationState, ConfigSelectors::selectSdkVersion(State)));
-  ForbocAI::CLI::Presentation::logCliMessage(
-      ForbocAI::CLI::Presentation::selectCliApiUrlLine(
-          PresentationState, ConfigSelectors::selectApiUrl(State)));
+  PrintApiSelection(State, PresentationState);
   ForbocAI::CLI::Presentation::logCliMessage(
       ForbocAI::CLI::Presentation::selectCliApiKeyLine(
           PresentationState, !ConfigSelectors::selectApiKey(State).IsEmpty()));

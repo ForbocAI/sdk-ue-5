@@ -29,6 +29,15 @@ inline FString selectCliApiUrlLine(const FCLIPresentationState &State,
   return formatCliMessage(State.Common.ApiUrl, ApiUrl);
 }
 
+/**
+ * User Story: As CLI diagnostics, I need endpoint selection provenance presented without exposing credentials.
+ * @fn inline FString selectCliApiUrlSourceLine( const FCLIPresentationState &State, const FString &ApiUrlSource)
+ */
+inline FString selectCliApiUrlSourceLine(
+    const FCLIPresentationState &State, const FString &ApiUrlSource) {
+  return formatCliMessage(State.Common.ApiUrlSource, ApiUrlSource);
+}
+
 /** User Story: As CLI diagnostics, I need credentials represented without exposing their value. @fn inline FString selectCliApiKeyLine(const FCLIPresentationState &State, bool bApiKeySet) */
 inline FString selectCliApiKeyLine(const FCLIPresentationState &State,
                                    bool bApiKeySet) {

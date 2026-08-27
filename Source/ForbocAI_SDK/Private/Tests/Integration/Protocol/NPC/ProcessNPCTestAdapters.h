@@ -2,7 +2,7 @@
 #include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Systems/Memory/Local/LocalThunks.h"
-#include "Systems/CLI/Config/ConfigThunks.h"
+#include "Systems/Config/ConfigThunks.h"
 #include "Systems/Protocol/ProtocolThunks.h"
 #include "ProcessNPCTestTypes.h"
 

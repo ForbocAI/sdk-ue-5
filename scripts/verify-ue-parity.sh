@@ -47,6 +47,7 @@ FP_CONFORMANCE_STATUS="skipped"
 THIN_WRAPPER_STATUS="skipped"
 MICRO_GAME_BOUNDARY_STATUS="skipped"
 SDK_PARITY_STATUS="skipped"
+RUNTIME_CONFIG_PARITY_STATUS="skipped"
 PARITY_GENERATOR_TEST_STATUS="skipped"
 RTK_SURFACE_STATUS="skipped"
 REDUX_RTK_STATUS="skipped"
@@ -192,6 +193,9 @@ run_check "Thin-Wrapper Guardrails (command surface rules)" \
 # ── Phase 3b: SDK parity inventory + CLI command parity ──
 run_check "SDK Parity (core/node/micro-game inventory and CLI keys)" \
   "$SCRIPT_DIR/check-sdk-parity.py" SDK_PARITY_STATUS
+
+run_check "Runtime Endpoint Parity (core URL selection contract)" \
+  "$SCRIPT_DIR/check-runtime-config-parity.py" RUNTIME_CONFIG_PARITY_STATUS
 
 # ── Phase 3b2: Harness vocabulary parity (authored runtime.json token sets) ──
 run_check "Harness Vocabulary Parity (modes/groups/statuses token sets identical)" \

@@ -14,6 +14,7 @@ struct FCLIPresentationCommonMessages {
   FString Version;
   FString Status;
   FString ApiUrl;
+  FString ApiUrlSource;
   FString ApiKey;
   FString ApiKeyMissing;
   FString MaskedValue;

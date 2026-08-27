@@ -17,6 +17,12 @@ inline const FString &selectApiUrl(const RootState &State) {
   return selectConfig(State).ApiUrl;
 }
 
+/** User Story: As API diagnostics, I need the endpoint selection source selected from root state without re-running connection policy. @fn template <typename RootState> inline const FString &selectApiUrlSource(const RootState &State) */
+template <typename RootState>
+inline const FString &selectApiUrlSource(const RootState &State) {
+  return selectConfig(State).ApiUrlSource;
+}
+
 /** User Story: As authenticated transport, I need the active API key selected from root state. @fn template <typename RootState> inline const FString &selectApiKey(const RootState &State) */
 template <typename RootState>
 inline const FString &selectApiKey(const RootState &State) {

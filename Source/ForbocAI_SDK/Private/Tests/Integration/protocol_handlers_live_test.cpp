@@ -9,7 +9,7 @@
 #include "CoreMinimal.h"
 #include "Systems/API/APIApi.h"
 #include "Systems/API/Serialization/APISerializationAdapters.h"
-#include "Systems/CLI/Config/ConfigThunks.h"
+#include "Systems/Config/ConfigThunks.h"
 #include "HAL/PlatformProcess.h"
 #include "Misc/AutomationTest.h"
 #include "Store.h"

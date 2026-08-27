@@ -15,6 +15,26 @@ struct FConfigDefaultsData {
   int32 MaxRecallResults;
 };
 
+struct FConfigConnectionMethodData {
+  FString Get;
+};
+
+struct FConfigConnectionSourceData {
+  FString Explicit;
+  FString Local;
+  FString Production;
+};
+
+struct FConfigConnectionData {
+  FString LocalApiUrl;
+  FString StatusPath;
+  FString UrlSeparator;
+  int32 AvailabilityTimeoutMs;
+  int32 MillisecondsPerSecond;
+  FConfigConnectionMethodData Methods;
+  FConfigConnectionSourceData Sources;
+};
+
 struct FConfigFieldData {
   FString SdkVersion;
   FString ApiUrl;
@@ -63,6 +83,7 @@ struct FConfigErrorData {
 
 struct FConfigRuntimeData {
   FConfigDefaultsData Defaults;
+  FConfigConnectionData Connection;
   FConfigFieldData Fields;
   FConfigSliceData Slice;
   FConfigEnvironmentData Environment;
@@ -86,12 +107,18 @@ struct FConfigApiCommitted {
   FString ApiKey;
 };
 
+struct FConfigApiSelection {
+  FString ApiUrl;
+  FString ApiUrlSource;
+};
+
 struct FConfigState {
   FConfigEntries Entries;
   FConfigFieldData Fields;
   FString FilePath;
   FString SdkVersion;
   FString ApiUrl;
+  FString ApiUrlSource;
   FString ApiKey;
   FString DatabasePath;
   int32 VectorDimension;

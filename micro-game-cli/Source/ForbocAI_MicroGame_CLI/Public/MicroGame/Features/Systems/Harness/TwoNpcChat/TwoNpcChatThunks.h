@@ -6,8 +6,6 @@
 #include "ForbocAI_SDK/Public/Systems/Data/DataAdapters.h"
 #include "MicroGame/Features/Systems/Harness/Command/CommandTypes.h"
 #include "MicroGame/Features/Systems/Harness/Verification/Command/CommandThunks.h"
-#include "MicroGame/MicroGameStore.h"
-
 // The two-NPC chat is the GAME's own orchestration (it lives in the game, not
 // the SDK core). It composes the granular CLI commands, each of which executes
 // an SDK core primitive: npc generate x N -> npc create -> memory store x N,

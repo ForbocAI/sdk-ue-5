@@ -3,10 +3,14 @@
 #include "Core/rtk.hpp"
 #include "Entities/Config/ConfigActions.h"
 #include "Entities/Config/ConfigSelectors.h"
+#include "Systems/Config/Resolution/ResolutionThunks.h"
 
 namespace Ops {
 
-/** User Story: As a CLI invocation, I need external configuration hydrated into the package root store before command execution. @fn template <typename RootState> inline void hydrateRuntimeConfig( rtk::EnhancedStore<RootState> &Store, const ConfigSlice::FConfigInvocationOverrides &Overrides = ConfigSlice::FConfigInvocationOverrides(), const FString &FilePathOverride = FString()) */
+/**
+ * User Story: As an SDK invocation, I need external configuration resolved once and hydrated into the package root store before API execution.
+ * @fn template <typename RootState> inline void hydrateRuntimeConfig( rtk::EnhancedStore<RootState> &Store, const ConfigSlice::FConfigInvocationOverrides &Overrides = ConfigSlice::FConfigInvocationOverrides(), const FString &FilePathOverride = FString())
+ */
 template <typename RootState>
 inline void hydrateRuntimeConfig(
     rtk::EnhancedStore<RootState> &Store,
@@ -14,10 +18,11 @@ inline void hydrateRuntimeConfig(
         ConfigSlice::FConfigInvocationOverrides(),
     const FString &FilePathOverride = FString()) {
   Store.dispatch(ConfigSlice::Actions::configurationHydrated(
-      ConfigSlice::readConfigState(Overrides, FilePathOverride)));
+      ConfigSlice::resolveApiConfiguration(
+          ConfigSlice::readConfigState(Overrides, FilePathOverride))));
 }
 
-/** User Story: As a CLI config write, I need the root reducer updated before its entry snapshot is persisted. @fn template <typename RootState> inline bool setConfigValue(rtk::EnhancedStore<RootState> &Store, const FString &Key, const FString &Value) */
+/** User Story: As a config write, I need the root reducer updated before its entry snapshot is persisted. @fn template <typename RootState> inline bool setConfigValue(rtk::EnhancedStore<RootState> &Store, const FString &Key, const FString &Value) */
 template <typename RootState>
 inline bool setConfigValue(rtk::EnhancedStore<RootState> &Store,
                            const FString &Key, const FString &Value) {
@@ -27,7 +32,7 @@ inline bool setConfigValue(rtk::EnhancedStore<RootState> &Store,
       ConfigSelectors::selectConfig(Store.getState()));
 }
 
-/** User Story: As a CLI config read, I need persisted values selected from root state without filesystem access. @fn template <typename RootState> inline FString getConfigValue(const RootState &State, const FString &Key) */
+/** User Story: As a config read, I need persisted values selected from root state without filesystem access. @fn template <typename RootState> inline FString getConfigValue(const RootState &State, const FString &Key) */
 template <typename RootState>
 inline FString getConfigValue(const RootState &State, const FString &Key) {
   return ConfigSelectors::selectConfigValue(State, Key);

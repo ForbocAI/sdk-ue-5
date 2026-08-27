@@ -3,6 +3,7 @@
 
 #include "Core/fp.hpp"
 #include "Systems/Config/Contract/ContractAdapters.h"
+#include "Systems/Config/Resolution/ResolutionAdapters.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
 #include "Misc/FileHelper.h"
@@ -140,14 +141,18 @@ inline FConfigState readConfigState(
   const auto EnvironmentValue = [&Environment](const FString &Key) {
     return func::map_value_or(Environment, Key, FString());
   };
+  const FString ConfiguredApiUrl = firstConfiguredValue(
+      {Overrides.ApiUrl, EnvironmentValue(Data.Environment.ApiUrlKey),
+       Entry(Data.Fields.ApiUrl)},
+      FString());
+  const FConfigApiSelection ApiSelection =
+      selectApiUrlAdapter(ConfiguredApiUrl, false);
   return {Entries,
           Data.Fields,
           FilePath,
           Data.Defaults.SdkVersion,
-          firstConfiguredValue(
-              {Overrides.ApiUrl, EnvironmentValue(Data.Environment.ApiUrlKey),
-               Entry(Data.Fields.ApiUrl)},
-              Data.Defaults.ApiUrl),
+          ApiSelection.ApiUrl,
+          ApiSelection.ApiUrlSource,
           firstConfiguredValue(
               {Overrides.ApiKey, EnvironmentValue(Data.Environment.ApiKeyKey),
                Entry(Data.Fields.ApiKey)},
@@ -192,6 +197,9 @@ inline FConfigState commitConfigEntryAdapter(
       State.Entries, Entry.Key, Entry.Value,
       [&Entry](const FString &) { return Entry.Value; });
   Next.ApiUrl = Entry.Key == Fields.ApiUrl ? Entry.Value : State.ApiUrl;
+  Next.ApiUrlSource = Entry.Key == Fields.ApiUrl
+                          ? configRuntimeData().Connection.Sources.Explicit
+                          : State.ApiUrlSource;
   Next.ApiKey = Entry.Key == Fields.ApiKey ? Entry.Value : State.ApiKey;
   Next.DatabasePath = Entry.Key == Fields.DatabasePath ? Entry.Value
                                                        : State.DatabasePath;
@@ -214,6 +222,10 @@ inline FConfigState commitApiConfigurationAdapter(
     const FConfigState &State, const FConfigApiCommitted &Config) {
   FConfigState Next = State;
   Next.ApiUrl = Config.ApiUrl.IsEmpty() ? State.ApiUrl : Config.ApiUrl;
+  Next.ApiUrlSource =
+      Config.ApiUrl.IsEmpty()
+          ? State.ApiUrlSource
+          : configRuntimeData().Connection.Sources.Explicit;
   Next.ApiKey = Config.ApiKey;
   return Next;
 }

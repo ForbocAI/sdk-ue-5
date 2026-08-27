@@ -3,7 +3,7 @@
 
 #include "Systems/API/APIApi.h"
 #include "Systems/API/APIThunks.h"
-#include "Systems/CLI/Config/ConfigThunks.h"
+#include "Systems/Config/ConfigThunks.h"
 #include "Entities/Config/ConfigSelectors.h"
 #include "Store.h"
 

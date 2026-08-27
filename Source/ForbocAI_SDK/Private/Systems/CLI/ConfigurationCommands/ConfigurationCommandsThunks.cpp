@@ -1,6 +1,6 @@
 // User Story: As a developer, I need this module to function.
 #include "Systems/CLI/ConfigurationCommands/ConfigurationCommandsThunks.h"
-#include "Systems/CLI/Config/ConfigThunks.h"
+#include "Systems/Config/ConfigThunks.h"
 #include "Systems/CLI/CommandRouting/CommandRoutingAdapters.h"
 #include "Entities/CLI/Presentation/PresentationSelectors.h"
 

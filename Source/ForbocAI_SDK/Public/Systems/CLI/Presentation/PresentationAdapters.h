@@ -17,6 +17,7 @@ inline FCLIPresentationCommonMessages readCliPresentationCommonMessages(
       DataAdapters::ReadStringField(Common, TEXT("version")),
       DataAdapters::ReadStringField(Common, TEXT("status")),
       DataAdapters::ReadStringField(Common, TEXT("apiUrl")),
+      DataAdapters::ReadStringField(Common, TEXT("apiUrlSource")),
       DataAdapters::ReadStringField(Common, TEXT("apiKey")),
       DataAdapters::ReadStringField(Common, TEXT("apiKeyMissing")),
       DataAdapters::ReadStringField(Common, TEXT("maskedValue")),

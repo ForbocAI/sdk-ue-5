@@ -7,6 +7,21 @@
     "vectorDimension": 384,
     "maxRecallResults": 10
   },
+  "connection": {
+    "localApiUrl": "http://127.0.0.1:8080",
+    "statusPath": "/status",
+    "urlSeparator": "/",
+    "availabilityTimeoutMs": 750,
+    "millisecondsPerSecond": 1000,
+    "methods": {
+      "get": "GET"
+    },
+    "sources": {
+      "explicit": "explicit",
+      "local": "local",
+      "production": "production"
+    }
+  },
   "fields": {
     "sdkVersion": "version",
     "apiUrl": "apiUrl",

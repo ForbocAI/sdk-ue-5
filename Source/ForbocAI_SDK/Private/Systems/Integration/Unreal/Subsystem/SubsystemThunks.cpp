@@ -3,7 +3,7 @@
 #include "Entities/Bridge/BridgeSelectors.h"
 #include "Entities/Memory/MemorySelectors.h"
 #include "Entities/NPC/NPCSelectors.h"
-#include "Systems/CLI/Config/ConfigThunks.h"
+#include "Systems/Config/ConfigThunks.h"
 #include "Systems/Store/StoreAdapters.h"
 #include "Systems/Protocol/ProtocolThunks.h"
 #include "Systems/Soul/SoulThunks.h"
@@ -39,7 +39,7 @@ void UForbocAISubsystem::Deinitialize() {
  */
 void UForbocAISubsystem::Init(FString ApiKey, FString ApiUrl) {
   Store == nullptr ? void()
-                   : Ops::commitApiConfiguration(*Store, ApiUrl, ApiKey);
+                   : Ops::hydrateRuntimeConfig(*Store, {ApiUrl, ApiKey});
 }
 
 /**

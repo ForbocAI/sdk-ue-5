@@ -1,7 +1,7 @@
 #include "Systems/Integration/Unreal/Blueprint/BlueprintThunks.h"
 #include "Systems/Store/StoreAdapters.h"
 #include "Systems/CLI/Bridge/CLIBridgeThunks.h"
-#include "Systems/CLI/Config/ConfigThunks.h"
+#include "Systems/Config/ConfigThunks.h"
 #include "Systems/CLI/Ghost/CLIGhostThunks.h"
 #include "Systems/CLI/Memory/CLIMemoryThunks.h"
 #include "Systems/CLI/NPC/NPCThunks.h"

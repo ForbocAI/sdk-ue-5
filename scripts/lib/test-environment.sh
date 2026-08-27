@@ -15,9 +15,6 @@ forbocai_load_test_environment() {
     [[ "$restore_allexport" -eq 1 ]] || set +a
   fi
 
-  FORBOCAI_API_URL="${FORBOCAI_API_URL:-https://api.forboc.ai}"
-  export FORBOCAI_API_URL
-
   if [[ "$key_requirement" == "required" && -z "${FORBOCAI_API_KEY:-}" ]]; then
     echo "FORBOCAI_API_KEY is required for live verification." >&2
     echo "Set it in $env_file or FORBOCAI_TEST_ENV_FILE." >&2

@@ -9,7 +9,7 @@
 #include "Misc/Paths.h"
 #include "Systems/Config/ConfigAdapters.h"
 #include "Store.h"
-#include "Systems/CLI/Config/ConfigThunks.h"
+#include "Systems/Config/ConfigThunks.h"
 #include "Systems/CLI/Diagnostics/DiagnosticsThunks.h"
 #include "Systems/CLI/NPC/NPCThunks.h"
 #include "Entities/NPC/NPCActions.h"

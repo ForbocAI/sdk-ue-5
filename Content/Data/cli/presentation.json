@@ -11,6 +11,7 @@
     "version": "ForbocAI SDK v{0} (UE5)",
     "status": "API: {0}",
     "apiUrl": "API URL: {0}",
+    "apiUrlSource": "API Source: {0}",
     "apiKey": "API Key: {0}",
     "apiKeyMissing": "(not set)",
     "maskedValue": "********",

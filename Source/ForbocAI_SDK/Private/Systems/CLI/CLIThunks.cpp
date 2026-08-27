@@ -1,7 +1,7 @@
 #include "Systems/CLI/CLIThunks.h"
 #include "Systems/CLI/CommandRouting/CommandRoutingThunks.h"
 #include "Entities/CLI/Presentation/PresentationSelectors.h"
-#include "Systems/CLI/Config/ConfigThunks.h"
+#include "Systems/Config/ConfigThunks.h"
 #include "Systems/CLI/Invocation/InvocationAdapters.h"
 #include "Entities/CLI/Invocation/InvocationSelectors.h"
 #include "Systems/Store/StoreAdapters.h"

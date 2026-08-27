@@ -14,6 +14,12 @@ inline FConfigRuntimeData readConfigRuntimeData() {
       TEXT("ForbocAI_SDK"), TEXT("Data/config/runtime.json"));
   const TSharedRef<FJsonObject> Defaults =
       DataAdapters::ReadObjectField(Source, TEXT("defaults"));
+  const TSharedRef<FJsonObject> Connection =
+      DataAdapters::ReadObjectField(Source, TEXT("connection"));
+  const TSharedRef<FJsonObject> Methods =
+      DataAdapters::ReadObjectField(Connection, TEXT("methods"));
+  const TSharedRef<FJsonObject> Sources =
+      DataAdapters::ReadObjectField(Connection, TEXT("sources"));
   const TSharedRef<FJsonObject> Fields =
       DataAdapters::ReadObjectField(Source, TEXT("fields"));
   const TSharedRef<FJsonObject> Slice =
@@ -34,6 +40,17 @@ inline FConfigRuntimeData readConfigRuntimeData() {
            DataAdapters::ReadStringField(Defaults, TEXT("databasePath")),
            DataAdapters::ReadNumberField(Defaults, TEXT("vectorDimension")),
            DataAdapters::ReadNumberField(Defaults, TEXT("maxRecallResults"))},
+          {DataAdapters::ReadStringField(Connection, TEXT("localApiUrl")),
+           DataAdapters::ReadStringField(Connection, TEXT("statusPath")),
+           DataAdapters::ReadStringField(Connection, TEXT("urlSeparator")),
+           DataAdapters::ReadNumberField(Connection,
+                                         TEXT("availabilityTimeoutMs")),
+           DataAdapters::ReadNumberField(Connection,
+                                         TEXT("millisecondsPerSecond")),
+           {DataAdapters::ReadStringField(Methods, TEXT("get"))},
+           {DataAdapters::ReadStringField(Sources, TEXT("explicit")),
+            DataAdapters::ReadStringField(Sources, TEXT("local")),
+            DataAdapters::ReadStringField(Sources, TEXT("production"))}},
           {DataAdapters::ReadStringField(Fields, TEXT("sdkVersion")),
            DataAdapters::ReadStringField(Fields, TEXT("apiUrl")),
            DataAdapters::ReadStringField(Fields, TEXT("apiKey")),

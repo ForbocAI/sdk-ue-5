@@ -20,7 +20,8 @@ inline rtk::Slice<FConfigState> createConfigSlice() {
               const FConfigState &Hydrated = Action.PayloadValue;
               return FConfigState{
                   Hydrated.Entries, Hydrated.Fields, Hydrated.FilePath,
-                  Hydrated.SdkVersion, Hydrated.ApiUrl, Hydrated.ApiKey,
+                  Hydrated.SdkVersion, Hydrated.ApiUrl,
+                  Hydrated.ApiUrlSource, Hydrated.ApiKey,
                   Hydrated.DatabasePath, Hydrated.VectorDimension,
                   Hydrated.MaxRecallResults};
             });
