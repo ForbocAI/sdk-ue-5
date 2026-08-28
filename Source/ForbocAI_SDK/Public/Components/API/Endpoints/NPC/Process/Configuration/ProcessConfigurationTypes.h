@@ -11,7 +11,7 @@ struct FResponseFields {
 
 struct FRequestFields {
   FString Tape;
-  FString Result;
+  FString LastResult;
 };
 
 struct FTapeFields {
@@ -19,7 +19,7 @@ struct FTapeFields {
   FString Context;
   FString NpcState;
   FString StructuredPersona;
-  FString SamplerProfile;
+  FString ThoughtProfile;
   FString Actor;
   FString Memories;
   FString DecisionIntent;
@@ -29,6 +29,9 @@ struct FTapeFields {
   FString GeneratedOutput;
   FString RulesetId;
   FString VectorQueried;
+  FString LegalActions;
+  FString VisitedActions;
+  FString AvoidActions;
 };
 
 struct FActorFields {
@@ -65,18 +68,12 @@ struct FInstructionFields {
 };
 
 struct FInstructionTypes {
-  FString IdentifyActor;
   FString QueryVector;
-  FString Decision;
-  FString Reasoning;
   FString Finalize;
 };
 
 struct FResultTypes {
-  FString IdentifyActor;
   FString QueryVector;
-  FString Decision;
-  FString Reasoning;
 };
 
 struct FFinalizeFields {

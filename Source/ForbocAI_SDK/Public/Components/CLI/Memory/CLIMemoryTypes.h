@@ -36,6 +36,7 @@ struct FCLIMemorySyntax {
 };
 
 struct FCLIMemoryMessages {
+  FString TypeOption;
   FString UnknownError;
   FString ListUsage;
   FString Listing;

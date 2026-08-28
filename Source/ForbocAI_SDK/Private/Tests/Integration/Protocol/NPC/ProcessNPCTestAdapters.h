@@ -46,10 +46,13 @@ inline void Start(const TSharedPtr<FProcessNPCTestState> &State,
   State->Store->dispatch(rtk::initNodeMemoryThunk(State->DatabaseName))
       .then([State, Params](
                 const MemoryLocalTypes::FMemoryDatabasePaths &) {
+        FProtocolProcessInput Input =
+            ProtocolProcess::ProcessInput(Params.NpcId, Params.Input);
+        Input.ContextJson = FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF0320EEDEC6F) TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3E3D7634AB68));
+        Input.Persona = Params.Persona;
         State->Store
             ->dispatch(rtk::processNPC(
-                Params.NpcId, Params.Input, FString(TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF0320EEDEC6F) TEXT(FORBOCAI_SDK_AUTHORED_STRINGV3E3D7634AB68)),
-                Params.Persona, FAgentState(),
+                Input,
                 rtk::LocalProtocolHandlerContext(Params.NpcId)))
             .then([State](const FAgentResponse &Response) {
               CleanupAndComplete(State, true, Response, FString());

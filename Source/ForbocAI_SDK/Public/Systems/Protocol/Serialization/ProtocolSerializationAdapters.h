@@ -31,79 +31,6 @@ inline FString JsonObjectToString(const TSharedPtr<FJsonObject> &Object) {
 }
 
 /**
- * Serializes an identify-actor result payload for protocol tooling.
- * User Story: As protocol execution, I need actor-identification results
- * wrapped in a stable JSON envelope so later instructions can consume them.
- * @fn inline FString SerializeIdentifyActorResult(const FNPCActorInfo &Actor)
- */
-inline FString SerializeIdentifyActorResult(const FNPCActorInfo &Actor) {
-  const auto &Data =
-      APISlice::NPCProcessConfiguration::processContractData();
-  const TSharedPtr<FJsonObject> ActorObject = MakeShared<FJsonObject>();
-  ActorObject->SetStringField(Data.Actor.Id, Actor.NpcId);
-  Actor.bHasStructuredPersona
-      ? (ActorObject->SetObjectField(
-             Data.Actor.StructuredPersona,
-             JsonInterop::StructuredPersonaToObject(Actor.Persona)),
-         void())
-      : void();
-  ActorObject->SetObjectField(Data.Actor.Data,
-                              JsonInterop::StateToObject(Actor.Data));
-
-  const TSharedPtr<FJsonObject> Root = MakeShared<FJsonObject>();
-  Root->SetStringField(Data.Instruction.Type, Data.ResultTypes.IdentifyActor);
-  Root->SetObjectField(Data.Tape.Actor, ActorObject);
-  return JsonObjectToString(Root);
-}
-
-/**
- * Serializes a decision intent into a decision result payload.
- * User Story: As protocol execution, I need decision intent wrapped in a
- * stable JSON envelope so later instructions can consume it consistently.
- * @fn inline FString SerializeDecisionResult(const FString &Goal, const FString &ActionType, const FString &Target)
- */
-inline FString SerializeDecisionResult(const FString &Goal,
-                                       const FString &ActionType,
-                                       const FString &Target) {
-  const auto &Data =
-      APISlice::NPCProcessConfiguration::processContractData();
-  const TSharedPtr<FJsonObject> IntentObject = MakeShared<FJsonObject>();
-  IntentObject->SetStringField(Data.DecisionIntent.Goal, Goal);
-  IntentObject->SetStringField(Data.DecisionIntent.ActionType, ActionType);
-  !Target.IsEmpty()
-      ? (IntentObject->SetStringField(Data.DecisionIntent.Target, Target),
-         void())
-      : void();
-
-  const TSharedPtr<FJsonObject> Root = MakeShared<FJsonObject>();
-  Root->SetStringField(Data.Instruction.Type, Data.ResultTypes.Decision);
-  Root->SetObjectField(Data.Tape.DecisionIntent, IntentObject);
-  return JsonObjectToString(Root);
-}
-
-/**
- * Serializes reasoning output into a reasoning result payload.
- * User Story: As protocol execution, I need reasoning output wrapped in a
- * stable JSON envelope so later instructions can consume it consistently.
- * @fn inline FString SerializeReasoningResult(const FString &ReasoningText, const FString &ResponseText)
- */
-inline FString SerializeReasoningResult(const FString &ReasoningText,
-                                        const FString &ResponseText) {
-  const auto &Data =
-      APISlice::NPCProcessConfiguration::processContractData();
-  const TSharedPtr<FJsonObject> ReasoningObject = MakeShared<FJsonObject>();
-  ReasoningObject->SetStringField(Data.ReasoningOutput.ReasoningText,
-                                  ReasoningText);
-  ReasoningObject->SetStringField(Data.ReasoningOutput.ResponseText,
-                                  ResponseText);
-
-  const TSharedPtr<FJsonObject> Root = MakeShared<FJsonObject>();
-  Root->SetStringField(Data.Instruction.Type, Data.ResultTypes.Reasoning);
-  Root->SetObjectField(Data.Tape.ReasoningOutput, ReasoningObject);
-  return JsonObjectToString(Root);
-}
-
-/**
  * Serializes one memory item through the authored recalled-memory contract.
  * User Story: As protocol memory serialization, I need a pure item adapter so
  * query-vector arrays can be mapped without index mutation.
@@ -145,15 +72,26 @@ inline FString SerializeQueryVectorResult(
  * Converts a protocol instruction into the public agent response shape.
  * User Story: As protocol callers, I need typed instructions converted into
  * agent responses so runtime code can consume dialogue and actions directly.
- * @fn inline FAgentResponse BuildAgentResponse(const FNPCInstruction &Instruction)
+ * @fn inline FAgentResponse BuildAgentResponse(const FNPCInstruction &Instruction, const FNPCProcessTape &Tape)
  */
-inline FAgentResponse BuildAgentResponse(const FNPCInstruction &Instruction) {
+inline FAgentResponse BuildAgentResponse(const FNPCInstruction &Instruction,
+                                         const FNPCProcessTape &Tape) {
   FAgentResponse Response;
   return (Response.Dialogue = Instruction.Dialogue,
-          Response.Thought = Instruction.Dialogue,
+          Response.bHasAction = Instruction.bHasAction,
           Instruction.bHasAction
               ? (Response.Action = Instruction.Action, void())
               : void(),
+          Response.bHasThoughtResult = Tape.bHasDecisionIntent,
+          Tape.bHasDecisionIntent
+              ? (Response.ThoughtResult = Tape.DecisionIntent, void())
+              : void(),
+          Response.bHasReasoningResult = Tape.bHasReasoningOutput,
+          Tape.bHasReasoningOutput
+              ? (Response.ReasoningResult = Tape.ReasoningOutput, void())
+              : void(),
+          Response.bHasPrompt = Tape.bHasPrompt,
+          Tape.bHasPrompt ? (Response.Prompt = Tape.Prompt, void()) : void(),
           Response);
 }
 

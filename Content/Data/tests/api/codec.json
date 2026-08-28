@@ -213,55 +213,23 @@
       "rejectsInternalNames": "Internal API record names are rejected"
     }
   },
-  "identifyActorPayload": {
+  "agentResponseProjection": {
     "input": {
-      "npcId": "npc_test_1",
-      "persona": "Tester",
-      "data": {
-        "health": 100
-      }
-    },
-    "expected": {
-      "type": "IdentifyActorResult"
-    },
-    "labels": {
-      "payload": "Identify actor payload parses",
-      "type": "Identify actor payload type",
-      "npcId": "Identify actor NPC id",
-      "persona": "Identify actor persona",
-      "data": "Identify actor data"
-    }
-  },
-  "decisionPayload": {
-    "input": {
-      "goal": "Respond",
+      "dialogue": "Acknowledged",
       "actionType": "SPEAK",
-      "target": "Player"
-    },
-    "expected": {
-      "type": "Decision"
-    },
-    "labels": {
-      "payload": "Decision payload parses",
-      "type": "Decision payload type",
-      "goal": "Decision goal",
-      "actionType": "Decision action type",
-      "target": "Decision target"
-    }
-  },
-  "reasoningPayload": {
-    "input": {
-      "reasoningText": "Thinking...",
-      "responseText": "Hello there"
-    },
-    "expected": {
-      "type": "Reasoning"
+      "goal": "Respond",
+      "decisionActionType": "respond",
+      "target": "speaker",
+      "reasoningText": "The response follows the supplied evidence.",
+      "responseText": "Acknowledged",
+      "prompt": "Return one grounded response."
     },
     "labels": {
-      "payload": "Reasoning payload parses",
-      "type": "Reasoning payload type",
-      "reasoningText": "Reasoning text",
-      "responseText": "Reasoning response text"
+      "dialogue": "Finalize dialogue is projected",
+      "action": "Finalize action presence is projected",
+      "thought": "API thought result is projected",
+      "reasoning": "API reasoning result is projected",
+      "prompt": "API prompt is projected"
     }
   },
   "processTapePayload": {
@@ -271,17 +239,30 @@
         "time": "day"
       },
       "npcState": {},
-      "persona": "Guard"
+      "persona": "Observer",
+      "thoughtProfile": "deliberate",
+      "legalActions": ["acknowledge", "wait"],
+      "visitedActions": ["wait"],
+      "avoidActions": []
     },
     "expected": {
-      "traits": ["Guard"],
-      "contextTime": "day"
+      "traits": ["Observer"],
+      "contextTimeField": "time",
+      "contextTime": "day",
+      "thoughtProfile": "deliberate",
+      "legalActionCount": 2,
+      "visitedActionCount": 1,
+      "avoidActionCount": 0
     },
     "labels": {
       "payload": "Process tape payload parses",
       "observation": "Process tape observation",
       "persona": "Process tape structured persona",
-      "contextTime": "Process tape context time"
+      "contextTime": "Process tape context time",
+      "thoughtProfile": "Process tape thought profile",
+      "legalActions": "Process tape legal actions",
+      "visitedActions": "Process tape visited actions",
+      "avoidActions": "Process tape avoid actions"
     }
   }
 }

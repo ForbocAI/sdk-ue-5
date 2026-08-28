@@ -17,6 +17,8 @@ inline FCLINPCState readCliNpcState() {
       DataAdapters::ReadObjectField(Source, TEXT("limits"));
   const TSharedRef<FJsonObject> Syntax =
       DataAdapters::ReadObjectField(Source, TEXT("syntax"));
+  const TSharedRef<FJsonObject> Analysis =
+      DataAdapters::ReadObjectField(Source, TEXT("analysis"));
   const TSharedRef<FJsonObject> Messages =
       DataAdapters::ReadObjectField(Source, TEXT("messages"));
   return {
@@ -33,14 +35,27 @@ inline FCLINPCState readCliNpcState() {
        DataAdapters::ReadNumberField(Limits, TEXT("keyOffset")),
        DataAdapters::ReadNumberField(Limits, TEXT("valueOffset"))},
       {DataAdapters::ReadStringField(Syntax, TEXT("optionPrefix")),
+       DataAdapters::ReadStringField(Syntax, TEXT("textOption")),
+       DataAdapters::ReadStringField(Syntax, TEXT("legalActionsOption")),
+       DataAdapters::ReadStringField(Syntax, TEXT("visitedActionsOption")),
+       DataAdapters::ReadStringField(Syntax, TEXT("avoidActionsOption")),
+       DataAdapters::ReadStringField(Syntax, TEXT("personaMemoryType")),
+       DataAdapters::ReadStringField(Syntax, TEXT("legalActionsSeparator")),
        DataAdapters::ReadStringField(Syntax, TEXT("messageSeparator")),
-       DataAdapters::ReadStringField(Syntax, TEXT("personaPattern"))},
+       DataAdapters::ReadStringField(Syntax, TEXT("personaPattern")),
+       DataAdapters::ReadStringField(Syntax, TEXT("formatOpenToken")),
+       DataAdapters::ReadStringField(Syntax, TEXT("formatCloseToken"))},
+      {DataAdapters::ReadStringField(Analysis, TEXT("diagnosisContainer")),
+       DataAdapters::ReadStringField(Analysis,
+                                     TEXT("diagnosticResultField"))},
       {DataAdapters::ReadStringField(Messages, TEXT("createUsage")),
        DataAdapters::ReadStringField(Messages, TEXT("creating")),
+       DataAdapters::ReadStringField(Messages, TEXT("unknownId")),
        DataAdapters::ReadStringField(Messages, TEXT("created")),
        DataAdapters::ReadStringField(Messages, TEXT("id")),
        DataAdapters::ReadStringField(Messages, TEXT("state")),
        DataAdapters::ReadStringField(Messages, TEXT("noActive")),
+       DataAdapters::ReadStringField(Messages, TEXT("missingId")),
        DataAdapters::ReadStringField(Messages, TEXT("notFound")),
        DataAdapters::ReadStringField(Messages, TEXT("updateUsage")),
        DataAdapters::ReadStringField(Messages, TEXT("updated")),
@@ -52,6 +67,19 @@ inline FCLINPCState readCliNpcState() {
        DataAdapters::ReadStringField(Messages, TEXT("dialogueFallback")),
        DataAdapters::ReadStringField(Messages, TEXT("dialogue")),
        DataAdapters::ReadStringField(Messages, TEXT("action")),
+       DataAdapters::ReadStringField(Messages, TEXT("thoughtResultPrefix")),
+       DataAdapters::ReadStringField(Messages,
+                                     TEXT("reasoningResultPrefix")),
+       DataAdapters::ReadStringField(Messages,
+                                     TEXT("diagnosticResultPrefix")),
+       DataAdapters::ReadStringField(Messages, TEXT("promptTraceEnvKey")),
+       DataAdapters::ReadStringField(Messages, TEXT("promptTraceHeader")),
+       DataAdapters::ReadStringField(Messages, TEXT("promptTraceFooter")),
+       DataAdapters::ReadStringField(Messages, TEXT("profileOption")),
+       DataAdapters::ReadStringField(Messages,
+                                     TEXT("thoughtProfileMemoryType")),
+       DataAdapters::ReadStringField(Messages,
+                                     TEXT("thoughtProfileStateKey")),
        DataAdapters::ReadStringField(Messages, TEXT("chatUsage")),
        DataAdapters::ReadStringField(Messages, TEXT("chatMissingId")),
        DataAdapters::ReadStringField(Messages, TEXT("chatHeader")),
@@ -64,7 +92,10 @@ inline FCLINPCState readCliNpcState() {
        DataAdapters::ReadStringField(Messages, TEXT("persona")),
        DataAdapters::ReadStringField(Messages, TEXT("importDone")),
        DataAdapters::ReadStringField(Messages, TEXT("statePrinted")),
-       DataAdapters::ReadStringField(Messages, TEXT("updateDone"))}};
+       DataAdapters::ReadStringField(Messages, TEXT("updateDone")),
+       DataAdapters::ReadStringField(Messages, TEXT("emptyPersona")),
+       DataAdapters::ReadStringField(Messages, TEXT("apiFailure")),
+       DataAdapters::ReadStringArrayField(Messages, TEXT("networkErrors"))}};
 }
 
 /** User Story: As a features cli npc consumer, I need to invoke join npc arguments through a stable signature so the features cli npc workflow remains explicit and composable. @fn inline FString joinNpcArguments(const TArray<FString> &Arguments, int32 Index, const FString &Separator) */
@@ -104,10 +135,9 @@ inline bool addUpdatePair(const TArray<FString> &Args, int32 Index,
                }();
 }
 
-/** User Story: As a features cli npc consumer, I need to invoke decode npc update through a stable signature so the features cli npc workflow remains explicit and composable. @fn inline func::Maybe<FCLINPCUpdate> decodeNpcUpdate( const TArray<FString> &Args, const func::Maybe<FString> &ActiveNpcId, const FCLINPCState &State) */
+/** User Story: As NPC and Ghost update commands, I need supplied identity distinguished from active-actor selection without reading runtime state in the CLI decoder. @fn inline func::Maybe<FCLINPCUpdate> decodeNpcUpdate(const TArray<FString> &Args, const FCLINPCState &State) */
 inline func::Maybe<FCLINPCUpdate> decodeNpcUpdate(
-    const TArray<FString> &Args, const func::Maybe<FString> &ActiveNpcId,
-    const FCLINPCState &State) {
+    const TArray<FString> &Args, const FCLINPCState &State) {
   return Args.Num() < State.Limits.ActiveUpdateArgumentCount
              ? func::nothing<FCLINPCUpdate>()
              : [&]() -> func::Maybe<FCLINPCUpdate> {
@@ -123,15 +153,16 @@ inline func::Maybe<FCLINPCUpdate> decodeNpcUpdate(
                  return Args.Num() < RequiredCount ||
                                 (Args.Num() - UpdateIndex) %
                                         State.Limits.PairStride !=
-                                    State.Limits.EmptyArgumentCount ||
-                                (bUsesActive && !ActiveNpcId.hasValue)
+                                    State.Limits.EmptyArgumentCount
                             ? func::nothing<FCLINPCUpdate>()
                             : [&]() -> func::Maybe<FCLINPCUpdate> {
                                 FCLINPCUpdate Update;
-                                Update.NpcId =
+                                Update.RequestedNpcId =
                                     bUsesActive
-                                        ? ActiveNpcId.value
-                                        : Args[State.Limits.FirstArgumentIndex];
+                                        ? func::nothing<FString>()
+                                        : func::just(
+                                              Args[State.Limits
+                                                       .FirstArgumentIndex]);
                                 const TSharedRef<FJsonObject> Delta =
                                     MakeShared<FJsonObject>();
                                 return !addUpdatePair(

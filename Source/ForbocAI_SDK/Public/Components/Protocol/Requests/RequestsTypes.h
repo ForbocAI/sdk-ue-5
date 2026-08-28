@@ -34,48 +34,6 @@ struct FNPCActorInfo {
   FNPCActorInfo() : bHasStructuredPersona(false) {}
 };
 USTRUCT(BlueprintType)
-struct FDecisionIntent {
-  GENERATED_BODY()
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString Goal;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString ActionType;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString Target;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  bool bHasMetadata{};
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString MetadataJson;
-
-  /**
-   * User Story: As a features protocol requests consumer, I need to invoke fdecision intent through a stable signature so the features protocol requests workflow remains explicit and composable.
-   * @fn FDecisionIntent() = default
-   */
-  FDecisionIntent() = default;
-};
-USTRUCT(BlueprintType)
-struct FReasoningOutput {
-  GENERATED_BODY()
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString ReasoningText;
-
-  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString ResponseText;
-
-  /**
-   * User Story: As a features protocol requests consumer, I need to invoke freasoning output through a stable signature so the features protocol requests workflow remains explicit and composable.
-   * @fn FReasoningOutput() = default
-   */
-  FReasoningOutput() = default;
-};
-
-USTRUCT(BlueprintType)
 struct FNPCProcessTape {
   GENERATED_BODY()
 
@@ -95,10 +53,10 @@ struct FNPCProcessTape {
   bool bHasStructuredPersona;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  bool bHasSamplerProfile;
+  bool bHasThoughtProfile;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  FString SamplerProfile;
+  FString ThoughtProfile;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   bool bHasActor;
@@ -121,21 +79,21 @@ struct FNPCProcessTape {
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   bool bHasVectorQueried;
 
-  /** Decision step result — intent selected by the local decision handler. */
+  /** API-owned decision intent transported without SDK reinterpretation. */
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FDecisionIntent DecisionIntent;
 
-  /** Whether the decision step has been completed in this tape. */
+  /** Whether the API returned a decision intent in this tape. */
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  bool bDecisionCompleted;
+  bool bHasDecisionIntent;
 
-  /** Reasoning step result — output from the SLM. */
+  /** API-owned reasoning output transported without SDK reinterpretation. */
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FReasoningOutput ReasoningOutput;
 
-  /** Whether the reasoning step has been completed in this tape. */
+  /** Whether the API returned reasoning output in this tape. */
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
-  bool bReasoningCompleted;
+  bool bHasReasoningOutput;
 
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   bool bHasPrompt;
@@ -155,13 +113,33 @@ struct FNPCProcessTape {
   UPROPERTY(BlueprintReadOnly, Category = "Protocol")
   FString GeneratedOutput;
 
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasLegalActions;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  TArray<FString> LegalActions;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasVisitedActions;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  TArray<FString> VisitedActions;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  bool bHasAvoidActions;
+
+  UPROPERTY(BlueprintReadOnly, Category = "Protocol")
+  TArray<FString> AvoidActions;
+
   /** User Story: As a features protocol requests consumer, I need to invoke fnpcprocess tape through a stable signature so the features protocol requests workflow remains explicit and composable. @fn FNPCProcessTape() */
   FNPCProcessTape()
-      : bHasStructuredPersona(false), bHasSamplerProfile(false),
+      : bHasStructuredPersona(false), bHasThoughtProfile(false),
         bHasActor(false), bHasRulesetId(false), bVectorQueried(false),
-        bHasVectorQueried(false), bDecisionCompleted(false),
-        bReasoningCompleted(false), bHasPrompt(false),
-        bHasConstraints(false), bHasGeneratedOutput(false) {}
+        bHasVectorQueried(false), bHasDecisionIntent(false),
+        bHasReasoningOutput(false), bHasPrompt(false),
+        bHasConstraints(false), bHasGeneratedOutput(false),
+        bHasLegalActions(false), bHasVisitedActions(false),
+        bHasAvoidActions(false) {}
 };
 
 USTRUCT(BlueprintType)

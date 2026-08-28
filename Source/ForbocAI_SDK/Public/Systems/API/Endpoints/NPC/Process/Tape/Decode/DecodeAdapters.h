@@ -4,6 +4,23 @@
 
 namespace APISlice::Detail {
 
+/** User Story: As the process tape decoder, I need optional string arrays traversed atomically so malformed action constraints reject the complete tape. @fn inline func::Maybe<TArray<FString>> DecodeOptionalTapeStringArray(const TSharedPtr<FJsonObject> &Object, const FString &Field) */
+inline func::Maybe<TArray<FString>> DecodeOptionalTapeStringArray(
+    const TSharedPtr<FJsonObject> &Object, const FString &Field) {
+  const bool bHasValue = JsonInterop::HasNonNullField(Object, Field);
+  const TArray<TSharedPtr<FJsonValue>> *Values = nullptr;
+  return !bHasValue
+             ? func::just(TArray<FString>())
+         : !Object->TryGetArrayField(Field, Values) || !Values
+             ? func::nothing<TArray<FString>>()
+             : func::traverse_maybe_array<TSharedPtr<FJsonValue>, FString>(
+                   *Values, [](const TSharedPtr<FJsonValue> &Value) {
+                     return Value.IsValid() && Value->Type == EJson::String
+                                ? func::just(Value->AsString())
+                                : func::nothing<FString>();
+                   });
+}
+
 /** User Story: As the process tape decoder, I need every nested tape value decoded atomically so malformed API output cannot partially replace runtime state. @fn inline bool DecodeProcessTapeObject(const TSharedPtr<FJsonObject> &Object, FNPCProcessTape &Tape) */
 inline bool DecodeProcessTapeObject(const TSharedPtr<FJsonObject> &Object,
                                     FNPCProcessTape &Tape) {
@@ -17,7 +34,7 @@ inline bool DecodeProcessTapeObject(const TSharedPtr<FJsonObject> &Object,
       JsonInterop::HasOptionalFieldType(
           Object, Data.Tape.StructuredPersona, EJson::Object) &&
       JsonInterop::HasOptionalFieldType(
-          Object, Data.Tape.SamplerProfile, EJson::String) &&
+          Object, Data.Tape.ThoughtProfile, EJson::String) &&
       JsonInterop::HasOptionalFieldType(Object, Data.Tape.Actor,
                                         EJson::Object) &&
       Object->TryGetArrayField(Data.Tape.Memories, MemoryValues) &&
@@ -35,7 +52,13 @@ inline bool DecodeProcessTapeObject(const TSharedPtr<FJsonObject> &Object,
       JsonInterop::HasOptionalFieldType(Object, Data.Tape.RulesetId,
                                         EJson::String) &&
       JsonInterop::HasOptionalFieldType(Object, Data.Tape.VectorQueried,
-                                        EJson::Boolean);
+                                        EJson::Boolean) &&
+      JsonInterop::HasOptionalFieldType(Object, Data.Tape.LegalActions,
+                                        EJson::Array) &&
+      JsonInterop::HasOptionalFieldType(Object, Data.Tape.VisitedActions,
+                                        EJson::Array) &&
+      JsonInterop::HasOptionalFieldType(Object, Data.Tape.AvoidActions,
+                                        EJson::Array);
   return !bBaseValid
              ? false
              : [&]() {
@@ -104,10 +127,18 @@ inline bool DecodeProcessTapeObject(const TSharedPtr<FJsonObject> &Object,
   const func::Maybe<TArray<FRecalledMemory>> Memories =
       func::traverse_maybe_array<TSharedPtr<FJsonValue>, FRecalledMemory>(
           *MemoryValues, JsonInterop::DecodeRecalledMemoryValue);
+  const func::Maybe<TArray<FString>> LegalActions =
+      DecodeOptionalTapeStringArray(Object, Data.Tape.LegalActions);
+  const func::Maybe<TArray<FString>> VisitedActions =
+      DecodeOptionalTapeStringArray(Object, Data.Tape.VisitedActions);
+  const func::Maybe<TArray<FString>> AvoidActions =
+      DecodeOptionalTapeStringArray(Object, Data.Tape.AvoidActions);
   const bool bNestedValid =
       bActorValid && bDecisionValid && bReasoningValid &&
       func::is_just(Persona) && func::is_just(ActorPersona) &&
-      func::is_just(Constraints) && func::is_just(Memories);
+      func::is_just(Constraints) && func::is_just(Memories) &&
+      func::is_just(LegalActions) && func::is_just(VisitedActions) &&
+      func::is_just(AvoidActions);
   return !bNestedValid
              ? false
              : [&]() {
@@ -118,10 +149,10 @@ inline bool DecodeProcessTapeObject(const TSharedPtr<FJsonObject> &Object,
   Decoded.NpcState = JsonInterop::StateFromField(Object, Data.Tape.NpcState);
   Decoded.bHasStructuredPersona = bHasPersona;
   Decoded.Persona = func::or_else(Persona, FString());
-  Decoded.bHasSamplerProfile =
-      JsonInterop::HasNonNullField(Object, Data.Tape.SamplerProfile);
-  Decoded.SamplerProfile = JsonInterop::OptionalStringFromField(
-      Object, Data.Tape.SamplerProfile);
+  Decoded.bHasThoughtProfile =
+      JsonInterop::HasNonNullField(Object, Data.Tape.ThoughtProfile);
+  Decoded.ThoughtProfile = JsonInterop::OptionalStringFromField(
+      Object, Data.Tape.ThoughtProfile);
   Decoded.bHasActor = bHasActor;
   bHasActor
       ? (Decoded.Actor.NpcId = Actor->GetStringField(Data.Actor.Id),
@@ -132,7 +163,7 @@ inline bool DecodeProcessTapeObject(const TSharedPtr<FJsonObject> &Object,
          void())
       : void();
   Decoded.Memories = func::or_else(Memories, TArray<FRecalledMemory>());
-  Decoded.bDecisionCompleted = bHasDecision;
+  Decoded.bHasDecisionIntent = bHasDecision;
   bHasDecision
       ? (Decoded.DecisionIntent.Goal =
              Intent->GetStringField(Data.DecisionIntent.Goal),
@@ -147,7 +178,7 @@ inline bool DecodeProcessTapeObject(const TSharedPtr<FJsonObject> &Object,
              Intent, Data.DecisionIntent.Metadata, TEXT("")),
          void())
       : void();
-  Decoded.bReasoningCompleted = bHasReasoning;
+  Decoded.bHasReasoningOutput = bHasReasoning;
   bHasReasoning
       ? (Decoded.ReasoningOutput.ReasoningText = Reasoning->GetStringField(
              Data.ReasoningOutput.ReasoningText),
@@ -174,6 +205,15 @@ inline bool DecodeProcessTapeObject(const TSharedPtr<FJsonObject> &Object,
   Decoded.bVectorQueried = Decoded.bHasVectorQueried
                                ? Object->GetBoolField(Data.Tape.VectorQueried)
                                : false;
+  Decoded.bHasLegalActions =
+      JsonInterop::HasNonNullField(Object, Data.Tape.LegalActions);
+  Decoded.LegalActions = func::or_else(LegalActions, TArray<FString>());
+  Decoded.bHasVisitedActions =
+      JsonInterop::HasNonNullField(Object, Data.Tape.VisitedActions);
+  Decoded.VisitedActions = func::or_else(VisitedActions, TArray<FString>());
+  Decoded.bHasAvoidActions =
+      JsonInterop::HasNonNullField(Object, Data.Tape.AvoidActions);
+  Decoded.AvoidActions = func::or_else(AvoidActions, TArray<FString>());
   Tape = Decoded;
   return true;
                }();

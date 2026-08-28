@@ -5,6 +5,7 @@
 #include "Core/rtk.hpp"
 #include "Systems/Async/AsyncAdapters.h"
 #include "Systems/API/Endpoints/NPC/NPCApi.h"
+#include "Systems/Actor/Local/LocalActorThunks.h"
 #include "Systems/Memory/Local/LocalThunks.h"
 #include "Entities/NPC/NPCActions.h"
 #include "Entities/NPC/NPCSelectors.h"
@@ -38,56 +39,67 @@ inline void importNpcSoulMemories(rtk::EnhancedStore<RuntimeState> &Store,
 template <typename RuntimeState = FRuntimeState>
 inline FNPCInternalState createNpc(rtk::EnhancedStore<RuntimeState> &Store,
                                    const FString &Persona) {
-  FNPCInternalState Info;
-  Info.Id = NPCId::GenerateNPCId();
-  Info.Persona = Persona;
-  Store.dispatch(NPCActions::setNPCInfo(Info));
-  const func::Maybe<FNPCInternalState> Active =
-      NPCSelectors::selectActiveNPC(Store.getState().NPCs);
-  return Active.hasValue ? Active.value : Info;
+  return LocalActor::createActor(Store, Persona);
 }
 
 /** User Story: As a features cli npc consumer, I need to invoke get active npc through a stable signature so the features cli npc workflow remains explicit and composable. @fn template <typename RuntimeState = FRuntimeState> inline func::Maybe<FNPCInternalState> getActiveNpc(rtk::EnhancedStore<RuntimeState> &Store) */
 template <typename RuntimeState = FRuntimeState>
 inline func::Maybe<FNPCInternalState>
 getActiveNpc(rtk::EnhancedStore<RuntimeState> &Store) {
-  return NPCSelectors::selectActiveNPC(Store.getState().NPCs);
+  return LocalActor::getActiveActor(Store);
 }
 
 /** User Story: As a features cli npc consumer, I need to invoke get npc through a stable signature so the features cli npc workflow remains explicit and composable. @fn template <typename RuntimeState = FRuntimeState> inline func::Maybe<FNPCInternalState> getNpc(rtk::EnhancedStore<RuntimeState> &Store, const FString &NpcId) */
 template <typename RuntimeState = FRuntimeState>
 inline func::Maybe<FNPCInternalState>
 getNpc(rtk::EnhancedStore<RuntimeState> &Store, const FString &NpcId) {
-  return NPCSelectors::selectNPCById(Store.getState().NPCs, NpcId);
+  return LocalActor::getActor(Store, NpcId);
 }
 
-/** User Story: As a features cli npc consumer, I need to invoke update npc through a stable signature so the features cli npc workflow remains explicit and composable. @fn template <typename RuntimeState = FRuntimeState> inline func::Maybe<FNPCInternalState> updateNpc(rtk::EnhancedStore<RuntimeState> &Store, const FString &NpcId, const FAgentState &Delta) */
+/** User Story: As normal NPC state, I need actor targeting and reduction delegated to the shared SDK actor operation. @fn template <typename RuntimeState = FRuntimeState> inline FActorUpdateResult updateNpc(rtk::EnhancedStore<RuntimeState> &Store, const FActorUpdateInput &Input) */
 template <typename RuntimeState = FRuntimeState>
-inline func::Maybe<FNPCInternalState>
-updateNpc(rtk::EnhancedStore<RuntimeState> &Store, const FString &NpcId,
-          const FAgentState &Delta) {
-  Store.dispatch(NPCActions::updateNPCState(NpcId, Delta));
-  return NPCSelectors::selectNPCById(Store.getState().NPCs, NpcId);
+inline FActorUpdateResult
+updateNpc(rtk::EnhancedStore<RuntimeState> &Store,
+          const FActorUpdateInput &Input) {
+  return LocalActor::updateActor(Store, Input);
 }
 
-/** User Story: As a features cli npc consumer, I need to invoke process npc through a stable signature so the features cli npc workflow remains explicit and composable. @fn template <typename RuntimeState = FRuntimeState> inline FAgentResponse processNpc(rtk::EnhancedStore<RuntimeState> &Store, const FString &NpcId, const FString &Text) */
+/** User Story: As normal NPC processing, I need one decoded request routed only through the normal NPC API process endpoint. @fn template <typename RuntimeState = FRuntimeState> inline FAgentResponse processNpc(rtk::EnhancedStore<RuntimeState> &Store, const FProtocolProcessInput &RequestedInput) */
 template <typename RuntimeState = FRuntimeState>
 inline FAgentResponse processNpc(rtk::EnhancedStore<RuntimeState> &Store,
-                                 const FString &NpcId, const FString &Text) {
+                                 const FProtocolProcessInput &RequestedInput) {
+  FProtocolProcessInput Input = RequestedInput;
+  const FNPCInternalState Actor = func::requireJust(
+      LocalActor::ensureActor(Store, Input.NpcId),
+      std::string(TCHAR_TO_UTF8(
+          *ForbocAI::CLI::NPC::readCliNpcState().Messages.NotFound)));
+  Input.Persona = Actor.Persona;
   return AsyncAdapters::waitForResult(
-      Store.dispatch(rtk::processNPC(NpcId, Text, TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF54CAD9838EB), TEXT(""),
-                                     FAgentState(),
-                                     rtk::LocalProtocolHandlerContext(NpcId))));
+      Store.dispatch(rtk::processNPC(Input,
+                                     rtk::LocalProtocolHandlerContext(
+                                         Input.NpcId))));
 }
 
-/** User Story: As a features cli npc consumer, I need the decide-only npc turn — the decision engine run without bound memory — so the micro-game composes memory recall and store around it as separate granular commands. @fn template <typename RuntimeState = FRuntimeState> inline FAgentResponse decideNpc(rtk::EnhancedStore<RuntimeState> &Store, const FString &NpcId, const FString &Text) */
+/** User Story: As normal NPC decision making, I need one decoded request routed only through the normal NPC API process endpoint. @fn template <typename RuntimeState = FRuntimeState> inline FAgentResponse decideNpc(rtk::EnhancedStore<RuntimeState> &Store, const FProtocolProcessInput &RequestedInput) */
 template <typename RuntimeState = FRuntimeState>
 inline FAgentResponse decideNpc(rtk::EnhancedStore<RuntimeState> &Store,
-                                const FString &NpcId, const FString &Text) {
+                                const FProtocolProcessInput &RequestedInput) {
+  FProtocolProcessInput Input = RequestedInput;
+  const FNPCInternalState Actor = func::requireJust(
+      LocalActor::ensureActor(Store, Input.NpcId),
+      std::string(TCHAR_TO_UTF8(
+          *ForbocAI::CLI::NPC::readCliNpcState().Messages.NotFound)));
+  Input.Persona = Actor.Persona;
   return AsyncAdapters::waitForResult(
-      Store.dispatch(rtk::processNPC(NpcId, Text, TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF54CAD9838EB), TEXT(""),
-                                     FAgentState(),
+      Store.dispatch(rtk::processNPC(Input,
                                      rtk::EphemeralProtocolHandlerContext())));
+}
+
+/** User Story: As normal NPC hydration, I need the NPC SDK feature to compose the shared local actor and vector capability. @fn template <typename RuntimeState = FRuntimeState> inline func::Maybe<FNPCInternalState> recallNpc(rtk::EnhancedStore<RuntimeState> &Store, const FString &NpcId) */
+template <typename RuntimeState = FRuntimeState>
+inline func::Maybe<FNPCInternalState>
+recallNpc(rtk::EnhancedStore<RuntimeState> &Store, const FString &NpcId) {
+  return LocalActor::recallActor(Store, NpcId);
 }
 
 /** User Story: As the thin UE CLI boundary, I need one SLM-generated NPC attribute returned per call, conditioned on the prior attributes supplied as context, so personas compose granularly one round trip at a time. @fn template <typename RuntimeState = FRuntimeState> inline func::AsyncResult<FNpcAttributeGenerateResponse> generateNpcAttribute(rtk::EnhancedStore<RuntimeState> &Store, const FString &Attribute, const FString &Context) */

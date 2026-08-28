@@ -8,6 +8,7 @@
 #include "Systems/CLI/Soul/CLISoulThunks.h"
 #include "Systems/CLI/Diagnostics/DiagnosticsThunks.h"
 #include "Systems/API/Serialization/Agent/AgentAdapters.h"
+#include "Systems/Protocol/Process/ProcessAdapters.h"
 
 namespace {
 /**
@@ -51,7 +52,8 @@ FString UForbocAIBlueprintLibrary::createNpc(const FString &Persona) {
  */
 FString UForbocAIBlueprintLibrary::processNpc(const FString &NpcId,
                                                const FString &Text) {
-  FAgentResponse Resp = Ops::processNpc(GetBPStore(), NpcId, Text);
+  FAgentResponse Resp = Ops::processNpc(
+      GetBPStore(), ProtocolProcess::ProcessInput(NpcId, Text));
   return Resp.Dialogue;
 }
 
@@ -63,7 +65,8 @@ FString UForbocAIBlueprintLibrary::processNpc(const FString &NpcId,
  */
 FString UForbocAIBlueprintLibrary::ChatNpc(const FString &NpcId,
                                             const FString &Message) {
-  FAgentResponse Resp = Ops::processNpc(GetBPStore(), NpcId, Message);
+  FAgentResponse Resp = Ops::processNpc(
+      GetBPStore(), ProtocolProcess::ProcessInput(NpcId, Message));
   return Resp.Dialogue;
 }
 

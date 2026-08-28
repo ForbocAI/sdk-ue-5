@@ -7,6 +7,7 @@
 #include "CoreMinimal.h"
 #include "Components/Memory/MemoryTypes.h"
 #include "Components/NPC/Agent/AgentTypes.h"
+#include "Components/Protocol/Analysis/AnalysisTypes.h"
 #include "ProtocolTypes.generated.h"
 // clang-format on
 
@@ -208,10 +209,7 @@ struct FRuleAudit {
 
 UENUM(BlueprintType)
 enum class ENPCInstructionType : uint8 {
-  IdentifyActor,
   QueryVector,
-  Decision,
-  Reasoning,
   Finalize
 };
 

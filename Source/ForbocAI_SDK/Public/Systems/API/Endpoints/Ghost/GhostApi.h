@@ -3,6 +3,9 @@
 #include "Systems/API/APIAdapters.h"
 #include "Systems/Ghost/GhostAdapters.h"
 #include "Components/API/Endpoints/EndpointsTypes.h"
+#include "Components/NPC/Generate/GenerateTypes.h"
+#include "Systems/API/Endpoints/NPC/Generate/GenerateAdapters.h"
+#include "Systems/API/Endpoints/NPC/Process/NPCProcessAdapters.h"
 
 namespace APISlice {
 namespace Endpoints {
@@ -24,6 +27,42 @@ inline Thunk<FGhostRunResponse> postGhostRun(const FGhostRunRequest &Request) {
 inline Thunk<FGhostRunResponse> postGhostRun(const FGhostConfig &Config) {
   return postGhostRun(
       TypeFactory::GhostRunRequest(Config.TestSuite, Config.Duration));
+}
+
+/** User Story: As Ghost cognition, I need the shared process tape sent only through the active Ghost session endpoint. @fn inline Thunk<FNPCProcessResponse> postGhostProcess(const FString &SessionId, const FNPCProcessRequest &Request) */
+inline Thunk<FNPCProcessResponse>
+postGhostProcess(const FString &SessionId,
+                 const FNPCProcessRequest &Request) {
+  const Configuration::FEndpointConfigurationData &Data =
+      Configuration::endpointData();
+  const TArray<rtk::FApiEndpointTag> Invalidates{
+      ghostTagAdapter(SessionId)};
+  return Detail::MakePostWithCodec<FNPCProcessRequest, FNPCProcessResponse>(
+      Data.Names.PostGhostProcess,
+      Configuration::endpointPath(
+          {Data.Segments.Ghost, SessionId, Data.Segments.Process}),
+      Request, Detail::EncodeNpcProcessRequest,
+      Detail::DecodeNpcProcessResponse, Invalidates,
+      Data.Timeouts.NpcProcessMs);
+}
+
+/** User Story: As Ghost actor construction, I need one generated attribute routed only through the active Ghost session endpoint. @fn inline Thunk<FNpcAttributeGenerateResponse> postGhostNpcGenerateAttribute(const FString &SessionId, const FString &Attribute, const FNpcAttributeGenerateRequest &Request) */
+inline Thunk<FNpcAttributeGenerateResponse> postGhostNpcGenerateAttribute(
+    const FString &SessionId, const FString &Attribute,
+    const FNpcAttributeGenerateRequest &Request) {
+  const Configuration::FEndpointConfigurationData &Data =
+      Configuration::endpointData();
+  const TArray<rtk::FApiEndpointTag> Invalidates{
+      ghostTagAdapter(SessionId)};
+  return Detail::MakePostWithCodec<FNpcAttributeGenerateRequest,
+                                   FNpcAttributeGenerateResponse>(
+      Data.Names.PostGhostNpcGenerateAttribute,
+      Configuration::endpointPath(
+          {Data.Segments.Ghost, SessionId, Data.Segments.Npcs,
+           Data.Segments.Generate, Attribute}),
+      Request, Detail::EncodeNpcAttributeGenerateRequest,
+      Detail::DecodeNpcAttributeGenerateResponse, Invalidates,
+      Data.Timeouts.NpcGenerateMs);
 }
 
 /** User Story: As a api endpoints ghost consumer, I need to invoke get ghost status through a stable signature so the api endpoints ghost workflow remains explicit and composable. @fn inline Thunk<FGhostStatus> getGhostStatus(const FString &SessionId) */

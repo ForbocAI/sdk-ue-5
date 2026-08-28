@@ -145,12 +145,6 @@ inline bool DecodeInstructionObject(const TSharedPtr<FJsonObject> &Object,
   const func::Maybe<bool> Matched = func::multi_match<FString, bool>(
       Type,
       {func::when<FString, bool>(
-           func::equals<FString>(Data.InstructionTypes.IdentifyActor),
-           [&](const FString &) {
-             Decoded.Type = ENPCInstructionType::IdentifyActor;
-             return true;
-           }),
-       func::when<FString, bool>(
            func::equals<FString>(Data.InstructionTypes.QueryVector),
            [&](const FString &) {
              const bool bQueryValid =
@@ -177,18 +171,6 @@ inline bool DecodeInstructionObject(const TSharedPtr<FJsonObject> &Object,
                                    Object, Data.Instruction.Threshold,
                                    Decoded.Threshold),
                            true);
-           }),
-       func::when<FString, bool>(
-           func::equals<FString>(Data.InstructionTypes.Decision),
-           [&](const FString &) {
-             Decoded.Type = ENPCInstructionType::Decision;
-             return true;
-           }),
-       func::when<FString, bool>(
-           func::equals<FString>(Data.InstructionTypes.Reasoning),
-           [&](const FString &) {
-             Decoded.Type = ENPCInstructionType::Reasoning;
-             return true;
            }),
        func::when<FString, bool>(
            func::equals<FString>(Data.InstructionTypes.Finalize),

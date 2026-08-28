@@ -6,6 +6,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/Memory/MemoryTypes.h"
+#include "Components/Protocol/Analysis/AnalysisTypes.h"
 #include "AgentTypes.generated.h"
 
 namespace ForbocAI { namespace SDK { namespace FunctionalCoreContracts {
@@ -134,7 +135,25 @@ struct FAgentResponse {
   FAgentAction Action;
 
   UPROPERTY(BlueprintReadOnly, Category = "NPC")
-  FString Thought;
+  bool bHasAction{};
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FDecisionIntent ThoughtResult;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  bool bHasThoughtResult{};
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FReasoningOutput ReasoningResult;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  bool bHasReasoningResult{};
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  FString Prompt;
+
+  UPROPERTY(BlueprintReadOnly, Category = "NPC")
+  bool bHasPrompt{};
 };
 
 /**

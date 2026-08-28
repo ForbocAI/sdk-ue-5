@@ -16,135 +16,50 @@ using namespace rtk;
 using namespace Testing::API::Codec;
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FSerializeIdentifyActorPayloadTest,
-    FORBOCAI_SDK_AUTHORED_STRINGVB67052AFCE5C,
+    FProjectApiAnalysisResponseTest,
+    FORBOCAI_SDK_AUTHORED_STRINGVA7F828161E65,
     EAutomationTestFlags_ApplicationContextMask |
         EAutomationTestFlags::EngineFilter)
 /**
- * User Story: As a developer, I need RunTest to fulfill its role in the module.
- * @fn bool FSerializeIdentifyActorPayloadTest::RunTest(const FString &Parameters)
+ * User Story: As a protocol consumer, I need API-owned thought, reasoning,
+ * prompt, dialogue, and action results projected without SDK reinterpretation.
+ * @fn bool FProjectApiAnalysisResponseTest::RunTest(const FString &Parameters)
  */
-bool FSerializeIdentifyActorPayloadTest::RunTest(const FString &Parameters) {
-  const FIdentifyActorPayloadFixture &Fixture =
-      CodecFixtures().IdentifyActorPayload;
-  const auto &ProcessData =
-      APISlice::NPCProcessConfiguration::processContractData();
-  const auto &AgentData =
-      JsonInterop::AgentConfiguration::agentContractData();
-  FNPCActorInfo Actor;
-  Actor.NpcId = Fixture.NpcId;
-  Actor.Persona = Fixture.Persona;
-  Actor.bHasStructuredPersona = true;
-  Actor.Data.JsonData = Fixture.DataJson;
-  
-  FString Json = rtk::detail::SerializeIdentifyActorResult(Actor);
-  TSharedPtr<FJsonObject> Root;
-  TestTrue(Fixture.Labels.Payload,
-           JsonInterop::ParseJsonObject(Json, Root));
-  const TSharedRef<FJsonObject> RootObject = Root.ToSharedRef();
-  const TSharedRef<FJsonObject> ActorObject =
-      DataAdapters::ReadObjectField(RootObject, ProcessData.Tape.Actor);
-  const TSharedRef<FJsonObject> DataObject =
-      DataAdapters::ReadObjectField(ActorObject, ProcessData.Actor.Data);
-  const TSharedRef<FJsonObject> PersonaObject = DataAdapters::ReadObjectField(
-      ActorObject, ProcessData.Actor.StructuredPersona);
-  const TArray<FString> Traits = DataAdapters::ReadStringArrayField(
-      PersonaObject, AgentData.Persona.Traits);
+bool FProjectApiAnalysisResponseTest::RunTest(const FString &Parameters) {
+  const FAgentResponseProjectionFixture &Fixture =
+      CodecFixtures().AgentResponseProjection;
+  FNPCInstruction Instruction;
+  Instruction.Dialogue = Fixture.Dialogue;
+  Instruction.bHasAction = true;
+  Instruction.Action.Type = Fixture.ActionType;
+  FNPCProcessTape Tape;
+  Tape.bHasDecisionIntent = true;
+  Tape.DecisionIntent.Goal = Fixture.Goal;
+  Tape.DecisionIntent.ActionType = Fixture.DecisionActionType;
+  Tape.DecisionIntent.Target = Fixture.Target;
+  Tape.bHasReasoningOutput = true;
+  Tape.ReasoningOutput.ReasoningText = Fixture.ReasoningText;
+  Tape.ReasoningOutput.ResponseText = Fixture.ResponseText;
+  Tape.bHasPrompt = true;
+  Tape.Prompt = Fixture.Prompt;
 
-  TestEqual(Fixture.Labels.Type,
-            DataAdapters::ReadStringField(RootObject,
-                                          ProcessData.Instruction.Type),
-            Fixture.ExpectedType);
-  TestEqual(Fixture.Labels.NpcId,
-            DataAdapters::ReadStringField(ActorObject, ProcessData.Actor.Id),
-            Fixture.NpcId);
-  TestTrue(Fixture.Labels.Persona,
-           Traits == TArray<FString>{Fixture.Persona});
-  TestEqual(Fixture.Labels.Data, DataAdapters::SerializeObject(DataObject),
-            Fixture.DataJson);
-  
-  return true;
-}
-
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FSerializeDecisionPayloadTest,
-    FORBOCAI_SDK_AUTHORED_STRINGV10387C1784E8,
-    EAutomationTestFlags_ApplicationContextMask |
-        EAutomationTestFlags::EngineFilter)
-/**
- * User Story: As a developer, I need RunTest to fulfill its role in the module.
- * @fn bool FSerializeDecisionPayloadTest::RunTest(const FString &Parameters)
- */
-bool FSerializeDecisionPayloadTest::RunTest(const FString &Parameters) {
-  const FDecisionPayloadFixture &Fixture = CodecFixtures().DecisionPayload;
-  const auto &ProcessData =
-      APISlice::NPCProcessConfiguration::processContractData();
-  FString Json = rtk::detail::SerializeDecisionResult(
-      Fixture.Goal, Fixture.ActionType, Fixture.Target);
-  TSharedPtr<FJsonObject> Root;
-  TestTrue(Fixture.Labels.Payload,
-           JsonInterop::ParseJsonObject(Json, Root));
-  const TSharedRef<FJsonObject> RootObject = Root.ToSharedRef();
-  const TSharedRef<FJsonObject> Intent =
-      DataAdapters::ReadObjectField(RootObject,
-                                    ProcessData.Tape.DecisionIntent);
-
-  TestEqual(Fixture.Labels.Type,
-            DataAdapters::ReadStringField(RootObject,
-                                          ProcessData.Instruction.Type),
-            Fixture.ExpectedType);
-  TestEqual(Fixture.Labels.Goal,
-            DataAdapters::ReadStringField(Intent,
-                                          ProcessData.DecisionIntent.Goal),
-            Fixture.Goal);
-  TestEqual(Fixture.Labels.ActionType,
-            DataAdapters::ReadStringField(
-                Intent, ProcessData.DecisionIntent.ActionType),
-            Fixture.ActionType);
-  TestEqual(Fixture.Labels.Target,
-            DataAdapters::ReadStringField(Intent,
-                                          ProcessData.DecisionIntent.Target),
-            Fixture.Target);
-  
-  return true;
-}
-
-IMPLEMENT_SIMPLE_AUTOMATION_TEST(
-    FSerializeReasoningPayloadTest,
-    FORBOCAI_SDK_AUTHORED_STRINGV646CDFE05999,
-    EAutomationTestFlags_ApplicationContextMask |
-        EAutomationTestFlags::EngineFilter)
-/**
- * User Story: As a developer, I need RunTest to fulfill its role in the module.
- * @fn bool FSerializeReasoningPayloadTest::RunTest(const FString &Parameters)
- */
-bool FSerializeReasoningPayloadTest::RunTest(const FString &Parameters) {
-  const FReasoningPayloadFixture &Fixture = CodecFixtures().ReasoningPayload;
-  const auto &ProcessData =
-      APISlice::NPCProcessConfiguration::processContractData();
-  FString Json = rtk::detail::SerializeReasoningResult(
-      Fixture.ReasoningText, Fixture.ResponseText);
-  TSharedPtr<FJsonObject> Root;
-  TestTrue(Fixture.Labels.Payload,
-           JsonInterop::ParseJsonObject(Json, Root));
-  const TSharedRef<FJsonObject> RootObject = Root.ToSharedRef();
-  const TSharedRef<FJsonObject> Reasoning =
-      DataAdapters::ReadObjectField(RootObject,
-                                    ProcessData.Tape.ReasoningOutput);
-
-  TestEqual(Fixture.Labels.Type,
-            DataAdapters::ReadStringField(RootObject,
-                                          ProcessData.Instruction.Type),
-            Fixture.ExpectedType);
-  TestEqual(Fixture.Labels.ReasoningText,
-            DataAdapters::ReadStringField(
-                Reasoning, ProcessData.ReasoningOutput.ReasoningText),
-            Fixture.ReasoningText);
-  TestEqual(Fixture.Labels.ResponseText,
-            DataAdapters::ReadStringField(
-                Reasoning, ProcessData.ReasoningOutput.ResponseText),
-            Fixture.ResponseText);
-  
+  const FAgentResponse Response =
+      rtk::detail::BuildAgentResponse(Instruction, Tape);
+  TestEqual(Fixture.Labels.Dialogue, Response.Dialogue, Fixture.Dialogue);
+  TestTrue(Fixture.Labels.Action,
+           Response.bHasAction && Response.Action.Type == Fixture.ActionType);
+  TestTrue(Fixture.Labels.Thought,
+           Response.bHasThoughtResult &&
+               Response.ThoughtResult.Goal == Fixture.Goal &&
+               Response.ThoughtResult.ActionType ==
+                   Fixture.DecisionActionType);
+  TestTrue(Fixture.Labels.Reasoning,
+           Response.bHasReasoningResult &&
+               Response.ReasoningResult.ReasoningText ==
+                   Fixture.ReasoningText &&
+               Response.ReasoningResult.ResponseText == Fixture.ResponseText);
+  TestTrue(Fixture.Labels.Prompt,
+           Response.bHasPrompt && Response.Prompt == Fixture.Prompt);
   return true;
 }
 
@@ -170,6 +85,14 @@ bool FEncodeProcessTapePayloadTest::RunTest(const FString &Parameters) {
   Tape.NpcState.JsonData = Fixture.NpcStateJson;
   Tape.Persona = Fixture.Persona;
   Tape.bHasStructuredPersona = true;
+  Tape.ThoughtProfile = Fixture.ThoughtProfile;
+  Tape.bHasThoughtProfile = true;
+  Tape.LegalActions = Fixture.LegalActions;
+  Tape.bHasLegalActions = true;
+  Tape.VisitedActions = Fixture.VisitedActions;
+  Tape.bHasVisitedActions = true;
+  Tape.AvoidActions = Fixture.AvoidActions;
+  Tape.bHasAvoidActions = true;
   
   TSharedRef<FJsonObject> Obj = APISlice::Detail::EncodeProcessTapeObject(Tape);
   FString Json = APISlice::Detail::ToJsonString(Obj);
@@ -191,8 +114,24 @@ bool FEncodeProcessTapePayloadTest::RunTest(const FString &Parameters) {
             Fixture.Observation);
   TestTrue(Fixture.Labels.Persona, Traits == Fixture.ExpectedTraits);
   TestEqual(Fixture.Labels.ContextTime,
-            DataAdapters::ReadStringField(Context, TEXT("time")),
+            DataAdapters::ReadStringField(Context, Fixture.ContextTimeField),
             Fixture.ExpectedContextTime);
+  TestEqual(Fixture.Labels.ThoughtProfile,
+            DataAdapters::ReadStringField(
+                RootObject, ProcessData.Tape.ThoughtProfile),
+            Fixture.ExpectedThoughtProfile);
+  TestEqual(Fixture.Labels.LegalActions,
+            DataAdapters::ReadStringArrayField(
+                RootObject, ProcessData.Tape.LegalActions).Num(),
+            Fixture.ExpectedLegalActionCount);
+  TestEqual(Fixture.Labels.VisitedActions,
+            DataAdapters::ReadStringArrayField(
+                RootObject, ProcessData.Tape.VisitedActions).Num(),
+            Fixture.ExpectedVisitedActionCount);
+  TestEqual(Fixture.Labels.AvoidActions,
+            DataAdapters::ReadStringArrayField(
+                RootObject, ProcessData.Tape.AvoidActions).Num(),
+            Fixture.ExpectedAvoidActionCount);
   
   return true;
 }

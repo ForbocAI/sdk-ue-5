@@ -1,12 +1,8 @@
 #pragma once
 
-#include "Systems/API/Endpoints/NPC/NPCApi.h"
 #include "Systems/Memory/Local/LocalAdapters.h"
 #include "Systems/Protocol/Configuration/ProtocolConfigurationAdapters.h"
-#include "Systems/Protocol/Instructions/IdentifyActor/IdentifyActorThunks.h"
 #include "Systems/Protocol/Instructions/QueryVector/QueryVectorThunks.h"
-#include "Systems/Protocol/Instructions/Decision/DecisionThunks.h"
-#include "Systems/Protocol/Instructions/Reasoning/ReasoningThunks.h"
 #include "Systems/Protocol/Instructions/Finalize/FinalizeThunks.h"
 
 namespace rtk::detail {
@@ -21,7 +17,11 @@ RunProtocolTurn(const FString &NpcId, const FString &Input,
                 std::function<AnyAction(const AnyAction &)> Dispatch,
                 std::function<const RuntimeState &()> GetState) {
   const auto &Data = ProtocolConfiguration::protocolData();
-  return Turn >= Data.Limits.MaxTurns
+  return !Runtime.HasProcessRoute()
+             ? (Dispatch(DirectiveSlice::Actions::directiveRunFailed(
+                    RunId, Data.Errors.ProcessingFailed)),
+                RejectAsync<FAgentResponse>(Data.Errors.ProcessingFailed))
+         : Turn >= Data.Limits.MaxTurns
              ? (Dispatch(DirectiveSlice::Actions::directiveRunFailed(
                     RunId, Data.Errors.MaxTurnsExceeded)),
                 RejectAsync<FAgentResponse>(Data.Errors.MaxTurnsExceeded))
@@ -32,44 +32,18 @@ RunProtocolTurn(const FString &NpcId, const FString &Input,
     Request.bHasPreviousResult = bHasLastResult;
 
     return func::AsyncChain::then<FNPCProcessResponse, FAgentResponse>(
-               APISlice::Endpoints::postNpcProcess(NpcId, Request)(Dispatch,
-                                                                   GetState),
-               [NpcId, Input, RunId, Tape, Turn, Runtime, Dispatch, GetState,
-                UnsupportedInstruction = Data.Errors.UnsupportedInstruction](
+               Runtime.SubmitProcess(Request)(Dispatch, GetState),
+               [NpcId, Input, RunId, Turn, Runtime, Dispatch, GetState](
                    const FNPCProcessResponse &Response)
                    -> func::AsyncResult<FAgentResponse> {
                  const FNPCInstruction &Instruction = Response.Instruction;
 
-                 return Instruction.Type ==
-                                ENPCInstructionType::IdentifyActor
-                            ? HandleIdentifyActor(Response, NpcId, Input,
-                                                  RunId, Turn, Runtime,
-                                                  Dispatch, GetState)
-                        : Instruction.Type ==
-                                  ENPCInstructionType::QueryVector
+                 return Instruction.Type == ENPCInstructionType::QueryVector
                             ? HandleQueryVector(Response, Instruction, NpcId,
                                                 Input, RunId, Turn, Runtime,
                                                 Dispatch, GetState)
-                        : Instruction.Type ==
-                                  ENPCInstructionType::Decision
-                            ? HandleDecision(Response, NpcId, Input, RunId,
-                                             Turn, Runtime, Dispatch, GetState)
-                        : Instruction.Type ==
-                                  ENPCInstructionType::Reasoning
-                            ? HandleReasoning(Response, NpcId, Input, RunId,
-                                              Turn, Runtime, Dispatch, GetState)
-                        : Instruction.Type == ENPCInstructionType::Finalize
-                            ? HandleFinalize(Instruction, NpcId, Input, RunId,
-                                             Runtime, Dispatch, GetState)
-                            : [&]() {
-                                const FString Error =
-                                    UnsupportedInstruction +
-                                    LexToString(
-                                        static_cast<int32>(Instruction.Type));
-                                Dispatch(DirectiveSlice::Actions::
-                                             directiveRunFailed(RunId, Error));
-                                return RejectAsync<FAgentResponse>(Error);
-                              }();
+                            : HandleFinalize(Response, NpcId, Input, RunId,
+                                             Runtime, Dispatch, GetState);
                })
         .catch_([RunId, Dispatch](std::string Error) {
           Dispatch(DirectiveSlice::Actions::directiveRunFailed(

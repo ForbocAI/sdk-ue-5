@@ -140,8 +140,8 @@ EncodeProcessTapeObject(const FNPCProcessTape &Tape) {
              JsonInterop::StructuredPersonaToObject(Tape.Persona)),
          void())
       : void();
-  Tape.bHasSamplerProfile
-      ? (Root->SetStringField(Data.Tape.SamplerProfile, Tape.SamplerProfile),
+  Tape.bHasThoughtProfile
+      ? (Root->SetStringField(Data.Tape.ThoughtProfile, Tape.ThoughtProfile),
          void())
       : void();
   Tape.bHasActor
@@ -161,7 +161,7 @@ EncodeProcessTapeObject(const FNPCProcessTape &Tape) {
         }()
       : void();
   Root->SetArrayField(Data.Tape.Memories, Memories);
-  Tape.bDecisionCompleted
+  Tape.bHasDecisionIntent
       ? [&]() {
           const TSharedRef<FJsonObject> Intent = MakeShared<FJsonObject>();
           Intent->SetStringField(Data.DecisionIntent.Goal,
@@ -179,7 +179,7 @@ EncodeProcessTapeObject(const FNPCProcessTape &Tape) {
           Root->SetObjectField(Data.Tape.DecisionIntent, Intent);
         }()
       : void();
-  Tape.bReasoningCompleted
+  Tape.bHasReasoningOutput
       ? [&]() {
           const TSharedRef<FJsonObject> Reasoning = MakeShared<FJsonObject>();
           Reasoning->SetStringField(Data.ReasoningOutput.ReasoningText,
@@ -208,6 +208,21 @@ EncodeProcessTapeObject(const FNPCProcessTape &Tape) {
       : void();
   Tape.bHasVectorQueried
       ? (Root->SetBoolField(Data.Tape.VectorQueried, Tape.bVectorQueried),
+         void())
+      : void();
+  Tape.bHasLegalActions
+      ? (JsonInterop::SetStringArrayField(Root, Data.Tape.LegalActions,
+                                          Tape.LegalActions),
+         void())
+      : void();
+  Tape.bHasVisitedActions
+      ? (JsonInterop::SetStringArrayField(Root, Data.Tape.VisitedActions,
+                                          Tape.VisitedActions),
+         void())
+      : void();
+  Tape.bHasAvoidActions
+      ? (JsonInterop::SetStringArrayField(Root, Data.Tape.AvoidActions,
+                                          Tape.AvoidActions),
          void())
       : void();
   return Root;

@@ -4,6 +4,7 @@
 #include "Systems/CLI/CommandRouting/CommandRoutingAdapters.h"
 #include "Systems/CLI/NPC/NPCThunks.h"
 #include "Systems/CLI/Presentation/PresentationAdapters.h"
+#include "Systems/Protocol/Process/ProcessAdapters.h"
 #include "Systems/CLI/Soul/CLISoulAdapters.h"
 #include "Entities/CLI/Soul/CLISoulSelectors.h"
 #include "Systems/CLI/Soul/CLISoulThunks.h"
@@ -77,8 +78,9 @@ SoulResult ChatWithSoul(
       [&]() {
         ForbocAI::CLI::Presentation::logCliMessage(
             formatCliMessage(State.Messages.ChatUser, Args[Second]));
-        const FAgentResponse Response =
-            Ops::processNpc(Store, Args[First], Args[Second]);
+        const FAgentResponse Response = Ops::processNpc(
+            Store,
+            ProtocolProcess::ProcessInput(Args[First], Args[Second]));
         ForbocAI::CLI::Presentation::logCliMessage(
             formatCliMessage(State.Messages.ChatNpc, Response.Dialogue));
         return SoulSuccess(Response.Dialogue);

@@ -57,7 +57,11 @@
     "stopFailed": "> Stop request failed.",
     "historyTitle": "> Last Ghost sessions:",
     "historyEmpty": "  (no history found)",
-    "history": "  - \u001b[36m{0}\u001b[0m [{1}] {2} ({3}%)"
+    "history": "  - \u001b[36m{0}\u001b[0m [{1}] {2} ({3}%)",
+    "nameOption": "--name",
+    "roleOption": "--role",
+    "stateNameOption": "--npcName",
+    "stateRoleOption": "--npcRole"
   },
   "results": {
     "configUpdated": "Config updated",

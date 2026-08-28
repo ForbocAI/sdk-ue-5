@@ -39,7 +39,11 @@ inline FCLIGhostState readCliGhostState() {
       DataAdapters::ReadStringField(Ghost, TEXT("stopFailed")),
       DataAdapters::ReadStringField(Ghost, TEXT("historyTitle")),
       DataAdapters::ReadStringField(Ghost, TEXT("historyEmpty")),
-      DataAdapters::ReadStringField(Ghost, TEXT("history"))};
+      DataAdapters::ReadStringField(Ghost, TEXT("history")),
+      DataAdapters::ReadStringField(Ghost, TEXT("nameOption")),
+      DataAdapters::ReadStringField(Ghost, TEXT("roleOption")),
+      DataAdapters::ReadStringField(Ghost, TEXT("stateNameOption")),
+      DataAdapters::ReadStringField(Ghost, TEXT("stateRoleOption"))};
 }
 
 } // namespace ForbocAI::CLI::Ghost

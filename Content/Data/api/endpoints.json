@@ -36,6 +36,8 @@
     "getBridgeValidation": "getBridgeValidation",
     "getBridgeRules": "getBridgeRules",
     "postGhostRun": "postGhostRun",
+    "postGhostProcess": "postGhostProcess",
+    "postGhostNpcGenerateAttribute": "postGhostNpcGenerateAttribute",
     "getGhostStatus": "getGhostStatus",
     "getGhostResults": "getGhostResults",
     "postGhostStop": "postGhostStop",

@@ -14,6 +14,11 @@ struct FRuntimeTypes {
   FString String;
 };
 
+struct FActionData {
+  FString NpcProcess;
+  FString GhostProcess;
+};
+
 struct FErrorMessages {
   FString MissingMemoryStore;
   FString MissingVectorMemory;
@@ -24,7 +29,9 @@ struct FErrorMessages {
   FString MissingNpcId;
   FString MissingStructuredPersona;
   FString ProcessingFailed;
-  FString MissingApiDecisionIntent;
+  FString NpcNotFoundTemplate;
+  FString ApiStatusRequestFailed;
+  FString ApiContractRequestFailed;
 };
 
 struct FLimitsData {
@@ -32,10 +39,7 @@ struct FLimitsData {
 };
 
 struct FClassificationData {
-  FString IdentifyActor;
   FString QueryVector;
-  FString Decision;
-  FString Reasoning;
   FString Finalize;
 };
 
@@ -44,33 +48,37 @@ struct FRoleData {
   FString Assistant;
 };
 
-struct FTextData {
-  FString Empty;
-  FString EmptyObject;
-  FString WordSeparator;
+struct FTokenData {
+  FString NpcId;
 };
 
 struct FFormatData {
   FString RunIdSeparator;
 };
 
-struct FDebugData {
-  FString Environment;
-  FString EnabledValue;
+struct FDebugLabelData {
   FString PreDispatch;
   FString RawAction;
   FString UnwrapThrow;
   FString UnwrapOk;
 };
 
+struct FDebugData {
+  FString Environment;
+  FString EnabledValue;
+  FDebugLabelData Npc;
+  FDebugLabelData Ghost;
+};
+
 struct FProtocolData {
   FIterationData Iteration;
   FRuntimeTypes RuntimeTypes;
+  FActionData Actions;
   FErrorMessages Errors;
   FLimitsData Limits;
   FClassificationData Classifications;
   FRoleData Roles;
-  FTextData Text;
+  FTokenData Tokens;
   FFormatData Formats;
   FDebugData Debug;
 };

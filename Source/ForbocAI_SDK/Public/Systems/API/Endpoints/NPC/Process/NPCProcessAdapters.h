@@ -13,7 +13,7 @@ inline FString EncodeNpcProcessRequest(const FNPCProcessRequest &Request) {
   Root->SetObjectField(Fields.Tape, EncodeProcessTapeObject(Request.Tape));
   Request.bHasPreviousResult
       ? (JsonInterop::SetFieldFromJsonString(
-             Root, Fields.Result, Request.PreviousResult, false),
+             Root, Fields.LastResult, Request.PreviousResult, false),
          void())
       : void();
   return ToJsonString(Root);

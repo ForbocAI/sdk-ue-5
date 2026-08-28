@@ -49,12 +49,13 @@ void UForbocAISubsystem::Init(FString ApiKey, FString ApiUrl) {
  * @fn void UForbocAISubsystem::ProcessNPC(FString NpcId, FString Input)
  */
 void UForbocAISubsystem::ProcessNPC(FString NpcId, FString Input) {
+  const FProtocolProcessInput ProcessInput =
+      ProtocolProcess::ProcessInput(NpcId, Input);
   Store == nullptr
       ? void()
       : (OnTypingStart.Broadcast(),
          Store
-             ->dispatch(rtk::processNPC(NpcId, Input, TEXT(FORBOCAI_SDK_AUTHORED_STRINGVF54CAD9838EB), TEXT(""),
-                                        FAgentState(),
+             ->dispatch(rtk::processNPC(ProcessInput,
                                         rtk::LocalProtocolHandlerContext(
                                             NpcId)))
              .then([this](const FAgentResponse &Result) {
@@ -62,7 +63,7 @@ void UForbocAISubsystem::ProcessNPC(FString NpcId, FString Input) {
                    ? (OnMessageReceived.Broadcast(Result.Dialogue),
                       OnTTSRequested.Broadcast(Result.Dialogue), void())
                    : void();
-               !Result.Action.Type.IsEmpty()
+               Result.bHasAction
                    ? (OnNPCActionReceived.Broadcast(Result.Action), void())
                    : void();
                OnTypingEnd.Broadcast();

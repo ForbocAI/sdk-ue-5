@@ -102,6 +102,26 @@ bool FNPCProcessCompleteResponsesTest::RunTest(const FString &Parameters) {
   TestTrue(Fixture.Labels.QueryVector,
            QueryResponse.Tape.bHasVectorQueried &&
                QueryResponse.Tape.bVectorQueried);
+  TestTrue(Fixture.Labels.QueryVector,
+           QueryResponse.Tape.bHasThoughtProfile &&
+               QueryResponse.Tape.ThoughtProfile ==
+                   DataAdapters::ReadStringField(
+                       QueryExpectedTape, ProcessData.Tape.ThoughtProfile));
+  TestTrue(Fixture.Labels.QueryVector,
+           QueryResponse.Tape.bHasLegalActions &&
+               QueryResponse.Tape.LegalActions ==
+                   DataAdapters::ReadStringArrayField(
+                       QueryExpectedTape, ProcessData.Tape.LegalActions));
+  TestTrue(Fixture.Labels.QueryVector,
+           QueryResponse.Tape.bHasVisitedActions &&
+               QueryResponse.Tape.VisitedActions ==
+                   DataAdapters::ReadStringArrayField(
+                       QueryExpectedTape, ProcessData.Tape.VisitedActions));
+  TestTrue(Fixture.Labels.QueryVector,
+           QueryResponse.Tape.bHasAvoidActions &&
+               QueryResponse.Tape.AvoidActions ==
+                   DataAdapters::ReadStringArrayField(
+                       QueryExpectedTape, ProcessData.Tape.AvoidActions));
 
   FNPCProcessResponse FinalizeResponse;
   TestTrue(Fixture.Labels.Finalize,
@@ -183,9 +203,9 @@ bool FNPCProcessCompleteResponsesTest::RunTest(const FString &Parameters) {
                                          ProcessData.Tape.Memories)
                 .Num());
   TestTrue(Fixture.Labels.Finalize,
-           FinalizeResponse.Tape.bDecisionCompleted);
+           FinalizeResponse.Tape.bHasDecisionIntent);
   TestTrue(Fixture.Labels.Finalize,
-           FinalizeResponse.Tape.bReasoningCompleted);
+           FinalizeResponse.Tape.bHasReasoningOutput);
   TestTrue(Fixture.Labels.Finalize,
            FinalizeResponse.Tape.bHasGeneratedOutput);
   TestEqual(Fixture.Labels.Finalize, FinalizeResponse.Tape.GeneratedOutput,

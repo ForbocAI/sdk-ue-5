@@ -21,9 +21,7 @@ inline const FCodecFixtures &CodecFixtures() {
       ReadNullableProtocolFixture(Source),
       ReadBridgeValidationFixture(Source),
       ReadActionContractFixture(Source),
-      ReadIdentifyActorPayloadFixture(Source),
-      ReadDecisionPayloadFixture(Source),
-      ReadReasoningPayloadFixture(Source),
+      ReadAgentResponseProjectionFixture(Source),
       ReadProcessTapePayloadFixture(Source),
   };
   return Fixtures;

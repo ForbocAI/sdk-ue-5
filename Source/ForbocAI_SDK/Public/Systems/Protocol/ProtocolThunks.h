@@ -1,6 +1,4 @@
 #pragma once
 
-// Canonical instruction ownership:
-// IdentifyActor, QueryVector, Decision, and Finalize execute local capabilities.
-// Reasoning acknowledges API-hosted SLM output and continues the tape.
+// The API owns cognition. UE executes only QueryVector and Finalize effects.
 #include "Systems/Protocol/Process/ProcessThunks.h"

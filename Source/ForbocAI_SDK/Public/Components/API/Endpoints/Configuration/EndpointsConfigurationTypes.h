@@ -44,6 +44,8 @@ struct FEndpointNameData {
   FString GetBridgeValidation;
   FString GetBridgeRules;
   FString PostGhostRun;
+  FString PostGhostProcess;
+  FString PostGhostNpcGenerateAttribute;
   FString GetGhostStatus;
   FString GetGhostResults;
   FString PostGhostStop;

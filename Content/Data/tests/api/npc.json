@@ -27,7 +27,7 @@
         "speakingStyle": ["brief"],
         "constraints": []
       },
-      "samplerProfile": null,
+      "thoughtProfile": "deliberate",
       "actor": null,
       "memories": [],
       "decisionIntent": null,
@@ -42,7 +42,10 @@
       },
       "generatedOutput": null,
       "rulesetId": "preset_default",
-      "vectorQueried": true
+      "vectorQueried": true,
+      "legalActions": ["answer", "wait"],
+      "visitedActions": ["wait"],
+      "avoidActions": []
     }
   },
   "queryVectorExpected": {
@@ -74,7 +77,11 @@
         "seed": 42
       },
       "rulesetId": "preset_default",
-      "vectorQueried": true
+      "vectorQueried": true,
+      "thoughtProfile": "deliberate",
+      "legalActions": ["answer", "wait"],
+      "visitedActions": ["wait"],
+      "avoidActions": []
     }
   },
   "finalizeResponse": {
@@ -109,7 +116,7 @@
       "context": {},
       "npcState": {},
       "structuredPersona": null,
-      "samplerProfile": null,
+      "thoughtProfile": null,
       "actor": {
         "npcId": "npc-1",
         "structuredPersona": null,
@@ -137,7 +144,10 @@
       "constraints": null,
       "generatedOutput": "I remember.",
       "rulesetId": null,
-      "vectorQueried": true
+      "vectorQueried": true,
+      "legalActions": null,
+      "visitedActions": null,
+      "avoidActions": null
     }
   },
   "finalizeExpected": {
@@ -214,7 +224,12 @@
     }
   },
   "malformedMemoryResponse": {
-    "instruction": { "type": "Decision" },
+    "instruction": {
+      "type": "QueryVector",
+      "query": "memory",
+      "limit": 1,
+      "threshold": 0.1
+    },
     "tape": {
       "observation": "Test",
       "context": {},
@@ -225,7 +240,12 @@
     }
   },
   "malformedActorResponse": {
-    "instruction": { "type": "Reasoning" },
+    "instruction": {
+      "type": "QueryVector",
+      "query": "actor",
+      "limit": 1,
+      "threshold": 0.1
+    },
     "tape": {
       "observation": "Test",
       "context": {},

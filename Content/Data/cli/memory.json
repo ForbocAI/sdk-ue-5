@@ -25,6 +25,7 @@
     "listSeparator": "\n"
   },
   "messages": {
+    "typeOption": "--type",
     "unknownError": "Unknown error",
     "listUsage": "Usage: memory list <npcId>",
     "listing": "> Listing memory for {0} (last {1} items)...",

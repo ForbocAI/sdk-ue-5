@@ -109,11 +109,124 @@ def function_size_findings(path: Path, config: dict) -> list[Finding]:
     return findings
 
 
+def pascal_case(value: str) -> str:
+    return value[:1].upper() + value[1:]
+
+
+def role_dispatch_findings(project_root: Path, config: dict) -> list[Finding]:
+    findings: list[Finding] = []
+    for contract in config.get("roleDispatchContracts", []):
+        roles_path = project_root / contract["rolesFile"]
+        commands_path = project_root / contract["commandsFile"]
+        source_paths = [
+            project_root / path
+            for path in contract.get("sourceFiles", [contract.get("sourceFile", "")])
+        ]
+        if (
+            not roles_path.is_file()
+            or not commands_path.is_file()
+            or any(not path.is_file() for path in source_paths)
+        ):
+            missing = next(
+                path
+                for path in (roles_path, commands_path, *source_paths)
+                if not path.is_file()
+            )
+            findings.append(
+                Finding(missing, 1, contract["id"], contract["missingSummary"])
+            )
+            continue
+        roles = load_config(roles_path)
+        commands = load_config(commands_path)
+        group_keys = {
+            key
+            for key, command in commands.items()
+            if command.get("group") == contract["group"]
+        }
+        role_keys = {
+            command_key: role_key
+            for role_key, command_key in roles.items()
+            if command_key in group_keys
+        }
+        for command_key in sorted(group_keys - role_keys.keys()):
+            findings.append(
+                Finding(
+                    roles_path,
+                    1,
+                    contract["id"],
+                    f"{contract['unmappedSummary']}: {command_key}",
+                )
+            )
+        code = "\n".join(code_only(read_cpp_source(path)) for path in source_paths)
+        for command_key, role_key in sorted(role_keys.items()):
+            pattern = re.compile(rf"\bRoles\.{re.escape(pascal_case(role_key))}\b")
+            if not pattern.search(code):
+                findings.append(
+                    Finding(
+                        source_paths[0],
+                        1,
+                        contract["id"],
+                        f"{contract['undispatchedSummary']}: {command_key}",
+                    )
+                )
+    return findings
+
+
+def function_binding_findings(project_root: Path, config: dict) -> list[Finding]:
+    findings: list[Finding] = []
+    for binding in config.get("functionBindings", []):
+        path = project_root / binding["sourceFile"]
+        if not path.is_file():
+            findings.append(
+                Finding(path, 1, binding["id"], binding["missingSummary"])
+            )
+            continue
+        source = read_cpp_source(path)
+        targets = [
+            target
+            for target in collect_function_targets(path)
+            if target.name == binding["function"]
+            and target.body_start is not None
+            and target.body_end is not None
+        ]
+        if len(targets) != 1:
+            findings.append(
+                Finding(path, 1, binding["id"], binding["missingSummary"])
+            )
+            continue
+        target = targets[0]
+        body = code_only(source[target.body_start : target.body_end + 1])
+        for required in binding.get("requiredPatterns", []):
+            if not re.search(required, body, re.MULTILINE):
+                findings.append(
+                    Finding(
+                        path,
+                        line_number(source, target.start),
+                        binding["id"],
+                        binding["requiredSummary"],
+                    )
+                )
+        for forbidden in binding.get("forbiddenPatterns", []):
+            match = re.search(forbidden, body, re.MULTILINE)
+            if match:
+                findings.append(
+                    Finding(
+                        path,
+                        line_number(source, target.body_start + match.start()),
+                        binding["id"],
+                        binding["forbiddenSummary"],
+                    )
+                )
+    return findings
+
+
 def collect_findings(project_root: Path, config: dict) -> tuple[list[Path], list[Finding]]:
     files, findings = discover_command_surfaces(project_root, config)
     for path in files:
         findings.extend(source_rule_findings(path, config))
         findings.extend(function_size_findings(path, config))
+    findings.extend(role_dispatch_findings(project_root, config))
+    findings.extend(function_binding_findings(project_root, config))
     return files, sorted(findings, key=lambda finding: (finding.path.as_posix(), finding.line, finding.rule_id))
 
 

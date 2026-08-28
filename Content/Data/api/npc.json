@@ -12,7 +12,7 @@
     "context": "context",
     "npcState": "npcState",
     "structuredPersona": "structuredPersona",
-    "samplerProfile": "samplerProfile",
+    "thoughtProfile": "thoughtProfile",
     "actor": "actor",
     "memories": "memories",
     "decisionIntent": "decisionIntent",
@@ -21,7 +21,10 @@
     "constraints": "constraints",
     "generatedOutput": "generatedOutput",
     "rulesetId": "rulesetId",
-    "vectorQueried": "vectorQueried"
+    "vectorQueried": "vectorQueried",
+    "legalActions": "legalActions",
+    "visitedActions": "visitedActions",
+    "avoidActions": "avoidActions"
   },
   "actor": {
     "id": "npcId",
@@ -52,17 +55,11 @@
     "threshold": "threshold"
   },
   "instructionTypes": {
-    "identifyActor": "IdentifyActor",
     "queryVector": "QueryVector",
-    "decision": "Decision",
-    "reasoning": "Reasoning",
     "finalize": "Finalize"
   },
   "resultTypes": {
-    "identifyActor": "IdentifyActorResult",
-    "queryVector": "QueryVectorResult",
-    "decision": "Decision",
-    "reasoning": "Reasoning"
+    "queryVector": "QueryVectorResult"
   },
   "finalize": {
     "valid": "valid",

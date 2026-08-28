@@ -14,16 +14,30 @@
   },
   "syntax": {
     "optionPrefix": "--",
+    "textOption": "--text",
+    "legalActionsOption": "--legal-actions",
+    "visitedActionsOption": "--visited-actions",
+    "avoidActionsOption": "--avoid-actions",
+    "personaMemoryType": "persona",
+    "legalActionsSeparator": ",",
     "messageSeparator": " ",
-    "personaPattern": "[.,;]\\s*"
+    "personaPattern": "[.,;]\\s*",
+    "formatOpenToken": "{",
+    "formatCloseToken": "}"
+  },
+  "analysis": {
+    "diagnosisContainer": "diagnosis",
+    "diagnosticResultField": "diagnosticResult"
   },
   "messages": {
     "createUsage": "Usage: npc create <description>",
     "creating": "> Creating NPC (\"{0}\")...",
+    "unknownId": "unknown",
     "created": "> Success! NPC ID: {0}",
     "id": "> NPC ID: {0}",
     "state": "> State: {0}",
     "noActive": "Error: No active NPC. Create an NPC first.",
+    "missingId": "Error: NPC ID required or no active NPC.",
     "notFound": "Error: NPC {0} not found.",
     "updateUsage": "Usage: npc update <npcId> --<field> <value> [...]",
     "updated": "> NPC {0} updated! New state components: {1}",
@@ -35,6 +49,15 @@
     "dialogueFallback": "...",
     "dialogue": "{0}",
     "action": "Action: {0}",
+    "thoughtResultPrefix": "Thought result: ",
+    "reasoningResultPrefix": "Reasoning result: ",
+    "diagnosticResultPrefix": "Diagnostic result: ",
+    "promptTraceEnvKey": "FORBOCAI_DEBUG_PROMPTS",
+    "promptTraceHeader": "--- SLM prompt (as the model received it) ---",
+    "promptTraceFooter": "--- end SLM prompt ---",
+    "profileOption": "--profile",
+    "thoughtProfileMemoryType": "thoughtProfile",
+    "thoughtProfileStateKey": "thoughtProfile",
     "chatUsage": "Usage: npc chat <npcId> [message]",
     "chatMissingId": "Error: NPC ID required",
     "chatHeader": "--- FORBOCAI CHAT SESSION: {0} ---",
@@ -47,6 +70,9 @@
     "persona": "> Persona: {0}",
     "importDone": "NPC imported from soul",
     "statePrinted": "NPC state printed",
-    "updateDone": "NPC updated"
+    "updateDone": "NPC updated",
+    "emptyPersona": "",
+    "apiFailure": "Failed to reach API at {0}\n{1}",
+    "networkErrors": ["fetch failed", "FETCH_ERROR", "ECONNREFUSED"]
   }
 }

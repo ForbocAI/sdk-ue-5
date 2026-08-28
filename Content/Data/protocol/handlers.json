@@ -7,6 +7,10 @@
     "function": "function",
     "string": "string"
   },
+  "actions": {
+    "npcProcess": "npc/process",
+    "ghostProcess": "ghost/process"
+  },
   "errors": {
     "missingMemoryStore": "API requires memory engine for memoryStore",
     "missingVectorMemory": "API requires memory engine for QueryVector",
@@ -17,26 +21,23 @@
     "missingNpcId": "No npcId provided and no active NPC selected",
     "missingStructuredPersona": "No structured persona provided by the game",
     "processingFailed": "Protocol processing failed",
-    "missingApiDecisionIntent": "API Decision instruction omitted decisionIntent"
+    "npcNotFoundTemplate": "NPC {npcId} not found",
+    "apiStatusRequestFailed": "API status request failed",
+    "apiContractRequestFailed": "API micro-game contract request failed"
   },
   "limits": {
     "maxTurns": 12
   },
   "classifications": {
-    "IdentifyActor": "Local",
     "QueryVector": "Local",
-    "Decision": "Pass-through",
-    "Reasoning": "Pass-through",
     "Finalize": "Local"
   },
   "roles": {
     "user": "user",
     "assistant": "assistant"
   },
-  "text": {
-    "empty": "",
-    "emptyObject": "{}",
-    "wordSeparator": " "
+  "tokens": {
+    "npcId": "{npcId}"
   },
   "formats": {
     "runIdSeparator": ":"
@@ -44,9 +45,17 @@
   "debug": {
     "environment": "FORBOCAI_DEBUG_NPC_PROCESS",
     "enabledValue": "1",
-    "preDispatch": "[npc-process][pre-dispatch]",
-    "rawAction": "[npc-process][raw-action]",
-    "unwrapThrow": "[npc-process][unwrap-throw]",
-    "unwrapOk": "[npc-process][unwrap-ok]"
+    "npc": {
+      "preDispatch": "[npc-process][pre-dispatch]",
+      "rawAction": "[npc-process][raw-action]",
+      "unwrapThrow": "[npc-process][unwrap-throw]",
+      "unwrapOk": "[npc-process][unwrap-ok]"
+    },
+    "ghost": {
+      "preDispatch": "[ghost-process][pre-dispatch]",
+      "rawAction": "[ghost-process][raw-action]",
+      "unwrapThrow": "[ghost-process][unwrap-throw]",
+      "unwrapOk": "[ghost-process][unwrap-ok]"
+    }
   }
 }

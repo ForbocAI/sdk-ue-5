@@ -2,12 +2,16 @@
 
 #include "Core/rtk.hpp"
 #include "Components/Memory/MemoryTypes.h"
+#include "Components/Protocol/Requests/RequestsTypes.h"
 
 struct FRuntimeState;
 
 namespace rtk {
 
 struct FProtocolHandlerContext {
+  std::function<ThunkAction<FNPCProcessResponse, FRuntimeState>(
+      const FNPCProcessRequest &)>
+      SubmitProcess;
   std::function<ThunkAction<FMemoryItem, FRuntimeState>(const FMemoryItem &)>
       StoreMemory;
   std::function<ThunkAction<TArray<FMemoryItem>, FRuntimeState>(
@@ -18,6 +22,9 @@ struct FProtocolHandlerContext {
   bool HasMemory() const {
     return static_cast<bool>(StoreMemory) && static_cast<bool>(RecallMemory);
   }
+
+  /** User Story: As shared protocol execution, I need the selected API route present before the tape loop starts. @fn bool HasProcessRoute() const */
+  bool HasProcessRoute() const { return static_cast<bool>(SubmitProcess); }
 };
 
 } // namespace rtk

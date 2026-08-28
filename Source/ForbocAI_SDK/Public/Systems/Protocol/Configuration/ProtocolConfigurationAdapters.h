@@ -15,6 +15,8 @@ inline const FProtocolData &protocolData() {
         DataAdapters::ReadObjectField(Source, TEXT("iteration"));
     const TSharedRef<FJsonObject> RuntimeTypes =
         DataAdapters::ReadObjectField(Source, TEXT("runtimeTypes"));
+    const TSharedRef<FJsonObject> Actions =
+        DataAdapters::ReadObjectField(Source, TEXT("actions"));
     const TSharedRef<FJsonObject> Errors =
         DataAdapters::ReadObjectField(Source, TEXT("errors"));
     const TSharedRef<FJsonObject> Limits =
@@ -23,17 +25,23 @@ inline const FProtocolData &protocolData() {
         DataAdapters::ReadObjectField(Source, TEXT("classifications"));
     const TSharedRef<FJsonObject> Roles =
         DataAdapters::ReadObjectField(Source, TEXT("roles"));
-    const TSharedRef<FJsonObject> Text =
-        DataAdapters::ReadObjectField(Source, TEXT("text"));
+    const TSharedRef<FJsonObject> Tokens =
+        DataAdapters::ReadObjectField(Source, TEXT("tokens"));
     const TSharedRef<FJsonObject> Formats =
         DataAdapters::ReadObjectField(Source, TEXT("formats"));
     const TSharedRef<FJsonObject> Debug =
         DataAdapters::ReadObjectField(Source, TEXT("debug"));
+    const TSharedRef<FJsonObject> NpcDebug =
+        DataAdapters::ReadObjectField(Debug, TEXT("npc"));
+    const TSharedRef<FJsonObject> GhostDebug =
+        DataAdapters::ReadObjectField(Debug, TEXT("ghost"));
     return FProtocolData{
         {DataAdapters::ReadNumberField(Iteration, TEXT("initialIndex")),
          DataAdapters::ReadNumberField(Iteration, TEXT("step"))},
         {DataAdapters::ReadStringField(RuntimeTypes, TEXT("function")),
          DataAdapters::ReadStringField(RuntimeTypes, TEXT("string"))},
+        {DataAdapters::ReadStringField(Actions, TEXT("npcProcess")),
+         DataAdapters::ReadStringField(Actions, TEXT("ghostProcess"))},
         {DataAdapters::ReadStringField(Errors, TEXT("missingMemoryStore")),
          DataAdapters::ReadStringField(Errors, TEXT("missingVectorMemory")),
          DataAdapters::ReadStringField(Errors, TEXT("unknownInstruction")),
@@ -45,27 +53,28 @@ inline const FProtocolData &protocolData() {
          DataAdapters::ReadStringField(Errors,
                                        TEXT("missingStructuredPersona")),
          DataAdapters::ReadStringField(Errors, TEXT("processingFailed")),
+         DataAdapters::ReadStringField(Errors, TEXT("npcNotFoundTemplate")),
          DataAdapters::ReadStringField(Errors,
-                                       TEXT("missingApiDecisionIntent"))},
+                                       TEXT("apiStatusRequestFailed")),
+         DataAdapters::ReadStringField(Errors,
+                                       TEXT("apiContractRequestFailed"))},
         {DataAdapters::ReadNumberField(Limits, TEXT("maxTurns"))},
-        {DataAdapters::ReadStringField(Classifications,
-                                       TEXT("IdentifyActor")),
-         DataAdapters::ReadStringField(Classifications, TEXT("QueryVector")),
-         DataAdapters::ReadStringField(Classifications, TEXT("Decision")),
-         DataAdapters::ReadStringField(Classifications, TEXT("Reasoning")),
+        {DataAdapters::ReadStringField(Classifications, TEXT("QueryVector")),
          DataAdapters::ReadStringField(Classifications, TEXT("Finalize"))},
         {DataAdapters::ReadStringField(Roles, TEXT("user")),
          DataAdapters::ReadStringField(Roles, TEXT("assistant"))},
-        {DataAdapters::ReadStringField(Text, TEXT("empty")),
-         DataAdapters::ReadStringField(Text, TEXT("emptyObject")),
-         DataAdapters::ReadStringField(Text, TEXT("wordSeparator"))},
+        {DataAdapters::ReadStringField(Tokens, TEXT("npcId"))},
         {DataAdapters::ReadStringField(Formats, TEXT("runIdSeparator"))},
         {DataAdapters::ReadStringField(Debug, TEXT("environment")),
          DataAdapters::ReadStringField(Debug, TEXT("enabledValue")),
-         DataAdapters::ReadStringField(Debug, TEXT("preDispatch")),
-         DataAdapters::ReadStringField(Debug, TEXT("rawAction")),
-         DataAdapters::ReadStringField(Debug, TEXT("unwrapThrow")),
-         DataAdapters::ReadStringField(Debug, TEXT("unwrapOk"))}};
+         {DataAdapters::ReadStringField(NpcDebug, TEXT("preDispatch")),
+          DataAdapters::ReadStringField(NpcDebug, TEXT("rawAction")),
+          DataAdapters::ReadStringField(NpcDebug, TEXT("unwrapThrow")),
+          DataAdapters::ReadStringField(NpcDebug, TEXT("unwrapOk"))},
+         {DataAdapters::ReadStringField(GhostDebug, TEXT("preDispatch")),
+          DataAdapters::ReadStringField(GhostDebug, TEXT("rawAction")),
+          DataAdapters::ReadStringField(GhostDebug, TEXT("unwrapThrow")),
+          DataAdapters::ReadStringField(GhostDebug, TEXT("unwrapOk"))}}};
   }();
   return Data;
 }

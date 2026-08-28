@@ -15,6 +15,12 @@
       "minimumMatches": 8
     },
     {
+      "name": "SDK CLI command concerns",
+      "root": "Source/ForbocAI_SDK/Private/Systems/CLI",
+      "glob": "*Commands/**/*.h",
+      "minimumMatches": 1
+    },
+    {
       "name": "micro-game command runners",
       "root": "micro-game-cli/Source/ForbocAI_MicroGame_CLI/Public/MicroGame/Features",
       "glob": "**/CommandRunner*.h",
@@ -54,5 +60,113 @@
     "id": "CLI-THIN-006",
     "summary": "command-surface function exceeds the composability budget",
     "maxLines": 50
-  }
+  },
+  "roleDispatchContracts": [
+    {
+      "id": "CLI-GHOST-ROLES-001",
+      "rolesFile": "Content/Data/cli/roles.json",
+      "commandsFile": "Content/Data/cli/commands/ghost.json",
+      "sourceFiles": [
+        "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostActorCommandAdapters.h",
+        "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Cognition/GhostCognitionCommandAdapters.h",
+        "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Lifecycle/GhostLifecycleCommandAdapters.h"
+      ],
+      "group": "ghost",
+      "missingSummary": "Ghost role contract source is missing",
+      "unmappedSummary": "Ghost command has no canonical role",
+      "undispatchedSummary": "Ghost role is absent from the dispatcher"
+    }
+  ],
+  "functionBindings": [
+    {
+      "id": "CLI-GHOST-ROUTE-001",
+      "sourceFile": "Source/ForbocAI_SDK/Public/Systems/Protocol/Handlers/HandlersThunks.h",
+      "function": "WithGhostProcessRoute",
+      "missingSummary": "Ghost process route function is missing",
+      "requiredSummary": "Ghost process route does not call the Ghost endpoint",
+      "forbiddenSummary": "Ghost process route calls the normal NPC endpoint",
+      "requiredPatterns": ["\\bpostGhostProcess\\s*\\("],
+      "forbiddenPatterns": ["\\bpostNpcProcess\\s*\\("]
+    },
+    {
+      "id": "CLI-NPC-ROUTE-001",
+      "sourceFile": "Source/ForbocAI_SDK/Public/Systems/Protocol/Handlers/HandlersThunks.h",
+      "function": "WithNpcProcessRoute",
+      "missingSummary": "NPC process route function is missing",
+      "requiredSummary": "NPC process route does not call the NPC endpoint",
+      "forbiddenSummary": "NPC process route calls the Ghost endpoint",
+      "requiredPatterns": ["\\bpostNpcProcess\\s*\\("],
+      "forbiddenPatterns": ["\\bpostGhostProcess\\s*\\("]
+    },
+    {
+      "id": "CLI-GHOST-GENERATE-001",
+      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostActorCommandAdapters.h",
+      "function": "GenerateGhostAttribute",
+      "missingSummary": "Ghost generation command is missing",
+      "requiredSummary": "Ghost generation does not call its Ghost SDK operation",
+      "forbiddenSummary": "Ghost generation calls the normal NPC SDK operation",
+      "requiredPatterns": ["\\bOps::generateGhostAttribute\\s*\\("],
+      "forbiddenPatterns": ["\\bOps::generateNpcAttribute\\s*\\("]
+    },
+    {
+      "id": "CLI-GHOST-CREATE-001",
+      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostActorCommandAdapters.h",
+      "function": "CreateGhostActor",
+      "missingSummary": "Ghost create command is missing",
+      "requiredSummary": "Ghost create does not call its Ghost SDK operation",
+      "forbiddenSummary": "Ghost create calls the normal NPC SDK operation",
+      "requiredPatterns": ["\\bOps::createGhostActor\\s*\\("],
+      "forbiddenPatterns": ["\\bOps::createNpc\\s*\\("]
+    },
+    {
+      "id": "CLI-GHOST-UPDATE-COMPOSE-001",
+      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostActorCommandAdapters.h",
+      "function": "UpdateGhostActor",
+      "missingSummary": "Ghost update command is missing",
+      "requiredSummary": "Ghost update does not compose its focused SDK adapter",
+      "forbiddenSummary": "Ghost update calls the normal NPC SDK operation",
+      "requiredPatterns": ["\\bApplyGhostActorUpdate\\s*\\("],
+      "forbiddenPatterns": ["\\bOps::updateNpc\\s*\\("]
+    },
+    {
+      "id": "CLI-GHOST-UPDATE-001",
+      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostActorCommandAdapters.h",
+      "function": "ApplyGhostActorUpdate",
+      "missingSummary": "Ghost update SDK adapter is missing",
+      "requiredSummary": "Ghost update does not call its Ghost SDK operation",
+      "forbiddenSummary": "Ghost update calls the normal NPC SDK operation",
+      "requiredPatterns": ["\\bOps::updateGhostActor\\s*\\("],
+      "forbiddenPatterns": ["\\bOps::updateNpc\\s*\\("]
+    },
+    {
+      "id": "CLI-GHOST-RECALL-001",
+      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostActorCommandAdapters.h",
+      "function": "RecallGhostActor",
+      "missingSummary": "Ghost recall command is missing",
+      "requiredSummary": "Ghost recall does not call its Ghost SDK operation",
+      "forbiddenSummary": "Ghost recall calls the normal NPC SDK operation",
+      "requiredPatterns": ["\\bOps::recallGhostActor\\s*\\("],
+      "forbiddenPatterns": ["\\bOps::recallNodeMemory\\s*\\("]
+    },
+    {
+      "id": "CLI-GHOST-DECIDE-001",
+      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Cognition/GhostCognitionCommandAdapters.h",
+      "function": "DecideGhost",
+      "missingSummary": "Ghost decide command is missing",
+      "requiredSummary": "Ghost decide does not call its Ghost SDK operation",
+      "forbiddenSummary": "Ghost decide calls the normal NPC SDK operation",
+      "requiredPatterns": ["\\bOps::decideGhost\\s*\\("],
+      "forbiddenPatterns": ["\\bOps::processNpc\\s*\\("]
+    },
+    {
+      "id": "CLI-GHOST-MEMORY-001",
+      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Cognition/GhostCognitionCommandAdapters.h",
+      "function": "StoreGhostMemory",
+      "missingSummary": "Ghost memory command is missing",
+      "requiredSummary": "Ghost memory does not call its Ghost SDK operation",
+      "forbiddenSummary": "Ghost memory calls the normal memory SDK operation",
+      "requiredPatterns": ["\\bOps::storeGhostMemory\\s*\\("],
+      "forbiddenPatterns": ["\\bOps::storeMemory\\s*\\("]
+    }
+  ]
 }

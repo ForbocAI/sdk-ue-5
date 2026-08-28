@@ -5,79 +5,30 @@
 
 namespace Testing::API::Codec {
 
-/** User Story: As a testing API codec consumer, I need the identify-actor payload fixture read from authored data so actor serialization remains canonical. @fn inline FIdentifyActorPayloadFixture ReadIdentifyActorPayloadFixture(const DataAdapters::FSettingsSource &Source) */
-inline FIdentifyActorPayloadFixture
-ReadIdentifyActorPayloadFixture(const DataAdapters::FSettingsSource &Source) {
+/** User Story: As a protocol projection test, I need API-authored analytical results loaded from canonical JSON so no fixture semantics live in test source. @fn inline FAgentResponseProjectionFixture ReadAgentResponseProjectionFixture(const DataAdapters::FSettingsSource &Source) */
+inline FAgentResponseProjectionFixture
+ReadAgentResponseProjectionFixture(const DataAdapters::FSettingsSource &Source) {
   const TSharedRef<FJsonObject> Object =
-      DataAdapters::ReadObjectField(Source, TEXT("identifyActorPayload"));
+      DataAdapters::ReadObjectField(Source, TEXT("agentResponseProjection"));
   const TSharedRef<FJsonObject> Input =
       DataAdapters::ReadObjectField(Object, TEXT("input"));
-  const TSharedRef<FJsonObject> Expected =
-      DataAdapters::ReadObjectField(Object, TEXT("expected"));
   const TSharedRef<FJsonObject> Labels =
       DataAdapters::ReadObjectField(Object, TEXT("labels"));
   return {
-      DataAdapters::ReadStringField(Input, TEXT("npcId")),
-      DataAdapters::ReadStringField(Input, TEXT("persona")),
-      DataAdapters::SerializeObject(
-          DataAdapters::ReadObjectField(Input, TEXT("data"))),
-      DataAdapters::ReadStringField(Expected, TEXT("type")),
-      {
-          DataAdapters::ReadStringField(Labels, TEXT("payload")),
-          DataAdapters::ReadStringField(Labels, TEXT("type")),
-          DataAdapters::ReadStringField(Labels, TEXT("npcId")),
-          DataAdapters::ReadStringField(Labels, TEXT("persona")),
-          DataAdapters::ReadStringField(Labels, TEXT("data")),
-      },
-  };
-}
-
-/** User Story: As a testing API codec consumer, I need the decision payload fixture read from authored data so decision serialization remains canonical. @fn inline FDecisionPayloadFixture ReadDecisionPayloadFixture(const DataAdapters::FSettingsSource &Source) */
-inline FDecisionPayloadFixture
-ReadDecisionPayloadFixture(const DataAdapters::FSettingsSource &Source) {
-  const TSharedRef<FJsonObject> Object =
-      DataAdapters::ReadObjectField(Source, TEXT("decisionPayload"));
-  const TSharedRef<FJsonObject> Input =
-      DataAdapters::ReadObjectField(Object, TEXT("input"));
-  const TSharedRef<FJsonObject> Expected =
-      DataAdapters::ReadObjectField(Object, TEXT("expected"));
-  const TSharedRef<FJsonObject> Labels =
-      DataAdapters::ReadObjectField(Object, TEXT("labels"));
-  return {
-      DataAdapters::ReadStringField(Input, TEXT("goal")),
+      DataAdapters::ReadStringField(Input, TEXT("dialogue")),
       DataAdapters::ReadStringField(Input, TEXT("actionType")),
+      DataAdapters::ReadStringField(Input, TEXT("goal")),
+      DataAdapters::ReadStringField(Input, TEXT("decisionActionType")),
       DataAdapters::ReadStringField(Input, TEXT("target")),
-      DataAdapters::ReadStringField(Expected, TEXT("type")),
-      {
-          DataAdapters::ReadStringField(Labels, TEXT("payload")),
-          DataAdapters::ReadStringField(Labels, TEXT("type")),
-          DataAdapters::ReadStringField(Labels, TEXT("goal")),
-          DataAdapters::ReadStringField(Labels, TEXT("actionType")),
-          DataAdapters::ReadStringField(Labels, TEXT("target")),
-      },
-  };
-}
-
-/** User Story: As a testing API codec consumer, I need the reasoning payload fixture read from authored data so reasoning serialization remains canonical. @fn inline FReasoningPayloadFixture ReadReasoningPayloadFixture(const DataAdapters::FSettingsSource &Source) */
-inline FReasoningPayloadFixture
-ReadReasoningPayloadFixture(const DataAdapters::FSettingsSource &Source) {
-  const TSharedRef<FJsonObject> Object =
-      DataAdapters::ReadObjectField(Source, TEXT("reasoningPayload"));
-  const TSharedRef<FJsonObject> Input =
-      DataAdapters::ReadObjectField(Object, TEXT("input"));
-  const TSharedRef<FJsonObject> Expected =
-      DataAdapters::ReadObjectField(Object, TEXT("expected"));
-  const TSharedRef<FJsonObject> Labels =
-      DataAdapters::ReadObjectField(Object, TEXT("labels"));
-  return {
       DataAdapters::ReadStringField(Input, TEXT("reasoningText")),
       DataAdapters::ReadStringField(Input, TEXT("responseText")),
-      DataAdapters::ReadStringField(Expected, TEXT("type")),
+      DataAdapters::ReadStringField(Input, TEXT("prompt")),
       {
-          DataAdapters::ReadStringField(Labels, TEXT("payload")),
-          DataAdapters::ReadStringField(Labels, TEXT("type")),
-          DataAdapters::ReadStringField(Labels, TEXT("reasoningText")),
-          DataAdapters::ReadStringField(Labels, TEXT("responseText")),
+          DataAdapters::ReadStringField(Labels, TEXT("dialogue")),
+          DataAdapters::ReadStringField(Labels, TEXT("action")),
+          DataAdapters::ReadStringField(Labels, TEXT("thought")),
+          DataAdapters::ReadStringField(Labels, TEXT("reasoning")),
+          DataAdapters::ReadStringField(Labels, TEXT("prompt")),
       },
   };
 }
@@ -100,13 +51,26 @@ ReadProcessTapePayloadFixture(const DataAdapters::FSettingsSource &Source) {
       DataAdapters::SerializeObject(
           DataAdapters::ReadObjectField(Input, TEXT("npcState"))),
       DataAdapters::ReadStringField(Input, TEXT("persona")),
+      DataAdapters::ReadStringField(Input, TEXT("thoughtProfile")),
+      DataAdapters::ReadStringArrayField(Input, TEXT("legalActions")),
+      DataAdapters::ReadStringArrayField(Input, TEXT("visitedActions")),
+      DataAdapters::ReadStringArrayField(Input, TEXT("avoidActions")),
       DataAdapters::ReadStringArrayField(Expected, TEXT("traits")),
+      DataAdapters::ReadStringField(Expected, TEXT("contextTimeField")),
       DataAdapters::ReadStringField(Expected, TEXT("contextTime")),
+      DataAdapters::ReadStringField(Expected, TEXT("thoughtProfile")),
+      DataAdapters::ReadNumberField(Expected, TEXT("legalActionCount")),
+      DataAdapters::ReadNumberField(Expected, TEXT("visitedActionCount")),
+      DataAdapters::ReadNumberField(Expected, TEXT("avoidActionCount")),
       {
           DataAdapters::ReadStringField(Labels, TEXT("payload")),
           DataAdapters::ReadStringField(Labels, TEXT("observation")),
           DataAdapters::ReadStringField(Labels, TEXT("persona")),
           DataAdapters::ReadStringField(Labels, TEXT("contextTime")),
+          DataAdapters::ReadStringField(Labels, TEXT("thoughtProfile")),
+          DataAdapters::ReadStringField(Labels, TEXT("legalActions")),
+          DataAdapters::ReadStringField(Labels, TEXT("visitedActions")),
+          DataAdapters::ReadStringField(Labels, TEXT("avoidActions")),
       },
   };
 }

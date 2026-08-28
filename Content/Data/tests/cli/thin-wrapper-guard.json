@@ -1,0 +1,66 @@
+{
+  "fixture": {
+    "requiredFile": "surface.cpp",
+    "rule": {
+      "id": "CLI-THIN-HTTP",
+      "summary": "direct HTTP",
+      "pattern": "\\bFHttpModule\\b"
+    },
+    "functionSize": {
+      "id": "CLI-THIN-SIZE",
+      "summary": "too large",
+      "maxLines": 5
+    }
+  },
+  "sourceCases": [
+    {
+      "name": "oversized function",
+      "source": "int Oversized() {\n  int Value = 1;\n  Value += 1;\n  Value += 1;\n  Value += 1;\n  return Value;\n}\n",
+      "expectedRuleIds": ["CLI-THIN-SIZE"],
+      "expectedMessageFragment": "Oversized is 7 lines"
+    },
+    {
+      "name": "pattern in comment",
+      "source": "int Thin() {\n  // FHttpModule\n  return 0;\n}\n",
+      "expectedRuleIds": []
+    },
+    {
+      "name": "pattern in code",
+      "source": "int Thin() {\n  return FHttpModule();\n}\n",
+      "expectedRuleIds": ["CLI-THIN-HTTP"]
+    }
+  ],
+  "missingRequiredExpectedRuleIds": ["CLI-THIN-000"],
+  "bindingCase": {
+    "sourceFile": "binding.h",
+    "source": "inline int Bound() { return ExpectedRoute(); }\n",
+    "function": "Bound",
+    "id": "CLI-BINDING",
+    "missingSummary": "binding function missing",
+    "requiredSummary": "required route missing",
+    "forbiddenSummary": "forbidden route used",
+    "passingRequiredPatterns": ["\\bExpectedRoute\\s*\\("],
+    "passingForbiddenPatterns": ["\\bOtherRoute\\s*\\("],
+    "failingRequiredPatterns": ["\\bMissingRoute\\s*\\("],
+    "failingForbiddenPatterns": ["\\bExpectedRoute\\s*\\("],
+    "expectedFailureRuleIds": ["CLI-BINDING", "CLI-BINDING"]
+  },
+  "roleCase": {
+    "rolesFile": "roles.json",
+    "roles": {"ghostAlpha": "ghost_alpha", "ghostBeta": "ghost_beta"},
+    "commandsFile": "commands.json",
+    "commands": {
+      "ghost_alpha": {"group": "ghost"},
+      "ghost_beta": {"group": "ghost"}
+    },
+    "sourceFile": "roles.cpp",
+    "passingSource": "int Dispatch() { return Roles.GhostAlpha + Roles.GhostBeta; }\n",
+    "failingSource": "int Dispatch() { return Roles.GhostAlpha; }\n",
+    "group": "ghost",
+    "id": "CLI-ROLE",
+    "missingSummary": "role contract file missing",
+    "unmappedSummary": "command has no role",
+    "undispatchedSummary": "role is not dispatched",
+    "expectedFailureRuleIds": ["CLI-ROLE"]
+  }
+}

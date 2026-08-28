@@ -1,20 +1,27 @@
 #pragma once
 
 #include "Components/Protocol/Requests/RequestsTypes.h"
+#include "Components/Protocol/Process/ProcessTypes.h"
 
 namespace ProtocolRequests {
 
-/** User Story: As a features protocol requests consumer, I need to invoke process tape through a stable signature so the features protocol requests workflow remains explicit and composable. @fn inline FNPCProcessTape ProcessTape(const FString &Observation, const FString &ContextJson, const FAgentState &NpcState, const FString &Persona) */
-inline FNPCProcessTape ProcessTape(const FString &Observation,
-                                   const FString &ContextJson,
-                                   const FAgentState &NpcState,
-                                   const FString &Persona) {
+/** User Story: As shared protocol execution, I need every caller-owned tape input copied without SDK interpretation. @fn inline FNPCProcessTape ProcessTape(const FProtocolProcessInput &Input, const FAgentState &NpcState) */
+inline FNPCProcessTape ProcessTape(const FProtocolProcessInput &Input,
+                                   const FAgentState &NpcState) {
   FNPCProcessTape Tape;
-  Tape.Observation = Observation;
-  Tape.ContextJson = ContextJson;
+  Tape.Observation = Input.Observation;
+  Tape.ContextJson = Input.ContextJson;
   Tape.NpcState = NpcState;
-  Tape.Persona = Persona;
-  Tape.bHasStructuredPersona = !Persona.IsEmpty();
+  Tape.Persona = Input.Persona;
+  Tape.bHasStructuredPersona = !Input.Persona.IsEmpty();
+  Tape.bHasThoughtProfile = Input.bHasThoughtProfile;
+  Tape.ThoughtProfile = Input.ThoughtProfile;
+  Tape.bHasLegalActions = Input.bHasLegalActions;
+  Tape.LegalActions = Input.LegalActions;
+  Tape.bHasVisitedActions = Input.bHasVisitedActions;
+  Tape.VisitedActions = Input.VisitedActions;
+  Tape.bHasAvoidActions = Input.bHasAvoidActions;
+  Tape.AvoidActions = Input.AvoidActions;
   return Tape;
 }
 

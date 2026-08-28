@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 import sys
 import tempfile
 import unittest
@@ -14,50 +15,133 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from check_thin_wrapper import collect_findings  # noqa: E402
 
 
+TEST_DATA = json.loads(
+    (
+        Path(__file__).resolve().parents[2]
+        / "Content"
+        / "Data"
+        / "tests"
+        / "cli"
+        / "thin-wrapper-guard.json"
+    ).read_text(encoding="utf-8")
+)
+
+
 class ThinWrapperGuardTests(unittest.TestCase):
-    def config(self, maximum: int = 5) -> dict:
+    def config(self) -> dict:
+        fixture = TEST_DATA["fixture"]
         return {
-            "requiredFiles": ["surface.cpp"],
+            "requiredFiles": [fixture["requiredFile"]],
             "discovery": [],
-            "sourceRules": [
-                {
-                    "id": "CLI-THIN-HTTP",
-                    "summary": "direct HTTP",
-                    "pattern": "\\bFHttpModule\\b",
-                }
-            ],
-            "functionSize": {
-                "id": "CLI-THIN-SIZE",
-                "summary": "too large",
-                "maxLines": maximum,
-            },
+            "sourceRules": [fixture["rule"]],
+            "functionSize": fixture["functionSize"],
         }
 
-    def run_guard(self, source: str, maximum: int = 5):
+    def run_guard(self, source: str):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / "surface.cpp").write_text(source, encoding="utf-8")
-            return collect_findings(root, self.config(maximum))[1]
+            (root / TEST_DATA["fixture"]["requiredFile"]).write_text(
+                source, encoding="utf-8"
+            )
+            return collect_findings(root, self.config())[1]
 
-    def test_reports_real_function_line_count(self):
-        findings = self.run_guard(
-            "int Oversized() {\n  int Value = 1;\n  Value += 1;\n  Value += 1;\n  Value += 1;\n  return Value;\n}\n"
-        )
-        self.assertEqual(["CLI-THIN-SIZE"], [finding.rule_id for finding in findings])
-        self.assertIn("Oversized is 7 lines", findings[0].message)
-
-    def test_ignores_rule_patterns_inside_comments(self):
-        findings = self.run_guard("int Thin() {\n  // FHttpModule\n  return 0;\n}\n")
-        self.assertEqual([], findings)
-
-    def test_reports_executable_rule_patterns(self):
-        findings = self.run_guard("int Thin() {\n  return FHttpModule();\n}\n")
-        self.assertEqual(["CLI-THIN-HTTP"], [finding.rule_id for finding in findings])
+    def test_source_cases(self):
+        for case in TEST_DATA["sourceCases"]:
+            with self.subTest(case["name"]):
+                findings = self.run_guard(case["source"])
+                self.assertEqual(
+                    case["expectedRuleIds"],
+                    [finding.rule_id for finding in findings],
+                )
+                if case.get("expectedMessageFragment"):
+                    self.assertIn(case["expectedMessageFragment"], findings[0].message)
 
     def test_reports_missing_required_surface(self):
         with tempfile.TemporaryDirectory() as directory:
             findings = collect_findings(Path(directory), self.config())[1]
-        self.assertEqual(["CLI-THIN-000"], [finding.rule_id for finding in findings])
+        self.assertEqual(
+            TEST_DATA["missingRequiredExpectedRuleIds"],
+            [finding.rule_id for finding in findings],
+        )
+
+    def test_function_binding_contract(self):
+        case = TEST_DATA["bindingCase"]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / case["sourceFile"]
+            path.write_text(case["source"], encoding="utf-8")
+            config = self.config()
+            config["requiredFiles"] = [case["sourceFile"]]
+            config["sourceRules"] = []
+            config["functionBindings"] = [
+                {
+                    key: value
+                    for key, value in case.items()
+                    if key
+                    in {
+                        "sourceFile",
+                        "function",
+                        "id",
+                        "missingSummary",
+                        "requiredSummary",
+                        "forbiddenSummary",
+                    }
+                }
+                | {
+                    "requiredPatterns": case["passingRequiredPatterns"],
+                    "forbiddenPatterns": case["passingForbiddenPatterns"],
+                }
+            ]
+            self.assertEqual([], collect_findings(root, config)[1])
+            config["functionBindings"][0]["requiredPatterns"] = case[
+                "failingRequiredPatterns"
+            ]
+            config["functionBindings"][0]["forbiddenPatterns"] = case[
+                "failingForbiddenPatterns"
+            ]
+            self.assertEqual(
+                case["expectedFailureRuleIds"],
+                [finding.rule_id for finding in collect_findings(root, config)[1]],
+            )
+
+    def test_role_dispatch_contract(self):
+        case = TEST_DATA["roleCase"]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / case["rolesFile"]).write_text(
+                json.dumps(case["roles"]), encoding="utf-8"
+            )
+            (root / case["commandsFile"]).write_text(
+                json.dumps(case["commands"]), encoding="utf-8"
+            )
+            source_path = root / case["sourceFile"]
+            source_path.write_text(case["passingSource"], encoding="utf-8")
+            config = self.config()
+            config["requiredFiles"] = [case["sourceFile"]]
+            config["sourceRules"] = []
+            config["roleDispatchContracts"] = [
+                {
+                    key: value
+                    for key, value in case.items()
+                    if key
+                    in {
+                        "rolesFile",
+                        "commandsFile",
+                        "sourceFile",
+                        "group",
+                        "id",
+                        "missingSummary",
+                        "unmappedSummary",
+                        "undispatchedSummary",
+                    }
+                }
+            ]
+            self.assertEqual([], collect_findings(root, config)[1])
+            source_path.write_text(case["failingSource"], encoding="utf-8")
+            self.assertEqual(
+                case["expectedFailureRuleIds"],
+                [finding.rule_id for finding in collect_findings(root, config)[1]],
+            )
 
 
 if __name__ == "__main__":

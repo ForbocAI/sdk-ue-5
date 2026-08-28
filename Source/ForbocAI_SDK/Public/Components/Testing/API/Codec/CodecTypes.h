@@ -122,50 +122,24 @@ struct FActionContractFixture {
   FActionContractLabels Labels;
 };
 
-struct FIdentifyActorPayloadLabels {
-  FString Payload;
-  FString Type;
-  FString NpcId;
-  FString Persona;
-  FString Data;
+struct FAgentResponseProjectionLabels {
+  FString Dialogue;
+  FString Action;
+  FString Thought;
+  FString Reasoning;
+  FString Prompt;
 };
 
-struct FIdentifyActorPayloadFixture {
-  FString NpcId;
-  FString Persona;
-  FString DataJson;
-  FString ExpectedType;
-  FIdentifyActorPayloadLabels Labels;
-};
-
-struct FDecisionPayloadLabels {
-  FString Payload;
-  FString Type;
-  FString Goal;
+struct FAgentResponseProjectionFixture {
+  FString Dialogue;
   FString ActionType;
-  FString Target;
-};
-
-struct FDecisionPayloadFixture {
   FString Goal;
-  FString ActionType;
+  FString DecisionActionType;
   FString Target;
-  FString ExpectedType;
-  FDecisionPayloadLabels Labels;
-};
-
-struct FReasoningPayloadLabels {
-  FString Payload;
-  FString Type;
   FString ReasoningText;
   FString ResponseText;
-};
-
-struct FReasoningPayloadFixture {
-  FString ReasoningText;
-  FString ResponseText;
-  FString ExpectedType;
-  FReasoningPayloadLabels Labels;
+  FString Prompt;
+  FAgentResponseProjectionLabels Labels;
 };
 
 struct FProcessTapePayloadLabels {
@@ -173,6 +147,10 @@ struct FProcessTapePayloadLabels {
   FString Observation;
   FString Persona;
   FString ContextTime;
+  FString ThoughtProfile;
+  FString LegalActions;
+  FString VisitedActions;
+  FString AvoidActions;
 };
 
 struct FProcessTapePayloadFixture {
@@ -180,8 +158,17 @@ struct FProcessTapePayloadFixture {
   FString ContextJson;
   FString NpcStateJson;
   FString Persona;
+  FString ThoughtProfile;
+  TArray<FString> LegalActions;
+  TArray<FString> VisitedActions;
+  TArray<FString> AvoidActions;
   TArray<FString> ExpectedTraits;
+  FString ContextTimeField;
   FString ExpectedContextTime;
+  FString ExpectedThoughtProfile;
+  int32 ExpectedLegalActionCount;
+  int32 ExpectedVisitedActionCount;
+  int32 ExpectedAvoidActionCount;
   FProcessTapePayloadLabels Labels;
 };
 
@@ -192,9 +179,7 @@ struct FCodecFixtures {
   FNullableProtocolFixture NullableProtocol;
   FBridgeValidationFixture BridgeValidation;
   FActionContractFixture ActionContract;
-  FIdentifyActorPayloadFixture IdentifyActorPayload;
-  FDecisionPayloadFixture DecisionPayload;
-  FReasoningPayloadFixture ReasoningPayload;
+  FAgentResponseProjectionFixture AgentResponseProjection;
   FProcessTapePayloadFixture ProcessTapePayload;
 };
 

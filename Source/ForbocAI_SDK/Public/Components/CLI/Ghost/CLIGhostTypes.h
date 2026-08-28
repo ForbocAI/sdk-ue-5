@@ -32,6 +32,10 @@ struct FCLIGhostState {
   FString HistoryTitle;
   FString HistoryEmpty;
   FString History;
+  FString NameOption;
+  FString RoleOption;
+  FString StateNameOption;
+  FString StateRoleOption;
 };
 
 } // namespace ForbocAI::CLI::Ghost

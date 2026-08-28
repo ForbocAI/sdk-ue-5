@@ -23,17 +23,32 @@ struct FCLINPCLimits {
 
 struct FCLINPCSyntax {
   FString OptionPrefix;
+  FString TextOption;
+  FString LegalActionsOption;
+  FString VisitedActionsOption;
+  FString AvoidActionsOption;
+  FString PersonaMemoryType;
+  FString LegalActionsSeparator;
   FString MessageSeparator;
   FString PersonaPattern;
+  FString FormatOpenToken;
+  FString FormatCloseToken;
+};
+
+struct FCLINPCAnalysis {
+  FString DiagnosisContainer;
+  FString DiagnosticResultField;
 };
 
 struct FCLINPCMessages {
   FString CreateUsage;
   FString Creating;
+  FString UnknownId;
   FString Created;
   FString Id;
   FString State;
   FString NoActive;
+  FString MissingId;
   FString NotFound;
   FString UpdateUsage;
   FString Updated;
@@ -45,6 +60,15 @@ struct FCLINPCMessages {
   FString DialogueFallback;
   FString Dialogue;
   FString Action;
+  FString ThoughtResultPrefix;
+  FString ReasoningResultPrefix;
+  FString DiagnosticResultPrefix;
+  FString PromptTraceEnvKey;
+  FString PromptTraceHeader;
+  FString PromptTraceFooter;
+  FString ProfileOption;
+  FString ThoughtProfileMemoryType;
+  FString ThoughtProfileStateKey;
   FString ChatUsage;
   FString ChatMissingId;
   FString ChatHeader;
@@ -58,18 +82,46 @@ struct FCLINPCMessages {
   FString ImportDone;
   FString StatePrinted;
   FString UpdateDone;
+  FString EmptyPersona;
+  FString ApiFailure;
+  TArray<FString> NetworkErrors;
 };
 
 struct FCLINPCState {
   FCLINPCLimits Limits;
   FCLINPCSyntax Syntax;
+  FCLINPCAnalysis Analysis;
   FCLINPCMessages Messages;
 };
 
 struct FCLINPCUpdate {
-  FString NpcId;
+  func::Maybe<FString> RequestedNpcId;
   FAgentState Delta;
   TArray<FString> Fields;
+};
+
+struct FCLIOptionSpec {
+  FString Option;
+  int32 ValueOffset;
+  FString OptionPrefix;
+};
+
+struct FCLIOptionExtraction {
+  func::Maybe<FString> Value;
+  TArray<FString> Rest;
+};
+
+struct FCLINPCDecision {
+  FString NpcId;
+  FString Observation;
+  bool bHasProfile{};
+  FString Profile;
+  bool bHasLegalActions{};
+  TArray<FString> LegalActions;
+  bool bHasVisitedActions{};
+  TArray<FString> VisitedActions;
+  bool bHasAvoidActions{};
+  TArray<FString> AvoidActions;
 };
 
 } // namespace NPC
