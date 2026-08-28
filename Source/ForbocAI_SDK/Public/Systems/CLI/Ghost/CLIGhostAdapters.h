@@ -15,6 +15,7 @@ inline FCLIGhostState readCliGhostState() {
   return {
       DataAdapters::ReadStringField(Ghost, TEXT("defaultSuite")),
       DataAdapters::ReadNumberField(Ghost, TEXT("defaultDuration")),
+      DataAdapters::ReadStringField(Ghost, TEXT("durationOption")),
       DataAdapters::ReadNumberField(Ghost, TEXT("historyLimit")),
       DataAdapters::ReadNumberField(Ghost, TEXT("emptyCount")),
       DataAdapters::ReadStringField(Ghost, TEXT("requiredSession")),

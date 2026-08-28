@@ -3,7 +3,7 @@
 #include "MicroGame/Features/Components/Spatial/Grid/GridTypes.h"
 #include "MicroGame/Features/Entities/NPCs/NPCsTypes.h"
 #include "MicroGame/Features/Systems/Bridge/BridgeTypes.h"
-#include "MicroGame/Features/Systems/Memory/MemoryTypes.h"
+#include "MicroGame/Features/Systems/Memory/SystemsMemoryTypes.h"
 #include "MicroGame/Features/Systems/Social/SocialTypes.h"
 
 namespace MicroGame::CrossSdkConformance {

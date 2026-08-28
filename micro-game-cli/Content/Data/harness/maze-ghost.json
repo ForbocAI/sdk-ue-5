@@ -1,0 +1,23 @@
+{
+  "group": "ghost_lifecycle",
+  "runCommand": "forbocai ghost run maze --duration 300",
+  "stopCommand": "forbocai ghost stop ghost-session",
+  "resultsCommand": "forbocai ghost results ghost-session",
+  "analysisHeader": "=== ForbocAI Ghost Level Analysis ===",
+  "analysisFooter": "=== End ForbocAI Ghost Level Analysis ===",
+  "commands": {
+    "generate": "forbocai ghost generate ghost-session {attribute} {context}",
+    "create": "forbocai ghost create ghost-session \"{persona}\"",
+    "identityUpdate": "forbocai ghost update ghost-session {id} --name \"{name}\" --role \"{role}\"",
+    "recall": "forbocai ghost recall ghost-session {id}",
+    "decide": "forbocai ghost decide ghost-session {id} \"{line}\" --legal-actions {options} --visited-actions {visited} --avoid-actions {avoid}",
+    "memoryStore": "forbocai ghost memory-store ghost-session {id} \"{memory}\"",
+    "typedMemoryStore": "forbocai ghost memory-store ghost-session {id} \"{memory}\" --type {type}"
+  },
+  "commandFailed": "Maze Ghost CLI command failed: {output}",
+  "logFileEnvKey": "FORBOCAI_MAZE_GHOST_LOG",
+  "defaultLogPath": "output/micro-game-cli/maze-ghost-run.log",
+  "tokens": {
+    "output": "{output}"
+  }
+}

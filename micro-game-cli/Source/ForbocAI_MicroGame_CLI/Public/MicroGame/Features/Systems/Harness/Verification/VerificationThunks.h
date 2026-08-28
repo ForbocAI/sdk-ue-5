@@ -3,8 +3,10 @@
 #include "MicroGame/Features/Entities/NPCs/NPCsActions.h"
 #include "MicroGame/Features/Systems/Contract/Parsing/ContractParsingAdapters.h"
 #include "MicroGame/Features/Systems/Contract/ContractSelectors.h"
-#include "MicroGame/Features/Systems/Harness/Verification/Command/CommandThunks.h"
-#include "MicroGame/Features/Systems/Harness/TwoNpcChat/TwoNpcChatThunks.h"
+#include "MicroGame/Features/Systems/Harness/Verification/Command/VerificationCommandThunks.h"
+#include "MicroGame/Features/Systems/Harness/Maze/Run/MazeRunThunks.h"
+#include "MicroGame/Features/Systems/Harness/MazeGhost/Run/MazeGhostRunThunks.h"
+#include "MicroGame/Features/Systems/Harness/TwoNpcChat/Run/TwoNpcChatRunThunks.h"
 #include "MicroGame/Features/Systems/Harness/Verification/VerificationSelectors.h"
 #include "MicroGame/Features/Systems/Harness/Verification/Progress/ProgressThunks.h"
 #include "MicroGame/Features/Systems/Harness/Verification/Scenario/ScenarioThunks.h"
@@ -69,20 +71,72 @@ inline void RecordContractDrift(
                       Failure, Store, Sink);
 }
 
-/** User Story: As a systems harness game consumer, I need the client-orchestrated two-NPC chat run and its transcript logged through one adapter so both the append and chat-only paths share it. @fn inline void AppendTwoNpcChat(FMicroGameStore &Store) */
-inline void AppendTwoNpcChat(FMicroGameStore &Store) {
-  const TArray<FString> Lines = TwoNpcChat::RunTwoNpcChat(Store);
-  const FString Transcript = FString::Join(
-      Lines, *VerificationAdapters::GameData().output.lineBreak);
+/** User Story: As a systems harness game consumer, I need the two-NPC result and any failure logged through one adapter so append and exclusive modes cannot report false completion. @fn inline TwoNpcChat::FChatRunResult AppendTwoNpcChat(FMicroGameStore &Store) */
+inline TwoNpcChat::FChatRunResult
+AppendTwoNpcChat(FMicroGameStore &Store) {
+  const TwoNpcChat::FChatRunResult Result =
+      TwoNpcChat::RunTwoNpcChat(Store);
+  const FString Transcript =
+      Result.Lines.IsEmpty()
+          ? Result.Failure
+          : FString::Join(
+                Result.Lines,
+                *VerificationAdapters::GameData().output.lineBreak);
   GLog != nullptr ? GLog->Log(*Transcript) : void();
+  return Result;
 }
 
 /** User Story: As a systems harness game consumer, I need the two-npc-chat mode to run ONLY the two-NPC chat and report a complete run so it mirrors the TS runGame early return. @fn inline FGameRunResult RunTwoNpcChatOnly(FMicroGameStore &Store) */
 inline FGameRunResult RunTwoNpcChatOnly(FMicroGameStore &Store) {
-  AppendTwoNpcChat(Store);
+  const TwoNpcChat::FChatRunResult Chat = AppendTwoNpcChat(Store);
   FGameRunResult Result;
-  Result.bComplete = true;
+  Result.bComplete = Chat.bSuccess;
+  Result.Summary = Chat.Failure;
   return Result;
+}
+
+/** User Story: As Maze parity verification, I need both modes to consume one optional authored environment seed so their benchmark topology can be reproduced. @fn inline func::Maybe<uint32> ReadMazeSeed() */
+inline func::Maybe<uint32> ReadMazeSeed() {
+  const FString Raw = FPlatformMisc::GetEnvironmentVariable(
+      *VerificationAdapters::GameData().environment.mazeSeedKey);
+  uint32 Parsed{};
+  return !Raw.IsEmpty() && LexTryParseString(Parsed, *Raw)
+             ? func::just(Parsed)
+             : func::nothing<uint32>();
+}
+
+/**
+ * User Story: As an exclusive Maze CLI mode, I need its transcript emitted and its true completion state mapped without running the unrelated verification harness.
+ * @fn inline FGameRunResult PresentMazeResult( const Maze::FMazeRunResult &MazeResult)
+ */
+inline FGameRunResult PresentMazeResult(
+    const Maze::FMazeRunResult &MazeResult) {
+  MazeResult.Lines.IsEmpty()
+      ? (GLog != nullptr ? GLog->Log(*MazeResult.Failure) : void())
+      : Maze::LogMazeTranscript(MazeResult.Lines);
+  FGameRunResult Result;
+  Result.bComplete = MazeResult.bSuccess;
+  Result.Summary = MazeResult.Failure;
+  return Result;
+}
+
+/** User Story: As the normal Maze mode, I need the shared mechanic invoked with only normal NPC CLI command templates. @fn inline FGameRunResult RunMazeOnly(FMicroGameStore &Store, bool bDebug) */
+inline FGameRunResult RunMazeOnly(FMicroGameStore &Store, bool bDebug) {
+  Maze::FMazeRunOptions Options;
+  Options.bDebug = bDebug;
+  Options.Seed = ReadMazeSeed();
+  Options.LogTarget = {Maze::MazeConfig().LogFileEnvKey,
+                       Maze::MazeConfig().DefaultLogPath};
+  Options.CommandFailureFormat = Maze::MazeConfig().CommandFailed;
+  return PresentMazeResult(
+      Maze::RunMaze(Store, Maze::MazeConfig().Commands, Options));
+}
+
+/** User Story: As Maze Ghost mode, I need only Ghost lifecycle and operation commands wrapped around the same shared Maze mechanic. @fn inline FGameRunResult RunMazeGhostOnly(FMicroGameStore &Store, bool bDebug) */
+inline FGameRunResult RunMazeGhostOnly(FMicroGameStore &Store,
+                                       bool bDebug) {
+  return PresentMazeResult(
+      MazeGhost::RunMazeGhost(Store, bDebug, ReadMazeSeed()));
 }
 
 } // namespace VerificationThunksDetail
@@ -96,10 +150,17 @@ inline FGameRunResult RunGame(FMicroGameStore &Store, FString Mode,
   // two-npc-chat runs ONLY the client-orchestrated two-NPC chat, skipping the
   // contract/scenario/quality harness (mirrors the TS runGame early return);
   // every other mode runs the full harness in the lambda below.
-  return VerificationVocabularyAdapters::GameRuntimeData()
-                 .twoNpcChatExclusiveModes.Contains(Mode)
-      ? VerificationThunksDetail::RunTwoNpcChatOnly(Store)
-      : [&]() -> FGameRunResult {
+  const FGameRuntimeData &Runtime =
+      VerificationVocabularyAdapters::GameRuntimeData();
+  return Runtime.twoNpcChatExclusiveModes.Contains(Mode)
+             ? VerificationThunksDetail::RunTwoNpcChatOnly(Store)
+         : Runtime.mazeExclusiveModes.Contains(Mode)
+             ? VerificationThunksDetail::RunMazeOnly(
+                   Store, Runtime.mazeDebugModes.Contains(Mode))
+         : Runtime.mazeGhostExclusiveModes.Contains(Mode)
+             ? VerificationThunksDetail::RunMazeGhostOnly(
+                   Store, Runtime.mazeGhostDebugModes.Contains(Mode))
+             : [&]() -> FGameRunResult {
 
   FGameProgress Started;
   Started.Type =
@@ -110,7 +171,6 @@ inline FGameRunResult RunGame(FMicroGameStore &Store, FString Mode,
   Store.dispatch(NPCsActions::UpsertNPC(
       VerificationVocabularyAdapters::GameRuntimeData().initialState.sessionNpc));
 
-  const FGameRuntimeData &Runtime = VerificationVocabularyAdapters::GameRuntimeData();
   const FGameData &Data = VerificationAdapters::GameData();
   const CommandRunner::FCommandOutput ContractResult =
       VerificationThunksDetail::ExecuteCommand(Data.contractCommand, Store);
@@ -167,18 +227,24 @@ inline FGameRunResult RunGame(FMicroGameStore &Store, FString Mode,
 
   // The two-NPC chat is appended for the modes authored in twoNpcChatRunsInModes
   // (data-driven, mirrors TS runGame; autoplay alone must not run it).
-  Runtime.twoNpcChatRunsInModes.Contains(Mode)
-      ? (VerificationThunksDetail::AppendTwoNpcChat(Store), void())
-      : void();
+  const TwoNpcChat::FChatRunResult ChatResult =
+      Runtime.twoNpcChatRunsInModes.Contains(Mode)
+          ? VerificationThunksDetail::AppendTwoNpcChat(Store)
+          : TwoNpcChat::FChatRunResult{
+                true, {}, TwoNpcChat::TwoNpcChatConfig().EmptyContext};
 
   FGameRunResult Result =
       VerificationSelectors::SelectGameRunResult(Store.getState());
+  Result.bComplete = Result.bComplete && ChatResult.bSuccess;
   Result.QualityReport.hasValue
       ? (Result.QualityReportPath = displayQualityReportPath(
              writeCurrentQualityReport(Result.QualityReport.value)),
          void())
       : void();
-  Result.Summary = VerificationSelectors::SelectGameSummaryText(Result);
+  Result.Summary =
+      ChatResult.bSuccess
+          ? VerificationSelectors::SelectGameSummaryText(Result)
+          : ChatResult.Failure;
   FGameProgress Completed;
   Completed.Type = Runtime.lifecycleEvents.sessionCompleted;
   Completed.RunResult = Result;

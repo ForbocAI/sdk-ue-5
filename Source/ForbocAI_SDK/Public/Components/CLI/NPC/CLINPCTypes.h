@@ -38,6 +38,7 @@ struct FCLINPCSyntax {
 struct FCLINPCAnalysis {
   FString DiagnosisContainer;
   FString DiagnosticResultField;
+  FString OutputLineSeparator;
 };
 
 struct FCLINPCMessages {

@@ -67,9 +67,9 @@
       "rolesFile": "Content/Data/cli/roles.json",
       "commandsFile": "Content/Data/cli/commands/ghost.json",
       "sourceFiles": [
-        "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostActorCommandAdapters.h",
-        "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Cognition/GhostCognitionCommandAdapters.h",
-        "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Lifecycle/GhostLifecycleCommandAdapters.h"
+        "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostCommandsActorAdapters.h",
+        "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Cognition/GhostCommandsCognitionAdapters.h",
+        "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Lifecycle/LifecycleAdapters.h"
       ],
       "group": "ghost",
       "missingSummary": "Ghost role contract source is missing",
@@ -100,7 +100,7 @@
     },
     {
       "id": "CLI-GHOST-GENERATE-001",
-      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostActorCommandAdapters.h",
+      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostCommandsActorAdapters.h",
       "function": "GenerateGhostAttribute",
       "missingSummary": "Ghost generation command is missing",
       "requiredSummary": "Ghost generation does not call its Ghost SDK operation",
@@ -110,7 +110,7 @@
     },
     {
       "id": "CLI-GHOST-CREATE-001",
-      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostActorCommandAdapters.h",
+      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostCommandsActorAdapters.h",
       "function": "CreateGhostActor",
       "missingSummary": "Ghost create command is missing",
       "requiredSummary": "Ghost create does not call its Ghost SDK operation",
@@ -120,7 +120,7 @@
     },
     {
       "id": "CLI-GHOST-UPDATE-COMPOSE-001",
-      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostActorCommandAdapters.h",
+      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostCommandsActorAdapters.h",
       "function": "UpdateGhostActor",
       "missingSummary": "Ghost update command is missing",
       "requiredSummary": "Ghost update does not compose its focused SDK adapter",
@@ -130,7 +130,7 @@
     },
     {
       "id": "CLI-GHOST-UPDATE-001",
-      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostActorCommandAdapters.h",
+      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostCommandsActorAdapters.h",
       "function": "ApplyGhostActorUpdate",
       "missingSummary": "Ghost update SDK adapter is missing",
       "requiredSummary": "Ghost update does not call its Ghost SDK operation",
@@ -140,7 +140,7 @@
     },
     {
       "id": "CLI-GHOST-RECALL-001",
-      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostActorCommandAdapters.h",
+      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Actor/GhostCommandsActorAdapters.h",
       "function": "RecallGhostActor",
       "missingSummary": "Ghost recall command is missing",
       "requiredSummary": "Ghost recall does not call its Ghost SDK operation",
@@ -150,7 +150,7 @@
     },
     {
       "id": "CLI-GHOST-DECIDE-001",
-      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Cognition/GhostCognitionCommandAdapters.h",
+      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Cognition/GhostCommandsCognitionAdapters.h",
       "function": "DecideGhost",
       "missingSummary": "Ghost decide command is missing",
       "requiredSummary": "Ghost decide does not call its Ghost SDK operation",
@@ -160,7 +160,7 @@
     },
     {
       "id": "CLI-GHOST-MEMORY-001",
-      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Cognition/GhostCognitionCommandAdapters.h",
+      "sourceFile": "Source/ForbocAI_SDK/Private/Systems/CLI/GhostCommands/Cognition/GhostCommandsCognitionAdapters.h",
       "function": "StoreGhostMemory",
       "missingSummary": "Ghost memory command is missing",
       "requiredSummary": "Ghost memory does not call its Ghost SDK operation",

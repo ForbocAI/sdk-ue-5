@@ -21,11 +21,6 @@ LocalProtocolHandlerContext(const FString &DatabaseName) {
   return Context;
 }
 
-/** User Story: As the decide-only npc turn, I need a protocol context with no bound memory (HasMemory() == false) so the decision engine runs without reading or writing the vector db, keeping recall and store as separate composed commands. @fn inline FProtocolHandlerContext EphemeralProtocolHandlerContext() */
-inline FProtocolHandlerContext EphemeralProtocolHandlerContext() {
-  return FProtocolHandlerContext();
-}
-
 /** User Story: As ordinary NPC processing, I need the shared tape interpreter bound exclusively to the NPC process endpoint. @fn inline FProtocolHandlerContext WithNpcProcessRoute(const FString &NpcId, const FProtocolHandlerContext &Base) */
 inline FProtocolHandlerContext
 WithNpcProcessRoute(const FString &NpcId,

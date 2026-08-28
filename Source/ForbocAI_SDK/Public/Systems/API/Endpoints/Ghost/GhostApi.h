@@ -46,7 +46,10 @@ postGhostProcess(const FString &SessionId,
       Data.Timeouts.NpcProcessMs);
 }
 
-/** User Story: As Ghost actor construction, I need one generated attribute routed only through the active Ghost session endpoint. @fn inline Thunk<FNpcAttributeGenerateResponse> postGhostNpcGenerateAttribute(const FString &SessionId, const FString &Attribute, const FNpcAttributeGenerateRequest &Request) */
+/**
+ * User Story: As Ghost actor construction, I need one generated attribute routed only through the active Ghost session endpoint.
+ * @fn inline Thunk<FNpcAttributeGenerateResponse> postGhostNpcGenerateAttribute( const FString &SessionId, const FString &Attribute, const FNpcAttributeGenerateRequest &Request)
+ */
 inline Thunk<FNpcAttributeGenerateResponse> postGhostNpcGenerateAttribute(
     const FString &SessionId, const FString &Attribute,
     const FNpcAttributeGenerateRequest &Request) {

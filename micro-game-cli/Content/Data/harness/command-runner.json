@@ -1,7 +1,6 @@
 {
   "syntax": {
     "unknownCommandKey": "unknown",
-    "commandSeparator": "_",
     "textOption": "--text",
     "sdkRootCommand": "forbocai",
     "invalidCommandMessage": "Not a forbocai command"
@@ -11,6 +10,9 @@
     "memoryPrefix": "memory_",
     "soulPrefix": "soul_",
     "ghostPrefix": "ghost_",
+    "ghostDomain": "ghost",
+    "ghostMemoryStoreAction": "memory-store",
+    "ghostMemoryStore": "ghost_memory_store",
     "npcCreate": "npc_create",
     "ghostRun": "ghost_run",
     "soulExport": "soul_export",
@@ -22,13 +24,10 @@
   },
   "limits": {
     "rootTokenCount": 1,
-    "domainTokenCount": 2,
-    "commandTokenCount": 3,
     "firstTokenIndex": 0,
     "domainTokenIndex": 1,
-    "actionTokenIndex": 2,
-    "argumentStartIndex": 3,
     "firstArgumentIndex": 0,
+    "expectedResolvedArgumentCount": 2,
     "nextIndex": 1
   },
   "quotes": {
@@ -38,7 +37,8 @@
   "evidence": {
     "structuredRequired": "\"valid\":true",
     "structuredMatchingOutput": "{\n  \"valid\": true\n}",
-    "structuredMismatchingOutput": "{\n  \"valid\": false\n}"
+    "structuredMismatchingOutput": "{\n  \"valid\": false\n}",
+    "memoryObservation": "catalog-owned observation"
   },
   "messages": {
     "unresolvedAlias": "Command dependency unavailable for {0}: alias {1} was not captured by a successful prerequisite.",
@@ -52,9 +52,12 @@
     "structuredJsonMismatchFails": "A different structured JSON value converts success into failure",
     "missingAliasFails": "Missing alias converts success into failure",
     "unresolvedIdentifierRejected": "Unresolved generated identifiers are rejected before dispatch",
-    "capturedIdentifierDispatchable": "Captured generated identifiers are dispatchable"
+    "capturedIdentifierDispatchable": "Captured generated identifiers are dispatchable",
+    "sdkCatalogMatchesHyphenatedCommand": "SDK catalog resolves a hyphenated Ghost command",
+    "sdkCatalogPreservesCommandArguments": "SDK catalog preserves Ghost command arguments"
   },
   "testNames": {
-    "outputAssertions": "ForbocAI.Slices.MicroGame.CommandRunner.OutputAssertions"
+    "outputAssertions": "ForbocAI.Slices.MicroGame.CommandRunner.OutputAssertions",
+    "commandResolution": "ForbocAI.Slices.MicroGame.CommandRunner.CommandResolution"
   }
 }

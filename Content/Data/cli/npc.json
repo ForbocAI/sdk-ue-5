@@ -27,7 +27,8 @@
   },
   "analysis": {
     "diagnosisContainer": "diagnosis",
-    "diagnosticResultField": "diagnosticResult"
+    "diagnosticResultField": "diagnosticResult",
+    "outputLineSeparator": "\n"
   },
   "messages": {
     "createUsage": "Usage: npc create <description>",

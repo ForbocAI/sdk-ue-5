@@ -76,6 +76,8 @@ inline FCommandRunnerData ReadCommandRunnerData() {
 
   Data.testNames.outputAssertions =
       DataAdapters::ReadStringField(TestNames, TEXT("outputAssertions"));
+  Data.testNames.commandResolution =
+      DataAdapters::ReadStringField(TestNames, TEXT("commandResolution"));
 
   return Data;
 }

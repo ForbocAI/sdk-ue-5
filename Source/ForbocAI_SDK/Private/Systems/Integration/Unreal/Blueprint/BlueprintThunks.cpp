@@ -8,7 +8,7 @@
 #include "Systems/CLI/Soul/CLISoulThunks.h"
 #include "Systems/CLI/Diagnostics/DiagnosticsThunks.h"
 #include "Systems/API/Serialization/Agent/AgentAdapters.h"
-#include "Systems/Protocol/Process/ProcessAdapters.h"
+#include "Systems/Protocol/Process/ProtocolProcessAdapters.h"
 
 namespace {
 /**

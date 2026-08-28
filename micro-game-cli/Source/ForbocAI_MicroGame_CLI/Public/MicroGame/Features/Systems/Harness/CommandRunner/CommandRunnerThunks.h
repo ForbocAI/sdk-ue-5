@@ -24,8 +24,13 @@ inline FCommandOutput InvalidCommandOutput() {
 inline FCommandOutput ExecuteSdkCommand(const FString &CommandText,
                                         const TArray<FString> &Tokens,
                                         const FCommandAliasState &Aliases) {
-  const FString CommandKey = Parsing::MapToCommandKey(Tokens);
-  const TArray<FString> RawArgs = Parsing::ExtractArgs(Tokens);
+  const ForbocAI::CLI::FCommandParseResult Parsed =
+      CLIOps::ResolveCommandTokens(Parsing::ExtractCliTokens(Tokens));
+  const FString CommandKey =
+      Parsed.bMatched ? Parsed.CommandKey
+                      : CommandRunnerData().syntax.unknownCommandKey;
+  const TArray<FString> RawArgs =
+      Parsed.bMatched ? Parsed.Args : TArray<FString>();
   return func::match(
       FindUnresolvedCommandAlias(CommandKey, RawArgs, Aliases),
       [&CommandKey, &CommandText](const FString &Alias) {

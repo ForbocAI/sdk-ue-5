@@ -14,7 +14,7 @@
     "invalidMode": "Invalid mode: {mode}"
   },
   "usage": [
-    "Usage: forbocai-ue-micro-game [--mode autoplay|manual|autoplay-with-two-npc-chat|two-npc-chat]",
+    "Usage: forbocai-ue-micro-game [--mode manual|autoplay|autoplay-debug|autoplay-with-two-npc-chat|two-npc-chat|two-npc-chat-debug|maze|maze-debug|maze-ghost|maze-ghost-debug]",
     "       forbocai-ue-micro-game --api-url https://api.forboc.ai --mode autoplay"
   ],
   "grid": {

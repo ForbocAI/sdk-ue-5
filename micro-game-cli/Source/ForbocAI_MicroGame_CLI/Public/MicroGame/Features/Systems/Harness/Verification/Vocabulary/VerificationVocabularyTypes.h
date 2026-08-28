@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MicroGame/Features/Entities/NPCs/NPCsTypes.h"
-#include "MicroGame/Features/Systems/Memory/MemoryTypes.h"
+#include "MicroGame/Features/Systems/Memory/SystemsMemoryTypes.h"
 #include "MicroGame/Features/Systems/Social/SocialTypes.h"
 #include "MicroGame/Features/Systems/Terminal/TerminalTypes.h"
 
@@ -221,11 +221,17 @@ struct FGameRuntimeData {
   FGameRuntimeTypes runtimeTypes;
   FGameRuntimeNumbers numbers;
   FGameModes modes;
-  // Data-driven two-NPC-chat gating (mirrors TS): which modes append the chat
-  // and which run it exclusively. Both hosts read these from runtime.json so the
-  // gating cannot diverge (enforced by check-harness-vocabulary-parity.py).
+  TSet<FString> autoplayModes;
+  TSet<FString> autoplayDebugModes;
   TSet<FString> twoNpcChatRunsInModes;
   TSet<FString> twoNpcChatExclusiveModes;
+  TSet<FString> twoNpcChatDebugModes;
+  TSet<FString> mazeRunsInModes;
+  TSet<FString> mazeExclusiveModes;
+  TSet<FString> mazeDebugModes;
+  TSet<FString> mazeGhostRunsInModes;
+  TSet<FString> mazeGhostExclusiveModes;
+  TSet<FString> mazeGhostDebugModes;
   FGameScenarioEventTypes scenarioEventTypes;
   FGameCommandGroups commandGroups;
   FGameStatuses statuses;
@@ -248,6 +254,7 @@ struct FGameAutoplayData {
 struct FGameEnvironmentData {
   FString runtimeUrlKey;
   FString commandDelayKey;
+  FString mazeSeedKey;
   int32 defaultCommandDelayMs{};
 };
 

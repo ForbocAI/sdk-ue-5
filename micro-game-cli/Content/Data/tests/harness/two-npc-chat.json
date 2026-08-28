@@ -6,9 +6,15 @@
     "generateValues": "generate command receives authored attribute and context values",
     "generateTokens": "generate command consumes its authored tokens",
     "createToken": "create command consumes its authored persona token",
+    "identityTokens": "identity update consumes its authored identity, name, and role tokens",
+    "recallToken": "recall command consumes its authored identity token",
     "decideTokens": "decide command consumes its authored identity and line tokens",
     "memoryTokens": "memory command consumes its authored identity and memory tokens",
+    "typedMemoryTokens": "typed memory command consumes its authored identity, memory, and type tokens",
     "lineTokens": "transcript line consumes its authored name and dialogue tokens",
+    "thoughtTokens": "thought line consumes its authored name and thought tokens",
+    "displayNameTokens": "display name consumes its authored name and role tokens",
+    "typedMemories": "persona memories preserve authored structured types",
     "context": "context composition uses the authored separator"
   }
 }

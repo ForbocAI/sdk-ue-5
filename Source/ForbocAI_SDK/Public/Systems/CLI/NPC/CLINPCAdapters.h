@@ -47,7 +47,9 @@ inline FCLINPCState readCliNpcState() {
        DataAdapters::ReadStringField(Syntax, TEXT("formatCloseToken"))},
       {DataAdapters::ReadStringField(Analysis, TEXT("diagnosisContainer")),
        DataAdapters::ReadStringField(Analysis,
-                                     TEXT("diagnosticResultField"))},
+                                     TEXT("diagnosticResultField")),
+       DataAdapters::ReadStringField(Analysis,
+                                     TEXT("outputLineSeparator"))},
       {DataAdapters::ReadStringField(Messages, TEXT("createUsage")),
        DataAdapters::ReadStringField(Messages, TEXT("creating")),
        DataAdapters::ReadStringField(Messages, TEXT("unknownId")),
@@ -135,7 +137,10 @@ inline bool addUpdatePair(const TArray<FString> &Args, int32 Index,
                }();
 }
 
-/** User Story: As NPC and Ghost update commands, I need supplied identity distinguished from active-actor selection without reading runtime state in the CLI decoder. @fn inline func::Maybe<FCLINPCUpdate> decodeNpcUpdate(const TArray<FString> &Args, const FCLINPCState &State) */
+/**
+ * User Story: As NPC and Ghost update commands, I need supplied identity distinguished from active-actor selection without reading runtime state in the CLI decoder.
+ * @fn inline func::Maybe<FCLINPCUpdate> decodeNpcUpdate( const TArray<FString> &Args, const FCLINPCState &State)
+ */
 inline func::Maybe<FCLINPCUpdate> decodeNpcUpdate(
     const TArray<FString> &Args, const FCLINPCState &State) {
   return Args.Num() < State.Limits.ActiveUpdateArgumentCount

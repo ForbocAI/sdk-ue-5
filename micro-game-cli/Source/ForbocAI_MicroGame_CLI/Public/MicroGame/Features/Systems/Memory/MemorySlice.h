@@ -5,7 +5,7 @@
 #include "Core/rtk.hpp"
 #include "MicroGame/Features/Systems/Memory/MemoryActions.h"
 #include "MicroGame/Features/Systems/Memory/MemoryAdapters.h"
-#include "MicroGame/Features/Systems/Memory/MemoryTypes.h"
+#include "MicroGame/Features/Systems/Memory/SystemsMemoryTypes.h"
 
 namespace MicroGame {
 

@@ -232,6 +232,26 @@
       "prompt": "API prompt is projected"
     }
   },
+  "protocolProjectionGuard": {
+    "functions": [
+      {
+        "name": "SerializeQueryVectorResult",
+        "requiredExpressions": [
+          "Data.ResultTypes.QueryVector",
+          "Data.Tape.Memories"
+        ]
+      },
+      {
+        "name": "BuildAgentResponse",
+        "requiredExpressions": [
+          "Instruction.Dialogue",
+          "Tape.DecisionIntent",
+          "Tape.ReasoningOutput",
+          "Tape.Prompt"
+        ]
+      }
+    ]
+  },
   "processTapePayload": {
     "input": {
       "observation": "Saw player",

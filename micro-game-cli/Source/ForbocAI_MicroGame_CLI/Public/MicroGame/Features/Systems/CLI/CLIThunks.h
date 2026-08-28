@@ -3,6 +3,7 @@
 #include "MicroGame/Features/Systems/CLI/CLIAdapters.h"
 #include "MicroGame/Features/Systems/Harness/CommandRunner/CommandRunnerAdapters.h"
 #include "MicroGame/Features/Systems/Harness/CommandRunner/CommandRunnerThunks.h"
+#include "MicroGame/Features/Systems/Harness/CommandDiagnostics/CommandDiagnosticsAdapters.h"
 #include "MicroGame/Features/Systems/Harness/Verification/VerificationThunks.h"
 #include "MicroGame/Features/Systems/Terminal/TerminalSelectors.h"
 #include "Systems/CLI/CLIThunks.h"
@@ -26,7 +27,10 @@ inline int32 runGameCommand(FMicroGameStore &Store, const FString &Mode,
       [&Presenter](const FGameProgress &Progress) {
         present(Presenter, SelectTerminalProgressViewModel(Progress));
       };
+  const CommandDiagnostics::FCommandDebugEnvironment DebugEnvironment =
+      CommandDiagnostics::BeginCommandDiagnostics(Mode);
   const FGameRunResult Result = RunGame(Store, Mode, ProgressSink);
+  CommandDiagnostics::EndCommandDiagnostics(Mode, DebugEnvironment);
   return Result.bComplete ? cliRuntimeData().exitCodes.success
                           : cliRuntimeData().exitCodes.incomplete;
 }

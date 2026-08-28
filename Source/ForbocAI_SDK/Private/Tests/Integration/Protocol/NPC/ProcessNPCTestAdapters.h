@@ -1,7 +1,7 @@
 #pragma once
 #include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
-#include "Systems/Memory/Local/LocalThunks.h"
+#include "Systems/Memory/Local/MemoryLocalThunks.h"
 #include "Systems/Config/ConfigThunks.h"
 #include "Systems/Protocol/ProtocolThunks.h"
 #include "ProcessNPCTestTypes.h"

@@ -75,7 +75,7 @@ for arg in "$@"; do
   index=$((index + 1))
 done
 
-SUCCESS_MARKER="CLI coverage complete."
+SUCCESS_MARKER="finished execution (result 0)"
 case "${1:-}" in
   --help|-h) SUCCESS_MARKER="" ;;
 esac

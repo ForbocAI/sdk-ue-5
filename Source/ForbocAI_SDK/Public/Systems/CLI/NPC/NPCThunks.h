@@ -5,8 +5,8 @@
 #include "Core/rtk.hpp"
 #include "Systems/Async/AsyncAdapters.h"
 #include "Systems/API/Endpoints/NPC/NPCApi.h"
-#include "Systems/Actor/Local/LocalActorThunks.h"
-#include "Systems/Memory/Local/LocalThunks.h"
+#include "Systems/Actor/Local/ActorLocalThunks.h"
+#include "Systems/Memory/Local/MemoryLocalThunks.h"
 #include "Entities/NPC/NPCActions.h"
 #include "Entities/NPC/NPCSelectors.h"
 #include "Entities/NPC/NPCSlice.h"
@@ -80,7 +80,7 @@ inline FAgentResponse processNpc(rtk::EnhancedStore<RuntimeState> &Store,
                                          Input.NpcId))));
 }
 
-/** User Story: As normal NPC decision making, I need one decoded request routed only through the normal NPC API process endpoint. @fn template <typename RuntimeState = FRuntimeState> inline FAgentResponse decideNpc(rtk::EnhancedStore<RuntimeState> &Store, const FProtocolProcessInput &RequestedInput) */
+/** User Story: As normal NPC decision making, I need one decoded request routed through the normal NPC API endpoint with actor-scoped vector execution available for API instructions. @fn template <typename RuntimeState = FRuntimeState> inline FAgentResponse decideNpc(rtk::EnhancedStore<RuntimeState> &Store, const FProtocolProcessInput &RequestedInput) */
 template <typename RuntimeState = FRuntimeState>
 inline FAgentResponse decideNpc(rtk::EnhancedStore<RuntimeState> &Store,
                                 const FProtocolProcessInput &RequestedInput) {
@@ -92,7 +92,8 @@ inline FAgentResponse decideNpc(rtk::EnhancedStore<RuntimeState> &Store,
   Input.Persona = Actor.Persona;
   return AsyncAdapters::waitForResult(
       Store.dispatch(rtk::processNPC(Input,
-                                     rtk::EphemeralProtocolHandlerContext())));
+                                     rtk::LocalProtocolHandlerContext(
+                                         Input.NpcId))));
 }
 
 /** User Story: As normal NPC hydration, I need the NPC SDK feature to compose the shared local actor and vector capability. @fn template <typename RuntimeState = FRuntimeState> inline func::Maybe<FNPCInternalState> recallNpc(rtk::EnhancedStore<RuntimeState> &Store, const FString &NpcId) */

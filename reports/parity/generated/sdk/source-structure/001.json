@@ -21,8 +21,8 @@
       "unreal": {
         "available": true,
         "evidence": [
-          "count=135",
-          "exact=82"
+          "count=170",
+          "exact=81"
         ]
       }
     },
@@ -40,14 +40,14 @@
           "packages/micro-game-cli/src/features/systems/cli/testing",
           "packages/micro-game-cli/src/features/systems/harness/commandRunner/debug",
           "packages/micro-game-cli/src/features/systems/harness/commandRunner/testing",
-          "packages/micro-game-cli/src/features/systems/harness/maze"
+          "packages/micro-game-cli/src/features/systems/harness/maze/commands"
         ]
       },
       "unreal": {
         "available": true,
         "evidence": [
-          "count=84",
-          "exact=52"
+          "count=125",
+          "exact=54"
         ]
       }
     },
@@ -70,8 +70,8 @@
       "unreal": {
         "available": true,
         "evidence": [
-          "count=642",
-          "exact=178"
+          "count=788",
+          "exact=198"
         ]
       }
     },
@@ -95,7 +95,7 @@
       "unreal": {
         "available": true,
         "evidence": [
-          "count=418",
+          "count=431",
           "exact=101"
         ]
       }
@@ -120,7 +120,7 @@
       "unreal": {
         "available": true,
         "evidence": [
-          "count=396",
+          "count=410",
           "exact=94"
         ]
       }
@@ -141,8 +141,8 @@
       "unreal": {
         "available": true,
         "evidence": [
-          "count=2686",
-          "exact=403"
+          "count=2748",
+          "exact=413"
         ]
       }
     },
@@ -177,9 +177,9 @@
       "repository": "sdk"
     },
     "unreal": {
-      "commit": "e679082e67657f3c4d8f3ad0fc3a6eb7c067a021",
+      "commit": "2105e827cd5495f627708fe1b12ce10f7d0c2dc7",
       "contractHashes": {
-        "sdk-source-and-cli-contract": "d1c02197ae4d86df0a59220e48168815e97e62aa4983306b162085697ec0a206"
+        "sdk-source-and-cli-contract": "7495d4ea30335ba71c2b8845e0726f8efbb00bcab382ce20842dad63626870c2"
       },
       "repository": "sdk-ue-5"
     }

@@ -7,6 +7,7 @@ namespace ForbocAI::CLI::Ghost {
 struct FCLIGhostState {
   FString DefaultSuite;
   int32 DefaultDuration;
+  FString DurationOption;
   int32 HistoryLimit;
   int32 EmptyCount;
   FString RequiredSession;

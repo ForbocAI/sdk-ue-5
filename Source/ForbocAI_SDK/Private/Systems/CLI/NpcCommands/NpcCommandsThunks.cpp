@@ -2,13 +2,16 @@
 
 #include "Entities/CLI/CLISelectors.h"
 #include "Entities/CLI/NPC/CLINPCSelectors.h"
-#include "Systems/CLI/NpcCommands/Actor/NpcActorCommandAdapters.h"
-#include "Systems/CLI/NpcCommands/Cognition/NpcCognitionCommandAdapters.h"
-#include "Systems/CLI/NpcCommands/Soul/NpcSoulCommandAdapters.h"
+#include "Systems/CLI/NpcCommands/Actor/NpcCommandsActorAdapters.h"
+#include "Systems/CLI/NpcCommands/Cognition/NpcCommandsCognitionAdapters.h"
+#include "Systems/CLI/NpcCommands/Soul/SoulAdapters.h"
 
 namespace CLIOps::NpcCommands {
 
-/** User Story: As NPC command routing, I need one role dispatcher composed from named actor, cognition, and soul command concerns. @fn inline func::Dispatcher<FString, NpcResult> CreateNpcDispatcher(rtk::EnhancedStore<FRuntimeState> &Store, const ForbocAI::CLI::FCLICommandRoles &Roles, const TArray<FString> &Args, const ForbocAI::CLI::NPC::FCLINPCState &State, int32 First, int32 Second) */
+/**
+ * User Story: As NPC command routing, I need one role dispatcher composed from named actor, cognition, and soul command concerns.
+ * @fn inline func::Dispatcher<FString, NpcResult> CreateNpcDispatcher( rtk::EnhancedStore<FRuntimeState> &Store, const ForbocAI::CLI::FCLICommandRoles &Roles, const TArray<FString> &Args, const ForbocAI::CLI::NPC::FCLINPCState &State, int32 First, int32 Second)
+ */
 inline func::Dispatcher<FString, NpcResult> CreateNpcDispatcher(
     rtk::EnhancedStore<FRuntimeState> &Store,
     const ForbocAI::CLI::FCLICommandRoles &Roles,

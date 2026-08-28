@@ -119,6 +119,13 @@ void ConfigureInvocation(const FString &ApiUrl, const FString &ApiKey) {
   Ops::hydrateRuntimeConfig(StoreAdapters::RootStore(), {ApiUrl, ApiKey});
 }
 
+/** User Story: As an embedded CLI host, I need command grammar resolved by the SDK root store so callers never reconstruct semantic command keys. @fn ForbocAI::CLI::FCommandParseResult ResolveCommandTokens(const TArray<FString> &Tokens) */
+ForbocAI::CLI::FCommandParseResult
+ResolveCommandTokens(const TArray<FString> &Tokens) {
+  return ForbocAI::CLI::resolveNodeCliCommand(
+      StoreAdapters::RootStore().getState().CLI, Tokens);
+}
+
 /** User Story: As a cli consumer, I need to invoke dispatch command through a stable signature so the cli workflow remains explicit and composable. @fn func::TestResult<void> DispatchCommand(const FString &CommandKey, const TArray<FString> &Args) */
 func::TestResult<void> DispatchCommand(const FString &CommandKey,
                                        const TArray<FString> &Args) {

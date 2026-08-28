@@ -1,13 +1,13 @@
 #pragma once
 
 #include "Core/rtk.hpp"
-#include "Components/Ghost/Operations/GhostOperationTypes.h"
-#include "Systems/Actor/Local/LocalActorThunks.h"
+#include "Components/Ghost/Operations/GhostOperationsTypes.h"
+#include "Systems/Actor/Local/ActorLocalThunks.h"
 #include "Systems/Async/AsyncAdapters.h"
 #include "Systems/API/Endpoints/Ghost/GhostApi.h"
 #include "Systems/Ghost/GhostThunks.h"
 #include "Systems/Memory/Configuration/MemoryConfigurationAdapters.h"
-#include "Systems/Memory/Local/LocalThunks.h"
+#include "Systems/Memory/Local/MemoryLocalThunks.h"
 #include "Systems/Protocol/Handlers/HandlersThunks.h"
 #include "Systems/Protocol/Process/ProcessThunks.h"
 
@@ -15,15 +15,27 @@ struct FRuntimeState;
 
 namespace Ops {
 
-/** User Story: As every session-bound Ghost SDK operation, I need the API-owned Ghost session validated before SDK-owned actor or vector effects execute. @fn template <typename RuntimeState = FRuntimeState> inline auto withGhostSession(rtk::EnhancedStore<RuntimeState> &Store, const FString &SessionId) */
-template <typename RuntimeState = FRuntimeState>
-inline auto withGhostSession(rtk::EnhancedStore<RuntimeState> &Store,
-                             const FString &SessionId) {
-  return [&Store, SessionId](auto Operation) -> decltype(Operation()) {
+/** User Story: As a session-bound Ghost SDK operation, I need one C++14-compatible callable that validates the API-owned Ghost session before SDK-owned effects execute. */
+template <typename RuntimeState>
+struct FGhostSessionBinding {
+  rtk::EnhancedStore<RuntimeState> &Store;
+  FString SessionId;
+
+  /** User Story: As a bound Ghost operation, I need validation composed immediately before the requested effect. @fn template <typename Operation> auto operator()(Operation Execute) const -> decltype(Execute()) */
+  template <typename Operation>
+  auto operator()(Operation Execute) const -> decltype(Execute()) {
     AsyncAdapters::waitForResult(
         Store.dispatch(rtk::getGhostStatusThunk(SessionId)));
-    return Operation();
-  };
+    return Execute();
+  }
+};
+
+/** User Story: As every session-bound Ghost SDK operation, I need the API-owned Ghost session bound once before SDK-owned actor or vector effects execute. @fn template <typename RuntimeState = FRuntimeState> inline FGhostSessionBinding<RuntimeState> withGhostSession(rtk::EnhancedStore<RuntimeState> &Store, const FString &SessionId) */
+template <typename RuntimeState = FRuntimeState>
+inline FGhostSessionBinding<RuntimeState>
+withGhostSession(rtk::EnhancedStore<RuntimeState> &Store,
+                 const FString &SessionId) {
+  return FGhostSessionBinding<RuntimeState>{Store, SessionId};
 }
 
 /** User Story: As a Ghost CLI consumer, I need session creation dispatched through the package root store. @fn template <typename RuntimeState = FRuntimeState> inline FGhostRunResponse startGhost(rtk::EnhancedStore<RuntimeState> &Store, const FString &TestSuite, int32 Duration) */
@@ -47,7 +59,10 @@ getGhostStatus(rtk::EnhancedStore<RuntimeState> &Store,
       Store.dispatch(rtk::getGhostStatusThunk(SessionId)));
 }
 
-/** User Story: As Ghost attribute generation, I need one SDK call whose only generation transport is the Ghost generation endpoint. @fn template <typename RuntimeState = FRuntimeState> inline FNpcAttributeGenerateResponse generateGhostAttribute(rtk::EnhancedStore<RuntimeState> &Store, const FGhostAttributeGenerateInput &Input) */
+/**
+ * User Story: As Ghost attribute generation, I need one SDK call whose only generation transport is the Ghost generation endpoint.
+ * @fn template <typename RuntimeState = FRuntimeState> inline FNpcAttributeGenerateResponse generateGhostAttribute( rtk::EnhancedStore<RuntimeState> &Store, const FGhostAttributeGenerateInput &Input)
+ */
 template <typename RuntimeState = FRuntimeState>
 inline FNpcAttributeGenerateResponse generateGhostAttribute(
     rtk::EnhancedStore<RuntimeState> &Store,
@@ -61,7 +76,10 @@ inline FNpcAttributeGenerateResponse generateGhostAttribute(
   });
 }
 
-/** User Story: As Ghost actor setup, I need one Ghost SDK operation that validates through the Ghost API before composing neutral SDK-owned actor storage. @fn template <typename RuntimeState = FRuntimeState> inline FNPCInternalState createGhostActor(rtk::EnhancedStore<RuntimeState> &Store, const FGhostActorCreateInput &Input) */
+/**
+ * User Story: As Ghost actor setup, I need one Ghost SDK operation that validates through the Ghost API before composing neutral SDK-owned actor storage.
+ * @fn template <typename RuntimeState = FRuntimeState> inline FNPCInternalState createGhostActor( rtk::EnhancedStore<RuntimeState> &Store, const FGhostActorCreateInput &Input)
+ */
 template <typename RuntimeState = FRuntimeState>
 inline FNPCInternalState createGhostActor(
     rtk::EnhancedStore<RuntimeState> &Store,
@@ -72,7 +90,10 @@ inline FNPCInternalState createGhostActor(
       });
 }
 
-/** User Story: As Ghost actor state, I need one Ghost SDK operation that validates through the Ghost API before composing neutral ECS target resolution and reduction. @fn template <typename RuntimeState = FRuntimeState> inline FActorUpdateResult updateGhostActor(rtk::EnhancedStore<RuntimeState> &Store, const FGhostActorUpdateInput &Input) */
+/**
+ * User Story: As Ghost actor state, I need one Ghost SDK operation that validates through the Ghost API before composing neutral ECS target resolution and reduction.
+ * @fn template <typename RuntimeState = FRuntimeState> inline FActorUpdateResult updateGhostActor( rtk::EnhancedStore<RuntimeState> &Store, const FGhostActorUpdateInput &Input)
+ */
 template <typename RuntimeState = FRuntimeState>
 inline FActorUpdateResult updateGhostActor(
     rtk::EnhancedStore<RuntimeState> &Store,
@@ -82,7 +103,10 @@ inline FActorUpdateResult updateGhostActor(
   });
 }
 
-/** User Story: As Ghost actor hydration, I need one Ghost SDK operation that validates through the Ghost API before executing neutral vector recall. @fn template <typename RuntimeState = FRuntimeState> inline func::Maybe<FNPCInternalState> recallGhostActor(rtk::EnhancedStore<RuntimeState> &Store, const FGhostActorRecallInput &Input) */
+/**
+ * User Story: As Ghost actor hydration, I need one Ghost SDK operation that validates through the Ghost API before executing neutral vector recall.
+ * @fn template <typename RuntimeState = FRuntimeState> inline func::Maybe<FNPCInternalState> recallGhostActor( rtk::EnhancedStore<RuntimeState> &Store, const FGhostActorRecallInput &Input)
+ */
 template <typename RuntimeState = FRuntimeState>
 inline func::Maybe<FNPCInternalState> recallGhostActor(
     rtk::EnhancedStore<RuntimeState> &Store,
@@ -93,7 +117,10 @@ inline func::Maybe<FNPCInternalState> recallGhostActor(
       });
 }
 
-/** User Story: As Ghost vector evidence, I need one Ghost SDK operation that validates through the Ghost API before the SDK executes vector storage. @fn template <typename RuntimeState = FRuntimeState> inline FMemoryItem storeGhostMemory(rtk::EnhancedStore<RuntimeState> &Store, const FGhostMemoryStoreInput &Input) */
+/**
+ * User Story: As Ghost vector evidence, I need one Ghost SDK operation that validates through the Ghost API before the SDK executes vector storage.
+ * @fn template <typename RuntimeState = FRuntimeState> inline FMemoryItem storeGhostMemory( rtk::EnhancedStore<RuntimeState> &Store, const FGhostMemoryStoreInput &Input)
+ */
 template <typename RuntimeState = FRuntimeState>
 inline FMemoryItem storeGhostMemory(
     rtk::EnhancedStore<RuntimeState> &Store,
@@ -108,7 +135,10 @@ inline FMemoryItem storeGhostMemory(
   });
 }
 
-/** User Story: As Ghost decision making, I need the shared tape interpreter permanently bound to the Ghost process endpoint. @fn template <typename RuntimeState = FRuntimeState> inline FAgentResponse decideGhost(rtk::EnhancedStore<RuntimeState> &Store, const FGhostProcessInput &RequestedInput) */
+/**
+ * User Story: As Ghost decision making, I need the shared tape interpreter bound to the Ghost process endpoint with actor-scoped vector execution available for API instructions.
+ * @fn template <typename RuntimeState = FRuntimeState> inline FAgentResponse decideGhost( rtk::EnhancedStore<RuntimeState> &Store, const FGhostProcessInput &RequestedInput)
+ */
 template <typename RuntimeState = FRuntimeState>
 inline FAgentResponse decideGhost(
     rtk::EnhancedStore<RuntimeState> &Store,
@@ -123,7 +153,8 @@ inline FAgentResponse decideGhost(
         Input.Process.Persona = Actor.Persona;
         return AsyncAdapters::waitForResult(Store.dispatch(
             rtk::processGhost(Input,
-                              rtk::EphemeralProtocolHandlerContext())));
+                              rtk::LocalProtocolHandlerContext(
+                                  Input.Process.NpcId))));
       });
 }
 

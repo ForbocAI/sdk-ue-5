@@ -33,6 +33,7 @@
   "ghost": {
     "defaultSuite": "exploration",
     "defaultDuration": 300,
+    "durationOption": "--duration",
     "historyLimit": 10,
     "emptyCount": 0,
     "requiredSession": "Error: Session ID required",

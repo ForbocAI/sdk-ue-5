@@ -7,7 +7,7 @@
 #include "Systems/Protocol/Configuration/ProtocolConfigurationAdapters.h"
 #include "Systems/Protocol/Requests/RequestsAdapters.h"
 #include "Systems/Protocol/Handlers/HandlersThunks.h"
-#include "Systems/Protocol/Process/ProcessAdapters.h"
+#include "Systems/Protocol/Process/ProtocolProcessAdapters.h"
 #include "Systems/Protocol/Turn/TurnThunks.h"
 #include "Systems/API/Endpoints/Configuration/EndpointsConfigurationAdapters.h"
 

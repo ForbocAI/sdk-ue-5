@@ -6,7 +6,7 @@
 #include "Entities/Config/ConfigSelectors.h"
 #include "Systems/Errors/ErrorsAdapters.h"
 #include "Systems/Memory/Configuration/MemoryConfigurationAdapters.h"
-#include "Systems/Memory/Local/LocalThunks.h"
+#include "Systems/Memory/Local/MemoryLocalThunks.h"
 #include "Entities/NPC/NPCSelectors.h"
 #include "Components/State/StateTypes.h"
 #include "Systems/Soul/SoulAdapters.h"

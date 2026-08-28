@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Verify canonical nested protocol codec ownership and behavior."""
+"""Verify canonical protocol result projection ownership and behavior."""
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -40,23 +41,31 @@ def discover_definition(root: Path, function_name: str) -> list[tuple[Path, str]
 
 
 def main() -> int:
-    if len(sys.argv) != 2:
-        print("Usage: check-codec-parity.py <protocol-source-root>")
+    if len(sys.argv) != 3:
+        print(
+            "Usage: check-codec-parity.py <protocol-source-root> "
+            "<codec-contract>"
+        )
         return 1
 
     protocol_root = Path(sys.argv[1]).resolve()
+    contract_path = Path(sys.argv[2]).resolve()
     if not protocol_root.is_dir():
         print(f"[FAIL] Protocol source root is not a directory: {protocol_root}")
         return 1
+    if not contract_path.is_file():
+        print(f"[FAIL] Codec contract is not a file: {contract_path}")
+        return 1
 
-    contracts = {
-        "SerializeDecisionResult": "SetObjectField(Data.Tape.DecisionIntent",
-        "SerializeReasoningResult": "SetObjectField(Data.Tape.ReasoningOutput",
-        "SerializeIdentifyActorResult": "SetObjectField(Data.Tape.Actor",
-    }
+    document = json.loads(contract_path.read_text(encoding="utf-8"))
+    contracts = document.get("protocolProjectionGuard", {}).get("functions", [])
+    if not contracts:
+        print(f"[FAIL] Codec contract has no projection functions: {contract_path}")
+        return 1
     failures: list[str] = []
 
-    for function_name, required_expression in contracts.items():
+    for contract in contracts:
+        function_name = contract["name"]
         definitions = discover_definition(protocol_root, function_name)
         if len(definitions) != 1:
             failures.append(
@@ -65,17 +74,23 @@ def main() -> int:
             )
             continue
         path, body = definitions[0]
-        if required_expression not in body:
+        missing = [
+            expression
+            for expression in contract["requiredExpressions"]
+            if expression not in body
+        ]
+        if missing:
             failures.append(
-                f"{function_name} does not preserve its nested object field in {path}."
+                f"{function_name} omits canonical projections in {path}: "
+                + ", ".join(missing)
             )
-        else:
-            print(f"[OK] {function_name} preserves nested tape data ({path}).")
+            continue
+        print(f"[OK] {function_name} preserves canonical API results ({path}).")
 
     if failures:
         print("\n".join(f"[FAIL] {failure}" for failure in failures))
         return 1
-    print("[OK] Protocol codecs preserve canonical nested tape fields.")
+    print("[OK] Protocol codecs preserve canonical API result projections.")
     return 0
 
 

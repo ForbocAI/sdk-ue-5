@@ -13,6 +13,7 @@
   "environment": {
     "runtimeUrlKey": "FORBOCAI_API_URL",
     "commandDelayKey": "FORBOCAI_MICRO_GAME_COMMAND_DELAY_MS",
+    "mazeSeedKey": "FORBOCAI_MAZE_SEED",
     "defaultCommandDelayMs": 1000
   },
   "messages": {

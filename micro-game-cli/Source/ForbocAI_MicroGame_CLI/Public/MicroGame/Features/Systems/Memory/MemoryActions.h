@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
-#include "MicroGame/Features/Systems/Memory/MemoryTypes.h"
+#include "MicroGame/Features/Systems/Memory/SystemsMemoryTypes.h"
 
 namespace MicroGame {
 namespace GameMemoryActions {

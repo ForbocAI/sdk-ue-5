@@ -7,18 +7,40 @@
   "nameAttribute": "name",
   "personaAttributes": ["role", "trait", "goal", "mood"],
   "seedAttribute": "goal",
+  "sceneAttribute": "setting",
   "generateCommand": "forbocai npc generate {attribute} {context}",
   "createCommand": "forbocai npc create \"{persona}\"",
+  "identityUpdateCommand": "forbocai npc update {id} --npcName \"{name}\" --npcRole \"{role}\"",
+  "recallCommand": "forbocai npc recall {id}",
   "decideCommand": "forbocai npc decide {id} \"{line}\"",
   "memoryStoreCommand": "forbocai memory store {id} \"{memory}\"",
+  "typedMemoryStoreCommand": "forbocai memory store {id} \"{memory}\" --type {type}",
+  "sceneMemoryType": "world",
+  "relationshipMemoryType": "relationship",
+  "attributeMemoryTypes": {
+    "trait": "trait",
+    "goal": "goal"
+  },
   "valueField": "value",
+  "valueType": "string",
   "personaSeparator": ". ",
   "contextSeparator": " | ",
   "emptyContext": "",
   "idPattern": "ag_[0-9a-fA-F-]+",
-  "lineFormat": "{name}: {dialogue}",
+  "lineFormat": "Turn {turn}\n{name}: \"{dialogue}\"",
+  "thoughtFormat": "Thought result ({name}): {thought}",
+  "titleFormat": "{name} the {role}",
+  "roleAttribute": "role",
+  "outputLineSeparator": "\n",
+  "blankLine": "",
   "dialogueFallback": "...",
+  "unavailablePrefix": "⚠",
+  "commandFailed": "Two-NPC CLI command failed: {output}",
   "contextQuote": "\"",
+  "debugHeader": "--- two-npc-chat-debug: granular command trace ---",
+  "debugFooter": "--- end command trace ---",
+  "debugPromptsEnvKey": "FORBOCAI_DEBUG_PROMPTS",
+  "debugPromptsEnvValue": "1",
   "tokens": {
     "attribute": "{attribute}",
     "context": "{context}",
@@ -27,13 +49,21 @@
     "line": "{line}",
     "name": "{name}",
     "dialogue": "{dialogue}",
-    "memory": "{memory}"
+    "thought": "{thought}",
+    "memory": "{memory}",
+    "turn": "{turn}",
+    "role": "{role}",
+    "type": "{type}",
+    "output": "{output}"
   },
   "numbers": {
     "initialIndex": 0,
     "nextIndex": 1
   },
   "outputAssertions": [
-    { "kind": "includesText", "value": "=== ForbocAI Two NPC Chat ===" }
+    {
+      "kind": "includesText",
+      "value": "=== ForbocAI Two NPC Chat ==="
+    }
   ]
 }

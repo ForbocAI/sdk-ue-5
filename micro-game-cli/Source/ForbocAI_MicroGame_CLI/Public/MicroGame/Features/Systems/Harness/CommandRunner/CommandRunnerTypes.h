@@ -5,7 +5,6 @@
 
 #define FORBOCAI_COMMAND_RUNNER_SYNTAX_FIELDS(X)                           \
   X(FString, unknownCommandKey)                                            \
-  X(FString, commandSeparator)                                             \
   X(FString, textOption)                                                   \
   X(FString, sdkRootCommand)                                               \
   X(FString, invalidCommandMessage)
@@ -15,6 +14,9 @@
   X(FString, memoryPrefix)                                                 \
   X(FString, soulPrefix)                                                   \
   X(FString, ghostPrefix)                                                  \
+  X(FString, ghostDomain)                                                  \
+  X(FString, ghostMemoryStoreAction)                                       \
+  X(FString, ghostMemoryStore)                                             \
   X(FString, npcCreate)                                                    \
   X(FString, ghostRun)                                                     \
   X(FString, soulExport)                                                   \
@@ -26,13 +28,10 @@
 
 #define FORBOCAI_COMMAND_RUNNER_LIMIT_FIELDS(X)                            \
   X(int32, rootTokenCount)                                                 \
-  X(int32, domainTokenCount)                                               \
-  X(int32, commandTokenCount)                                              \
   X(int32, firstTokenIndex)                                                \
   X(int32, domainTokenIndex)                                               \
-  X(int32, actionTokenIndex)                                               \
-  X(int32, argumentStartIndex)                                             \
   X(int32, firstArgumentIndex)                                             \
+  X(int32, expectedResolvedArgumentCount)                                  \
   X(int32, nextIndex)
 
 #define FORBOCAI_COMMAND_RUNNER_QUOTE_FIELDS(X)                            \
@@ -42,7 +41,8 @@
 #define FORBOCAI_COMMAND_RUNNER_EVIDENCE_FIELDS(X)                         \
   X(FString, structuredRequired)                                           \
   X(FString, structuredMatchingOutput)                                     \
-  X(FString, structuredMismatchingOutput)
+  X(FString, structuredMismatchingOutput)                                  \
+  X(FString, memoryObservation)
 
 #define FORBOCAI_COMMAND_RUNNER_MESSAGE_FIELDS(X)                          \
   X(FString, unresolvedAlias)                                              \
@@ -56,7 +56,9 @@
   X(FString, structuredJsonMismatchFails)                                  \
   X(FString, missingAliasFails)                                            \
   X(FString, unresolvedIdentifierRejected)                                 \
-  X(FString, capturedIdentifierDispatchable)
+  X(FString, capturedIdentifierDispatchable)                               \
+  X(FString, sdkCatalogMatchesHyphenatedCommand)                           \
+  X(FString, sdkCatalogPreservesCommandArguments)
 
 namespace MicroGame {
 namespace CommandRunner {
@@ -100,6 +102,7 @@ struct FCommandRunnerMessages {
 
 struct FCommandRunnerTestNames {
   FString outputAssertions;
+  FString commandResolution;
 };
 
 #undef FORBOCAI_DECLARE_COMMAND_RUNNER_FIELD

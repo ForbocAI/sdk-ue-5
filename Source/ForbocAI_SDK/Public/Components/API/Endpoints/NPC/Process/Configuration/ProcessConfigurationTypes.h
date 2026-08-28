@@ -11,7 +11,7 @@ struct FResponseFields {
 
 struct FRequestFields {
   FString Tape;
-  FString LastResult;
+  FString PreviousResultField;
 };
 
 struct FTapeFields {

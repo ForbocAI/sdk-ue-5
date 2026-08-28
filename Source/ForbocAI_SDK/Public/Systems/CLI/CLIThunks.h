@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Components/CLI/CLITypes.h"
 #include "CoreMinimal.h"
 #include "Core/fp.hpp"
 
@@ -27,6 +28,15 @@ FORBOCAI_SDK_API int32 ExecuteInvocation(const FString &Params);
  */
 FORBOCAI_SDK_API void ConfigureInvocation(const FString &ApiUrl,
                                           const FString &ApiKey);
+
+/**
+ * Resolves public CLI tokens through the SDK-owned authored command catalog.
+ * @fn FORBOCAI_SDK_API ForbocAI::CLI::FCommandParseResult ResolveCommandTokens(const TArray<FString> &Tokens)
+ * User Story: As an embedded CLI host, I need command grammar resolved by the
+ * SDK root store so callers never reconstruct semantic command keys.
+ */
+FORBOCAI_SDK_API ForbocAI::CLI::FCommandParseResult
+ResolveCommandTokens(const TArray<FString> &Tokens);
 
 /**
  * Dispatches a CLI command through the SDK store.

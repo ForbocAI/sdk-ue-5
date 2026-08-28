@@ -188,4 +188,22 @@ ReadBooleanMap(const TSharedRef<FJsonObject> &Values) {
       });
 }
 
+/** User Story: As an authored-data consumer, I need keyed strings decoded through a pure fold so relationship maps remain JSON-owned. @fn inline TMap<FString, FString> ReadStringMap(const TSharedRef<FJsonObject> &Values) */
+inline TMap<FString, FString>
+ReadStringMap(const TSharedRef<FJsonObject> &Values) {
+  TArray<UE::FSharedString> AuthoredKeys;
+  Values->Values.GetKeys(AuthoredKeys);
+  const TArray<FString> Keys = func::map_array<UE::FSharedString, FString>(
+      AuthoredKeys, [](const UE::FSharedString &Key) { return FString(*Key); });
+  return func::fold_array<FString, TMap<FString, FString>>(
+      Keys, {}, [&Values](const TMap<FString, FString> &Result,
+                          const FString &Key) {
+        return func::upsert_map_value<FString, FString>(
+            Result, Key, FString(),
+            [&Values, &Key](const FString &) {
+              return Values->GetStringField(Key);
+            });
+      });
+}
+
 } // namespace MicroGame::DataAdapters

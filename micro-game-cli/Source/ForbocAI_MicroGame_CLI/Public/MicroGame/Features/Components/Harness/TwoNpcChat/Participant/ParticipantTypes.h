@@ -7,6 +7,7 @@ namespace MicroGame::TwoNpcChat {
 struct FChatNpc {
   FString Id;
   FString Name;
+  FString DisplayName;
   FString Seed;
 };
 

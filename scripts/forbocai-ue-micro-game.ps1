@@ -56,7 +56,7 @@ for ($Index = 0; $Index -lt $CliArgs.Count; $Index++) {
 $SuccessMarker = if ($CliArgs.Count -gt 0 -and $CliArgs[0] -in @("--help", "-h")) {
     ""
 } else {
-    "CLI coverage complete."
+    "finished execution (result 0)"
 }
 $LogPath = if ($env:FORBOCAI_MICRO_GAME_LOG_PATH) {
     $env:FORBOCAI_MICRO_GAME_LOG_PATH

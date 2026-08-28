@@ -2,7 +2,8 @@
   "runtimeTypes": {
     "object": true,
     "string": true,
-    "boolean": true
+    "boolean": true,
+    "undefined": true
   },
   "numbers": {
     "emptyCount": 0,
@@ -13,11 +14,26 @@
   "modes": {
     "manual": true,
     "autoplay": true,
+    "autoplay-debug": true,
     "autoplay-with-two-npc-chat": true,
-    "two-npc-chat": true
+    "two-npc-chat": true,
+    "two-npc-chat-debug": true,
+    "maze": true,
+    "maze-debug": true,
+    "maze-ghost": true,
+    "maze-ghost-debug": true
   },
-  "twoNpcChatRunsInModes": ["autoplay-with-two-npc-chat", "two-npc-chat"],
-  "twoNpcChatExclusiveModes": ["two-npc-chat"],
+  "autoplayModes": ["autoplay", "autoplay-debug"],
+  "autoplayDebugModes": ["autoplay-debug"],
+  "twoNpcChatRunsInModes": ["autoplay-with-two-npc-chat", "two-npc-chat", "two-npc-chat-debug"],
+  "twoNpcChatExclusiveModes": ["two-npc-chat", "two-npc-chat-debug"],
+  "twoNpcChatDebugModes": ["two-npc-chat-debug"],
+  "mazeRunsInModes": ["maze", "maze-debug"],
+  "mazeExclusiveModes": ["maze", "maze-debug"],
+  "mazeDebugModes": ["maze-debug"],
+  "mazeGhostRunsInModes": ["maze-ghost", "maze-ghost-debug"],
+  "mazeGhostExclusiveModes": ["maze-ghost", "maze-ghost-debug"],
+  "mazeGhostDebugModes": ["maze-ghost-debug"],
   "scenarioEventTypes": {
     "stealth": true,
     "social": true,

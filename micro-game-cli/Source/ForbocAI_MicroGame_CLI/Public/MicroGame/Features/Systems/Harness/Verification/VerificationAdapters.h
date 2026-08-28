@@ -119,6 +119,8 @@ inline FGameData ReadGameData() {
       DataAdapters::ReadStringField(Environment, TEXT("commandDelayKey"));
   Data.environment.runtimeUrlKey =
       DataAdapters::ReadStringField(Environment, TEXT("runtimeUrlKey"));
+  Data.environment.mazeSeedKey =
+      DataAdapters::ReadStringField(Environment, TEXT("mazeSeedKey"));
   Data.environment.defaultCommandDelayMs = DataAdapters::ReadNumberField(
       Environment, TEXT("defaultCommandDelayMs"));
 

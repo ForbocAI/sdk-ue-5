@@ -7,14 +7,14 @@ namespace MicroGame::CommandRunner::Parsing {
 
 namespace detail {
 
-/** User Story: As a command parser, I need arguments collected recursively while option markers remain outside SDK values. @fn inline TArray<FString> ExtractArgsRecursive(const TArray<FString> &Tokens, int32 Index, TArray<FString> Acc) */
-inline TArray<FString> ExtractArgsRecursive(const TArray<FString> &Tokens,
-                                            int32 Index,
-                                            TArray<FString> Acc) {
+/** User Story: As a CLI transport adapter, I need public CLI tokens collected recursively while harness-only text markers remain outside SDK values. @fn inline TArray<FString> ExtractCliTokensRecursive(const TArray<FString> &Tokens, int32 Index, TArray<FString> Acc) */
+inline TArray<FString>
+ExtractCliTokensRecursive(const TArray<FString> &Tokens, int32 Index,
+                          TArray<FString> Acc) {
   const FCommandRunnerData &Data = CommandRunnerData();
   return Index >= Tokens.Num()
              ? Acc
-             : ExtractArgsRecursive(
+             : ExtractCliTokensRecursive(
                    Tokens, Index + Data.limits.nextIndex,
                    Tokens[Index] == Data.syntax.textOption
                        ? MoveTemp(Acc)
@@ -73,25 +73,13 @@ FindCommandOptionValue(const TArray<FString> &Tokens, const FString &Option,
 
 } // namespace detail
 
-/** User Story: As an SDK CLI runner, I need tokenized command domains mapped to one configured dispatch key. @fn inline FString MapToCommandKey(const TArray<FString> &Tokens) */
-inline FString MapToCommandKey(const TArray<FString> &Tokens) {
+/** User Story: As an SDK CLI runner, I need only the executable root removed before the SDK-owned CLI catalog resolves the complete invocation. @fn inline TArray<FString> ExtractCliTokens(const TArray<FString> &Tokens) */
+inline TArray<FString> ExtractCliTokens(const TArray<FString> &Tokens) {
   const FCommandRunnerData &Data = CommandRunnerData();
-  return Tokens.Num() < Data.limits.domainTokenCount
-             ? Data.syntax.unknownCommandKey
-         : Tokens.Num() < Data.limits.commandTokenCount
-             ? Tokens[Data.limits.domainTokenIndex]
-             : Tokens[Data.limits.domainTokenIndex] +
-                   Data.syntax.commandSeparator +
-                   Tokens[Data.limits.actionTokenIndex];
-}
-
-/** User Story: As an SDK CLI runner, I need command arguments projected from configured token positions. @fn inline TArray<FString> ExtractArgs(const TArray<FString> &Tokens) */
-inline TArray<FString> ExtractArgs(const TArray<FString> &Tokens) {
-  const FCommandRunnerData &Data = CommandRunnerData();
-  return Tokens.Num() <= Data.limits.argumentStartIndex
+  return Tokens.Num() <= Data.limits.domainTokenIndex
              ? TArray<FString>()
-             : detail::ExtractArgsRecursive(
-                   Tokens, Data.limits.argumentStartIndex, TArray<FString>());
+             : detail::ExtractCliTokensRecursive(
+                   Tokens, Data.limits.domainTokenIndex, TArray<FString>());
 }
 
 /** User Story: As an SDK CLI runner, I need one tokenizer shared by execution and transcript evidence selectors. @fn inline TArray<FString> Tokenize(const FString &Command) */

@@ -2,7 +2,7 @@
 
 #include "Core/fp.hpp"
 #include "MicroGame/Features/Systems/Memory/MemoryAdapters.h"
-#include "MicroGame/Features/Systems/Memory/MemoryTypes.h"
+#include "MicroGame/Features/Systems/Memory/SystemsMemoryTypes.h"
 
 namespace MicroGame {
 namespace GameMemorySelectors {

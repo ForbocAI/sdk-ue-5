@@ -10,7 +10,7 @@
 #include "MicroGame/Features/Systems/Harness/Coverage/CoverageTypes.h"
 #include "MicroGame/Features/Systems/Harness/Verification/Vocabulary/VerificationVocabularyTypes.h"
 #include "MicroGame/Features/Systems/Harness/Scenario/ScenarioTypes.h"
-#include "MicroGame/Features/Systems/Memory/MemoryTypes.h"
+#include "MicroGame/Features/Systems/Memory/SystemsMemoryTypes.h"
 #include "MicroGame/Features/Systems/Quality/QualityTypes.h"
 #include "MicroGame/Features/Systems/Social/SocialTypes.h"
 #include "MicroGame/Features/Systems/Soul/SoulTypes.h"

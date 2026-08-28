@@ -4,13 +4,16 @@
 #include "Entities/CLI/Ghost/CLIGhostSelectors.h"
 #include "Entities/CLI/Memory/CLIMemorySelectors.h"
 #include "Entities/CLI/NPC/CLINPCSelectors.h"
-#include "Systems/CLI/GhostCommands/Actor/GhostActorCommandAdapters.h"
-#include "Systems/CLI/GhostCommands/Cognition/GhostCognitionCommandAdapters.h"
-#include "Systems/CLI/GhostCommands/Lifecycle/GhostLifecycleCommandAdapters.h"
+#include "Systems/CLI/GhostCommands/Actor/GhostCommandsActorAdapters.h"
+#include "Systems/CLI/GhostCommands/Cognition/GhostCommandsCognitionAdapters.h"
+#include "Systems/CLI/GhostCommands/Lifecycle/LifecycleAdapters.h"
 
 namespace CLIOps::GhostCommands {
 
-/** User Story: As Ghost command routing, I need actor, cognition, and lifecycle dispatchers tried in a deterministic functional chain. @fn inline func::Maybe<GhostResult> DispatchGhostCommandGroups(rtk::EnhancedStore<FRuntimeState> &Store, const ForbocAI::CLI::FCLICommandRoles &Roles, const FString &CommandKey, const TArray<FString> &Args, const ForbocAI::CLI::Ghost::FCLIGhostState &GhostState, const ForbocAI::CLI::NPC::FCLINPCState &ActorState, const ForbocAI::CLI::Memory::FCLIMemoryState &MemoryState, const ForbocAI::CLI::FCLIParsingSettings &Parsing) */
+/**
+ * User Story: As Ghost command routing, I need actor, cognition, and lifecycle dispatchers tried in a deterministic functional chain.
+ * @fn inline func::Maybe<GhostResult> DispatchGhostCommandGroups( rtk::EnhancedStore<FRuntimeState> &Store, const ForbocAI::CLI::FCLICommandRoles &Roles, const FString &CommandKey, const TArray<FString> &Args, const ForbocAI::CLI::Ghost::FCLIGhostState &GhostState, const ForbocAI::CLI::NPC::FCLINPCState &ActorState, const ForbocAI::CLI::Memory::FCLIMemoryState &MemoryState, const ForbocAI::CLI::FCLIParsingSettings &Parsing)
+ */
 inline func::Maybe<GhostResult> DispatchGhostCommandGroups(
     rtk::EnhancedStore<FRuntimeState> &Store,
     const ForbocAI::CLI::FCLICommandRoles &Roles,
@@ -39,7 +42,8 @@ inline func::Maybe<GhostResult> DispatchGhostCommandGroups(
             [&]() {
               return func::dispatch(
                   CreateGhostLifecycleDispatcher(Store, Roles, Args,
-                                                 GhostState, First, Second),
+                                                 GhostState, First, Second,
+                                                 Parsing.NextIndexOffset),
                   CommandKey);
             });
       });

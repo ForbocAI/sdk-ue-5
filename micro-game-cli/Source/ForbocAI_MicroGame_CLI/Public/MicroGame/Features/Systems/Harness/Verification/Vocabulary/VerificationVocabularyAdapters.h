@@ -121,10 +121,34 @@ inline FGameRuntimeData ReadGameRuntimeData() {
           SharedModeNames, [](const FJsonObject::FStringType &Name) {
             return FString(Name.ToView());
           }));
+  Data.autoplayModes = TSet<FString>(
+      DataAdapters::ReadStringArrayField(Source.Root, TEXT("autoplayModes")));
+  Data.autoplayDebugModes = TSet<FString>(
+      DataAdapters::ReadStringArrayField(Source.Root,
+                                         TEXT("autoplayDebugModes")));
   Data.twoNpcChatRunsInModes = TSet<FString>(
       DataAdapters::ReadStringArrayField(Source.Root, TEXT("twoNpcChatRunsInModes")));
   Data.twoNpcChatExclusiveModes = TSet<FString>(
       DataAdapters::ReadStringArrayField(Source.Root, TEXT("twoNpcChatExclusiveModes")));
+  Data.twoNpcChatDebugModes = TSet<FString>(
+      DataAdapters::ReadStringArrayField(Source.Root,
+                                         TEXT("twoNpcChatDebugModes")));
+  Data.mazeRunsInModes = TSet<FString>(
+      DataAdapters::ReadStringArrayField(Source.Root, TEXT("mazeRunsInModes")));
+  Data.mazeExclusiveModes = TSet<FString>(
+      DataAdapters::ReadStringArrayField(Source.Root,
+                                         TEXT("mazeExclusiveModes")));
+  Data.mazeDebugModes = TSet<FString>(
+      DataAdapters::ReadStringArrayField(Source.Root, TEXT("mazeDebugModes")));
+  Data.mazeGhostRunsInModes = TSet<FString>(
+      DataAdapters::ReadStringArrayField(Source.Root,
+                                         TEXT("mazeGhostRunsInModes")));
+  Data.mazeGhostExclusiveModes = TSet<FString>(
+      DataAdapters::ReadStringArrayField(Source.Root,
+                                         TEXT("mazeGhostExclusiveModes")));
+  Data.mazeGhostDebugModes = TSet<FString>(
+      DataAdapters::ReadStringArrayField(Source.Root,
+                                         TEXT("mazeGhostDebugModes")));
 
 #define FORBOCAI_READ_SCENARIO_EVENT_TYPE(Name)                           \
   FORBOCAI_READ_GAME_NAME(scenarioEventTypes, ScenarioEventTypes, Name)

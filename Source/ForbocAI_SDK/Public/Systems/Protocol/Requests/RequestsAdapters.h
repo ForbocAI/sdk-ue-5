@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Components/Protocol/Requests/RequestsTypes.h"
-#include "Components/Protocol/Process/ProcessTypes.h"
+#include "Components/Protocol/Process/ProtocolProcessTypes.h"
 
 namespace ProtocolRequests {
 

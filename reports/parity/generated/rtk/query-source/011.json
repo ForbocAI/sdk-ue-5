@@ -154,7 +154,7 @@
       "repository": "sdk"
     },
     "unreal": {
-      "commit": "e679082e67657f3c4d8f3ad0fc3a6eb7c067a021",
+      "commit": "2105e827cd5495f627708fe1b12ce10f7d0c2dc7",
       "contractHashes": {
         "rtk-hpp-public-closure": "7b0722dd9ecd67441f44ca6214ffc7fdaa678084253142d0762c09729981662d"
       },

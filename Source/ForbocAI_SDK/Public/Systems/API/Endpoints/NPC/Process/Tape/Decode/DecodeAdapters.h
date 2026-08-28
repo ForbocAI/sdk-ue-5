@@ -4,7 +4,10 @@
 
 namespace APISlice::Detail {
 
-/** User Story: As the process tape decoder, I need optional string arrays traversed atomically so malformed action constraints reject the complete tape. @fn inline func::Maybe<TArray<FString>> DecodeOptionalTapeStringArray(const TSharedPtr<FJsonObject> &Object, const FString &Field) */
+/**
+ * User Story: As the process tape decoder, I need optional string arrays traversed atomically so malformed action constraints reject the complete tape.
+ * @fn inline func::Maybe<TArray<FString>> DecodeOptionalTapeStringArray( const TSharedPtr<FJsonObject> &Object, const FString &Field)
+ */
 inline func::Maybe<TArray<FString>> DecodeOptionalTapeStringArray(
     const TSharedPtr<FJsonObject> &Object, const FString &Field) {
   const bool bHasValue = JsonInterop::HasNonNullField(Object, Field);

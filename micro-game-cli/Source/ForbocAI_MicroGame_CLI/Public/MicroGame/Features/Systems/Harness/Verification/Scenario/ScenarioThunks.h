@@ -3,7 +3,7 @@
 #include "MicroGame/Features/Entities/NPCs/NPCsActions.h"
 #include "MicroGame/Features/Entities/Player/PlayerActions.h"
 #include "MicroGame/Features/Systems/Harness/Verification/VerificationAdapters.h"
-#include "MicroGame/Features/Systems/Harness/Verification/Command/CommandThunks.h"
+#include "MicroGame/Features/Systems/Harness/Verification/Command/VerificationCommandThunks.h"
 #include "MicroGame/Features/Systems/Harness/Verification/Progress/ProgressThunks.h"
 #include "MicroGame/Features/Systems/Harness/Verification/VerificationTypes.h"
 #include "MicroGame/Features/Systems/Memory/MemoryActions.h"

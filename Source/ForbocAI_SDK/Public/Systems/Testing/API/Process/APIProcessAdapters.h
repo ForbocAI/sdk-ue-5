@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ForbocAI_SDK/Public/Systems/Data/DataAdapters.h"
-#include "Components/Testing/API/Process/ProcessTypes.h"
+#include "Components/Testing/API/Process/APIProcessTypes.h"
 
 namespace Testing::API::Process {
 

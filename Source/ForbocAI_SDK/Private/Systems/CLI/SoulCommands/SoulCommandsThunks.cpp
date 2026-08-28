@@ -4,7 +4,7 @@
 #include "Systems/CLI/CommandRouting/CommandRoutingAdapters.h"
 #include "Systems/CLI/NPC/NPCThunks.h"
 #include "Systems/CLI/Presentation/PresentationAdapters.h"
-#include "Systems/Protocol/Process/ProcessAdapters.h"
+#include "Systems/Protocol/Process/ProtocolProcessAdapters.h"
 #include "Systems/CLI/Soul/CLISoulAdapters.h"
 #include "Entities/CLI/Soul/CLISoulSelectors.h"
 #include "Systems/CLI/Soul/CLISoulThunks.h"

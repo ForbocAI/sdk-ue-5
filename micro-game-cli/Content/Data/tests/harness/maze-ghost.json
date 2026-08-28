@@ -1,0 +1,19 @@
+{
+  "automationName": "ForbocAI.MicroGame.MazeGhost.SharedBenchmark",
+  "labels": {
+    "operationShape": "Maze and Maze Ghost expose the same injected operation shape",
+    "ghostOnly": "Maze Ghost lifecycle and injected operations use only Ghost CLI commands",
+    "deterministic": "the authored seed reproduces the same Maze topology",
+    "topology": "the generated Maze contains its authored endpoints and trap count",
+    "reciprocal": "every generated passage has its authored reciprocal passage",
+    "distance": "the generated start distance equals the known optimal route length",
+    "ward": "the start turn exposes at least one valid warded direction",
+    "modeVocabulary": "terminal usage advertises every authored runtime mode"
+  },
+  "seed": 1337,
+  "commandPrefix": "forbocai ghost ",
+  "forbiddenFragment": "npc",
+  "expectedOperationCount": 7,
+  "expectedLifecycleCommandCount": 3,
+  "usageSeparator": " | "
+}
