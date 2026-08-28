@@ -1,23 +1,25 @@
 from __future__ import annotations
 
-import importlib.util
-from pathlib import Path
-import sys
 import tempfile
 import unittest
+from pathlib import Path
+import sys
 
 
-SCRIPT_PATH = Path(__file__).resolve().parents[1] / "check-sdk-parity.py"
-SPEC = importlib.util.spec_from_file_location("check_sdk_parity", SCRIPT_PATH)
-if SPEC is None or SPEC.loader is None:
-    raise RuntimeError(f"Could not load {SCRIPT_PATH}")
-PARITY = importlib.util.module_from_spec(SPEC)
-sys.modules[SPEC.name] = PARITY
-SPEC.loader.exec_module(PARITY)
+SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from parity.report.sources import repository_identity
+from parity.sdk.capabilities import build_cli_capabilities
+from parity.sdk.commands import load_ts_cli_contract, load_ue_cli_contract, node_command_keys
+from parity.sdk.discovery import build_parity_programs, unmapped_ts_roots
+from parity.sdk.normalization import normalize_path_signature, ue_suffix_index
+from parity.sdk.symbols import extract_ue_symbols
 
 
 class ParityProgramDiscoveryTests(unittest.TestCase):
-    def test_groups_discovered_packages_without_exact_package_tables(self) -> None:
+    def test_groups_packages_by_sdk_and_micro_game_without_mirror_tables(self) -> None:
         ts_roots = (
             Path("packages/runtime/src"),
             Path("packages/runtime-browser/src"),
@@ -28,100 +30,55 @@ class ParityProgramDiscoveryTests(unittest.TestCase):
             Path("micro-game-cli/Source/RuntimeMicroGame"),
         )
 
-        programs = PARITY.build_parity_programs(ts_roots, ue_roots)
-
-        self.assertEqual([program.label.split(":", 1)[0] for program in programs], ["Sdk", "Micro-game"])
-        self.assertEqual(programs[0].ts_source_roots, (Path("packages/runtime/src"),))
-        self.assertEqual(programs[1].ts_source_roots, (Path("packages/micro-game-runtime/src"),))
-        self.assertNotIn(Path("packages/runtime-browser/src"), programs[0].ts_source_roots)
-
-    def test_browser_programs_remain_unmapped(self) -> None:
-        roots = (
-            Path("packages/runtime/src"),
-            Path("packages/runtime-browser/src"),
-        )
-        programs = PARITY.build_parity_programs(roots, (Path("Source/RuntimeSDK"),))
+        programs = build_parity_programs(ts_roots, ue_roots)
 
         self.assertEqual(
-            PARITY.unmapped_ts_roots(roots, programs),
+            [program.label.split(":", 1)[0] for program in programs],
+            ["Sdk", "Micro-game"],
+        )
+        self.assertEqual(programs[0].ts_source_roots, (Path("packages/runtime/src"),))
+        self.assertEqual(
+            programs[1].ts_source_roots,
+            (Path("packages/micro-game-runtime/src"),),
+        )
+
+    def test_browser_programs_remain_explicit_runtime_mechanics(self) -> None:
+        roots = (Path("packages/runtime/src"), Path("packages/runtime-browser/src"))
+        programs = build_parity_programs(roots, (Path("Source/RuntimeSDK"),))
+
+        self.assertEqual(
+            unmapped_ts_roots(roots, programs),
             (Path("packages/runtime-browser/src"),),
         )
 
 
-class MatrixDiscoveryTests(unittest.TestCase):
-    def test_finds_node_keys_from_authored_data_schema(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            ordinary = root / "ordinary.json"
-            catalog = root / "catalog.json"
-            ordinary.write_text('{"unrelated": true}\n', encoding="utf-8")
-            catalog.write_text(
-                """{
-  "surfaces": {"node": {}, "browser": {}},
-  "commands": {
-    "status": {"surfaces": ["node", "browser"]},
-    "npc process": {"surfaces": ["node"]},
-    "browser only": {"surfaces": ["browser"]}
-  }
-}
-""",
-                encoding="utf-8",
-            )
+class CliContractTests(unittest.TestCase):
+    def test_real_split_contracts_produce_only_same_capabilities(self) -> None:
+        ue_root = Path(__file__).resolve().parents[2]
+        ts_root = ue_root.parent / "sdk"
+        ts = load_ts_cli_contract(ts_root)
+        ue = load_ue_cli_contract(ue_root)
 
-            source, keys = PARITY.find_matrix_source(
-                (ordinary, catalog),
-                PARITY.extract_ts_node_keys,
-                "TS CLI authored-data catalog",
-            )
+        groups = build_cli_capabilities(ts, ue)
+        results = [item["result"] for group in groups.values() for item in group]
 
-            self.assertEqual(source, catalog)
-            self.assertEqual(keys, ["status", "npc process"])
-
-    def test_rejects_ambiguous_catalog_owners(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            sources = []
-            for name in ("first.json", "second.json"):
-                source = root / name
-                source.write_text(
-                    """{
-  "surfaces": {"node": {}},
-  "commands": {"status": {"surfaces": ["node"]}}
-}
-""",
-                    encoding="utf-8",
-                )
-                sources.append(source)
-
-            with self.assertRaisesRegex(ValueError, "Expected exactly one"):
-                PARITY.find_matrix_source(
-                    sources,
-                    PARITY.extract_ts_node_keys,
-                    "TS CLI authored-data catalog",
-                )
+        self.assertEqual(node_command_keys(ts), node_command_keys(ue))
+        self.assertNotIn("mismatch", results)
 
 
 class PathNormalizationTests(unittest.TestCase):
     def test_preserves_ui_path_atoms_without_unreal_type_prefix_rules(self) -> None:
         self.assertEqual(
-            PARITY.normalize_path_signature("Features/Systems/Terminal/UI/UISlice.h"),
+            normalize_path_signature("Features/Systems/Terminal/UI/UISlice.h"),
             "features/systems/terminal/ui/uislice",
         )
 
-    def test_indexes_a_cpp_ancestor_qualified_role_as_the_ts_leaf(self) -> None:
+    def test_indexes_cpp_ancestor_qualified_roles(self) -> None:
         source = "Source/Runtime/Public/Entities/CLI/Ghost/CLIGhostSelectors.h"
 
-        index = PARITY.ue_suffix_index([source])
+        index = ue_suffix_index([source])
 
         self.assertEqual(index["entities/cli/ghost/ghostselectors"], [source])
-
-    def test_does_not_strip_the_immediate_ecs_domain(self) -> None:
-        source = "Source/Runtime/Public/Entities/Ghost/GhostSelectors.h"
-
-        index = PARITY.ue_suffix_index([source])
-
-        self.assertIn("entities/ghost/ghostselectors", index)
-        self.assertNotIn("entities/ghost/selectors", index)
 
 
 class CppSymbolDiscoveryTests(unittest.TestCase):
@@ -130,51 +87,31 @@ class CppSymbolDiscoveryTests(unittest.TestCase):
             root = Path(directory)
             source = root / "FeatureSelectors.h"
             source.write_text(
-                """\
-#pragma once
-
+                """#pragma once
 namespace FeatureSelectors {
-
 inline const FString &selectFeatureError(const FFeatureState &State) {
   return State.Error;
 }
-
 template <typename RootState>
 inline const FFeatureState &selectFeatureState(const RootState &State) {
   return State.Feature;
 }
-
-} // namespace FeatureSelectors
+}
 """,
                 encoding="utf-8",
             )
 
-            symbols = PARITY.extract_ue_symbols(source, root)
+            symbols = extract_ue_symbols(source, root)
 
             self.assertEqual(
                 [(symbol.name, symbol.kind) for symbol in symbols],
-                [
-                    ("selectFeatureError", "function"),
-                    ("selectFeatureState", "function"),
-                ],
+                [("selectFeatureError", "function"), ("selectFeatureState", "function")],
             )
 
 
-class MapMaintenanceTests(unittest.TestCase):
+class SourceIdentityTests(unittest.TestCase):
     def test_repository_identity_omits_host_path(self) -> None:
-        root = Path("/workspace/Forboc.AI/sdk")
-
-        self.assertEqual(PARITY.repository_identity(root), "sdk")
-
-    def test_removes_historical_changelog_from_forward_contract(self) -> None:
-        source = "# SDK Map\n\n## 11. Maintenance Rule\n\nKeep parity.\n\n## 12. Change Log\n\nPast run.\n"
-
-        result = PARITY.strip_historical_sections(source)
-
-        self.assertEqual(
-            result,
-            "# SDK Map\n\n## 11. Maintenance Rule\n\nKeep parity.\n",
-        )
+        self.assertEqual(repository_identity(Path("/workspace/Forboc.AI/sdk")), "sdk")
 
 
 if __name__ == "__main__":

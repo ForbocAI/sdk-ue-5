@@ -1,0 +1,191 @@
+{
+  "$schema": "../../../report-part.schema.json",
+  "capabilities": [
+    {
+      "category": "rtk-export",
+      "classification": "behavioral",
+      "id": "rtk.toolkit-source.clearAllListeners",
+      "mismatch": null,
+      "result": "same",
+      "typescript": {
+        "available": true,
+        "evidence": [
+          "clearAllListeners",
+          "node_modules/@reduxjs/toolkit/src/index.ts"
+        ]
+      },
+      "unreal": {
+        "available": true,
+        "evidence": [
+          "Source/ForbocAI_SDK/Public/Core/RTK/Listener/Listener.hpp"
+        ]
+      }
+    },
+    {
+      "category": "rtk-export",
+      "classification": "behavioral",
+      "id": "rtk.toolkit-source.combineSlices",
+      "mismatch": null,
+      "result": "same",
+      "typescript": {
+        "available": true,
+        "evidence": [
+          "combineSlices",
+          "node_modules/@reduxjs/toolkit/src/index.ts"
+        ]
+      },
+      "unreal": {
+        "available": true,
+        "evidence": [
+          "Source/ForbocAI_SDK/Public/Core/RTK/Reducer/Reducer.hpp"
+        ]
+      }
+    },
+    {
+      "category": "rtk-export",
+      "classification": "behavioral",
+      "id": "rtk.toolkit-source.configureStore",
+      "mismatch": null,
+      "result": "same",
+      "typescript": {
+        "available": true,
+        "evidence": [
+          "configureStore",
+          "node_modules/@reduxjs/toolkit/src/index.ts"
+        ]
+      },
+      "unreal": {
+        "available": true,
+        "evidence": [
+          "Source/ForbocAI_SDK/Public/Core/RTK/ConfigureStore/ConfigureStore.hpp"
+        ]
+      }
+    },
+    {
+      "category": "rtk-export",
+      "classification": "behavioral",
+      "id": "rtk.toolkit-source.createAction",
+      "mismatch": null,
+      "result": "same",
+      "typescript": {
+        "available": true,
+        "evidence": [
+          "createAction",
+          "node_modules/@reduxjs/toolkit/src/index.ts"
+        ]
+      },
+      "unreal": {
+        "available": true,
+        "evidence": [
+          "Source/ForbocAI_SDK/Public/Core/RTK/Matcher/Matcher.hpp"
+        ]
+      }
+    },
+    {
+      "category": "rtk-export",
+      "classification": "behavioral",
+      "id": "rtk.toolkit-source.createActionCreatorInvariantMiddleware",
+      "mismatch": null,
+      "result": "same",
+      "typescript": {
+        "available": true,
+        "evidence": [
+          "createActionCreatorInvariantMiddleware",
+          "node_modules/@reduxjs/toolkit/src/index.ts"
+        ]
+      },
+      "unreal": {
+        "available": true,
+        "evidence": [
+          "Source/ForbocAI_SDK/Public/Core/RTK/Invariant/InvariantMiddleware.hpp"
+        ]
+      }
+    },
+    {
+      "category": "rtk-export",
+      "classification": "behavioral",
+      "id": "rtk.toolkit-source.createAsyncThunk",
+      "mismatch": null,
+      "result": "same",
+      "typescript": {
+        "available": true,
+        "evidence": [
+          "createAsyncThunk",
+          "node_modules/@reduxjs/toolkit/src/index.ts"
+        ]
+      },
+      "unreal": {
+        "available": true,
+        "evidence": [
+          "Source/ForbocAI_SDK/Public/Core/RTK/Thunk/Thunk.hpp"
+        ]
+      }
+    },
+    {
+      "category": "rtk-export",
+      "classification": "behavioral",
+      "id": "rtk.toolkit-source.createDraftSafeSelector",
+      "mismatch": null,
+      "result": "same",
+      "typescript": {
+        "available": true,
+        "evidence": [
+          "createDraftSafeSelector",
+          "node_modules/@reduxjs/toolkit/src/index.ts"
+        ]
+      },
+      "unreal": {
+        "available": true,
+        "evidence": [
+          "Source/ForbocAI_SDK/Public/Core/RTK/Memoization/Memoization.hpp"
+        ]
+      }
+    },
+    {
+      "category": "rtk-export",
+      "classification": "behavioral",
+      "id": "rtk.toolkit-source.createDraftSafeSelectorCreator",
+      "mismatch": null,
+      "result": "same",
+      "typescript": {
+        "available": true,
+        "evidence": [
+          "createDraftSafeSelectorCreator",
+          "node_modules/@reduxjs/toolkit/src/index.ts"
+        ]
+      },
+      "unreal": {
+        "available": true,
+        "evidence": [
+          "Source/ForbocAI_SDK/Public/Core/RTK/Memoization/Memoization.hpp"
+        ]
+      }
+    }
+  ],
+  "generatedBy": "scripts/check-rtk-parity.py",
+  "reportId": "rtk-public-surface-parity.toolkit-source.013",
+  "schemaVersion": 1,
+  "sources": {
+    "typescript": {
+      "commit": "50c1fe284da298525ea5a153d680084a06149ffe",
+      "contractHashes": {
+        "redux-toolkit-runtime-and-source": "506ad07549e03b33b8914d26436b37c4a23b7e45b549cfe015400e39c95b74f5"
+      },
+      "repository": "sdk"
+    },
+    "unreal": {
+      "commit": "e679082e67657f3c4d8f3ad0fc3a6eb7c067a021",
+      "contractHashes": {
+        "rtk-hpp-public-closure": "7b0722dd9ecd67441f44ca6214ffc7fdaa678084253142d0762c09729981662d"
+      },
+      "repository": "sdk-ue-5"
+    }
+  },
+  "summary": {
+    "capabilityCount": 8,
+    "expectedMechanicCount": 0,
+    "mismatchCount": 0,
+    "sameCount": 8,
+    "status": "passed"
+  }
+}

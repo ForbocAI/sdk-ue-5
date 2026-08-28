@@ -1,0 +1,52 @@
+{
+  "$schema": "../../../report-part.schema.json",
+  "capabilities": [
+    {
+      "category": "cli-command",
+      "classification": "behavioral",
+      "id": "cli.command.npc_update",
+      "mismatch": null,
+      "result": "same",
+      "typescript": {
+        "available": true,
+        "evidence": [
+          "packages/core/data/cli/commands/npc.json",
+          "{\"browserBehavior\":null,\"group\":\"npc\",\"subcommand\":\"update\",\"surfaces\":[\"node\",\"browser\"]}"
+        ]
+      },
+      "unreal": {
+        "available": true,
+        "evidence": [
+          "Content/Data/cli/commands/npc.json",
+          "{\"browserBehavior\":null,\"group\":\"npc\",\"subcommand\":\"update\",\"surfaces\":[\"node\",\"browser\"]}"
+        ]
+      }
+    }
+  ],
+  "generatedBy": "scripts/check-sdk-parity.py",
+  "reportId": "sdk-capability-parity.cli-npc.002",
+  "schemaVersion": 1,
+  "sources": {
+    "typescript": {
+      "commit": "25a149ec7286d8e4db1dbff8028a4a796575f5d0",
+      "contractHashes": {
+        "sdk-source-and-cli-contract": "a2057535fa2f6e5eb46248c683efcbdbfd023b29e395c9e177b49d42d270c386"
+      },
+      "repository": "sdk"
+    },
+    "unreal": {
+      "commit": "e679082e67657f3c4d8f3ad0fc3a6eb7c067a021",
+      "contractHashes": {
+        "sdk-source-and-cli-contract": "d1c02197ae4d86df0a59220e48168815e97e62aa4983306b162085697ec0a206"
+      },
+      "repository": "sdk-ue-5"
+    }
+  },
+  "summary": {
+    "capabilityCount": 1,
+    "expectedMechanicCount": 0,
+    "mismatchCount": 0,
+    "sameCount": 1,
+    "status": "passed"
+  }
+}

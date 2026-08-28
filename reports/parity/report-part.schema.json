@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://forboc.ai/schemas/parity/report-part.schema.json",
+  "title": "ForbocAI parity report part",
+  "type": "object",
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "reportId",
+    "generatedBy",
+    "sources",
+    "summary",
+    "capabilities"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {"type": "string"},
+    "schemaVersion": {"type": "integer", "minimum": 1},
+    "reportId": {"type": "string"},
+    "generatedBy": {"type": "string"},
+    "sources": {"$ref": "#/$defs/sources"},
+    "summary": {"$ref": "#/$defs/summary"},
+    "capabilities": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/capability"}
+    }
+  },
+  "$defs": {
+    "sources": {
+      "type": "object",
+      "required": ["typescript", "unreal"],
+      "additionalProperties": false,
+      "properties": {
+        "typescript": {"$ref": "#/$defs/source"},
+        "unreal": {"$ref": "#/$defs/source"}
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["repository", "commit", "contractHashes"],
+      "additionalProperties": false,
+      "properties": {
+        "repository": {"type": "string"},
+        "commit": {"type": "string"},
+        "contractHashes": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "status",
+        "capabilityCount",
+        "sameCount",
+        "expectedMechanicCount",
+        "mismatchCount"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "status": {"enum": ["passed", "failed"]},
+        "capabilityCount": {"type": "integer", "minimum": 0},
+        "sameCount": {"type": "integer", "minimum": 0},
+        "expectedMechanicCount": {"type": "integer", "minimum": 0},
+        "mismatchCount": {"type": "integer", "minimum": 0}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["available", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "available": {"type": "boolean"},
+        "evidence": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "mismatch": {
+      "type": "object",
+      "required": ["message", "remediation"],
+      "additionalProperties": false,
+      "properties": {
+        "message": {"type": "string"},
+        "remediation": {"type": "string"}
+      }
+    },
+    "capability": {
+      "type": "object",
+      "required": [
+        "id",
+        "category",
+        "classification",
+        "result",
+        "typescript",
+        "unreal",
+        "mismatch"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "category": {"type": "string"},
+        "classification": {"enum": ["behavioral", "runtime-mechanic"]},
+        "result": {"enum": ["same", "mismatch", "expected-mechanic"]},
+        "typescript": {"$ref": "#/$defs/evidence"},
+        "unreal": {"$ref": "#/$defs/evidence"},
+        "mismatch": {
+          "anyOf": [
+            {"type": "null"},
+            {"$ref": "#/$defs/mismatch"}
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "$schema": "../../../report-index.schema.json",
+  "generatedBy": "scripts/check-rtk-parity.py",
+  "parts": [
+    {
+      "id": "rtk-public-surface-parity.query-source.001",
+      "path": "query-source/001.json",
+      "summary": {
+        "capabilityCount": 8,
+        "expectedMechanicCount": 0,
+        "mismatchCount": 0,
+        "sameCount": 8,
+        "status": "passed"
+      }
+    },
+    {
+      "id": "rtk-public-surface-parity.query-source.002",
+      "path": "query-source/002.json",
+      "summary": {
+        "capabilityCount": 8,
+        "expectedMechanicCount": 0,
+        "mismatchCount": 0,
+        "sameCount": 8,
+        "status": "passed"
+      }
+    },
+    {
+      "id": "rtk-public-surface-parity.query-source.003",
+      "path": "query-source/003.json",
+      "summary": {
+        "capabilityCount": 8,
+        "expectedMechanicCount": 0,
+        "mismatchCount": 0,
+        "sameCount": 8,
+        "status": "passed"
+      }
+    },
+    {
+      "id": "rtk-public-surface-parity.query-source.004",
+      "path": "query-source/004.json",
+      "summary": {
+        "capabilityCount": 8,
+        "expectedMechanicCount": 0,
+        "mismatchCount": 0,
+        "sameCount": 8,
+        "status": "passed"
+      }
+    },
+    {
+      "id": "rtk-public-surface-parity.query-source.005",
+      "path": "query-source/005.json",
+      "summary": {
+        "capabilityCount": 8,
+        "expectedMechanicCount": 0,
+        "mismatchCount": 0,
+        "sameCount": 8,
+        "status": "passed"
+      }
+    },
+    {
+      "id": "rtk-public-surface-parity.query-source.006",
+      "path": "query-source/006.json",
+      "summary": {
+        "capabilityCount": 8,
+        "expectedMechanicCount": 0,
+        "mismatchCount": 0,
+        "sameCount": 8,
+        "status": "passed"
+      }
+    },
+    {
+      "id": "rtk-public-surface-parity.query-source.007",
+      "path": "query-source/007.json",
+      "summary": {
+        "capabilityCount": 8,
+        "expectedMechanicCount": 0,
+        "mismatchCount": 0,
+        "sameCount": 8,
+        "status": "passed"
+      }
+    },
+    {
+      "id": "rtk-public-surface-parity.query-source.008",
+      "path": "query-source/008.json",
+      "summary": {
+        "capabilityCount": 8,
+        "expectedMechanicCount": 0,
+        "mismatchCount": 0,
+        "sameCount": 8,
+        "status": "passed"
+      }
+    },
+    {
+      "id": "rtk-public-surface-parity.query-source.009",
+      "path": "query-source/009.json",
+      "summary": {
+        "capabilityCount": 8,
+        "expectedMechanicCount": 0,
+        "mismatchCount": 0,
+        "sameCount": 8,
+        "status": "passed"
+      }
+    },
+    {
+      "id": "rtk-public-surface-parity.query-source.010",
+      "path": "query-source/010.json",
+      "summary": {
+        "capabilityCount": 8,
+        "expectedMechanicCount": 0,
+        "mismatchCount": 0,
+        "sameCount": 8,
+        "status": "passed"
+      }
+    },
+    {
+      "id": "rtk-public-surface-parity.query-source.011",
+      "path": "query-source/011.json",
+      "summary": {
+        "capabilityCount": 7,
+        "expectedMechanicCount": 0,
+        "mismatchCount": 0,
+        "sameCount": 7,
+        "status": "passed"
+      }
+    }
+  ],
+  "reportId": "rtk-public-surface-parity.query-source",
+  "schemaVersion": 1,
+  "sources": {
+    "typescript": {
+      "commit": "50c1fe284da298525ea5a153d680084a06149ffe",
+      "contractHashes": {
+        "redux-toolkit-runtime-and-source": "506ad07549e03b33b8914d26436b37c4a23b7e45b549cfe015400e39c95b74f5"
+      },
+      "repository": "sdk"
+    },
+    "unreal": {
+      "commit": "e679082e67657f3c4d8f3ad0fc3a6eb7c067a021",
+      "contractHashes": {
+        "rtk-hpp-public-closure": "7b0722dd9ecd67441f44ca6214ffc7fdaa678084253142d0762c09729981662d"
+      },
+      "repository": "sdk-ue-5"
+    }
+  },
+  "summary": {
+    "capabilityCount": 87,
+    "expectedMechanicCount": 0,
+    "mismatchCount": 0,
+    "sameCount": 87,
+    "status": "passed"
+  }
+}

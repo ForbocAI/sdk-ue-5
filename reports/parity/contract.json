@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "maxCapabilitiesPerPart": 8,
+  "schemas": {
+    "index": "reports/parity/report-index.schema.json",
+    "part": "reports/parity/report-part.schema.json"
+  },
+  "reports": {
+    "rtk": {
+      "id": "rtk-public-surface-parity",
+      "generatedBy": "scripts/check-rtk-parity.py",
+      "directory": "reports/parity/generated/rtk"
+    },
+    "sdk": {
+      "id": "sdk-capability-parity",
+      "generatedBy": "scripts/check-sdk-parity.py",
+      "directory": "reports/parity/generated/sdk"
+    }
+  }
+}

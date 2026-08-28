@@ -1,0 +1,194 @@
+{
+  "$schema": "../../../report-part.schema.json",
+  "capabilities": [
+    {
+      "category": "source-structure",
+      "classification": "runtime-mechanic",
+      "id": "structure.micro-game.files",
+      "mismatch": null,
+      "result": "expected-mechanic",
+      "typescript": {
+        "available": true,
+        "evidence": [
+          "count=114",
+          "packages/micro-game-cli/src/features/systems/chat/testing/testingAdapters.ts",
+          "packages/micro-game-cli/src/features/systems/cli/testing/testingAdapters.ts",
+          "packages/micro-game-cli/src/features/systems/harness/commandRunner/debug/debugAdapters.ts",
+          "packages/micro-game-cli/src/features/systems/harness/commandRunner/testing/testingAdapters.ts",
+          "packages/micro-game-cli/src/features/systems/harness/maze/commands/commandsAdapters.ts"
+        ]
+      },
+      "unreal": {
+        "available": true,
+        "evidence": [
+          "count=135",
+          "exact=82"
+        ]
+      }
+    },
+    {
+      "category": "source-structure",
+      "classification": "runtime-mechanic",
+      "id": "structure.micro-game.folders",
+      "mismatch": null,
+      "result": "expected-mechanic",
+      "typescript": {
+        "available": true,
+        "evidence": [
+          "count=72",
+          "packages/micro-game-cli/src/features/systems/chat/testing",
+          "packages/micro-game-cli/src/features/systems/cli/testing",
+          "packages/micro-game-cli/src/features/systems/harness/commandRunner/debug",
+          "packages/micro-game-cli/src/features/systems/harness/commandRunner/testing",
+          "packages/micro-game-cli/src/features/systems/harness/maze"
+        ]
+      },
+      "unreal": {
+        "available": true,
+        "evidence": [
+          "count=84",
+          "exact=52"
+        ]
+      }
+    },
+    {
+      "category": "source-structure",
+      "classification": "runtime-mechanic",
+      "id": "structure.micro-game.symbols",
+      "mismatch": null,
+      "result": "expected-mechanic",
+      "typescript": {
+        "available": true,
+        "evidence": [
+          "count=419",
+          "packages/micro-game-cli/src/features/systems/chat/chatTypes.ts",
+          "packages/micro-game-cli/src/features/systems/chat/testing/testingAdapters.ts",
+          "packages/micro-game-cli/src/features/systems/cli/cliAdapters.ts",
+          "packages/micro-game-cli/src/features/systems/cli/cliThunks.ts"
+        ]
+      },
+      "unreal": {
+        "available": true,
+        "evidence": [
+          "count=642",
+          "exact=178"
+        ]
+      }
+    },
+    {
+      "category": "source-structure",
+      "classification": "runtime-mechanic",
+      "id": "structure.sdk.files",
+      "mismatch": null,
+      "result": "expected-mechanic",
+      "typescript": {
+        "available": true,
+        "evidence": [
+          "count=204",
+          "packages/core/src/components/api/endpoints/ghost/ghostTypes.ts",
+          "packages/core/src/components/api/status/statusTypes.ts",
+          "packages/core/src/components/npc/persona/personaTypes.ts",
+          "packages/core/src/components/protocol/handlers/handlersTypes.ts",
+          "packages/core/src/components/sdk/sdkTypes.ts"
+        ]
+      },
+      "unreal": {
+        "available": true,
+        "evidence": [
+          "count=418",
+          "exact=101"
+        ]
+      }
+    },
+    {
+      "category": "source-structure",
+      "classification": "runtime-mechanic",
+      "id": "structure.sdk.folders",
+      "mismatch": null,
+      "result": "expected-mechanic",
+      "typescript": {
+        "available": true,
+        "evidence": [
+          "count=163",
+          "packages/core/src/components/api/endpoints/ghost",
+          "packages/core/src/components/api/status",
+          "packages/core/src/components/npc/persona",
+          "packages/core/src/components/protocol/handlers",
+          "packages/core/src/components/sdk"
+        ]
+      },
+      "unreal": {
+        "available": true,
+        "evidence": [
+          "count=396",
+          "exact=94"
+        ]
+      }
+    },
+    {
+      "category": "source-structure",
+      "classification": "runtime-mechanic",
+      "id": "structure.sdk.symbols",
+      "mismatch": null,
+      "result": "expected-mechanic",
+      "typescript": {
+        "available": true,
+        "evidence": [
+          "count=794",
+          "packages/core/src/components/api/endpoints/ghost/ghostTypes.ts"
+        ]
+      },
+      "unreal": {
+        "available": true,
+        "evidence": [
+          "count=2686",
+          "exact=403"
+        ]
+      }
+    },
+    {
+      "category": "source-structure",
+      "classification": "runtime-mechanic",
+      "id": "structure.source-roots",
+      "mismatch": null,
+      "result": "expected-mechanic",
+      "typescript": {
+        "available": true,
+        "evidence": [
+          "packages/browser/src",
+          "packages/micro-game-browser/src"
+        ]
+      },
+      "unreal": {
+        "available": true,
+        "evidence": []
+      }
+    }
+  ],
+  "generatedBy": "scripts/check-sdk-parity.py",
+  "reportId": "sdk-capability-parity.source-structure.001",
+  "schemaVersion": 1,
+  "sources": {
+    "typescript": {
+      "commit": "25a149ec7286d8e4db1dbff8028a4a796575f5d0",
+      "contractHashes": {
+        "sdk-source-and-cli-contract": "a2057535fa2f6e5eb46248c683efcbdbfd023b29e395c9e177b49d42d270c386"
+      },
+      "repository": "sdk"
+    },
+    "unreal": {
+      "commit": "e679082e67657f3c4d8f3ad0fc3a6eb7c067a021",
+      "contractHashes": {
+        "sdk-source-and-cli-contract": "d1c02197ae4d86df0a59220e48168815e97e62aa4983306b162085697ec0a206"
+      },
+      "repository": "sdk-ue-5"
+    }
+  },
+  "summary": {
+    "capabilityCount": 7,
+    "expectedMechanicCount": 7,
+    "mismatchCount": 0,
+    "sameCount": 0,
+    "status": "passed"
+  }
+}

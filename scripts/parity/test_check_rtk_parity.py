@@ -1,41 +1,38 @@
 from __future__ import annotations
 
-import importlib.util
+import unittest
 from pathlib import Path
 import sys
-import unittest
 
 
-SCRIPT_PATH = Path(__file__).resolve().parents[1] / "check-rtk-parity.py"
-SPEC = importlib.util.spec_from_file_location("check_rtk_parity", SCRIPT_PATH)
-if SPEC is None or SPEC.loader is None:
-    raise RuntimeError(f"Could not load {SCRIPT_PATH}")
-PARITY = importlib.util.module_from_spec(SPEC)
-sys.modules[SPEC.name] = PARITY
-SPEC.loader.exec_module(PARITY)
+SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from parity.rtk.capabilities import build_capability_groups
+from parity.rtk.types import ExportGroup
 
 
-class MapPortabilityTests(unittest.TestCase):
-    def test_generated_section_uses_repository_relative_identities(self) -> None:
-        ts_root = Path("/workspace/Forboc.AI/sdk")
-        ue_root = Path("/workspace/Forboc.AI/sdk-ue-5")
-
-        section, missing = PARITY.build_section(
-            "2.11.2",
-            ts_root,
-            ue_root,
-            (ue_root / "Source/ForbocAI_SDK/Public/Core/rtk.hpp",),
-            (PARITY.ExportGroup("Toolkit runtime", ("configureStore",)),),
-            ("configureStore",),
+class RtkCapabilityTests(unittest.TestCase):
+    def test_distinguishes_present_exports_from_actionable_mismatches(self) -> None:
+        groups = (
+            ExportGroup(
+                "toolkit-runtime",
+                "Toolkit runtime",
+                ("configureStore", "createSlice"),
+                ("node_modules/toolkit.js",),
+            ),
         )
 
-        self.assertEqual(missing, 0)
-        self.assertNotIn("/workspace/", section)
-        self.assertIn("TS repository `sdk`", section)
-        self.assertIn(
-            "`Source/ForbocAI_SDK/Public/Core/rtk.hpp` in UE repository `sdk-ue-5`",
-            section,
-        )
+        capabilities = build_capability_groups(
+            groups,
+            {"configureStore": ("Source/Public/Core/rtk.hpp",)},
+        )["toolkit-runtime"]
+
+        self.assertEqual([item["result"] for item in capabilities], ["same", "mismatch"])
+        self.assertIsNone(capabilities[0]["mismatch"])
+        self.assertIn("createSlice", capabilities[1]["mismatch"]["message"])
+        self.assertTrue(capabilities[1]["mismatch"]["remediation"])
 
 
 if __name__ == "__main__":
