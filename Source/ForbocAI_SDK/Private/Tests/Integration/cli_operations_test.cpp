@@ -11,6 +11,7 @@
 #include "Store.h"
 #include "Systems/Config/ConfigThunks.h"
 #include "Systems/CLI/Diagnostics/DiagnosticsThunks.h"
+#include "Systems/CLI/Ghost/CLIGhostThunks.h"
 #include "Systems/CLI/NPC/NPCThunks.h"
 #include "Systems/API/Endpoints/NPC/Generate/Configuration/GenerateConfigurationAdapters.h"
 #include "Entities/NPC/NPCActions.h"
@@ -41,6 +42,15 @@
 // @covers:cliOp:storeMemory
 // @covers:cliOp:processNpc
 // @covers:cliOp:generateNpcAttribute
+// @covers:cliOp:withGhostSession
+// @covers:cliOp:generateGhostAttribute
+// @covers:cliOp:createGhostActor
+// @covers:cliOp:updateGhostActor
+// @covers:cliOp:recallGhostActor
+// @covers:cliOp:storeGhostMemory
+// @covers:cliOp:decideGhost
+// @covers:cliOp:decideNpc
+// @covers:cliOp:recallNpc
 // @covers:cliOp:recallNodeMemory
 // @covers:cliOp:listRulesets
 // @covers:cliOp:listRulePresets
@@ -80,6 +90,8 @@
 // @covers:cli:soul_verify
 // @covers:cli:status
 // @covers:cli:version
+// @covers:coreThunk:processWithRoute
+// @covers:coreThunk:processGhost
 
 
 using namespace rtk;
@@ -106,6 +118,20 @@ bool FOpsTransportThunkConstructionTest::RunTest(const FString &Parameters) {
           APISlice::Endpoints::NPCGenerateConfiguration::
               generateConfigurationData().Fields.Attribute,
           FString());
+  const auto ProcessRoute = rtk::processWithRoute<FRuntimeState>(
+      FProtocolProcessInput{}, FProtocolHandlerContext{});
+  const auto GhostRoute = rtk::processGhost<FRuntimeState>(
+      FGhostProcessInput{}, FProtocolHandlerContext{});
+  const bool bGhostOperationsCallable =
+      &Ops::withGhostSession<FRuntimeState> != nullptr &&
+      &Ops::generateGhostAttribute<FRuntimeState> != nullptr &&
+      &Ops::createGhostActor<FRuntimeState> != nullptr &&
+      &Ops::updateGhostActor<FRuntimeState> != nullptr &&
+      &Ops::recallGhostActor<FRuntimeState> != nullptr &&
+      &Ops::storeGhostMemory<FRuntimeState> != nullptr &&
+      &Ops::decideGhost<FRuntimeState> != nullptr &&
+      &Ops::decideNpc<FRuntimeState> != nullptr &&
+      &Ops::recallNpc<FRuntimeState> != nullptr;
 
   TestTrue(Names.GetMicroGameContract,
            ContractRequest.state &&
@@ -113,6 +139,9 @@ bool FOpsTransportThunkConstructionTest::RunTest(const FString &Parameters) {
   TestTrue(Names.PostNpcGenerateAttribute,
            GenerateRequest.state &&
                static_cast<bool>(GenerateRequest.state->executor));
+  TestTrue(Names.PostGhostProcess,
+           static_cast<bool>(ProcessRoute) && static_cast<bool>(GhostRoute));
+  TestTrue(Names.PostGhostNpcGenerateAttribute, bGhostOperationsCallable);
   return true;
 }
 

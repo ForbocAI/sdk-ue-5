@@ -6,6 +6,7 @@
 #include "Components/NPC/Generate/GenerateTypes.h"
 #include "Systems/API/Endpoints/NPC/Generate/GenerateAdapters.h"
 #include "Systems/API/Endpoints/NPC/Process/NPCProcessAdapters.h"
+#include "Systems/Ghost/Configuration/GhostConfigurationAdapters.h"
 
 namespace APISlice {
 namespace Endpoints {
@@ -123,7 +124,7 @@ inline Thunk<FGhostHistoryResponse> getGhostHistory(int32 Limit) {
 /** User Story: As a api endpoints ghost consumer, I need to invoke get ghost history through a stable signature so the api endpoints ghost workflow remains explicit and composable. @fn inline Thunk<FGhostHistoryResponse> getGhostHistory() */
 inline Thunk<FGhostHistoryResponse> getGhostHistory() {
   return getGhostHistory(
-      Configuration::endpointData().Defaults.GhostHistoryLimit);
+      ::GhostConfiguration::ghostConfiguration().DefaultHistoryLimit);
 }
 
 } // namespace Endpoints

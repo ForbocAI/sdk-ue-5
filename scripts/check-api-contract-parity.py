@@ -84,6 +84,22 @@ def get_contract_data() -> dict:
     sys.exit(2)
 
 
+def authored_harness_command_groups(root: Path) -> set[str]:
+    """Discover local command-group projections from canonical harness data."""
+    groups: set[str] = set()
+    for path in sorted(root.glob("*.json")):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        group = data.get("group")
+        if isinstance(group, str) and group:
+            groups.add(group)
+        contract_command = data.get("contractCommand")
+        if isinstance(contract_command, dict):
+            contract_group = contract_command.get("group")
+            if isinstance(contract_group, str) and contract_group:
+                groups.add(contract_group)
+    return groups
+
+
 def validate_contract_shape(contract: dict) -> list[str]:
     failures: list[str] = []
     if not contract.get("version"):
@@ -172,9 +188,8 @@ def validate_ue_sources(contract: dict) -> list[str]:
         PLUGIN_ROOT / "micro-game-cli" / "Content" / "Data" /
         "harness" / "runtime.json"
     )
-    game_data_path = (
-        PLUGIN_ROOT / "micro-game-cli" / "Content" / "Data" /
-        "harness" / "game.json"
+    harness_data_root = (
+        PLUGIN_ROOT / "micro-game-cli" / "Content" / "Data" / "harness"
     )
     runner_data_path = (
         PLUGIN_ROOT / "micro-game-cli" / "Content" / "Data" /
@@ -186,7 +201,7 @@ def validate_ue_sources(contract: dict) -> list[str]:
     contract_aliases = contract.get("aliasRules") or {}
     contract_data = json.loads(contract_data_path.read_text(encoding="utf-8"))
     runtime_data = json.loads(runtime_data_path.read_text(encoding="utf-8"))
-    game_data = json.loads(game_data_path.read_text(encoding="utf-8"))
+    harness_groups = authored_harness_command_groups(harness_data_root)
     schema = contract_data.get("schema") or {}
     contract_types = contract_types_path.read_text(encoding="utf-8")
     contract_adapters = contract_adapters_path.read_text(encoding="utf-8")
@@ -198,7 +213,9 @@ def validate_ue_sources(contract: dict) -> list[str]:
         parse_schema_references(parser_sources),
     ))
     failures.extend(validate_schema_loader(contract_adapters))
-    failures.extend(validate_runtime_command_groups(contract, runtime_data, game_data))
+    failures.extend(
+        validate_runtime_command_groups(contract, runtime_data, harness_groups)
+    )
     failures.extend(validate_parser_shapes(parser_sources))
 
     for runtime_alias, runtime_value in sorted(runner_aliases.items()):

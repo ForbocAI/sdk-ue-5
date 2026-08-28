@@ -39,6 +39,8 @@
   "conversationTranscript": {
     "errorStatus": "error",
     "failureFallback": "Error: NPC conversation evidence unavailable.",
+    "transcriptLinesField": "transcriptLines",
+    "lineTextField": "text",
     "failureLines": [
       { "template": "\n=== ForbocAI Two NPC Chat ===", "error": false },
       { "template": "{output}", "error": true },

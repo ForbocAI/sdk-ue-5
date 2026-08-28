@@ -2,6 +2,7 @@
   "schemaVersion": "1.0.0",
   "target": "sdk",
   "values": [
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC3FD12F70D3C", "kind": "string", "token": "\"(\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC45D95512FAE", "kind": "string", "token": "\"Entity %s is not in ECS domain %s\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC5AF6FC1C330", "kind": "string", "token": "\"createSlice empty action resets Health\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC6048CE5BF86", "kind": "string", "token": "\"/usr/bin/unzip\""},
@@ -138,7 +139,6 @@
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFA5844B2ADED", "kind": "string", "token": "\"memory/memoryStoreFailed\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFAA99951D061", "kind": "string", "token": "\"sword\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFAFA64DD5BB1", "kind": "string", "token": "\"ApiKey roundtrip\""},
-    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFC0C71A06FD7", "kind": "string", "token": "\"completed\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFC39450631A0", "kind": "string", "token": "\"ForbocAI.Integration.API.Endpoint.NotFound\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFCAE70C55CED", "kind": "string", "token": "\"Memory cleared after active NPC removal\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVFCD3E4B045D2", "kind": "string", "token": "\"Imported importance is preserved\""},

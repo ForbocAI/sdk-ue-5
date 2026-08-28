@@ -37,6 +37,11 @@ inline GhostResult RunGhost(
   const FGhostRunResponse Response = Ops::startGhost(Store, Suite, Duration);
   ForbocAI::CLI::Presentation::logCliMessage(
       formatCliMessage(State.Started, Response.SessionId));
+  ForbocAI::CLI::Presentation::logCliMessage(
+      formatCliMessage(State.Identity, Response.GhostName));
+  ForbocAI::CLI::Presentation::logCliMessage(
+      ForbocAI::CLI::Ghost::selectCliGhostRuntimeLine(
+          State, Response.RuntimeIdentity));
   return CLIOps::CommandResult::Success(Response.SessionId);
 }
 

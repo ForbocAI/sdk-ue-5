@@ -2,6 +2,7 @@
   "schemaVersion": "1.0.0",
   "target": "sdk",
   "values": [
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV75287A4D67F2", "kind": "string", "token": "\"@@redux/REPLACE\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV75B2E664BED9", "kind": "string", "token": "\"Soul reset\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV76610D91B2F1", "kind": "string", "token": "\"ag_test1\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV776EDAC3DEE8", "kind": "string", "token": "\"ForbocAI.Core.API.RulesetContract\""},
@@ -14,6 +15,7 @@
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV7AF1958B8A44", "kind": "string", "token": "\"Empty payload dispatch clears ID\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV7AF9B1C63133", "kind": "string", "token": "\"Soul export idle\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV7BC91F71337B", "kind": "string", "token": "\"Returns 404\""},
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV7C8537C8626B", "kind": "string", "token": "\"ForbocAI.SDK.CLI.Ghost.Projection\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV7CA0AB8FFB6C", "kind": "string", "token": "\"ghost/sessionFailed\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV7D04F36B6BCF", "kind": "string", "token": "\"Delta includes active npc id\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV7D3D3DCC6678", "kind": "string", "token": "\"Unable to write Soul persistence: %s\""},
@@ -59,7 +61,6 @@
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV90C6CC7116F9", "kind": "string", "token": "\"ag_cascade\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV90F5E365EC02", "kind": "string", "token": "\"observation\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV910A319F788E", "kind": "string", "token": "\"#F20404\""},
-    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV91268A5A2613", "kind": "string", "token": "\"%d/%d passed\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV91BB15D770D4", "kind": "string", "token": "\"POST\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV91EFC04D6057", "kind": "string", "token": "\"TIMEOUT_ERROR\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV91F62130B097", "kind": "string", "token": "\"  -- diff end --\""},
@@ -180,7 +181,6 @@
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC34A2D3191EC", "kind": "string", "token": "\"ForbocAI.Integration.Dependencies.StoreLifecycle\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC34FF3450068", "kind": "string", "token": "\"Active directive set\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC3527C8743CC", "kind": "string", "token": "\"ForbocAI.Slices.NPC\""},
-    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC3C9320E666D", "kind": "string", "token": "\"Memory list command reports success\""},
-    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC3FD12F70D3C", "kind": "string", "token": "\"(\""}
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC3C9320E666D", "kind": "string", "token": "\"Memory list command reports success\""}
   ]
 }

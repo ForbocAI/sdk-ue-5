@@ -1,0 +1,23 @@
+{
+  "defaults": {
+    "duration": 300,
+    "historyLimit": 10,
+    "emptyProgress": 0,
+    "completeProgress": 1
+  },
+  "statuses": {
+    "idle": "idle",
+    "completed": "completed",
+    "failed": "failed"
+  },
+  "messages": {
+    "empty": "",
+    "noActiveSession": "No active Ghost session",
+    "startFailed": "Failed to start Ghost",
+    "statusFailed": "Failed to get ghost status",
+    "resultsFailed": "Failed to get ghost results",
+    "stopFailed": "Failed to stop ghost session",
+    "historyFailed": "Failed to get ghost history",
+    "stopNotCompleted": "Ghost stop request did not stop a session"
+  }
+}

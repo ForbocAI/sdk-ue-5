@@ -103,6 +103,12 @@ inline FTerminalData ReadTerminalData() {
   Data.conversationTranscript.FailureFallback =
       DataAdapters::ReadStringField(ConversationTranscript,
                                     TEXT("failureFallback"));
+  Data.conversationTranscript.TranscriptLinesField =
+      DataAdapters::ReadStringField(ConversationTranscript,
+                                    TEXT("transcriptLinesField"));
+  Data.conversationTranscript.LineTextField =
+      DataAdapters::ReadStringField(ConversationTranscript,
+                                    TEXT("lineTextField"));
   Data.conversationTranscript.FailureLines = detail::ReadAuthoredLines(
       DataAdapters::ReadObjectArrayField(ConversationTranscript,
                                          TEXT("failureLines")));

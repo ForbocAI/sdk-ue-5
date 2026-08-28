@@ -2,6 +2,7 @@
 
 #include "ForbocAI_SDK/Public/Systems/Data/DataAdapters.h"
 #include "Systems/Testing/Fixture/FixtureAdapters.h"
+#include "Systems/Testing/API/Codec/Ghost/CodecGhostAdapters.h"
 #include "Components/Testing/Ghost/TestingGhostTypes.h"
 
 namespace Testing::Ghost {
@@ -53,10 +54,14 @@ ReadGhostTestExpected(const TSharedPtr<FJsonObject> &Object) {
   const TSharedRef<FJsonObject> Value = Object.ToSharedRef();
   return {
       DataAdapters::ReadOptionalStringField(Value, TEXT("activeSessionId")),
+      DataAdapters::ReadOptionalBooleanField(Value,
+                                             TEXT("identityPreserved")),
       DataAdapters::ReadOptionalStringField(Value, TEXT("status")),
       DataAdapters::ReadOptionalFloatField(Value, TEXT("progress")),
       DataAdapters::ReadOptionalBooleanField(Value, TEXT("hasResults")),
       DataAdapters::ReadOptionalNumberField(Value, TEXT("resultCount")),
+      DataAdapters::ReadOptionalBooleanField(Value,
+                                             TEXT("resultsPreserved")),
       DataAdapters::ReadOptionalNumberField(Value, TEXT("historyCount")),
       DataAdapters::ReadOptionalStringField(
           Value, TEXT("historyFirstSessionId")),
@@ -109,10 +114,12 @@ ReadGhostTestLabels(const DataAdapters::FSettingsSource &Source) {
       DataAdapters::ReadStringField(Labels, TEXT("requiredField")),
       DataAdapters::ReadStringField(Labels, TEXT("scenarioPresent")),
       DataAdapters::ReadStringField(Labels, TEXT("activeSessionId")),
+      DataAdapters::ReadStringField(Labels, TEXT("identityPreserved")),
       DataAdapters::ReadStringField(Labels, TEXT("status")),
       DataAdapters::ReadStringField(Labels, TEXT("progress")),
       DataAdapters::ReadStringField(Labels, TEXT("hasResults")),
       DataAdapters::ReadStringField(Labels, TEXT("resultCount")),
+      DataAdapters::ReadStringField(Labels, TEXT("resultsPreserved")),
       DataAdapters::ReadStringField(Labels, TEXT("historyCount")),
       DataAdapters::ReadStringField(Labels, TEXT("historyFirstSessionId")),
       DataAdapters::ReadStringField(Labels, TEXT("loading")),
@@ -135,6 +142,11 @@ inline const FGhostTestFixtures &TestingGhostFixtures() {
           TEXT("Data/tests/ghost/scenarios/resilience.json"));
   static const FGhostTestFixtures Fixtures = {
       ReadGhostTestLabels(SettingsSource),
+      Testing::API::Codec::Ghost::GhostCodecFixtures().RunExpected,
+      Testing::API::Codec::Ghost::GhostCodecFixtures().ResultsExpected,
+      Testing::API::Codec::Ghost::GhostCodecFixtures()
+          .HistoryExpected.Sessions[Testing::API::Codec::Ghost::
+              GhostCodecFixtures().Probes.HistoryIndex],
       func::concat_arrays<FGhostTestScenario>(
           TArray<TArray<FGhostTestScenario>>{
               ReadGhostTestScenarios(LifecycleSource),

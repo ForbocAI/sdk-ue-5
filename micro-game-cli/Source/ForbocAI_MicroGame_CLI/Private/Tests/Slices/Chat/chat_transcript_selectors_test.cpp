@@ -2,7 +2,6 @@
 #include "Misc/AutomationTest.h"
 #include "MicroGame/Features/Systems/Contract/ContractSelectors.h"
 #include "MicroGame/Features/Systems/Chat/SystemsChatSelectors.h"
-#include "MicroGame/Features/Systems/Harness/Verification/VerificationAdapters.h"
 #include "MicroGame/Features/Systems/Harness/Scenario/ScenarioSelectors.h"
 #include "MicroGame/Features/Systems/Quality/QualityAdapters.h"
 #include "MicroGame/Features/Systems/Terminal/Chat/TerminalChatSelectors.h"
@@ -131,30 +130,33 @@ bool FMicroGameChatTranscriptSelectorsTest::RunTest(
                 .Command,
             TestData.Conversation.Entry.Command);
 
-  const FGameData &Game = VerificationAdapters::GameData();
-  TestEqual(*TestData.Stories.FinalCommand, Game.finalCommands.Num(),
+  FCommandSpec FinalCommand;
+  FinalCommand.Group = TestData.Conversation.Entry.CommandGroup;
+  FinalCommand.Command = TestData.Conversation.Entry.Command;
+  const TArray<FCommandSpec> FinalCommands{FinalCommand};
+  TestEqual(*TestData.Stories.FinalCommand, FinalCommands.Num(),
             Runtime.Numbers.NextIndex);
   TestEqual(*TestData.Stories.FinalCommand,
-            Game.finalCommands[Runtime.Numbers.InitialIndex].Command,
+            FinalCommands[Runtime.Numbers.InitialIndex].Command,
             TestData.Conversation.Entry.Command);
   Contract::FContractResponse StaleContract;
   const TArray<FCommandSpec> MissingFinalCommands =
       ContractSelectors::SelectMissingFinalCommands(
-          StaleContract, Game.finalCommands);
+          StaleContract, FinalCommands);
   TestEqual(*TestData.Stories.FinalCommand, MissingFinalCommands.Num(),
             Runtime.Numbers.NextIndex);
   const FScenarioContractPayload RequiredContract =
       ContractSelectors::SelectContractWithFinalRequirements(
-          StaleContract, Game.finalCommands);
+          StaleContract, FinalCommands);
   TestTrue(*TestData.Stories.FinalCommand,
            RequiredContract.RequiredCommandGroups.Contains(
                TestData.Conversation.Entry.CommandGroup));
   FScenarioStep CurrentStep;
-  CurrentStep.Commands = Game.finalCommands;
+  CurrentStep.Commands = FinalCommands;
   StaleContract.Scenarios.Add(MoveTemp(CurrentStep));
   TestEqual(*TestData.Stories.FinalCommand,
             ContractSelectors::SelectMissingFinalCommands(
-                StaleContract, Game.finalCommands)
+                StaleContract, FinalCommands)
                 .Num(),
             Runtime.Numbers.EmptyCount);
 

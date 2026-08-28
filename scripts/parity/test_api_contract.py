@@ -52,14 +52,17 @@ class ApiContractParityTests(unittest.TestCase):
                 "contract": True,
             }
         }
-        game = {"contractCommand": {"group": "contract"}}
-        self.assertEqual(validate_runtime_command_groups(contract, runtime, game), [])
+        harness_groups = {"contract"}
+        self.assertEqual(
+            validate_runtime_command_groups(contract, runtime, harness_groups),
+            [],
+        )
         self.assertIn(
             "UE runtime command groups: missing memory_list",
             validate_runtime_command_groups(
                 contract,
                 {"commandGroups": {"status": True, "contract": True}},
-                game,
+                harness_groups,
             ),
         )
 

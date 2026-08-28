@@ -58,49 +58,6 @@
     "getSoulStorageEntry": "getSoulStorageEntry",
     "getMicroGameContract": "getMicroGameContract"
   },
-  "fields": {
-    "ghostRunSessionId": "sessionId",
-    "ghostRunStatus": "runStatus",
-    "ghostStatusSessionId": "ghostSessionId",
-    "ghostStatusStatus": "ghostStatus",
-    "ghostStatusProgress": "ghostProgress",
-    "ghostStatusStartedAt": "ghostStartedAt",
-    "ghostStatusDuration": "ghostDuration",
-    "ghostStatusErrors": "ghostErrors",
-    "ghostResultsSessionId": "resultsSessionId",
-    "ghostResultsTotalTests": "resultsTotalTests",
-    "ghostResultsPassed": "resultsPassed",
-    "ghostResultsFailed": "resultsFailed",
-    "ghostResultsSkipped": "resultsSkipped",
-    "ghostResultsDuration": "resultsDuration",
-    "ghostResultsTests": "resultsTests",
-    "ghostResultsCoverage": "resultsCoverage",
-    "ghostResultsMetrics": "resultsMetrics",
-    "ghostTestName": "testName",
-    "ghostTestPassed": "testPassed",
-    "ghostTestDuration": "testDuration",
-    "ghostTestError": "testError",
-    "ghostTestScreenshot": "testScreenshot",
-    "ghostStopStatus": "stopStatus",
-    "ghostStopSessionId": "stopSessionId",
-    "ghostHistorySessions": "sessions",
-    "ghostHistorySessionId": "histSessionId",
-    "ghostHistoryTestSuite": "histTestSuite",
-    "ghostHistoryStartedAt": "histStartedAt",
-    "ghostHistoryCompletedAt": "histCompletedAt",
-    "ghostHistoryStatus": "histStatus",
-    "ghostHistoryPassRate": "histPassRate"
-  },
-  "structures": {
-    "ghostMetric": {
-      "pairSize": 2,
-      "keyIndex": 0,
-      "valueIndex": 1
-    }
-  },
-  "values": {
-    "stopped": "stopped"
-  },
   "payloads": {
     "emptyObject": "{}"
   },
@@ -108,7 +65,6 @@
     "list": "LIST"
   },
   "defaults": {
-    "ghostHistoryLimit": 10,
     "soulListLimit": 50
   },
   "timeouts": {

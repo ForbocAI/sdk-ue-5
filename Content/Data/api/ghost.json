@@ -1,0 +1,109 @@
+{
+  "fields": {
+    "run": {
+      "sessionId": "sessionId",
+      "status": "runStatus",
+      "ghostName": "ghostName",
+      "runtimeIdentity": "runtimeIdentity"
+    },
+    "runtimeIdentity": {
+      "apiVersion": "apiVersion",
+      "slmStatus": "slmStatus",
+      "slmVersion": "slmVersion",
+      "slotContractVersion": "slotContractVersion"
+    },
+    "status": {
+      "sessionId": "ghostSessionId",
+      "ghostName": "ghostName",
+      "runtimeIdentity": "runtimeIdentity",
+      "testSuite": "ghostTestSuite",
+      "status": "ghostStatus",
+      "progress": "ghostProgress",
+      "startedAt": "ghostStartedAt",
+      "duration": "ghostDuration",
+      "errors": "ghostErrors"
+    },
+    "results": {
+      "sessionId": "resultsSessionId",
+      "ghostName": "ghostName",
+      "runtimeIdentity": "runtimeIdentity",
+      "evidence": "evidence",
+      "evidenceDimensions": "evidenceDimensions",
+      "evaluationDimensions": "evaluationDimensions",
+      "totalTests": "resultsTotalTests",
+      "passed": "resultsPassed",
+      "failed": "resultsFailed",
+      "skipped": "resultsSkipped",
+      "duration": "resultsDuration",
+      "tests": "resultsTests",
+      "coverage": "resultsCoverage",
+      "metrics": "resultsMetrics",
+      "verdict": "resultsVerdict",
+      "summary": "resultsSummary"
+    },
+    "evidence": {
+      "completedProcessTurns": "completedProcessTurns",
+      "validCognitionOutcomes": "validCognitionOutcomes",
+      "invalidCognitionOutcomes": "invalidCognitionOutcomes",
+      "signedCognitionOutcomes": "signedCognitionOutcomes",
+      "thoughtResults": "thoughtResults",
+      "reasoningResults": "reasoningResults",
+      "consistentReasoningResults": "consistentReasoningResults",
+      "diagnosticResults": "diagnosticResults",
+      "groundedDiagnosticResults": "groundedDiagnosticResults",
+      "contradictions": "contradictions",
+      "unsupportedClaims": "unsupportedClaims",
+      "failures": "failures",
+      "timeouts": "timeouts",
+      "uniqueObservations": "uniqueObservations",
+      "choicePoints": "choicePoints"
+    },
+    "test": {
+      "name": "testName",
+      "passed": "testPassed",
+      "duration": "testDuration",
+      "error": "testError",
+      "screenshot": "testScreenshot"
+    },
+    "stop": {
+      "status": "stopStatus",
+      "sessionId": "stopSessionId"
+    },
+    "history": {
+      "sessions": "sessions",
+      "sessionId": "histSessionId",
+      "ghostName": "ghostName",
+      "runtimeIdentity": "runtimeIdentity",
+      "testSuite": "histTestSuite",
+      "startedAt": "histStartedAt",
+      "completedAt": "histCompletedAt",
+      "status": "histStatus",
+      "passRate": "histPassRate"
+    },
+    "metric": {
+      "name": "name",
+      "value": "value"
+    }
+  },
+  "values": {
+    "stopped": "stopped"
+  },
+  "limits": {
+    "minimumIdentityLength": 1,
+    "metricPairSize": 2,
+    "metricNameIndex": 0,
+    "metricValueIndex": 1
+  },
+  "errors": {
+    "run": "Invalid Ghost run response",
+    "identity": "Invalid Ghost identity",
+    "runtimeIdentity": "Invalid Ghost runtime identity",
+    "status": "Invalid Ghost status response",
+    "results": "Invalid Ghost results response",
+    "evidence": "Invalid Ghost evidence response",
+    "test": "Invalid Ghost test response",
+    "stop": "Invalid Ghost stop response",
+    "history": "Invalid Ghost history response",
+    "metric": "Invalid Ghost metric response"
+  }
+}

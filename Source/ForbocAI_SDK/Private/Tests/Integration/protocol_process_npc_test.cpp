@@ -10,9 +10,13 @@
 #include "Entities/Directive/DirectiveSlice.h"
 #include "Entities/Directive/DirectiveSelectors.h"
 #include "HAL/PlatformProcess.h"
+#include "HAL/PlatformTime.h"
 #include "Misc/AutomationTest.h"
 #include "Entities/NPC/NPCSelectors.h"
 #include "Entities/NPC/NPCSlice.h"
+#include "Systems/API/Endpoints/Configuration/EndpointsConfigurationAdapters.h"
+#include "Systems/Async/AsyncAdapters.h"
+#include "Systems/Config/Contract/ContractAdapters.h"
 #include "Systems/Protocol/ProtocolThunks.h"
 #include "Protocol/NPC/ProcessNPCTestAdapters.h"
 #include "Store.h"
@@ -42,27 +46,32 @@ bool ConfigureLiveApi(FAutomationTestBase &Test) {
  */
 DEFINE_LATENT_AUTOMATION_COMMAND_THREE_PARAMETER(
     FProcessNPCWaitComplete, TSharedPtr<FProcessNPCTestState>, State,
-    FProcessNPCTestParams, Params, int32, PollCount);
+    FProcessNPCTestParams, Params, double, StartedAt);
 /**
  * User Story: As a developer, I need Update to fulfill its role in the module.
  * @fn bool FProcessNPCWaitComplete::Update()
  */
 bool FProcessNPCWaitComplete::Update() {
-  const int32 MaxPolls = FORBOCAI_SDK_AUTHORED_NUMBERV07C0796E1646;  // ~15s at 50ms
+  const double TimeoutSeconds =
+      static_cast<double>(APISlice::Endpoints::Configuration::endpointData()
+                              .Timeouts.NpcProcessMs) /
+      ConfigSlice::configRuntimeData().Connection.MillisecondsPerSecond;
 
   if (!State->Store.IsValid()) {
     ProcessNPCTestAdapters::Start(State, Params);
+    StartedAt = FPlatformTime::Seconds();
     return false;
   }
   if (State->bCompleted)
     return true;
-  if (++PollCount >= MaxPolls) {
+  if ((FPlatformTime::Seconds() - StartedAt) >= TimeoutSeconds) {
     State->bCompleted = true;
     State->bSuccess = false;
     State->Error = TEXT(FORBOCAI_SDK_AUTHORED_STRINGV9FD0ADD5A4E1);
     return true;
   }
-  FPlatformProcess::Sleep(FORBOCAI_SDK_AUTHORED_NUMBERV4B582E8E76C5);
+  FPlatformProcess::Sleep(
+      AsyncAdapters::asyncWaitSettings().Timing.PollIntervalSeconds);
   return false;
 }
 

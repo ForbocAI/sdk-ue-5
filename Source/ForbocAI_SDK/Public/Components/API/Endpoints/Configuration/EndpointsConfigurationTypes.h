@@ -67,54 +67,6 @@ struct FEndpointNameData {
   FString GetMicroGameContract;
 };
 
-struct FEndpointFieldData {
-  FString GhostRunSessionId;
-  FString GhostRunStatus;
-  FString GhostStatusSessionId;
-  FString GhostStatusStatus;
-  FString GhostStatusProgress;
-  FString GhostStatusStartedAt;
-  FString GhostStatusDuration;
-  FString GhostStatusErrors;
-  FString GhostResultsSessionId;
-  FString GhostResultsTotalTests;
-  FString GhostResultsPassed;
-  FString GhostResultsFailed;
-  FString GhostResultsSkipped;
-  FString GhostResultsDuration;
-  FString GhostResultsTests;
-  FString GhostResultsCoverage;
-  FString GhostResultsMetrics;
-  FString GhostTestName;
-  FString GhostTestPassed;
-  FString GhostTestDuration;
-  FString GhostTestError;
-  FString GhostTestScreenshot;
-  FString GhostStopStatus;
-  FString GhostStopSessionId;
-  FString GhostHistorySessions;
-  FString GhostHistorySessionId;
-  FString GhostHistoryTestSuite;
-  FString GhostHistoryStartedAt;
-  FString GhostHistoryCompletedAt;
-  FString GhostHistoryStatus;
-  FString GhostHistoryPassRate;
-};
-
-struct FEndpointTupleStructureData {
-  int32 PairSize;
-  int32 KeyIndex;
-  int32 ValueIndex;
-};
-
-struct FEndpointStructureData {
-  FEndpointTupleStructureData GhostMetric;
-};
-
-struct FEndpointValueData {
-  FString Stopped;
-};
-
 struct FEndpointPayloadData {
   FString EmptyObject;
 };
@@ -124,7 +76,6 @@ struct FEndpointTagIdData {
 };
 
 struct FEndpointDefaultData {
-  int32 GhostHistoryLimit;
   int32 SoulListLimit;
 };
 
@@ -140,9 +91,6 @@ struct FEndpointConfigurationData {
   FEndpointSegmentData Segments;
   FEndpointQueryKeyData QueryKeys;
   FEndpointNameData Names;
-  FEndpointFieldData Fields;
-  FEndpointStructureData Structures;
-  FEndpointValueData Values;
   FEndpointPayloadData Payloads;
   FEndpointTagIdData TagIds;
   FEndpointDefaultData Defaults;

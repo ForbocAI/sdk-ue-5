@@ -12,6 +12,24 @@ selectGhostActiveSessionId(const FGhostSliceState &State) {
   return State.ActiveSessionId;
 }
 
+/**
+ * User Story: As Ghost presentation, I need the API-owned active name selected without a client fallback.
+ * @fn inline const func::Maybe<FString> & selectGhostActiveName(const FGhostSliceState &State)
+ */
+inline const func::Maybe<FString> &
+selectGhostActiveName(const FGhostSliceState &State) {
+  return State.ActiveGhostName;
+}
+
+/**
+ * User Story: As Ghost diagnostics, I need the API-reported runtime identity selected from the package root store.
+ * @fn inline const func::Maybe<FGhostRuntimeIdentity> & selectGhostRuntimeIdentity(const FGhostSliceState &State)
+ */
+inline const func::Maybe<FGhostRuntimeIdentity> &
+selectGhostRuntimeIdentity(const FGhostSliceState &State) {
+  return State.RuntimeIdentity;
+}
+
 /** User Story: As a features ghost consumer, I need to invoke select ghost status through a stable signature so the features ghost workflow remains explicit and composable. @fn inline const FString &selectGhostStatus(const FGhostSliceState &State) */
 inline const FString &selectGhostStatus(const FGhostSliceState &State) {
   return State.Status;
@@ -22,10 +40,19 @@ inline float selectGhostProgress(const FGhostSliceState &State) {
   return State.Progress;
 }
 
-/** User Story: As a features ghost consumer, I need to invoke select ghost results through a stable signature so the features ghost workflow remains explicit and composable. @fn inline const FGhostTestReport & selectGhostResults(const FGhostSliceState &State) */
-inline const FGhostTestReport &
+/** User Story: As a features ghost consumer, I need to invoke select ghost results through a stable signature so the features ghost workflow remains explicit and composable. @fn inline const FGhostResults & selectGhostResults(const FGhostSliceState &State) */
+inline const FGhostResults &
 selectGhostResults(const FGhostSliceState &State) {
   return State.Results;
+}
+
+/**
+ * User Story: As Ghost thunk policy, I need feature configuration selected from the single package store.
+ * @fn inline const FGhostConfiguration & selectGhostConfiguration(const FGhostSliceState &State)
+ */
+inline const FGhostConfiguration &
+selectGhostConfiguration(const FGhostSliceState &State) {
+  return State.Configuration;
 }
 
 /** User Story: As a features ghost consumer, I need to invoke select ghost has results through a stable signature so the features ghost workflow remains explicit and composable. @fn inline bool selectGhostHasResults(const FGhostSliceState &State) */

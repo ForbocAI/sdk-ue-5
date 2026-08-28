@@ -38,27 +38,62 @@ inline const rtk::Slice<FGhostSliceState> &GhostTestSlice() {
   return Slice;
 }
 
-/** User Story: As a tests slices consumer, I need to invoke ghost test results through a stable signature so the tests slices workflow remains explicit and composable. @fn inline TArray<FGhostTestResult> GhostTestResults(const TArray<FString> &Scenarios) */
-inline TArray<FGhostTestResult>
+/** User Story: As Ghost reducer tests, I need API-shaped check records composed from authored scenario names. @fn inline TArray<FGhostResultRecord> GhostTestResults(const TArray<FString> &Scenarios) */
+inline TArray<FGhostResultRecord>
 GhostTestResults(const TArray<FString> &Scenarios) {
-  return func::map_array<FString, FGhostTestResult>(
-      Scenarios, [](const FString &Scenario) {
-        FGhostTestResult Result;
-        Result.Scenario = Scenario;
-        Result.bPassed = true;
+  const int64 EmptyDuration = Scenarios.Num() - Scenarios.Num();
+  return func::map_array<FString, FGhostResultRecord>(
+      Scenarios, [EmptyDuration](const FString &Scenario) {
+        FGhostResultRecord Result;
+        Result.TestName = Scenario;
+        Result.bTestPassed = true;
+        Result.TestDuration = EmptyDuration;
         return Result;
       });
 }
 
-/** User Story: As a tests slices consumer, I need to invoke ghost history through a stable signature so the tests slices workflow remains explicit and composable. @fn inline TArray<FGhostHistoryEntry> GhostHistory(const TArray<FString> &SessionIds) */
+/** User Story: As Ghost reducer tests, I need history entries retain the API-owned identity template while varying session identity. @fn inline TArray<FGhostHistoryEntry> GhostHistory(const TArray<FString> &SessionIds) */
 inline TArray<FGhostHistoryEntry>
 GhostHistory(const TArray<FString> &SessionIds) {
   return func::map_array<FString, FGhostHistoryEntry>(
       SessionIds, [](const FString &SessionId) {
-        FGhostHistoryEntry Entry;
+        FGhostHistoryEntry Entry = TestingGhostFixtures().HistoryTemplate;
         Entry.SessionId = SessionId;
         return Entry;
       });
+}
+
+/** User Story: As Ghost state tests, I need API name and runtime attribution verified together as one ownership boundary. @fn inline bool GhostIdentityPreserved(const FGhostSliceState &State, const FGhostRunResponse &Expected) */
+inline bool GhostIdentityPreserved(const FGhostSliceState &State,
+                                   const FGhostRunResponse &Expected) {
+  return func::match(
+      GhostSelectors::selectGhostActiveName(State),
+      [&State, &Expected](const FString &Name) {
+        return func::match(
+            GhostSelectors::selectGhostRuntimeIdentity(State),
+            [&Expected, &Name](const FGhostRuntimeIdentity &Identity) {
+              return Name == Expected.GhostName &&
+                     Identity.ApiVersion ==
+                         Expected.RuntimeIdentity.ApiVersion &&
+                     Identity.SlmStatus ==
+                         Expected.RuntimeIdentity.SlmStatus &&
+                     Identity.SlmVersion ==
+                         Expected.RuntimeIdentity.SlmVersion &&
+                     Identity.SlotContractVersion ==
+                         Expected.RuntimeIdentity.SlotContractVersion;
+            },
+            []() { return false; });
+      },
+      []() { return false; });
+}
+
+/** User Story: As Ghost state tests, I need API verdict and summary proven unchanged after reducer storage. @fn inline bool GhostResultsPreserved(const FGhostSliceState &State, const FGhostResults &Expected) */
+inline bool GhostResultsPreserved(const FGhostSliceState &State,
+                                  const FGhostResults &Expected) {
+  const FGhostResults &Actual =
+      GhostSelectors::selectGhostResults(State);
+  return Actual.Verdict == Expected.Verdict &&
+         Actual.Summary == Expected.Summary;
 }
 
 /** User Story: As a tests slices consumer, I need to invoke build ghost test action dispatcher through a stable signature so the tests slices workflow remains explicit and composable. @fn inline FGhostTestActionDispatcher BuildGhostTestActionDispatcher() */
@@ -74,7 +109,10 @@ inline FGhostTestActionDispatcher BuildGhostTestActionDispatcher() {
         return GhostTestSlice().Reducer(
             Input.State, GhostSlice::Actions::ghostSessionStarted(
                              RequiredGhostField(Input.Action.SessionId),
-                             RequiredGhostField(Input.Action.Status)));
+                             RequiredGhostField(Input.Action.Status),
+                             TestingGhostFixtures().Identity.GhostName,
+                             TestingGhostFixtures()
+                                 .Identity.RuntimeIdentity));
       });
   Dispatcher = func::arg_dispatcher_register<
       EGhostTestActionKind, FGhostTestActionInput, FGhostSliceState>(
@@ -90,12 +128,14 @@ inline FGhostTestActionDispatcher BuildGhostTestActionDispatcher() {
       EGhostTestActionKind, FGhostTestActionInput, FGhostSliceState>(
       Dispatcher, EGhostTestActionKind::Complete,
       [](const FGhostTestActionInput &Input) {
-        FGhostTestReport Report;
-        Report.SessionId = RequiredGhostField(Input.Action.SessionId);
-        Report.Results = GhostTestResults(Input.Action.ResultScenarios);
+        FGhostResults Results = TestingGhostFixtures().ResultsTemplate;
+        Results.SessionId = RequiredGhostField(Input.Action.SessionId);
+        Results.TotalTests = Input.Action.ResultScenarios.Num();
+        Results.Passed = Input.Action.ResultScenarios.Num();
+        Results.Tests = GhostTestResults(Input.Action.ResultScenarios);
         return GhostTestSlice().Reducer(
             Input.State,
-            GhostSlice::Actions::ghostSessionCompleted(Report));
+            GhostSlice::Actions::ghostSessionCompleted(Results));
       });
   Dispatcher = func::arg_dispatcher_register<
       EGhostTestActionKind, FGhostTestActionInput, FGhostSliceState>(
@@ -195,6 +235,9 @@ bool FGhostTest::RunTest(const FString &Parameters) {
               TestValue(Fixtures.Labels.ActiveSessionId,
                         Step.Expected.ActiveSessionId,
                         GhostSelectors::selectGhostActiveSessionId(Next));
+              TestValue(Fixtures.Labels.IdentityPreserved,
+                        Step.Expected.IdentityPreserved,
+                        GhostIdentityPreserved(Next, Fixtures.Identity));
               TestValue(Fixtures.Labels.Status, Step.Expected.Status,
                         GhostSelectors::selectGhostStatus(Next));
               TestValue(Fixtures.Labels.Progress, Step.Expected.Progress,
@@ -205,7 +248,11 @@ bool FGhostTest::RunTest(const FString &Parameters) {
               TestValue(Fixtures.Labels.ResultCount,
                         Step.Expected.ResultCount,
                         GhostSelectors::selectGhostResults(Next)
-                            .Results.Num());
+                            .Tests.Num());
+              TestValue(
+                  Fixtures.Labels.ResultsPreserved,
+                  Step.Expected.ResultsPreserved,
+                  GhostResultsPreserved(Next, Fixtures.ResultsTemplate));
               const TArray<FGhostHistoryEntry> &History =
                   GhostSelectors::selectGhostHistory(Next);
               TestValue(Fixtures.Labels.HistoryCount,

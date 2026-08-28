@@ -64,18 +64,19 @@ def validate_schema_contract(
 def validate_runtime_command_groups(
     contract: dict[str, Any],
     runtime_data: dict[str, Any],
-    game_data: dict[str, Any],
+    authored_harness_groups: set[str],
 ) -> list[str]:
-    """Verify runtime vocabulary is exactly API-required groups plus authored bootstrap groups."""
+    """Verify runtime vocabulary is exactly API-required plus authored harness groups."""
     required_groups = {
         value for value in contract.get("requiredCommandGroups", []) if isinstance(value, str)
     }
     command_groups = runtime_data.get("commandGroups", {})
     runtime_groups = set(command_groups) if isinstance(command_groups, dict) else set()
-    contract_command = game_data.get("contractCommand", {})
-    bootstrap_group = contract_command.get("group") if isinstance(contract_command, dict) else None
-    bootstrap_groups = {bootstrap_group} if isinstance(bootstrap_group, str) and bootstrap_group else set()
-    return sorted_difference(required_groups | bootstrap_groups, runtime_groups, "UE runtime command groups")
+    return sorted_difference(
+        required_groups | authored_harness_groups,
+        runtime_groups,
+        "UE runtime command groups",
+    )
 
 
 def validate_parser_shapes(source: str) -> list[str]:

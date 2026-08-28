@@ -2,6 +2,7 @@
 #include "Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "Components/Ghost/GhostTypes.h"
+#include "Components/Ghost/Lifecycle/LifecycleTypes.h"
 
 namespace TypeFactory {
 

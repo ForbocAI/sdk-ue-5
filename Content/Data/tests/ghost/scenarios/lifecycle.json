@@ -3,7 +3,7 @@
     "name": "SessionStarted",
     "steps": [
       {"action":{"kind":"Inspect","sessionId":null,"status":null,"progress":null,"error":null,"resultScenarios":[],"historySessionIds":[]},"expected":{"activeSessionId":null,"status":"idle","progress":null,"hasResults":null,"resultCount":null,"historyCount":null,"historyFirstSessionId":null,"loading":null,"error":null}},
-      {"action":{"kind":"Start","sessionId":"session-a","status":"running","progress":null,"error":null,"resultScenarios":[],"historySessionIds":[]},"expected":{"activeSessionId":"session-a","status":"running","progress":0.0,"hasResults":false,"resultCount":null,"historyCount":null,"historyFirstSessionId":null,"loading":null,"error":""}}
+      {"action":{"kind":"Start","sessionId":"session-a","status":"running","progress":null,"error":null,"resultScenarios":[],"historySessionIds":[]},"expected":{"activeSessionId":"session-a","identityPreserved":true,"status":"running","progress":0.0,"hasResults":false,"resultCount":null,"historyCount":null,"historyFirstSessionId":null,"loading":null,"error":""}}
     ]
   },
   {
@@ -17,7 +17,7 @@
     "name": "SessionCompleted",
     "steps": [
       {"action":{"kind":"Start","sessionId":"session-complete","status":"running","progress":null,"error":null,"resultScenarios":[],"historySessionIds":[]},"expected":{"activeSessionId":null,"status":null,"progress":null,"hasResults":null,"resultCount":null,"historyCount":null,"historyFirstSessionId":null,"loading":null,"error":null}},
-      {"action":{"kind":"Complete","sessionId":"session-complete","status":null,"progress":null,"error":null,"resultScenarios":["case-a"],"historySessionIds":[]},"expected":{"activeSessionId":null,"status":"completed","progress":1.0,"hasResults":true,"resultCount":1,"historyCount":null,"historyFirstSessionId":null,"loading":false,"error":null}}
+      {"action":{"kind":"Complete","sessionId":"session-complete","status":null,"progress":null,"error":null,"resultScenarios":["case-a"],"historySessionIds":[]},"expected":{"activeSessionId":null,"status":"completed","progress":1.0,"hasResults":true,"resultCount":1,"resultsPreserved":true,"historyCount":null,"historyFirstSessionId":null,"loading":false,"error":null}}
     ]
   },
   {
@@ -36,7 +36,7 @@
   {
     "name": "ClearRestoresInitialState",
     "steps": [
-      {"action":{"kind":"Start","sessionId":"session-clear","status":"running","progress":null,"error":null,"resultScenarios":[],"historySessionIds":[]},"expected":{"activeSessionId":"session-clear","status":"running","progress":0.0,"hasResults":false,"resultCount":null,"historyCount":null,"historyFirstSessionId":null,"loading":true,"error":""}},
+      {"action":{"kind":"Start","sessionId":"session-clear","status":"running","progress":null,"error":null,"resultScenarios":[],"historySessionIds":[]},"expected":{"activeSessionId":"session-clear","status":"running","progress":0.0,"hasResults":false,"resultCount":null,"historyCount":null,"historyFirstSessionId":null,"loading":false,"error":""}},
       {"action":{"kind":"Clear","sessionId":null,"status":null,"progress":null,"error":null,"resultScenarios":[],"historySessionIds":[]},"expected":{"activeSessionId":"","status":"idle","progress":0.0,"hasResults":false,"resultCount":0,"historyCount":0,"historyFirstSessionId":null,"loading":false,"error":""}}
     ]
   }

@@ -8,6 +8,7 @@
 #include "Systems/API/APIApi.h"
 #include "Entities/Ghost/GhostSlice.h"
 #include "Entities/Config/ConfigSelectors.h"
+#include "Systems/Ghost/Configuration/GhostConfigurationAdapters.h"
 
 namespace rtk {
 
@@ -31,7 +32,8 @@ startGhostThunk(const FGhostConfig &Config) {
         APISlice::Endpoints::postGhostRun(Config)(Dispatch, GetState),
         [Dispatch](const FGhostRunResponse &Response) {
           Dispatch(GhostSlice::Actions::ghostSessionStarted(
-              Response.SessionId, Response.RunStatus));
+              Response.SessionId, Response.RunStatus, Response.GhostName,
+              Response.RuntimeIdentity));
           return detail::ResolveAsync(Response);
         });
   };
@@ -72,48 +74,7 @@ getGhostResultsThunk(const FString &SessionId) {
         : func::AsyncChain::then<FGhostResults, FGhostResults>(
         APISlice::Endpoints::getGhostResults(SessionId)(Dispatch, GetState),
         [Dispatch](const FGhostResults &Response) {
-          FGhostTestReport Report;
-          Report.SessionId = Response.SessionId;
-          Report.TotalTests = Response.TotalTests;
-          Report.PassedTests = Response.Passed;
-          Report.FailedTests = Response.Failed;
-          Report.SkippedTests = Response.Skipped;
-          Report.Duration = Response.Duration;
-          Report.Coverage = Response.Coverage;
-          Report.Metrics = Response.Metrics;
-          Report.SuccessRate =
-              Response.TotalTests > FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA
-                  ? static_cast<float>(Response.Passed) /
-                        static_cast<float>(Response.TotalTests)
-                  : FORBOCAI_SDK_AUTHORED_NUMBERV75F40683FBFF;
-          Report.Summary = FString::Printf(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV91268A5A2613),
-                                           Response.Passed,
-                                           Response.TotalTests);
-
-          struct AddResults {
-            static FGhostTestResult makeResult(
-                const FGhostResultRecord &Record) {
-              FGhostTestResult R;
-              R.Scenario = Record.TestName;
-              R.bPassed = Record.bTestPassed;
-              R.Duration = Record.TestDuration;
-              R.ErrorMessage = Record.TestError;
-              R.Screenshot = Record.TestScreenshot;
-              return R;
-            }
-            static void apply(
-                const TArray<FGhostResultRecord> &Tests,
-                TArray<FGhostTestResult> &Out,
-                int32 Idx) {
-              Idx >= Tests.Num()
-                  ? void()
-                  : (Out.Add(makeResult(Tests[Idx])),
-                     apply(Tests, Out, Idx + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4), void());
-            }
-          };
-          AddResults::apply(Response.Tests, Report.Results, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA);
-
-          Dispatch(GhostSlice::Actions::ghostSessionCompleted(Report));
+          Dispatch(GhostSlice::Actions::ghostSessionCompleted(Response));
           return detail::ResolveAsync(Response);
         });
   };
@@ -132,18 +93,12 @@ stopGhostThunk(const FString &SessionId) {
         ? detail::RejectAsync<FGhostStopResponse>(ApiKeyError.value)
         : func::AsyncChain::then<FGhostStopResponse, FGhostStopResponse>(
         APISlice::Endpoints::postGhostStop(SessionId)(Dispatch, GetState),
-        [Dispatch, SessionId](const FGhostStopResponse &Response) {
-          const bool bStopped =
-              Response.bStopped ||
-              Response.StopStatus.Equals(TEXT(FORBOCAI_SDK_AUTHORED_STRINGV6F0C98AB7582),
-                                         ESearchCase::IgnoreCase);
-          bStopped
+      [Dispatch](const FGhostStopResponse &Response) {
+          Response.bStopped
               ? (Dispatch(GhostSlice::Actions::ghostSessionProgress(
-                     Response.StopSessionId.IsEmpty() ? SessionId
-                                                      : Response.StopSessionId,
-                     Response.StopStatus.IsEmpty() ? TEXT(FORBOCAI_SDK_AUTHORED_STRINGV6F0C98AB7582)
-                                                   : Response.StopStatus,
-                     FORBOCAI_SDK_AUTHORED_NUMBERV8B65CDBB20CA)),
+                     Response.StopSessionId, Response.StopStatus,
+                     GhostConfiguration::ghostConfiguration()
+                         .CompleteProgress)),
                  void())
               : void();
           return detail::ResolveAsync(Response);
@@ -153,10 +108,10 @@ stopGhostThunk(const FString &SessionId) {
 
 /**
  * User Story: As a features ghost consumer, I need to invoke get ghost history thunk through a stable signature so the features ghost workflow remains explicit and composable.
- * @fn inline ThunkAction<TArray<FGhostHistoryEntry>, FRuntimeState> getGhostHistoryThunk(int32 Limit = FORBOCAI_SDK_AUTHORED_NUMBERV14FE7CBC615F)
+ * @fn inline ThunkAction<TArray<FGhostHistoryEntry>, FRuntimeState> getGhostHistoryThunk(int32 Limit)
  */
 inline ThunkAction<TArray<FGhostHistoryEntry>, FRuntimeState>
-getGhostHistoryThunk(int32 Limit = FORBOCAI_SDK_AUTHORED_NUMBERV14FE7CBC615F) {
+getGhostHistoryThunk(int32 Limit) {
   return [Limit](std::function<AnyAction(const AnyAction &)> Dispatch,
                  std::function<const FRuntimeState &()> GetState)
              -> func::AsyncResult<TArray<FGhostHistoryEntry>> {
@@ -173,6 +128,13 @@ getGhostHistoryThunk(int32 Limit = FORBOCAI_SDK_AUTHORED_NUMBERV14FE7CBC615F) {
           return detail::ResolveAsync(Response.Sessions);
         });
   };
+}
+
+/** User Story: As Ghost history callers, I need the feature-authored page limit used when no explicit bound is supplied. @fn inline ThunkAction<TArray<FGhostHistoryEntry>, FRuntimeState> getGhostHistoryThunk() */
+inline ThunkAction<TArray<FGhostHistoryEntry>, FRuntimeState>
+getGhostHistoryThunk() {
+  return getGhostHistoryThunk(
+      GhostConfiguration::ghostConfiguration().DefaultHistoryLimit);
 }
 
 } // namespace rtk

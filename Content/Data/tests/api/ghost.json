@@ -1,0 +1,277 @@
+{
+  "labels": {
+    "run": "Canonical Ghost run identity decodes",
+    "status": "Canonical Ghost status evidence decodes",
+    "results": "Canonical Ghost diagnostic evidence decodes",
+    "stop": "Canonical Ghost stop response decodes",
+    "history": "Canonical Ghost history attribution decodes",
+    "sessionId": "Ghost session identity preserved",
+    "ghostName": "API-owned Ghost name preserved",
+    "runtimeIdentity": "API and SLM runtime identity preserved",
+    "testSuite": "Ghost suite preserved",
+    "progress": "Ghost progress preserved",
+    "evidence": "Ghost cognition evidence preserved",
+    "evidenceDimensions": "Ghost evidence dimensions preserved",
+    "evaluationDimensions": "Ghost evaluation dimensions preserved",
+    "testCount": "Ghost check collection preserved",
+    "coverage": "Ghost coverage preserved",
+    "metric": "Ghost named metric preserved",
+    "verdict": "API-owned Ghost verdict preserved",
+    "summary": "API-owned Ghost summary preserved",
+    "rejectsMissingIdentity": "Missing Ghost runtime identity rejected",
+    "rejectsEmptyIdentity": "Empty API-owned Ghost name rejected",
+    "rejectsMalformedTest": "Malformed nested Ghost check rejects the response",
+    "rejectsMalformedMetric": "Malformed Ghost metric tuple rejects the response",
+    "rejectsMalformedHistory": "Malformed nested Ghost history rejects the response"
+  },
+  "runtimeIdentity": {
+    "apiVersion": "0.4.9",
+    "slmStatus": "online",
+    "slmVersion": "0.3.2",
+    "slotContractVersion": "v1"
+  },
+  "runResponse": {
+    "sessionId": "ghost-session-one",
+    "runStatus": "running",
+    "ghostName": "Servitor",
+    "runtimeIdentity": {
+      "apiVersion": "0.4.9",
+      "slmStatus": "online",
+      "slmVersion": "0.3.2",
+      "slotContractVersion": "v1"
+    }
+  },
+  "runExpected": {
+    "sessionId": "ghost-session-one",
+    "runStatus": "running",
+    "ghostName": "Servitor",
+    "runtimeIdentity": {
+      "apiVersion": "0.4.9",
+      "slmStatus": "online",
+      "slmVersion": "0.3.2",
+      "slotContractVersion": "v1"
+    }
+  },
+  "statusResponse": {
+    "ghostSessionId": "ghost-session-one",
+    "ghostName": "Servitor",
+    "runtimeIdentity": {
+      "apiVersion": "0.4.9",
+      "slmStatus": "online",
+      "slmVersion": "0.3.2",
+      "slotContractVersion": "v1"
+    },
+    "ghostTestSuite": "maze",
+    "ghostStatus": "running",
+    "ghostProgress": 60,
+    "ghostStartedAt": "2026-08-28T08:00:00Z",
+    "ghostDuration": 42,
+    "ghostErrors": 0
+  },
+  "statusExpected": {
+    "sessionId": "ghost-session-one",
+    "ghostName": "Servitor",
+    "runtimeIdentity": {
+      "apiVersion": "0.4.9",
+      "slmStatus": "online",
+      "slmVersion": "0.3.2",
+      "slotContractVersion": "v1"
+    },
+    "testSuite": "maze",
+    "status": "running",
+    "progress": 60,
+    "startedAt": "2026-08-28T08:00:00Z",
+    "duration": 42,
+    "errors": 0
+  },
+  "resultsResponse": {
+    "resultsSessionId": "ghost-session-one",
+    "ghostName": "Servitor",
+    "runtimeIdentity": {
+      "apiVersion": "0.4.9",
+      "slmStatus": "online",
+      "slmVersion": "0.3.2",
+      "slotContractVersion": "v1"
+    },
+    "evidence": {
+      "completedProcessTurns": 4,
+      "validCognitionOutcomes": 4,
+      "invalidCognitionOutcomes": 0,
+      "signedCognitionOutcomes": 4,
+      "thoughtResults": 4,
+      "reasoningResults": 4,
+      "consistentReasoningResults": 4,
+      "diagnosticResults": 4,
+      "groundedDiagnosticResults": 3,
+      "contradictions": 0,
+      "unsupportedClaims": 0,
+      "failures": 0,
+      "timeouts": 0,
+      "uniqueObservations": 3,
+      "choicePoints": 4
+    },
+    "evidenceDimensions": ["observation", "legal actions"],
+    "evaluationDimensions": ["environment coverage", "execution reliability"],
+    "resultsTotalTests": 2,
+    "resultsPassed": 2,
+    "resultsFailed": 0,
+    "resultsSkipped": 0,
+    "resultsDuration": 1300,
+    "resultsTests": [
+      {
+        "testName": "ghost.shared-decision-pipeline",
+        "testPassed": true,
+        "testDuration": 900,
+        "testError": null,
+        "testScreenshot": null
+      },
+      {
+        "testName": "ghost.level-quality-evidence",
+        "testPassed": true,
+        "testDuration": 400,
+        "testError": "accepted evidence",
+        "testScreenshot": "evidence.png"
+      }
+    ],
+    "resultsCoverage": 75,
+    "resultsMetrics": [
+      ["valid_decisions", 4],
+      ["diagnostic_coverage_percent", 75]
+    ],
+    "resultsVerdict": "valid",
+    "resultsSummary": "The supplied evidence qualifies this evaluation."
+  },
+  "resultsExpected": {
+    "sessionId": "ghost-session-one",
+    "ghostName": "Servitor",
+    "runtimeIdentity": {
+      "apiVersion": "0.4.9",
+      "slmStatus": "online",
+      "slmVersion": "0.3.2",
+      "slotContractVersion": "v1"
+    },
+    "evidence": {
+      "completedProcessTurns": 4,
+      "validCognitionOutcomes": 4,
+      "invalidCognitionOutcomes": 0,
+      "signedCognitionOutcomes": 4,
+      "thoughtResults": 4,
+      "reasoningResults": 4,
+      "consistentReasoningResults": 4,
+      "diagnosticResults": 4,
+      "groundedDiagnosticResults": 3,
+      "contradictions": 0,
+      "unsupportedClaims": 0,
+      "failures": 0,
+      "timeouts": 0,
+      "uniqueObservations": 3,
+      "choicePoints": 4
+    },
+    "evidenceDimensions": ["observation", "legal actions"],
+    "evaluationDimensions": ["environment coverage", "execution reliability"],
+    "totalTests": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "duration": 1300,
+    "tests": [
+      {
+        "name": "ghost.shared-decision-pipeline",
+        "passed": true,
+        "duration": 900
+      },
+      {
+        "name": "ghost.level-quality-evidence",
+        "passed": true,
+        "duration": 400,
+        "error": "accepted evidence",
+        "screenshot": "evidence.png"
+      }
+    ],
+    "coverage": 75,
+    "metrics": {
+      "valid_decisions": 4,
+      "diagnostic_coverage_percent": 75
+    },
+    "verdict": "valid",
+    "summary": "The supplied evidence qualifies this evaluation."
+  },
+  "stopResponse": {
+    "stopStatus": "stopped",
+    "stopSessionId": "ghost-session-one"
+  },
+  "stopExpected": {
+    "stopped": true,
+    "stopStatus": "stopped",
+    "stopSessionId": "ghost-session-one"
+  },
+  "historyResponse": {
+    "sessions": [
+      {
+        "histSessionId": "ghost-session-one",
+        "ghostName": "Servitor",
+        "runtimeIdentity": {
+          "apiVersion": "0.4.9",
+          "slmStatus": "online",
+          "slmVersion": "0.3.2",
+          "slotContractVersion": "v1"
+        },
+        "histTestSuite": "maze",
+        "histStartedAt": "2026-08-28T08:00:00Z",
+        "histCompletedAt": null,
+        "histStatus": "running",
+        "histPassRate": 75
+      }
+    ]
+  },
+  "historyExpected": {
+    "sessions": [
+      {
+        "sessionId": "ghost-session-one",
+        "ghostName": "Servitor",
+        "runtimeIdentity": {
+          "apiVersion": "0.4.9",
+          "slmStatus": "online",
+          "slmVersion": "0.3.2",
+          "slotContractVersion": "v1"
+        },
+        "testSuite": "maze",
+        "startedAt": "2026-08-28T08:00:00Z",
+        "status": "running",
+        "passRate": 75
+      }
+    ]
+  },
+  "malformed": {
+    "runMissingIdentity": {
+      "sessionId": "ghost-session-one",
+      "runStatus": "running",
+      "ghostName": "Servitor"
+    },
+    "runEmptyIdentity": {
+      "sessionId": "ghost-session-one",
+      "runStatus": "running",
+      "ghostName": "",
+      "runtimeIdentity": {
+        "apiVersion": "0.4.9",
+        "slmStatus": "online",
+        "slmVersion": "0.3.2",
+        "slotContractVersion": "v1"
+      }
+    },
+    "testIndex": 1,
+    "testReplacement": "malformed-test",
+    "metricIndex": 1,
+    "metricReplacement": "malformed-metric",
+    "historyIndex": 0,
+    "historyReplacement": "malformed-history"
+  },
+  "probes": {
+    "evidenceDimensionIndex": 0,
+    "evaluationDimensionIndex": 1,
+    "testIndex": 1,
+    "historyIndex": 0,
+    "metricName": "valid_decisions",
+    "metricValue": 4
+  }
+}

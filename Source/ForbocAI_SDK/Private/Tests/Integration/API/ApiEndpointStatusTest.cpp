@@ -15,6 +15,8 @@
 // @covers:api:getBridgeValidation
 // @covers:api:getBridgeRules
 // @covers:api:postGhostRun
+// @covers:api:postGhostProcess
+// @covers:api:postGhostNpcGenerateAttribute
 // @covers:api:getGhostStatus
 // @covers:api:getGhostResults
 // @covers:api:postGhostStop
@@ -100,6 +102,15 @@ bool FApiEndpointConstructionTest::RunTest(const FString &Parameters) {
                           getBridgeRules());
   TestEndpointConstructed(*this, Data.Names.PostGhostRun,
                           postGhostRun(FGhostRunRequest{}));
+  TestEndpointConstructed(*this, Data.Names.PostGhostProcess,
+                          postGhostProcess(Empty, FNPCProcessRequest{}));
+  TestEndpointConstructed(
+      *this, Data.Names.PostGhostNpcGenerateAttribute,
+      postGhostNpcGenerateAttribute(
+          Empty,
+          NPCGenerateConfiguration::generateConfigurationData()
+              .Fields.Attribute,
+          FNpcAttributeGenerateRequest{}));
   TestEndpointConstructed(*this, Data.Names.GetGhostStatus,
                           getGhostStatus(Empty));
   TestEndpointConstructed(*this, Data.Names.GetGhostResults,
@@ -107,7 +118,7 @@ bool FApiEndpointConstructionTest::RunTest(const FString &Parameters) {
   TestEndpointConstructed(*this, Data.Names.PostGhostStop,
                           postGhostStop(Empty));
   TestEndpointConstructed(*this, Data.Names.GetGhostHistory,
-                          getGhostHistory(Data.Defaults.GhostHistoryLimit));
+                          getGhostHistory());
   TestEndpointConstructed(*this, Data.Names.PostBridgePreset,
                           postBridgePreset(Empty));
   TestEndpointConstructed(*this, Data.Names.GetRulesets, getRulesets());

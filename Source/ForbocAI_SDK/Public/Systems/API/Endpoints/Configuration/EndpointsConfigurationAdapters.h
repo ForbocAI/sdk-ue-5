@@ -23,14 +23,6 @@ inline FEndpointConfigurationData readEndpointConfigurationData() {
       DataAdapters::ReadObjectField(Source, TEXT("queryKeys"));
   const TSharedRef<FJsonObject> Names =
       DataAdapters::ReadObjectField(Source, TEXT("names"));
-  const TSharedRef<FJsonObject> Fields =
-      DataAdapters::ReadObjectField(Source, TEXT("fields"));
-  const TSharedRef<FJsonObject> Structures =
-      DataAdapters::ReadObjectField(Source, TEXT("structures"));
-  const TSharedRef<FJsonObject> GhostMetric =
-      DataAdapters::ReadObjectField(Structures, TEXT("ghostMetric"));
-  const TSharedRef<FJsonObject> Values =
-      DataAdapters::ReadObjectField(Source, TEXT("values"));
   const TSharedRef<FJsonObject> Payloads =
       DataAdapters::ReadObjectField(Source, TEXT("payloads"));
   const TSharedRef<FJsonObject> TagIds =
@@ -98,45 +90,9 @@ inline FEndpointConfigurationData readEndpointConfigurationData() {
        DataAdapters::ReadStringField(Names, TEXT("getSoulStorageCatalog")),
        DataAdapters::ReadStringField(Names, TEXT("getSoulStorageEntry")),
        DataAdapters::ReadStringField(Names, TEXT("getMicroGameContract"))},
-      {DataAdapters::ReadStringField(Fields, TEXT("ghostRunSessionId")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostRunStatus")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostStatusSessionId")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostStatusStatus")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostStatusProgress")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostStatusStartedAt")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostStatusDuration")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostStatusErrors")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostResultsSessionId")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostResultsTotalTests")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostResultsPassed")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostResultsFailed")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostResultsSkipped")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostResultsDuration")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostResultsTests")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostResultsCoverage")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostResultsMetrics")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostTestName")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostTestPassed")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostTestDuration")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostTestError")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostTestScreenshot")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostStopStatus")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostStopSessionId")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostHistorySessions")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostHistorySessionId")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostHistoryTestSuite")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostHistoryStartedAt")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostHistoryCompletedAt")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostHistoryStatus")),
-       DataAdapters::ReadStringField(Fields, TEXT("ghostHistoryPassRate"))},
-      {{DataAdapters::ReadNumberField(GhostMetric, TEXT("pairSize")),
-        DataAdapters::ReadNumberField(GhostMetric, TEXT("keyIndex")),
-        DataAdapters::ReadNumberField(GhostMetric, TEXT("valueIndex"))}},
-      {DataAdapters::ReadStringField(Values, TEXT("stopped"))},
       {DataAdapters::ReadStringField(Payloads, TEXT("emptyObject"))},
       {DataAdapters::ReadStringField(TagIds, TEXT("list"))},
-      {DataAdapters::ReadNumberField(Defaults, TEXT("ghostHistoryLimit")),
-       DataAdapters::ReadNumberField(Defaults, TEXT("soulListLimit"))},
+      {DataAdapters::ReadNumberField(Defaults, TEXT("soulListLimit"))},
       {DataAdapters::ReadNumberField(Timeouts, TEXT("statusMs")),
        DataAdapters::ReadNumberField(Timeouts, TEXT("contractMs")),
        DataAdapters::ReadNumberField(Timeouts, TEXT("npcProcessMs")),

@@ -76,6 +76,8 @@ struct FTerminalAuthoredLine {
 struct FTerminalConversationTranscriptData {
   FString ErrorStatus;
   FString FailureFallback;
+  FString TranscriptLinesField;
+  FString LineTextField;
   TArray<FTerminalAuthoredLine> FailureLines;
 };
 

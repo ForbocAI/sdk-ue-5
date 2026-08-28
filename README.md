@@ -79,6 +79,11 @@ UI and execute an action only after your game has accepted the validated result.
 The same public library also exposes memory, Bridge, Ghost, Soul, and config
 operations for Blueprint-first projects.
 
+Ghost sessions preplaytest game-supplied interactions and return the named
+Ghost, runtime attribution, explored evidence, quality dimensions, metrics,
+verdict, and summary. The plugin presents those API-authored results without
+recalculating the level-quality conclusion in game code.
+
 ## Runtime Ownership
 
 - The ForbocAI API owns NPC inference, orchestration, decision policy, and

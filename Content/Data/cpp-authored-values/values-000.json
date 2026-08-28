@@ -165,6 +165,7 @@
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV2C20C8A3A857", "kind": "string", "token": "\"extractThunkErrorMessage summarizes html\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV2C55BBAB243A", "kind": "string", "token": "\"\\\"apiUrl\\\": \\\"https://test.forboc.ai\\\"\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV2D35FD293626", "kind": "string", "token": "\"New state computation\""},
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV2EBBBD98C82A", "kind": "string", "token": "\"duration\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV2F3A67C7C829", "kind": "string", "token": "\"createSlice empty action resets ID\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV2F43F93A97CA", "kind": "string", "token": "\"processNPC completed\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV303DC226738C", "kind": "string", "token": "\"Memory exists\""},
@@ -180,7 +181,6 @@
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV33ADEB10B828", "kind": "string", "token": "\"HTTP 502: Service unavailable\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV33D6A3AC0736", "kind": "string", "token": "\"In combat\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV3406C51E0F42", "kind": "string", "token": "\"memory\""},
-    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV34492EFB9466", "kind": "string", "token": "\"npcState\""},
-    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV345306F6CB50", "kind": "string", "token": "\"trigger\""}
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGV34492EFB9466", "kind": "string", "token": "\"npcState\""}
   ]
 }
