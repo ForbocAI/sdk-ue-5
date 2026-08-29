@@ -6,8 +6,8 @@
 #include "Systems/Testing/CLI/Invocation/InvocationAdapters.h"
 #include "Entities/CLI/CLISelectors.h"
 #include "Systems/CLI/Invocation/InvocationAdapters.h"
+#include "Systems/Store/StoreAdapters.h"
 #include "Misc/AutomationTest.h"
-#include "Store.h"
 
 // @covers:cli:setup
 // @covers:cli:setup_check
@@ -69,7 +69,8 @@ bool FSetupCliDispatchTest::RunTest(const FString &Parameters) {
       });
   const auto &Fixtures =
       Testing::CLI::Invocation::InvocationTestFixtures();
-  const ForbocAI::CLI::FCLIState &CLIState = store().getState().CLI;
+  const ForbocAI::CLI::FCLIState &CLIState =
+      StoreAdapters::RootStore().getState().CLI;
   const int32 AuthoredNodeCommandCount =
       func::filter_array<ForbocAI::CLI::FCLICommandSpec>(
           ForbocAI::CLI::selectCliCommandMatrix(CLIState),

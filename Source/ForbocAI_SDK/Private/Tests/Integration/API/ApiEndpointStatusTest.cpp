@@ -6,7 +6,7 @@
 #include "Systems/API/Endpoints/NPC/Generate/Configuration/GenerateConfigurationAdapters.h"
 #include "Systems/Config/ConfigThunks.h"
 #include "Entities/Config/ConfigSelectors.h"
-#include "Store.h"
+#include "Systems/Store/StoreAdapters.h"
 
 // @covers:api:getApiStatus
 // @covers:api:getMicroGameContract
@@ -169,8 +169,9 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 /** User Story: As a tests integration api consumer, I need to invoke run test through a stable signature so the tests integration api workflow remains explicit and composable. @fn bool FApiEndpointStatusNoAuthTest::RunTest(const FString &Parameters) */
 bool FApiEndpointStatusNoAuthTest::RunTest(const FString &Parameters) {
+  rtk::EnhancedStore<FRuntimeState> &RootStore = StoreAdapters::RootStore();
   Ops::commitApiConfiguration(
-      store(), ConfigSelectors::selectApiUrl(store().getState()), TEXT(""));
+      RootStore, ConfigSelectors::selectApiUrl(RootStore.getState()), TEXT(""));
 
   auto State = MakeShared<FApiEndpointTestState>();
   ADD_LATENT_AUTOMATION_COMMAND(FHttpGetWaitComplete(
@@ -202,8 +203,9 @@ bool FApiEndpointNotFoundTest::RunTest(const FString &Parameters) {
   if (Key.IsEmpty()) {
     return true;
   }
+  rtk::EnhancedStore<FRuntimeState> &RootStore = StoreAdapters::RootStore();
   Ops::commitApiConfiguration(
-      store(), ConfigSelectors::selectApiUrl(store().getState()), Key);
+      RootStore, ConfigSelectors::selectApiUrl(RootStore.getState()), Key);
 
   auto State = MakeShared<FApiEndpointTestState>();
   ADD_LATENT_AUTOMATION_COMMAND(FHttpGetWaitComplete(

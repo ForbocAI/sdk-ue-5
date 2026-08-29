@@ -287,14 +287,3 @@ createRuntimeStore(func::Maybe<FRuntimeState> PreloadedState =
                               : StoreInternal::createRuntimeInitialState(),
       Middlewares);
 }
-
-/**
- * Returns the process-wide singleton runtime store.
- * User Story: As shared runtime access, I need a singleton store so Blueprint,
- * CLI, and subsystem helpers all dispatch through the same state container.
- * @fn inline rtk::EnhancedStore<FRuntimeState> &store()
- */
-inline rtk::EnhancedStore<FRuntimeState> &store() {
-  static rtk::EnhancedStore<FRuntimeState> GlobalStore = createRuntimeStore();
-  return GlobalStore;
-}
