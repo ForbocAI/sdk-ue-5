@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "Core/rtk.hpp"
+#include "MicroGame/Features/Systems/Terminal/TerminalAdapters.h"
 #include "MicroGame/Features/Systems/Terminal/TerminalTypes.h"
 
 namespace MicroGame {
@@ -18,10 +19,10 @@ struct FRecordTranscriptPayload {
   double DurationMs{};
 };
 
-/** User Story: As a systems terminal transcript consumer, I need to invoke record transcript action creator through a stable signature so the systems terminal transcript workflow remains explicit and composable. @fn inline rtk::ActionCreator<FRecordTranscriptPayload> recordTranscriptActionCreator() */
-inline rtk::ActionCreator<FRecordTranscriptPayload>
+/** User Story: As a systems terminal transcript consumer, I need recorded entries carried by one typed action so reducers remain deterministic. @fn inline rtk::ActionCreator<FTranscriptEntry> recordTranscriptActionCreator() */
+inline rtk::ActionCreator<FTranscriptEntry>
 recordTranscriptActionCreator() {
-  static auto C = rtk::createAction<FRecordTranscriptPayload>(
+  static auto C = rtk::createAction<FTranscriptEntry>(
       TEXT(FORBOCAI_SDKCLI_AUTHORED_STRINGV93C0187A3C76));
   return C;
 }
@@ -33,9 +34,20 @@ inline rtk::ActionCreatorWithoutPayload resetTranscriptActionCreator() {
   return C;
 }
 
-/** User Story: As a systems terminal transcript consumer, I need to invoke record transcript through a stable signature so the systems terminal transcript workflow remains explicit and composable. @fn inline rtk::AnyAction recordTranscript(const FRecordTranscriptPayload &P) */
+/** User Story: As a systems terminal transcript consumer, I need time and identity prepared before dispatch so replaying the reducer stays deterministic. @fn inline rtk::AnyAction recordTranscript(const FRecordTranscriptPayload &P) */
 inline rtk::AnyAction recordTranscript(const FRecordTranscriptPayload &P) {
-  return recordTranscriptActionCreator()(P);
+  return recordTranscriptActionCreator()(FTranscriptEntry{
+      FString::Format(
+          *TerminalAdapters::TerminalData().transcript.idFormat,
+          {FDateTime::Now().GetTicks(), FMath::Rand()}),
+      P.ScenarioId,
+      P.CommandGroup,
+      P.Command,
+      P.ExpectedRoutes,
+      P.Status,
+      P.Output,
+      P.DurationMs,
+      FDateTime::Now().ToIso8601()});
 }
 
 /** User Story: As a systems terminal transcript consumer, I need to invoke reset transcript through a stable signature so the systems terminal transcript workflow remains explicit and composable. @fn inline rtk::AnyAction resetTranscript() */

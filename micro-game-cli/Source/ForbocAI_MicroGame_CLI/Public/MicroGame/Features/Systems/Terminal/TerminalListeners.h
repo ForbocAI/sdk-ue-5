@@ -6,6 +6,7 @@
  */
 
 #include "CoreMinimal.h"
+#include "Core/fp.hpp"
 #include "Core/rtk.hpp"
 #include "MicroGame/Features/Entities/NPCs/NPCsActions.h"
 #include "MicroGame/Features/Entities/NPCs/NPCsSelectors.h"
@@ -38,39 +39,24 @@ inline rtk::Middleware<FMicroGameState> createGameListenerMiddleware() {
          * React to NPC movement
          * User Story: As a maintainer, I need this note so the surrounding code intent stays clear during maintenance and debugging.
          */
-        NPCsActions::MoveNPCActionCreator().match(Action)
-            ? [&]() {
-                auto Payload =
-                    NPCsActions::MoveNPCActionCreator().extract(Action);
-                Payload.hasValue
-                    ? [&]() {
-                        const auto &State = Api.getState();
-                        auto MaybeNpc =
-                            NPCsSelectors::SelectNpcById(State.NPCs,
-                                                         Payload.value.Id);
-                        MaybeNpc.hasValue
-                            ? ([&]() {
-                                const FTerminalData &Data =
-                                    TerminalAdapters::TerminalData();
-                                TMap<FString, FString> Values;
-                                Values.Add(Data.tokens.name,
-                                           MaybeNpc.value.Name);
-                                Values.Add(Data.tokens.x, FString::FromInt(
-                                                              Payload.value
-                                                                  .Position.X));
-                                Values.Add(Data.tokens.y, FString::FromInt(
-                                                              Payload.value
-                                                                  .Position.Y));
-                                Api.dispatch(UIActions::addMessage(
-                                    VerificationAdapters::FormatGameTemplate(
-                                        Data.messages.npcMoved, Values)));
-                              }(),
-                               void())
-                            : void();
-                      }()
-                    : void();
-              }()
-            : void();
+        func::mbind(
+            NPCsActions::MoveNPCActionCreator().extract(Action),
+            [&Api](const NPCsActions::FMoveNPCPayload &Payload) {
+              const FMicroGameState &State = Api.getState();
+              return func::fmap(
+                  NPCsSelectors::SelectNpcById(State.NPCs, Payload.Id),
+                  [&Api, &Payload](const FGameNPC &Npc) {
+                    const FTerminalData &Data =
+                        TerminalAdapters::TerminalData();
+                    const TMap<FString, FString> Values{
+                        {Data.tokens.name, Npc.Name},
+                        {Data.tokens.x, FString::FromInt(Payload.Position.X)},
+                        {Data.tokens.y, FString::FromInt(Payload.Position.Y)}};
+                    return Api.dispatch(UIActions::addMessage(
+                        VerificationAdapters::FormatGameTemplate(
+                            Data.messages.npcMoved, Values)));
+                  });
+            });
 
         return Result;
       };

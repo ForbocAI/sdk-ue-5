@@ -2,8 +2,8 @@
 #include "MicroGame/Features/Components/AuthoredValues/AuthoredValuesTypes.h"
 
 #include "CoreMinimal.h"
+#include "Core/fp.hpp"
 #include "Core/rtk.hpp"
-#include "MicroGame/Features/Systems/Terminal/TerminalAdapters.h"
 #include "MicroGame/Features/Systems/Terminal/Transcript/TranscriptActions.h"
 
 namespace MicroGame {
@@ -16,23 +16,9 @@ inline rtk::Slice<FTranscriptState> CreateTranscriptSlice() {
         Builder.addCase(
             TranscriptActions::recordTranscriptActionCreator(),
             [](const FTranscriptState &S,
-               const rtk::Action<TranscriptActions::FRecordTranscriptPayload>
-                   &A) -> FTranscriptState {
-              FTranscriptState Next = S;
-              FTranscriptEntry Entry;
-              Entry.Id = FString::Format(
-                  *TerminalAdapters::TerminalData().transcript.idFormat,
-                  {FDateTime::Now().GetTicks(), FMath::Rand()});
-              Entry.ScenarioId = A.PayloadValue.ScenarioId;
-              Entry.CommandGroup = A.PayloadValue.CommandGroup;
-              Entry.Command = A.PayloadValue.Command;
-              Entry.ExpectedRoutes = A.PayloadValue.ExpectedRoutes;
-              Entry.Status = A.PayloadValue.Status;
-              Entry.Output = A.PayloadValue.Output;
-              Entry.DurationMs = A.PayloadValue.DurationMs;
-              Entry.Timestamp = FDateTime::Now().ToIso8601();
-              Next.Entries.Add(Entry);
-              return Next;
+               const rtk::Action<FTranscriptEntry> &A) -> FTranscriptState {
+              return FTranscriptState{func::append_value<FTranscriptEntry>(
+                  S.Entries, A.PayloadValue)};
             });
         Builder.addCase(
             TranscriptActions::resetTranscriptActionCreator(),

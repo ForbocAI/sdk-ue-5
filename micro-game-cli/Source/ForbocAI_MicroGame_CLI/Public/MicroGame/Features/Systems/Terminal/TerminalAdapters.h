@@ -1,31 +1,24 @@
 #pragma once
 
+#include "Core/fp.hpp"
 #include "MicroGame/Features/Data/DataAdapters.h"
-#include "MicroGame/Features/Systems/Harness/Verification/VerificationAdapters.h"
 #include "MicroGame/Features/Systems/Terminal/TerminalTypes.h"
 
 namespace MicroGame::TerminalAdapters {
 
 namespace detail {
 
-/** User Story: As a terminal presenter, I need NPC glyph entries decoded recursively so adding an entity marker requires authored data rather than selector code. @fn inline TArray<FTerminalNpcGlyph> ReadNpcGlyphs( const TArray<TSharedPtr<FJsonValue>> &Values, int32 Index, TArray<FTerminalNpcGlyph> Acc) */
+/** User Story: As a terminal presenter, I need NPC glyph entries mapped from authored values so adding an entity marker requires data rather than selector code. @fn inline TArray<FTerminalNpcGlyph> ReadNpcGlyphs( const TArray<TSharedPtr<FJsonValue>> &Values) */
 inline TArray<FTerminalNpcGlyph> ReadNpcGlyphs(
-    const TArray<TSharedPtr<FJsonValue>> &Values, int32 Index,
-    TArray<FTerminalNpcGlyph> Acc) {
-  return Index >= Values.Num()
-             ? Acc
-             : [&]() {
-                 const TSharedRef<FJsonObject> Object =
-                     Values[Index]->AsObject().ToSharedRef();
-                 Acc.Add(FTerminalNpcGlyph{
-                     DataAdapters::ReadStringField(Object, TEXT("id")),
-                     DataAdapters::ReadStringField(Object, TEXT("glyph"))});
-                 return ReadNpcGlyphs(
-                     Values,
-                     Index + VerificationVocabularyAdapters::GameRuntimeData()
-                                 .numbers.nextIndex,
-                     MoveTemp(Acc));
-               }();
+    const TArray<TSharedPtr<FJsonValue>> &Values) {
+  return func::map_array<TSharedPtr<FJsonValue>, FTerminalNpcGlyph>(
+      Values, [](const TSharedPtr<FJsonValue> &Value) {
+        const TSharedRef<FJsonObject> Object =
+            Value->AsObject().ToSharedRef();
+        return FTerminalNpcGlyph{
+            DataAdapters::ReadStringField(Object, TEXT("id")),
+            DataAdapters::ReadStringField(Object, TEXT("glyph"))};
+      });
 }
 
 /** User Story: As a terminal presenter, I need authored failure lines decoded as typed view data so selectors contain no embedded conversation prose. @fn inline TArray<FTerminalAuthoredLine> ReadAuthoredLines(const TArray<TSharedPtr<FJsonValue>> &Values) */
@@ -88,8 +81,7 @@ inline FTerminalData ReadTerminalData() {
   FORBOCAI_READ_TERMINAL_GRID(rowSeparator)
 #undef FORBOCAI_READ_TERMINAL_GRID
   Data.npcGlyphs = detail::ReadNpcGlyphs(
-      DataAdapters::ReadObjectArrayField(Source.Root, TEXT("npcGlyphs")),
-      VerificationVocabularyAdapters::GameRuntimeData().numbers.emptyCount, {});
+      DataAdapters::ReadObjectArrayField(Source.Root, TEXT("npcGlyphs")));
   Data.unknownNpcGlyph =
       DataAdapters::ReadStringField(Source.Root, TEXT("unknownNpcGlyph"));
   Data.levels.display =
