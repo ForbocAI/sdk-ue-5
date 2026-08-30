@@ -46,4 +46,6 @@ else
   "$UAT_PATH" BuildPlugin -Plugin="$PLUGIN_PATH" -Package="$OUTPUT_DIR" -Rocket
 fi
 
+"$PYTHON" "$SCRIPT_DIR/finalize_package.py" --package-root "$OUTPUT_DIR"
+"$PYTHON" "$SCRIPT_DIR/validate_package.py" --package-root "$OUTPUT_DIR"
 echo "Compiled Fab plugin package: $OUTPUT_DIR"

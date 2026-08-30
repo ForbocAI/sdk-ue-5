@@ -20,4 +20,8 @@ New-Item (Split-Path -Parent $OutputDir) -ItemType Directory -Force | Out-Null
 
 & $UatPath BuildPlugin "-Plugin=$PluginPath" "-Package=$OutputDir" -Rocket
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& $Python (Join-Path $ScriptDir "finalize_package.py") "--package-root=$OutputDir"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& $Python (Join-Path $ScriptDir "validate_package.py") "--package-root=$OutputDir"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Write-Host "Compiled Fab plugin package: $OutputDir"

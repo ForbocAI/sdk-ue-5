@@ -38,7 +38,7 @@ def load_config() -> dict[str, object]:
 def resolve_package_root(config: dict[str, object], requested: str | None) -> Path:
     """User Story: As portable tooling, I need package paths resolved from one explicit root. Signature: resolve_package_root(config: dict[str, object], requested: str | None) -> Path."""
     paths = config["paths"]
-    value = requested if requested is not None else str(paths["stageDirectory"])
+    value = requested if requested is not None else str(paths["buildDirectory"])
     path = Path(value)
     return path.resolve() if path.is_absolute() else (PROJECT_ROOT / path).resolve()
 

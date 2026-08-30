@@ -1,0 +1,26 @@
+{
+  "residue": [
+    {
+      "path": "Intermediate/Build/generated.obj",
+      "content": "generated"
+    },
+    {
+      "path": "Binaries/Win64/generated.pdb",
+      "content": "symbols"
+    },
+    {
+      "path": "scripts",
+      "content": "tooling"
+    }
+  ],
+  "retained": [
+    {
+      "path": "Binaries/Win64/runtime.dll",
+      "content": "runtime"
+    },
+    {
+      "path": "Content/Data/config/runtime.json",
+      "content": "{}"
+    }
+  ]
+}

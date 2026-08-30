@@ -11,7 +11,6 @@ else
   exit 1
 fi
 "$SCRIPT_DIR/build-plugin.sh"
-"$PYTHON" "$SCRIPT_DIR/validate_package.py"
 "$PYTHON" "$SCRIPT_DIR/archive_package.py"
 "$PYTHON" "$SCRIPT_DIR/render_listing.py"
 "$PYTHON" "$SCRIPT_DIR/generate_media.py"

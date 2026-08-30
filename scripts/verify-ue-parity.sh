@@ -11,20 +11,21 @@
 #   3. Thin-wrapper guardrails (check-thin-wrapper-guardrails.sh)
 #   4. SDK parity inventory and CLI command parity (check-sdk-parity.py)
 #   5. Parity generator regression tests (parity/check_generators.py)
-#   6. Redux Toolkit public-surface parity (check-rtk-parity.py)
-#   7. Redux/RTK boundary discipline (check_redux.py)
-#   8. Source/data literal discipline (check_source_for_data.py)
-#   9. ECS domain/data discipline (ecs/domain_boundaries.py, ecs/data_naming.py)
-#   10. Function documentation (docs/check_function_docs.py)
-#   11. Line-count discipline (check_line_count.py)
-#   12. Dead-code/data guard (check_dead_code.py)
-#   13. Micro-game executor-boundary guard (check-micro-game-executor-boundary.sh)
-#   14. Product boundary audit (check-product-boundary.sh)
-#   15. API contract parity (check-api-contract-parity.py)
-#   16. Handler classification parity (check-handler-classification.py)
-#   17. Test quality (check-test-quality.sh)
-#   18. Protocol codec parity (check-codec-parity.sh)
-#   19. Runtime readiness (check-runtime-readiness.sh)
+#   6. Fab package-pipeline regression tests (fab/test_package_pipeline.py)
+#   7. Redux Toolkit public-surface parity (check-rtk-parity.py)
+#   8. Redux/RTK boundary discipline (check_redux.py)
+#   9. Source/data literal discipline (check_source_for_data.py)
+#   10. ECS domain/data discipline (ecs/domain_boundaries.py, ecs/data_naming.py)
+#   11. Function documentation (docs/check_function_docs.py)
+#   12. Line-count discipline (check_line_count.py)
+#   13. Dead-code/data guard (check_dead_code.py)
+#   14. Micro-game executor-boundary guard (check-micro-game-executor-boundary.sh)
+#   15. Product boundary audit (check-product-boundary.sh)
+#   16. API contract parity (check-api-contract-parity.py)
+#   17. Handler classification parity (check-handler-classification.py)
+#   18. Test quality (check-test-quality.sh)
+#   19. Protocol codec parity (check-codec-parity.sh)
+#   20. Runtime readiness (check-runtime-readiness.sh)
 #
 # Exit codes:
 #   0 = all checks passed
@@ -49,6 +50,7 @@ MICRO_GAME_BOUNDARY_STATUS="skipped"
 SDK_PARITY_STATUS="skipped"
 RUNTIME_CONFIG_PARITY_STATUS="skipped"
 PARITY_GENERATOR_TEST_STATUS="skipped"
+FAB_PIPELINE_STATUS="skipped"
 RTK_SURFACE_STATUS="skipped"
 REDUX_RTK_STATUS="skipped"
 SOURCE_DATA_STATUS="skipped"
@@ -205,6 +207,10 @@ run_check "Harness Vocabulary Parity (modes/groups/statuses token sets identical
 run_check "Parity generator regressions (portable generated contracts)" \
   "$SCRIPT_DIR/parity/check_generators.py" PARITY_GENERATOR_TEST_STATUS
 
+# ── Phase 3c2: Fab package-pipeline regressions ──
+run_check "Fab package pipeline (compiled artifact finalization)" \
+  "$SCRIPT_DIR/fab/test_package_pipeline.py" FAB_PIPELINE_STATUS
+
 # ── Phase 3d: Redux Toolkit public-surface parity ──
 run_check "Redux Toolkit surface parity (rtk.hpp + RTK Query)" \
   "$SCRIPT_DIR/check-rtk-parity.py" RTK_SURFACE_STATUS
@@ -327,6 +333,7 @@ echo "  [$(mark_for_status "$THIN_WRAPPER_STATUS")] Thin-wrapper guardrails"
 echo "  [$(mark_for_status "$SDK_PARITY_STATUS")] SDK parity inventory and CLI keys"
 echo "  [$(mark_for_status "$HARNESS_VOCAB_STATUS")] Harness vocabulary parity (token sets)"
 echo "  [$(mark_for_status "$PARITY_GENERATOR_TEST_STATUS")] Parity generator regressions"
+echo "  [$(mark_for_status "$FAB_PIPELINE_STATUS")] Fab package pipeline"
 echo "  [$(mark_for_status "$RTK_SURFACE_STATUS")] Redux Toolkit public-surface parity"
 echo "  [$(mark_for_status "$REDUX_RTK_STATUS")] Redux/RTK guidance"
 echo "  [$(mark_for_status "$SOURCE_DATA_STATUS")] Source/data literal discipline"
