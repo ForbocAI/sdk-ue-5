@@ -39,6 +39,26 @@ def discover_classifications(root: Path) -> tuple[Path | None, dict[str, str]]:
     return discovered[0] if len(discovered) == 1 else (None, {})
 
 
+def discover_instruction_types(root: Path) -> tuple[Path | None, dict[str, str]]:
+    if not root.is_dir():
+        return None, {}
+    discovered: list[tuple[Path, dict[str, str]]] = []
+    for path in sorted(root.rglob("*.json")):
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        instruction_types = (
+            value.get("instructionTypes") if isinstance(value, dict) else None
+        )
+        if isinstance(instruction_types, dict) and instruction_types and all(
+            isinstance(key, str) and isinstance(item, str)
+            for key, item in instruction_types.items()
+        ):
+            discovered.append((path, instruction_types))
+    return discovered[0] if len(discovered) == 1 else (None, {})
+
+
 def extract_function_body(text: str, function_name: str) -> str | None:
     for match in re.finditer(rf"\b{re.escape(function_name)}\s*\(", text):
         index = match.end()
@@ -102,7 +122,7 @@ def main() -> int:
             continue
 
         path, body = handlers[0]
-        if classification not in {"Local", "Pass-through"}:
+        if classification != "Local":
             print(
                 f"[FAIL] {instruction} has unsupported classification "
                 f"{classification!r} in {ue_contract_path}."
@@ -111,12 +131,10 @@ def main() -> int:
             continue
 
         forbidden_local_inference = ("CompleteInference", "nodeCortexThunk")
-        if classification == "Pass-through" and any(
-            symbol in body for symbol in forbidden_local_inference
-        ):
+        if any(symbol in body for symbol in forbidden_local_inference):
             print(f"[FAIL] {function_name} uses local inference in {path}.")
             failures += 1
-        elif classification == "Pass-through":
+        else:
             print(f"[OK] {function_name} stays clear of local inference ({path}).")
 
         required = required_symbols.get(instruction)
@@ -129,45 +147,23 @@ def main() -> int:
         else:
             print(f"[OK] {function_name} returns through {required} ({path}).")
 
-    if ue_classifications.get("Decision") == "Pass-through":
-        decision_root = UE_PROTOCOL_ROOT / "Instructions" / "Decision"
-        decision_content = "\n".join(
-            path.read_text(encoding="utf-8")
-            for path in sorted(decision_root.rglob("*.h"))
-        )
-        forbidden_decision_policy = (
-            "BuildDecisionIntent",
-            "DecisionAdapters",
-            "NPCSelectors::selectNPCHistory",
-            "sdk_decision_policy",
-        )
-        discovered_policy = [
-            symbol for symbol in forbidden_decision_policy
-            if symbol in decision_content
-        ]
-        if discovered_policy:
-            print(
-                "[FAIL] Pass-through Decision handlers contain SDK-owned "
-                f"decision policy: {', '.join(discovered_policy)}."
-            )
-            failures += 1
-        else:
-            print("[OK] Decision policy remains API-owned.")
-
-    ts_contract_path, ts_classifications = discover_classifications(TS_DATA_ROOT)
+    ts_contract_path, ts_instruction_types = discover_instruction_types(TS_DATA_ROOT)
     if ts_contract_path is None:
         print(
-            f"[FAIL] Expected exactly one TS classification contract under "
+            f"[FAIL] Expected exactly one TS instruction contract under "
             f"{TS_DATA_ROOT}."
         )
         failures += 1
-    elif ue_classifications != ts_classifications:
-        print("[FAIL] UE and TS classification tables diverge.")
-        print(f"  UE ({ue_contract_path}): {ue_classifications}")
-        print(f"  TS ({ts_contract_path}): {ts_classifications}")
+    elif set(ue_classifications) != set(ts_instruction_types.values()):
+        print("[FAIL] UE handler and TS instruction sets diverge.")
+        print(f"  UE ({ue_contract_path}): {sorted(ue_classifications)}")
+        print(
+            f"  TS ({ts_contract_path}): "
+            f"{sorted(ts_instruction_types.values())}"
+        )
         failures += 1
     else:
-        print(f"[OK] UE and TS classification contracts match ({ts_contract_path}).")
+        print(f"[OK] UE handlers match the TS instruction union ({ts_contract_path}).")
 
     if failures:
         print(f"\nFailed {failures} handler classification checks.")
