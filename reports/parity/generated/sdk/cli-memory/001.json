@@ -119,7 +119,7 @@
       "repository": "sdk"
     },
     "unreal": {
-      "commit": "5cd51d43e7fe8bac369bdf7b77d9f74e85616785",
+      "commit": "6c6fe1241f27abc1dae7b421d9f1c0fa4506bc38",
       "contractHashes": {
         "sdk-source-and-cli-contract": "6887a5d07b5d4f77b5cbf9e76da62b7f446a69f8a4da027686567d60a697c552"
       },
