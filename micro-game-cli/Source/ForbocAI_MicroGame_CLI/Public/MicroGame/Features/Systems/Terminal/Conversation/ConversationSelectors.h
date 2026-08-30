@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/JsonInterop/Fields/FieldsAdapters.h"
 #include "Dom/JsonObject.h"
 #include "MicroGame/Features/Systems/Harness/Verification/VerificationAdapters.h"
 #include "MicroGame/Features/Systems/Terminal/TerminalTypes.h"
@@ -10,6 +11,16 @@ namespace MicroGame::ConversationSelectors {
 
 namespace detail {
 
+/** User Story: As a conversation presenter, I need transcript objects parsed into Maybe so invalid JSON cannot cross the selector boundary. @fn inline func::Maybe<TSharedPtr<FJsonObject>> ParseConversationObject(const FString &Json) */
+inline func::Maybe<TSharedPtr<FJsonObject>>
+ParseConversationObject(const FString &Json) {
+  TSharedPtr<FJsonObject> Object;
+  const bool bParsed = JsonInterop::ParseJsonObject(Json, Object);
+  return func::maybe_filter(
+      func::from_shared(Object),
+      [bParsed](const TSharedPtr<FJsonObject> &) { return bParsed; });
+}
+
 /**
  * User Story: As a conversation presenter, I need each API transcript value narrowed to display text without inventing dialogue.
  * @fn inline FString SelectConversationLineText( const TSharedPtr<FJsonValue> &Value, const FTerminalConversationTranscriptData &Data)
@@ -17,18 +28,30 @@ namespace detail {
 inline FString SelectConversationLineText(
     const TSharedPtr<FJsonValue> &Value,
     const FTerminalConversationTranscriptData &Data) {
-  FString Text;
-  const bool bString = Value.IsValid() && Value->TryGetString(Text);
-  const TSharedPtr<FJsonObject> Object =
-      Value.IsValid() && Value->Type == EJson::Object
-          ? Value->AsObject()
-          : TSharedPtr<FJsonObject>();
-  return bString
-             ? Text
-             : Object.IsValid() &&
-                       Object->TryGetStringField(Data.LineTextField, Text)
-                   ? Text
-                   : Data.FailureFallback;
+  const func::Maybe<TSharedPtr<FJsonValue>> Present =
+      func::from_shared(Value);
+  const func::Maybe<FString> Direct = func::fmap(
+      func::maybe_filter(
+          Present, [](const TSharedPtr<FJsonValue> &Candidate) {
+            return Candidate->Type == EJson::String;
+          }),
+      [](const TSharedPtr<FJsonValue> &Candidate) {
+        return Candidate->AsString();
+      });
+  const func::Maybe<FString> Structured = func::mbind(
+      func::maybe_filter(
+          Present, [](const TSharedPtr<FJsonValue> &Candidate) {
+            return Candidate->Type == EJson::Object;
+          }),
+      [&Data](const TSharedPtr<FJsonValue> &Candidate) {
+        return JsonInterop::StringFieldValue(Candidate->AsObject(),
+                                             Data.LineTextField);
+      });
+  return func::match(
+      Direct, [](const FString &Text) { return Text; },
+      [&Structured, &Data]() {
+        return func::or_else(Structured, Data.FailureFallback);
+      });
 }
 
 /**
@@ -38,20 +61,23 @@ inline FString SelectConversationLineText(
 inline TArray<FTerminalLineViewModel> SelectSuccessfulConversationLines(
     const FTranscriptEntry &Entry,
     const FTerminalConversationTranscriptData &Data) {
-  TSharedPtr<FJsonObject> Object;
-  const TSharedRef<TJsonReader<>> Reader =
-      TJsonReaderFactory<>::Create(Entry.Output);
-  const TArray<TSharedPtr<FJsonValue>> *Values = nullptr;
-  return FJsonSerializer::Deserialize(Reader, Object) && Object.IsValid() &&
-                 Object->TryGetArrayField(Data.TranscriptLinesField, Values) &&
-                 Values != nullptr
-             ? func::map_array<TSharedPtr<FJsonValue>,
+  const func::Maybe<TArray<TSharedPtr<FJsonValue>>> Values = func::mbind(
+      ParseConversationObject(Entry.Output),
+      [&Data](const TSharedPtr<FJsonObject> &Object) {
+        return JsonInterop::ArrayFieldValues(Object,
+                                             Data.TranscriptLinesField);
+      });
+  return func::match(
+      Values,
+      [&Data](const TArray<TSharedPtr<FJsonValue>> &Present) {
+        return func::map_array<TSharedPtr<FJsonValue>,
                                FTerminalLineViewModel>(
-                   *Values, [&Data](const TSharedPtr<FJsonValue> &Value) {
-                     return FTerminalLineViewModel{
-                         false, SelectConversationLineText(Value, Data)};
-                   })
-             : TArray<FTerminalLineViewModel>();
+            Present, [&Data](const TSharedPtr<FJsonValue> &Value) {
+              return FTerminalLineViewModel{
+                  false, SelectConversationLineText(Value, Data)};
+            });
+      },
+      []() { return TArray<FTerminalLineViewModel>(); });
 }
 
 /**
@@ -60,11 +86,10 @@ inline TArray<FTerminalLineViewModel> SelectSuccessfulConversationLines(
  */
 inline TArray<FTerminalLineViewModel> SelectFailedConversationLines(
     const FTranscriptEntry &Entry, const FTerminalData &Data) {
-  TMap<FString, FString> Values;
-  Values.Add(Data.tokens.output,
-             Entry.Output.IsEmpty()
-                 ? Data.conversationTranscript.FailureFallback
-                 : Entry.Output);
+  const TMap<FString, FString> Values{
+      {Data.tokens.output,
+       Entry.Output.IsEmpty() ? Data.conversationTranscript.FailureFallback
+                              : Entry.Output}};
   return func::map_array<FTerminalAuthoredLine, FTerminalLineViewModel>(
       Data.conversationTranscript.FailureLines,
       [&Values](const FTerminalAuthoredLine &Line) {

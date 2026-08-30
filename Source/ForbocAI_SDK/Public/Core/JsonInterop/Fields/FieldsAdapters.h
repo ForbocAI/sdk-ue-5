@@ -86,6 +86,32 @@ inline FString OptionalStringFromField(
       [&DefaultValue]() { return DefaultValue; });
 }
 
+/** User Story: As a typed JSON consumer, I need string fields refined into Maybe so malformed and missing values remain outside domain state. @fn inline func::Maybe<FString> StringFieldValue(const TSharedPtr<FJsonObject> &Object, const FString &FieldName) */
+inline func::Maybe<FString>
+StringFieldValue(const TSharedPtr<FJsonObject> &Object,
+                 const FString &FieldName) {
+  return func::fmap(
+      func::maybe_filter(
+          detail::NonNullFieldValue(Object, FieldName),
+          [](const TSharedPtr<FJsonValue> &Value) {
+            return Value->Type == EJson::String;
+          }),
+      [](const TSharedPtr<FJsonValue> &Value) { return Value->AsString(); });
+}
+
+/** User Story: As a typed JSON consumer, I need array fields refined into Maybe so nullable engine pointers never escape the interop boundary. @fn inline func::Maybe<TArray<TSharedPtr<FJsonValue>>> ArrayFieldValues(const TSharedPtr<FJsonObject> &Object, const FString &FieldName) */
+inline func::Maybe<TArray<TSharedPtr<FJsonValue>>>
+ArrayFieldValues(const TSharedPtr<FJsonObject> &Object,
+                 const FString &FieldName) {
+  return func::fmap(
+      func::maybe_filter(
+          detail::NonNullFieldValue(Object, FieldName),
+          [](const TSharedPtr<FJsonValue> &Value) {
+            return Value->Type == EJson::Array;
+          }),
+      [](const TSharedPtr<FJsonValue> &Value) { return Value->AsArray(); });
+}
+
 /** User Story: As a core json interop fields consumer, I need to invoke parse json object or empty through a stable signature so the core json interop fields workflow remains explicit and composable. @fn inline TSharedPtr<FJsonObject> ParseJsonObjectOrEmpty(const FString &Json) */
 inline TSharedPtr<FJsonObject> ParseJsonObjectOrEmpty(const FString &Json) {
   TSharedPtr<FJsonObject> Object;
