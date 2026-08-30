@@ -77,9 +77,9 @@
       "repository": "sdk"
     },
     "unreal": {
-      "commit": "6c6fe1241f27abc1dae7b421d9f1c0fa4506bc38",
+      "commit": "b0c083230a707acb2e54a8fd10c1bcb57f99ef5c",
       "contractHashes": {
-        "sdk-source-and-cli-contract": "19d0d3a4ab3c9504e584c7d2f396b635e3883e0182aad5c65ec17d5e8ff8c45a"
+        "sdk-source-and-cli-contract": "c61d301877c8b8ab563a17bb4b8ae21fb7b733a180c97011f8343291d57783c5"
       },
       "repository": "sdk-ue-5"
     }
