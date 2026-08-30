@@ -121,7 +121,7 @@
     "unreal": {
       "commit": "6c6fe1241f27abc1dae7b421d9f1c0fa4506bc38",
       "contractHashes": {
-        "sdk-source-and-cli-contract": "6887a5d07b5d4f77b5cbf9e76da62b7f446a69f8a4da027686567d60a697c552"
+        "sdk-source-and-cli-contract": "19d0d3a4ab3c9504e584c7d2f396b635e3883e0182aad5c65ec17d5e8ff8c45a"
       },
       "repository": "sdk-ue-5"
     }

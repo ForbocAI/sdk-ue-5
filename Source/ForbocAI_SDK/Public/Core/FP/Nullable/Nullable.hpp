@@ -2,6 +2,7 @@
 
 #include "Core/FP/Maybe/Maybe.hpp"
 #include "Core/FP/Error/Error.hpp"
+#include "Templates/SharedPointer.h"
 
 namespace func {
 /**
@@ -16,6 +17,19 @@ namespace func {
  */
 template <typename T> Maybe<T> from_nullable(const T *ptr) {
   return ptr ? just(*ptr) : nothing<T>();
+}
+
+/**
+ * @fn template <typename T, ESPMode Mode> Maybe<TSharedPtr<T, Mode>> from_shared(const TSharedPtr<T, Mode> &ptr)
+ * @brief Lifts an Unreal shared pointer into a Maybe without exposing its raw
+ * nullable representation to domain code.
+ *
+ * User Story: As an Unreal integration boundary, I need shared handles lifted
+ * once so JSON, UObject, and transport pipelines compose through Maybe.
+ */
+template <typename T, ESPMode Mode>
+Maybe<TSharedPtr<T, Mode>> from_shared(const TSharedPtr<T, Mode> &ptr) {
+  return ptr.Get() ? just(ptr) : nothing<TSharedPtr<T, Mode>>();
 }
 
 /**

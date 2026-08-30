@@ -155,6 +155,7 @@
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVB8C170481088", "kind": "string", "token": "\"Active NPC exists\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVBA554D1303B2", "kind": "string", "token": "\"Soul encryption failed\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVBA571F023F22", "kind": "string", "token": "\"threshold\""},
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVBAAC0F36A0F6", "kind": "string", "token": "\"ForbocAI.Core.FP.Map.Laws\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVBAC1B5A629A3", "kind": "string", "token": "\"<title\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVBAD6BC91AFBE", "kind": "string", "token": "\"createSlice typed action updates Health\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVBAE376C63B71", "kind": "string", "token": "\"directive/verdictValidated\""},
@@ -180,7 +181,6 @@
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC33F124E819A", "kind": "string", "token": "\"take preserves the requested prefix\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC34A2D3191EC", "kind": "string", "token": "\"ForbocAI.Integration.Dependencies.StoreLifecycle\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC34FF3450068", "kind": "string", "token": "\"Active directive set\""},
-    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC3527C8743CC", "kind": "string", "token": "\"ForbocAI.Slices.NPC\""},
-    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC3C9320E666D", "kind": "string", "token": "\"Memory list command reports success\""}
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC3527C8743CC", "kind": "string", "token": "\"ForbocAI.Slices.NPC\""}
   ]
 }

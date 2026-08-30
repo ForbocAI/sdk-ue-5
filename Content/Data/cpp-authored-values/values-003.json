@@ -2,6 +2,7 @@
   "schemaVersion": "1.0.0",
   "target": "sdk",
   "values": [
+    {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC3C9320E666D", "kind": "string", "token": "\"Memory list command reports success\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC3FD12F70D3C", "kind": "string", "token": "\"(\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC45D95512FAE", "kind": "string", "token": "\"Entity %s is not in ECS domain %s\""},
     {"binding": "FORBOCAI_SDK_AUTHORED_STRINGVC5AF6FC1C330", "kind": "string", "token": "\"createSlice empty action resets Health\""},

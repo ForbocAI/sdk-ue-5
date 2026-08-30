@@ -2,6 +2,7 @@
 
 #include "Systems/Testing/FP/Composition/Collections/CollectionsAdapters.h"
 #include "Components/Testing/FP/Composition/CompositionTypes.h"
+#include "Systems/Testing/FP/Composition/Map/MapAdapters.h"
 #include "Systems/Testing/FP/Composition/MaybeEither/MaybeEitherAdapters.h"
 #include "Systems/Testing/FP/Composition/NameParity/NameParityAdapters.h"
 
@@ -19,6 +20,7 @@ inline const DataAdapters::FSettingsSource &CompositionSettingsSource() {
 inline const FCompositionFixtures &CompositionFixtures() {
   static const FCompositionFixtures Fixtures = {
       ReadCollectionsFixture(CompositionSettingsSource()),
+      ReadMapFixture(CompositionSettingsSource()),
       ReadMaybeEitherFixture(CompositionSettingsSource()),
       ReadNameParityFixture(CompositionSettingsSource()),
   };

@@ -3,6 +3,20 @@
 #include "Core/FP/Array/Array.hpp"
 
 namespace func {
+/**
+ * @fn template <typename Key, typename Value> TMap<Key, Value> merge_maps_right(TMap<Key, Value> left, const TMap<Key, Value> &right)
+ * @brief Returns a right-biased immutable map combination.
+ *
+ * User Story: As a map composition consumer, I need later declarations to
+ * replace matching keys without leaking TMap mutation into domain folds.
+ */
+template <typename Key, typename Value>
+TMap<Key, Value> merge_maps_right(TMap<Key, Value> left,
+                                  const TMap<Key, Value> &right) {
+  left.Append(right);
+  return left;
+}
+
 /** User Story: As a core fp map consumer, I need to invoke map keys through a stable signature so the core fp map workflow remains explicit and composable. @fn template <typename Key, typename Value> TArray<Key> map_keys(const TMap<Key, Value> &values) */
 template <typename Key, typename Value>
 TArray<Key> map_keys(const TMap<Key, Value> &values) {

@@ -17,6 +17,25 @@
       "contains": "contains_value finds existing value"
     }
   },
+  "maps": {
+    "leftOnlyKey": "left-only",
+    "sharedKey": "shared",
+    "rightOnlyKey": "right-only",
+    "leftOnlyValue": 10,
+    "leftSharedValue": 20,
+    "rightSharedValue": 30,
+    "rightOnlyValue": 40,
+    "expectedCount": 3,
+    "labels": {
+      "leftIdentity": "empty left map preserves the right map",
+      "rightIdentity": "empty right map preserves the left map",
+      "associative": "right-biased map combination is associative",
+      "rightBias": "later map value replaces the shared key",
+      "preservesLeft": "left-only key remains present",
+      "preservesRight": "right-only key remains present",
+      "count": "combined map contains each distinct key"
+    }
+  },
   "maybeEither": {
     "values": [2, 4],
     "traverseMultiplier": 2,

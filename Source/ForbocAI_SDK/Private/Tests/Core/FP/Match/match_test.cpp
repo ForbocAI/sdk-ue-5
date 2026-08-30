@@ -157,6 +157,15 @@ bool FFromNullablePtrTest::RunTest(const FString &Parameters) {
   int *NullPointer = nullptr;
   const auto Missing = func::from_nullable(NullPointer);
   TestFalse(*Fixture.Labels.Missing, Missing.hasValue);
+
+  const TSharedPtr<int> Shared = MakeShared<int>(Fixture.Value);
+  const auto SharedPresent = func::from_shared(Shared);
+  TestTrue(*Fixture.Labels.Present, SharedPresent.hasValue);
+  TestEqual(*Fixture.Labels.Value, *SharedPresent.value, Fixture.Value);
+
+  const TSharedPtr<int> MissingShared;
+  const auto SharedMissing = func::from_shared(MissingShared);
+  TestFalse(*Fixture.Labels.Missing, SharedMissing.hasValue);
   return true;
 }
 
