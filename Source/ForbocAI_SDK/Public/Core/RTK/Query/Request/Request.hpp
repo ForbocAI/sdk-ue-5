@@ -204,10 +204,10 @@ inline void addHeaderLineRecursive(const TArray<FString> &HeaderLines,
 /** User Story: As a rtk query request consumer, I need to invoke response headers through a stable signature so the rtk query request workflow remains explicit and composable. @fn inline TMap<FString, FString> responseHeaders(FHttpResponsePtr Res) */
 inline TMap<FString, FString> responseHeaders(FHttpResponsePtr Res) {
   TMap<FString, FString> Headers;
-  return Res.IsValid()
-             ? (addHeaderLineRecursive(Res->GetAllHeaders(), FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, Headers),
-                Headers)
-             : Headers;
+  addHeaderLineRecursive(Res->GetAllHeaders(),
+                         FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA,
+                         Headers);
+  return Headers;
 }
 
 } // namespace detail

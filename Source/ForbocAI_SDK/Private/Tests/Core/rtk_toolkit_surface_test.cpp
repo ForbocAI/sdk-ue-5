@@ -216,3 +216,35 @@ bool FRtkMiddlewareSurfaceTest::RunTest(const FString &Parameters) {
             func::is_just(findNonSerializableValue(Ticked())));
   return true;
 }
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FRtkQuerySerializationSurfaceTest,
+    ToolkitSurface::ToolkitSurfaceFixtures().Names.QuerySerialization,
+    EAutomationTestFlags_ApplicationContextMask |
+        EAutomationTestFlags::EngineFilter)
+
+/**
+ * User Story: As an RTK Query consumer, I need array responses decoded atomically so malformed members cannot partially overwrite existing domain state.
+ * @fn bool FRtkQuerySerializationSurfaceTest::RunTest(const FString &Parameters)
+ */
+bool FRtkQuerySerializationSurfaceTest::RunTest(const FString &Parameters) {
+  const ToolkitSurface::FToolkitSurfaceFixtures &Fixture =
+      ToolkitSurface::ToolkitSurfaceFixtures();
+  TArray<FString> Output{Fixture.QuerySerialization.Sentinel};
+
+  TestTrue(
+      Fixture.Labels.QueryArrayDecode,
+      rtk::detail::JsonDeserializer<TArray<FString>>::Deserialize(
+          Fixture.QuerySerialization.ValidStringArrayJson, Output));
+  TestEqual(Fixture.Labels.QueryArrayValues, Output,
+            Fixture.QuerySerialization.ExpectedValues);
+
+  Output = {Fixture.QuerySerialization.Sentinel};
+  TestFalse(
+      Fixture.Labels.QueryArrayRejectsMalformed,
+      rtk::detail::JsonDeserializer<TArray<FString>>::Deserialize(
+          Fixture.QuerySerialization.MalformedStringArrayJson, Output));
+  TestEqual(Fixture.Labels.QueryArrayAtomic, Output,
+            TArray<FString>{Fixture.QuerySerialization.Sentinel});
+  return true;
+}

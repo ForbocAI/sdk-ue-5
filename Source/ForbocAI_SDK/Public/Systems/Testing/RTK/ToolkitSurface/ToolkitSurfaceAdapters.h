@@ -15,6 +15,7 @@ ReadNames(const DataAdapters::FSettingsSource &Source) {
       DataAdapters::ReadStringField(Object, TEXT("actionAndUtility")),
       DataAdapters::ReadStringField(Object, TEXT("autoBatch")),
       DataAdapters::ReadStringField(Object, TEXT("middleware")),
+      DataAdapters::ReadStringField(Object, TEXT("querySerialization")),
   };
 }
 
@@ -124,6 +125,19 @@ ReadMiddleware(const DataAdapters::FSettingsSource &Source) {
   };
 }
 
+/** User Story: As an RTK Query test consumer, I need JSON-authored serialization cases so valid and malformed arrays exercise the production decoder without C++ fixture literals. @fn inline FQuerySerializationFixture ReadQuerySerialization(const DataAdapters::FSettingsSource &Source) */
+inline FQuerySerializationFixture
+ReadQuerySerialization(const DataAdapters::FSettingsSource &Source) {
+  const TSharedRef<FJsonObject> Object =
+      DataAdapters::ReadObjectField(Source, TEXT("querySerialization"));
+  return {
+      DataAdapters::ReadStringField(Object, TEXT("validStringArrayJson")),
+      DataAdapters::ReadStringField(Object, TEXT("malformedStringArrayJson")),
+      DataAdapters::ReadStringField(Object, TEXT("sentinel")),
+      DataAdapters::ReadStringArrayField(Object, TEXT("expectedValues")),
+  };
+}
+
 /** User Story: As a testing rtk toolkit surface consumer, I need to invoke read labels through a stable signature so the testing rtk toolkit surface workflow remains explicit and composable. @fn inline FToolkitSurfaceLabels ReadLabels(const DataAdapters::FSettingsSource &Source) */
 inline FToolkitSurfaceLabels
 ReadLabels(const DataAdapters::FSettingsSource &Source) {
@@ -173,6 +187,10 @@ ReadLabels(const DataAdapters::FSettingsSource &Source) {
       DataAdapters::ReadStringField(Object, TEXT("reducerState")),
       DataAdapters::ReadStringField(Object, TEXT("emptyActionPath")),
       DataAdapters::ReadStringField(Object, TEXT("typedAction")),
+      DataAdapters::ReadStringField(Object, TEXT("queryArrayDecode")),
+      DataAdapters::ReadStringField(Object, TEXT("queryArrayValues")),
+      DataAdapters::ReadStringField(Object, TEXT("queryArrayRejectsMalformed")),
+      DataAdapters::ReadStringField(Object, TEXT("queryArrayAtomic")),
   };
 }
 
@@ -183,7 +201,8 @@ inline const FToolkitSurfaceFixtures &ToolkitSurfaceFixtures() {
           TEXT("ForbocAI_SDK"), TEXT("Data/tests/rtk/toolkit-surface.json"));
   static const FToolkitSurfaceFixtures Fixtures = {
       ReadNames(Source), ReadApi(Source), ReadPrepared(Source), ReadUtility(Source),
-      ReadAutoBatch(Source), ReadMiddleware(Source), ReadLabels(Source),
+      ReadAutoBatch(Source), ReadMiddleware(Source), ReadQuerySerialization(Source),
+      ReadLabels(Source),
   };
   return Fixtures;
 }

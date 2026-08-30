@@ -31,44 +31,78 @@ T copyWithStructuralSharingImpl(const T &, const T &NewValue,
 
 template <typename T, typename Enable = void> struct JsonDeserializer;
 
-/** User Story: As a rtk query serialization consumer, I need to invoke deserialize string array recursive through a stable signature so the rtk query serialization workflow remains explicit and composable. @fn template <typename JsonValueT> bool deserializeStringArrayRecursive( const TArray<TSharedPtr<JsonValueT>> &JsonValues, int32 Index, TArray<FString> &OutValue) */
+/** User Story: As an RTK Query JSON consumer, I need each nullable string value lifted and type-refined before it enters domain state. @fn template <typename JsonValueT> func::Maybe<FString> deserializeStringValue(const TSharedPtr<JsonValueT> &JsonValue) */
 template <typename JsonValueT>
-bool deserializeStringArrayRecursive(
-    const TArray<TSharedPtr<JsonValueT>> &JsonValues, int32 Index,
-    TArray<FString> &OutValue) {
-  return Index == JsonValues.Num()
-             ? true
-             : !JsonValues[Index].IsValid()
-                   ? false
-                   : (OutValue.Add(JsonValues[Index]->AsString()),
-                      deserializeStringArrayRecursive(JsonValues, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4,
-                                                      OutValue));
+func::Maybe<FString>
+deserializeStringValue(const TSharedPtr<JsonValueT> &JsonValue) {
+  return func::fmap(
+      func::maybe_filter(
+          func::fromNullable(JsonValue,
+                             static_cast<bool>(JsonValue.Get())),
+          [](const TSharedPtr<JsonValueT> &Value) {
+            return Value->Type == EJson::String;
+          }),
+      [](const TSharedPtr<JsonValueT> &Value) { return Value->AsString(); });
 }
 
-/** User Story: As a rtk query serialization consumer, I need to invoke deserialize struct array recursive through a stable signature so the rtk query serialization workflow remains explicit and composable. @fn template <typename T, typename JsonValueT> bool deserializeStructArrayRecursive( const TArray<TSharedPtr<JsonValueT>> &JsonValues, int32 Index, TArray<T> &OutValue) */
+/** User Story: As an RTK Query JSON consumer, I need each nullable object value decoded through one Maybe pipeline so malformed entries reject the complete array. @fn template <typename T, typename JsonValueT> func::Maybe<T> deserializeStructValue(const TSharedPtr<JsonValueT> &JsonValue) */
 template <typename T, typename JsonValueT>
-bool deserializeStructArrayRecursive(
-    const TArray<TSharedPtr<JsonValueT>> &JsonValues, int32 Index,
-    TArray<T> &OutValue) {
-  const TSharedPtr<FJsonObject> JsonObject =
-      Index == JsonValues.Num()
-          ? TSharedPtr<FJsonObject>()
-          : (JsonValues[Index].IsValid() ? JsonValues[Index]->AsObject()
-                                         : TSharedPtr<FJsonObject>());
-  T Item;
-  return Index == JsonValues.Num()
-             ? true
-             : !JsonValues[Index].IsValid()
-                   ? false
-                   : !JsonObject.IsValid()
-                         ? false
-                         : !FJsonObjectConverter::JsonObjectToUStruct(
-                               JsonObject.ToSharedRef(), T::StaticStruct(),
-                               &Item, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA, FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA)
-                               ? false
-                               : (OutValue.Add(Item),
-                                  deserializeStructArrayRecursive<T>(
-                                      JsonValues, Index + FORBOCAI_SDK_AUTHORED_NUMBERV0063C33F45B4, OutValue));
+func::Maybe<T>
+deserializeStructValue(const TSharedPtr<JsonValueT> &JsonValue) {
+  return func::mbind(
+      func::maybe_filter(
+          func::fromNullable(JsonValue,
+                             static_cast<bool>(JsonValue.Get())),
+          [](const TSharedPtr<JsonValueT> &Value) {
+            return Value->Type == EJson::Object;
+          }),
+      [](const TSharedPtr<JsonValueT> &Value) {
+        const TSharedPtr<FJsonObject> JsonObject = Value->AsObject();
+        return func::mbind(
+            func::fromNullable(JsonObject,
+                               static_cast<bool>(JsonObject.Get())),
+            [](const TSharedPtr<FJsonObject> &Object) {
+              T Item{};
+              const bool bDecoded =
+                  FJsonObjectConverter::JsonObjectToUStruct(
+                      Object.ToSharedRef(), T::StaticStruct(), &Item,
+                      FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA,
+                      FORBOCAI_SDK_AUTHORED_NUMBERV60732C8368BA);
+              return func::fromNullable(MoveTemp(Item), bDecoded);
+            });
+      });
+}
+
+/** User Story: As an RTK Query JSON consumer, I need string arrays traversed atomically so one malformed member cannot leave a partially decoded result. @fn template <typename JsonValueT> func::Maybe<TArray<FString>> deserializeStringArray(const TArray<TSharedPtr<JsonValueT>> &JsonValues) */
+template <typename JsonValueT>
+func::Maybe<TArray<FString>>
+deserializeStringArray(const TArray<TSharedPtr<JsonValueT>> &JsonValues) {
+  return func::traverse_maybe_array(
+      JsonValues, [](const TSharedPtr<JsonValueT> &JsonValue) {
+        return deserializeStringValue(JsonValue);
+      });
+}
+
+/** User Story: As an RTK Query JSON consumer, I need struct arrays traversed atomically so decoding either returns every domain value or no value. @fn template <typename T, typename JsonValueT> func::Maybe<TArray<T>> deserializeStructArray(const TArray<TSharedPtr<JsonValueT>> &JsonValues) */
+template <typename T, typename JsonValueT>
+func::Maybe<TArray<T>>
+deserializeStructArray(const TArray<TSharedPtr<JsonValueT>> &JsonValues) {
+  return func::traverse_maybe_array(
+      JsonValues, [](const TSharedPtr<JsonValueT> &JsonValue) {
+        return deserializeStructValue<T>(JsonValue);
+      });
+}
+
+/** User Story: As an RTK Query deserializer boundary, I need a single effect adapter that commits a complete Maybe value to Unreal's required output parameter. @fn template <typename T> bool assignDeserializedValue(const func::Maybe<T> &Value, T &OutValue) */
+template <typename T>
+bool assignDeserializedValue(const func::Maybe<T> &Value, T &OutValue) {
+  return func::match(
+      Value,
+      [&OutValue](const T &Decoded) {
+        OutValue = Decoded;
+        return true;
+      },
+      []() { return false; });
 }
 } // namespace detail
 } // namespace rtk

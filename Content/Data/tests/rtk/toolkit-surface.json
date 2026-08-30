@@ -3,7 +3,8 @@
     "api": "ForbocAI.Core.RTK.Api",
     "actionAndUtility": "ForbocAI.Core.RTK.ToolkitSurface.ActionAndUtility",
     "autoBatch": "ForbocAI.Core.RTK.ToolkitSurface.AutoBatch",
-    "middleware": "ForbocAI.Core.RTK.ToolkitSurface.Middleware"
+    "middleware": "ForbocAI.Core.RTK.ToolkitSurface.Middleware",
+    "querySerialization": "ForbocAI.Core.RTK.ToolkitSurface.QuerySerialization"
   },
   "api": {
     "endpointName": "getUser",
@@ -75,6 +76,12 @@
     "expectedImmutableChecks": 4,
     "expectedFinalState": 2
   },
+  "querySerialization": {
+    "validStringArrayJson": "[\"first\",\"second\"]",
+    "malformedStringArrayJson": "[\"first\",3]",
+    "sentinel": "preserved",
+    "expectedValues": ["first", "second"]
+  },
   "labels": {
     "apiEndpointType": "Endpoint builder marks mutation definitions",
     "apiReducerPath": "createApi options keep reducerPath",
@@ -118,6 +125,10 @@
     "invariantCount": "invariant checks run before and after each dispatch",
     "reducerState": "both actions reached the reducer",
     "emptyActionPath": "empty action identifies the type path",
-    "typedAction": "typed action passes action serializability"
+    "typedAction": "typed action passes action serializability",
+    "queryArrayDecode": "valid RTK Query arrays decode",
+    "queryArrayValues": "valid RTK Query arrays preserve every value",
+    "queryArrayRejectsMalformed": "mixed-type RTK Query arrays are rejected",
+    "queryArrayAtomic": "failed RTK Query arrays preserve prior output"
   }
 }

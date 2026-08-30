@@ -9,6 +9,7 @@ struct FToolkitSurfaceNames {
   FString ActionAndUtility;
   FString AutoBatch;
   FString Middleware;
+  FString QuerySerialization;
 };
 
 struct FApiFixture {
@@ -86,6 +87,13 @@ struct FMiddlewareFixture {
   int32 ExpectedFinalState;
 };
 
+struct FQuerySerializationFixture {
+  FString ValidStringArrayJson;
+  FString MalformedStringArrayJson;
+  FString Sentinel;
+  TArray<FString> ExpectedValues;
+};
+
 struct FToolkitSurfaceLabels {
   FString ApiEndpointType;
   FString ApiReducerPath;
@@ -130,6 +138,10 @@ struct FToolkitSurfaceLabels {
   FString ReducerState;
   FString EmptyActionPath;
   FString TypedAction;
+  FString QueryArrayDecode;
+  FString QueryArrayValues;
+  FString QueryArrayRejectsMalformed;
+  FString QueryArrayAtomic;
 };
 
 struct FToolkitSurfaceFixtures {
@@ -139,6 +151,7 @@ struct FToolkitSurfaceFixtures {
   FUtilityFixture Utility;
   FAutoBatchFixture AutoBatch;
   FMiddlewareFixture Middleware;
+  FQuerySerializationFixture QuerySerialization;
   FToolkitSurfaceLabels Labels;
 };
 
