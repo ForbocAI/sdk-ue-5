@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import sys
 import tempfile
@@ -11,7 +12,14 @@ import unittest
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from cpp_function_docs import attached_doxygen, collect_function_targets
+from cpp_function_docs import (
+    attached_doxygen,
+    collect_function_targets,
+    generated_user_story,
+)
+
+
+STORY_CASES_PATH = SCRIPT_DIR / "data" / "tests" / "user-stories.json"
 
 
 class FunctionTargetTests(unittest.TestCase):
@@ -126,6 +134,14 @@ class FunctionTargetTests(unittest.TestCase):
             path.write_text(source, encoding="utf-8")
             target = collect_function_targets(path)[0]
         self.assertEqual(attached_doxygen(source, target.start), (0, 22))
+
+    def test_generated_stories_preserve_operator_state_intent(self) -> None:
+        cases = json.loads(STORY_CASES_PATH.read_text(encoding="utf-8"))["cases"]
+        actual = [
+            generated_user_story(Path(case["path"]), case["name"])
+            for case in cases
+        ]
+        self.assertEqual(actual, [case["expected"] for case in cases])
 
 
 if __name__ == "__main__":

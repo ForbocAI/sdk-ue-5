@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "path": "Source/Features/Components/Rendering/Profile/Fog/FogTypes.h",
+      "name": "operator==",
+      "expected": "User Story: As a rendering profile fog state owner, I need values compared structurally so unchanged authored state does not trigger redundant transitions."
+    },
+    {
+      "path": "Source/Features/Components/Rendering/Profile/Render/Equality/EqualityTypes.h",
+      "name": "operator!=",
+      "expected": "User Story: As a profile render equality state owner, I need inequality derived from structural equality so change detection keeps one comparison contract."
+    },
+    {
+      "path": "Source/Features/Systems/Rendering/Stats/Sampling/SamplingSelectors.h",
+      "name": "SelectRuntimeStatsSamplingPlan",
+      "expected": "User Story: As a rendering stats sampling consumer, I need to invoke select runtime stats sampling plan through a stable signature so the rendering stats sampling workflow remains explicit and composable."
+    }
+  ]
+}

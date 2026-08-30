@@ -343,13 +343,39 @@ def function_operation(name: str) -> str:
     return f"invoke {words}"
 
 
+def equality_story(domain: str) -> str:
+    """Describe structural equality as a state-transition guard."""
+    return (
+        f"User Story: As a {domain} state owner, I need values compared "
+        "structurally so unchanged authored state does not trigger redundant "
+        "transitions."
+    )
+
+
+def inequality_story(domain: str) -> str:
+    """Describe inequality as the complement of one equality authority."""
+    return (
+        f"User Story: As a {domain} state owner, I need inequality derived "
+        "from structural equality so change detection keeps one comparison "
+        "contract."
+    )
+
+
+OPERATOR_STORIES = {
+    "operator==": equality_story,
+    "operator!=": inequality_story,
+}
+
+
 def generated_user_story(path: Path, name: str) -> str:
     domain = documentation_domain(path)
+    operator_story = OPERATOR_STORIES.get(name)
     operation = function_operation(name)
-    return (
+    default_story = (
         f"User Story: As a {domain} consumer, I need to {operation} through a "
         f"stable signature so the {domain} workflow remains explicit and composable."
     )
+    return operator_story(domain) if operator_story is not None else default_story
 
 
 def inspect_function_docs(path: Path) -> list[FunctionDocFinding]:
